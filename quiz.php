@@ -9,12 +9,12 @@ if (!isset($_SESSION['id_usuario'])) {
     exit();
 }
 
+// Crie uma instância da classe Database para obter a conexão
+$database = new Database();
+$conn = $database->conn;
+
 // Lógica de processamento do formulário do quiz
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Crie uma instância da classe Database para obter a conexão
-    $database = new Database();
-    $conn = $database->conn;
-
     $id_usuario = $_SESSION['id_usuario'];
     $idioma_quiz = $_POST['idioma'];
     $respostas_usuario = $_POST['resposta'];
@@ -37,18 +37,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $respostas_corretas_map[$item['id']] = ['resposta' => $item['resposta_correta'], 'nivel' => $item['nivel']];
     }
     
-    // Calcula a pontuação por nível
-    $pontuacao_a1 = 0; $pontuacao_a2 = 0; $pontuacao_b1 = 0;
+    // Novo cálculo de pontuação para uma avaliação mais precisa
+    $pontuacao_total = 0;
     foreach ($respostas_usuario as $id_pergunta => $resposta_do_usuario) {
-        if (isset($respostas_corretas_map[$id_pergunta]) && $respostas_corretas_map[$id_pergunta]['resposta'] == $resposta_do_usuario) {
-            $nivel_pergunta = $respostas_corretas_map[$id_pergunta]['nivel'];
-            if ($nivel_pergunta == 'A1') { $pontuacao_a1++; } elseif ($nivel_pergunta == 'A2') { $pontuacao_a2++; } elseif ($nivel_pergunta == 'B1') { $pontuacao_b1++; }
+        if (isset($respostas_corretas_map[$id_pergunta]) && $respostas_corretas_map[$id_pergunta]['resposta'] === $resposta_do_usuario) {
+            $pontuacao_total++;
         }
     }
     
-    // Determina o nível final
+    // Determina o nível final com base na pontuação total (agora com 6 níveis)
     $nivel_final = 'A1';
-    if ($pontuacao_b1 >= 4) { $nivel_final = 'B1'; } elseif ($pontuacao_a2 >= 4) { $nivel_final = 'A2'; }
+    if ($pontuacao_total >= 25) { 
+        $nivel_final = 'C2';
+    } elseif ($pontuacao_total >= 20) { 
+        $nivel_final = 'C1';
+    } elseif ($pontuacao_total >= 15) { 
+        $nivel_final = 'B2';
+    } elseif ($pontuacao_total >= 10) { 
+        $nivel_final = 'B1';
+    } elseif ($pontuacao_total >= 5) { 
+        $nivel_final = 'A2';
+    }
     
     // Atualiza o nível do usuário no banco de dados
     $sql_update = "UPDATE progresso_usuario SET nivel = ? WHERE id_usuario = ? AND idioma = ?";
@@ -57,7 +66,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt_update->execute();
     $stmt_update->close();
     
-    // Fecha a conexão usando o método da classe
+    // Fecha a conexão
     $database->closeConnection();
     
     // Redireciona para a página de resultados
@@ -65,42 +74,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     exit();
 }
 
-// Lógica para exibir o formulário do quiz
+// Lógica para exibir o formulário do quiz (requisição GET)
 $idioma_quiz = isset($_GET['idioma']) ? $_GET['idioma'] : null;
 if (!$idioma_quiz) {
     header("Location: painel.php");
     exit();
 }
 
-// Crie uma instância da classe Database para obter a conexão para exibir o quiz
-$database = new Database();
-$conn = $database->conn;
-
-// Busca as perguntas para o quiz
-$perguntas_quiz = [];
-$sql_a1 = "SELECT * FROM quiz_nivelamento WHERE idioma = ? AND nivel = 'A1' ORDER BY RAND() LIMIT 8";
-$stmt_a1 = $conn->prepare($sql_a1);
-$stmt_a1->bind_param("s", $idioma_quiz);
-$stmt_a1->execute();
-$perguntas_quiz = array_merge($perguntas_quiz, $stmt_a1->get_result()->fetch_all(MYSQLI_ASSOC));
-$stmt_a1->close();
-
-$sql_a2 = "SELECT * FROM quiz_nivelamento WHERE idioma = ? AND nivel = 'A2' ORDER BY RAND() LIMIT 6";
-$stmt_a2 = $conn->prepare($sql_a2);
-$stmt_a2->bind_param("s", $idioma_quiz);
-$stmt_a2->execute();
-$perguntas_quiz = array_merge($perguntas_quiz, $stmt_a2->get_result()->fetch_all(MYSQLI_ASSOC));
-$stmt_a2->close();
-
-$sql_b1 = "SELECT * FROM quiz_nivelamento WHERE idioma = ? AND nivel = 'B1' ORDER BY RAND() LIMIT 6";
-$stmt_b1 = $conn->prepare($sql_b1);
-$stmt_b1->bind_param("s", $idioma_quiz);
-$stmt_b1->execute();
-$perguntas_quiz = array_merge($perguntas_quiz, $stmt_b1->get_result()->fetch_all(MYSQLI_ASSOC));
-$stmt_b1->close();
-
-// Embaralha todas as perguntas para não seguir uma ordem de nível
-shuffle($perguntas_quiz);
+// Busca perguntas de todos os 6 níveis em uma única consulta
+$sql_perguntas = "
+    (SELECT * FROM quiz_nivelamento WHERE idioma = ? AND nivel = 'A1' ORDER BY RAND() LIMIT 5)
+    UNION ALL
+    (SELECT * FROM quiz_nivelamento WHERE idioma = ? AND nivel = 'A2' ORDER BY RAND() LIMIT 5)
+    UNION ALL
+    (SELECT * FROM quiz_nivelamento WHERE idioma = ? AND nivel = 'B1' ORDER BY RAND() LIMIT 5)
+    UNION ALL
+    (SELECT * FROM quiz_nivelamento WHERE idioma = ? AND nivel = 'B2' ORDER BY RAND() LIMIT 5)
+    UNION ALL
+    (SELECT * FROM quiz_nivelamento WHERE idioma = ? AND nivel = 'C1' ORDER BY RAND() LIMIT 5)
+    UNION ALL
+    (SELECT * FROM quiz_nivelamento WHERE idioma = ? AND nivel = 'C2' ORDER BY RAND() LIMIT 5)
+    ORDER BY RAND()
+";
+$stmt_perguntas = $conn->prepare($sql_perguntas);
+$stmt_perguntas->bind_param("ssssss", $idioma_quiz, $idioma_quiz, $idioma_quiz, $idioma_quiz, $idioma_quiz, $idioma_quiz);
+$stmt_perguntas->execute();
+$perguntas_quiz = $stmt_perguntas->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt_perguntas->close();
 
 // Fecha a conexão
 $database->closeConnection();
