@@ -11,7 +11,7 @@ $conn = $database->conn;
 if (!isset($_SESSION['id_usuario'])) {
     // Feche a conexão antes de redirecionar
     $database->closeConnection();
-    header("Location: login.php");
+    header("Location: index.php");
     exit();
 }
 
@@ -19,6 +19,29 @@ $id_usuario = $_SESSION['id_usuario'];
 $idioma_escolhido = null;
 $nivel_usuario = null;
 $nome_usuario = $_SESSION['nome_usuario'] ?? 'usuário';
+$mostrar_selecao_idioma = false;
+
+// Processa seleção de idioma para usuários sem progresso
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['idioma_inicial'])) {
+    $idioma_inicial = $_POST['idioma_inicial'];
+    $nivel_inicial = "A1";
+    
+    // Insere progresso inicial para o usuário
+    $sql_insert_progresso = "INSERT INTO progresso_usuario (id_usuario, idioma, nivel) VALUES (?, ?, ?)";
+    $stmt_insert = $conn->prepare($sql_insert_progresso);
+    $stmt_insert->bind_param("iss", $id_usuario, $idioma_inicial, $nivel_inicial);
+    
+    if ($stmt_insert->execute()) {
+        $stmt_insert->close();
+        // Redireciona para o quiz de nivelamento
+        $database->closeConnection();
+        header("Location: quiz.php?idioma=$idioma_inicial");
+        exit();
+    } else {
+        $erro_selecao = "Erro ao registrar idioma. Tente novamente.";
+    }
+    $stmt_insert->close();
+}
 
 // Tenta obter o idioma e o nível da URL (se veio do pop-up de resultados)
 if (isset($_GET['idioma']) && isset($_GET['nivel_escolhido'])) {
@@ -45,20 +68,20 @@ if (isset($_GET['idioma']) && isset($_GET['nivel_escolhido'])) {
         $idioma_escolhido = $resultado['idioma'];
         $nivel_usuario = $resultado['nivel'];
     } else {
-        // Se o usuário não tem progresso, redireciona para o cadastro ou quiz
-        $database->closeConnection();
-        header("Location: cadastro.php");
-        exit();
+        // Se o usuário não tem progresso, mostra seleção de idioma
+        $mostrar_selecao_idioma = true;
     }
 }
 
-// Agora, busca as unidades de conteúdo para o idioma e nível do usuário
-$sql_unidades = "SELECT * FROM unidades WHERE idioma = ? AND nivel = ? ORDER BY numero_unidade ASC";
-$stmt_unidades = $conn->prepare($sql_unidades);
-$stmt_unidades->bind_param("ss", $idioma_escolhido, $nivel_usuario);
-$stmt_unidades->execute();
-$unidades = $stmt_unidades->get_result()->fetch_all(MYSQLI_ASSOC);
-$stmt_unidades->close();
+// Busca unidades apenas se o usuário tem progresso
+if (!$mostrar_selecao_idioma) {
+    $sql_unidades = "SELECT * FROM unidades WHERE idioma = ? AND nivel = ? ORDER BY numero_unidade ASC";
+    $stmt_unidades = $conn->prepare($sql_unidades);
+    $stmt_unidades->bind_param("ss", $idioma_escolhido, $nivel_usuario);
+    $stmt_unidades->execute();
+    $unidades = $stmt_unidades->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt_unidades->close();
+}
 
 // Feche a conexão usando o método da classe
 $database->closeConnection();
@@ -87,32 +110,61 @@ $database->closeConnection();
     <div class="container mt-5">
         <div class="row justify-content-center">
             <div class="col-md-8">
-                <div class="card mb-4">
-                    <div class="card-header text-center">
-                        <h2>Seu Caminho de Aprendizado em <?php echo htmlspecialchars($idioma_escolhido); ?></h2>
-                    </div>
-                    <div class="card-body text-center">
-                        <p class="fs-4">Seu nível atual é: <span class="badge bg-success"><?php echo htmlspecialchars($nivel_usuario); ?></span></p>
-                    </div>
-                </div>
-
-                <h4>Unidades do Nível <?php echo htmlspecialchars($nivel_usuario); ?></h4>
-                <div class="list-group">
-                    <?php if (count($unidades) > 0): ?>
-                        <?php foreach ($unidades as $unidade): ?>
-                            <a href="#" class="list-group-item list-group-item-action mb-2">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h5 class="mb-1">Unidade <?php echo htmlspecialchars($unidade['numero_unidade']); ?>: <?php echo htmlspecialchars($unidade['titulo']); ?></h5>
-                                </div>
-                                <p class="mb-1"><?php echo htmlspecialchars($unidade['descricao']); ?></p>
-                            </a>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <div class="alert alert-info" role="alert">
-                            Nenhuma unidade encontrada para este nível e idioma.
+                <?php if ($mostrar_selecao_idioma): ?>
+                    <!-- Seleção de idioma para usuários sem progresso -->
+                    <div class="card">
+                        <div class="card-header text-center">
+                            <h2>Bem-vindo! Escolha seu primeiro idioma</h2>
                         </div>
-                    <?php endif; ?>
-                </div>
+                        <div class="card-body">
+                            <?php if (isset($erro_selecao)): ?>
+                                <div class="alert alert-danger"><?php echo $erro_selecao; ?></div>
+                            <?php endif; ?>
+                            <p class="text-center mb-4">Para começar sua jornada de aprendizado, selecione o idioma que deseja estudar:</p>
+                            <form method="POST" action="painel.php">
+                                <div class="mb-3">
+                                    <label for="idioma_inicial" class="form-label">Escolha seu idioma</label>
+                                    <select class="form-select" id="idioma_inicial" name="idioma_inicial" required>
+                                        <option value="" disabled selected>Selecione um idioma</option>
+                                        <option value="Ingles">Inglês</option>
+                                        <option value="Japones">Japonês</option>
+                                    </select>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary">Começar Quiz de Nivelamento</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <!-- Painel normal para usuários com progresso -->
+                    <div class="card mb-4">
+                        <div class="card-header text-center">
+                            <h2>Seu Caminho de Aprendizado em <?php echo htmlspecialchars($idioma_escolhido); ?></h2>
+                        </div>
+                        <div class="card-body text-center">
+                            <p class="fs-4">Seu nível atual é: <span class="badge bg-success"><?php echo htmlspecialchars($nivel_usuario); ?></span></p>
+                        </div>
+                    </div>
+
+                    <h4>Unidades do Nível <?php echo htmlspecialchars($nivel_usuario); ?></h4>
+                    <div class="list-group">
+                        <?php if (count($unidades) > 0): ?>
+                            <?php foreach ($unidades as $unidade): ?>
+                                <a href="#" class="list-group-item list-group-item-action mb-2">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h5 class="mb-1">Unidade <?php echo htmlspecialchars($unidade['numero_unidade']); ?>: <?php echo htmlspecialchars($unidade['titulo']); ?></h5>
+                                    </div>
+                                    <p class="mb-1"><?php echo htmlspecialchars($unidade['descricao']); ?></p>
+                                </a>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <div class="alert alert-info" role="alert">
+                                Nenhuma unidade encontrada para este nível e idioma.
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
