@@ -1,0 +1,122 @@
+<?php
+session_start();
+// Inclua o arquivo de conexão em POO
+include 'conexao.php';
+
+// Crie uma instância da classe Database para obter a conexão
+$database = new Database();
+$conn = $database->conn;
+
+// Redireciona se o usuário não estiver logado
+if (!isset($_SESSION['id_usuario'])) {
+    // Feche a conexão antes de redirecionar
+    $database->closeConnection();
+    header("Location: login.php");
+    exit();
+}
+
+$id_usuario = $_SESSION['id_usuario'];
+$idioma_escolhido = null;
+$nivel_usuario = null;
+$nome_usuario = $_SESSION['nome_usuario'] ?? 'usuário';
+
+// Tenta obter o idioma e o nível da URL (se veio do pop-up de resultados)
+if (isset($_GET['idioma']) && isset($_GET['nivel_escolhido'])) {
+    $idioma_escolhido = $_GET['idioma'];
+    $nivel_usuario = $_GET['nivel_escolhido'];
+    
+    // Atualiza o nível do usuário no banco de dados com a escolha final
+    $sql_update_nivel = "UPDATE progresso_usuario SET nivel = ? WHERE id_usuario = ? AND idioma = ?";
+    $stmt_update_nivel = $conn->prepare($sql_update_nivel);
+    $stmt_update_nivel->bind_param("sis", $nivel_usuario, $id_usuario, $idioma_escolhido);
+    $stmt_update_nivel->execute();
+    $stmt_update_nivel->close();
+
+} else {
+    // Se não veio da URL, busca o último idioma e nível do banco de dados
+    $sql_progresso = "SELECT idioma, nivel FROM progresso_usuario WHERE id_usuario = ? ORDER BY id DESC LIMIT 1";
+    $stmt_progresso = $conn->prepare($sql_progresso);
+    $stmt_progresso->bind_param("i", $id_usuario);
+    $stmt_progresso->execute();
+    $resultado = $stmt_progresso->get_result()->fetch_assoc();
+    $stmt_progresso->close();
+
+    if ($resultado) {
+        $idioma_escolhido = $resultado['idioma'];
+        $nivel_usuario = $resultado['nivel'];
+    } else {
+        // Se o usuário não tem progresso, redireciona para o cadastro ou quiz
+        $database->closeConnection();
+        header("Location: cadastro.php");
+        exit();
+    }
+}
+
+// Agora, busca as unidades de conteúdo para o idioma e nível do usuário
+$sql_unidades = "SELECT * FROM unidades WHERE idioma = ? AND nivel = ? ORDER BY numero_unidade ASC";
+$stmt_unidades = $conn->prepare($sql_unidades);
+$stmt_unidades->bind_param("ss", $idioma_escolhido, $nivel_usuario);
+$stmt_unidades->execute();
+$unidades = $stmt_unidades->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt_unidades->close();
+
+// Feche a conexão usando o método da classe
+$database->closeConnection();
+?>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Usuário - <?php echo htmlspecialchars($idioma_escolhido); ?></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">Site de Idiomas</a>
+            <div class="d-flex">
+                <span class="navbar-text text-white me-3">
+                    Bem-vindo, <?php echo htmlspecialchars($nome_usuario); ?>!
+                </span>
+                <a href="logout.php" class="btn btn-outline-light">Sair</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card mb-4">
+                    <div class="card-header text-center">
+                        <h2>Seu Caminho de Aprendizado em <?php echo htmlspecialchars($idioma_escolhido); ?></h2>
+                    </div>
+                    <div class="card-body text-center">
+                        <p class="fs-4">Seu nível atual é: <span class="badge bg-success"><?php echo htmlspecialchars($nivel_usuario); ?></span></p>
+                    </div>
+                </div>
+
+                <h4>Unidades do Nível <?php echo htmlspecialchars($nivel_usuario); ?></h4>
+                <div class="list-group">
+                    <?php if (count($unidades) > 0): ?>
+                        <?php foreach ($unidades as $unidade): ?>
+                            <a href="#" class="list-group-item list-group-item-action mb-2">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">Unidade <?php echo htmlspecialchars($unidade['numero_unidade']); ?>: <?php echo htmlspecialchars($unidade['titulo']); ?></h5>
+                                </div>
+                                <p class="mb-1"><?php echo htmlspecialchars($unidade['descricao']); ?></p>
+                            </a>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="alert alert-info" role="alert">
+                            Nenhuma unidade encontrada para este nível e idioma.
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
