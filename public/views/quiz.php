@@ -1,8 +1,7 @@
 <?php
 session_start();
 // Inclua o arquivo de conexão em POO
-include 'conexao.php';
-
+include_once __DIR__ . '/../../conexao.php';
 // Redireciona se o usuário não estiver logado
 if (!isset($_SESSION['id_usuario'])) {
     header("Location: login.php");

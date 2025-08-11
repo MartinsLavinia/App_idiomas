@@ -2,8 +2,7 @@
 session_start();
 ob_start(); // Garante que o header() funcione corretamente
 
-include 'conexao.php';
-
+include_once __DIR__ . '/../../conexao.php';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $database = new Database();
     $conn = $database->conn;
