@@ -5,7 +5,7 @@ include_once __DIR__ . '/../../conexao.php';
 
 // Verificação de segurança: Garante que apenas administradores logados possam acessar
 if (!isset($_SESSION['id_admin'])) {
-    header("Location: login.php");
+    header("Location: login_admin.php");
     exit();
 }
 
@@ -62,7 +62,7 @@ $database->closeConnection();
     <div class="container mt-5">
         <h2 class="mb-4">Exercícios do Caminho: <?php echo htmlspecialchars($caminho_info['nome_caminho']) . ' (' . htmlspecialchars($caminho_info['nivel']) . ')'; ?></h2>
         <a href="gerenciar_caminhos.php" class="btn btn-secondary mb-3">← Voltar para Caminhos</a>
-        <a href="adicionar_exercicio.php?caminho_id=<?php echo htmlspecialchars($caminho_id); ?>" class="btn btn-success mb-3">Adicionar Novo Exercício</a>
+        <a href="adicionar_atividades.php?caminho_id=<?php echo htmlspecialchars($caminho_id); ?>" class="btn btn-success mb-3">Adicionar Novo Exercício</a>
         
         <?php echo $mensagem; ?>
 
