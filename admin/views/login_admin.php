@@ -1,6 +1,5 @@
 <?php
-include_once __DIR__ . '/../../conexao.php';
-// A classe AdminManager também precisa subir um nível a partir da pasta 'views'
+
 include_once __DIR__ . '/../models/AdminManager.php'; 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
