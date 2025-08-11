@@ -1,7 +1,7 @@
 <?php
 session_start();
 // Inclua o arquivo de conexão em POO
-include 'conexao.php';
+include_once __DIR__ . '/../../conexao.php';
 
 // Crie uma instância da classe Database para obter a conexão
 $database = new Database();

@@ -1,7 +1,7 @@
 <?php
 session_start();
 // Inclua o arquivo de conexão em POO
-include 'conexao.php';
+include_once __DIR__ . '/../../conexao.php';
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION['id_usuario'])) {

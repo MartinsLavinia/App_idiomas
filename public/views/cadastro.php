@@ -1,6 +1,6 @@
 <?php
 // Inclua o arquivo de conexão em POO
-include 'conexao.php';
+include_once __DIR__ . '/../../conexao.php';
 
 // Inicia a sessão no topo do arquivo para uso posterior
 session_start();
