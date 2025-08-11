@@ -1,63 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jornada de Aprendizagem</title>
-    <style>
-        @media (max-width: 480px) {
-            .jornada_icon {
-                width: 70px;
-                height: 80px;
-            }
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jornada Zigzag</title>
+<style>
+  .container {
+  position: relative;
+  width: 400px;  /* mesma largura da imagem de fundo */
+  height: 700px; /* mesma altura da imagem de fundo */
+}
 
-        .container {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 20px;
-        max-width: 800px;
-        margin: auto;
-        }
+.linha-fundo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  z-index: 0;
+}
 
-        .item {
-        width: 80px;
-        height: 80px;
-        object-fit: contain;
-        }
-
-        /* linha ímpar: normal */
-        .item:nth-child(10n+1) { grid-column: 1; }
-        .item:nth-child(10n+2) { grid-column: 2; }
-        .item:nth-child(10n+3) { grid-column: 3; }
-        .item:nth-child(10n+4) { grid-column: 4; }
-        .item:nth-child(10n+5) { grid-column: 5; }
-
-        /* linha par: invertida */
-        .item:nth-child(10n+6) { grid-column: 5; }
-        .item:nth-child(10n+7) { grid-column: 4; }
-        .item:nth-child(10n+8) { grid-column: 3; }
-        .item:nth-child(10n+9) { grid-column: 2; }
-        .item:nth-child(10n+10) { grid-column: 1; }
+.icone {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
 
 
 
-    </style>
+</style>
 </head>
 <body>
-    
 
-    <div class="container">
-  <img src="icone_jornada.png" class="item">
-  <img src="icone_jornada.png" class="item">
-  <img src="icone_jornada.png" class="item">
-  <img src="icone_jornada.png" class="item">
-  <img src="icone_jornada.png" class="item">
-  <img src="icone_jornada.png" class="item">
-  <img src="icone_jornada.png" class="item">
-  <img src="icone_jornada.png" class="item">
-  <img src="icone_jornada.png" class="item">
+<div class="container">
+  <img src="linhas.png" class="linha-fundo" alt="Caminho">
+
+  <!-- Ícones posicionados manualmente -->
+  <img src="icone_jornada.png" class="icone" style="top: 160px; left: 310px;">
+  <img src="icone_jornada.png" class="icone" style="top: 280px; left: 100px;">
+  <img src="icone_jornada.png" class="icone" style="top: 390px; left: 310px;">
+  <img src="icone_jornada.png" class="icone" style="top: 540px; left: 100px;">
 </div>
+
+
 
 </body>
 </html>
