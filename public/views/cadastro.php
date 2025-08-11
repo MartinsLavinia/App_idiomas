@@ -100,6 +100,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 <button type="submit" class="btn btn-primary">Cadastrar e Começar Quiz</button>
                             </div>
                         </form>
+                        <div class="text-center mt-3">
+                            <p>Já tem uma conta? <a href="index.php">Faça login aqui</a></p>
+                        </div>
                     </div>
                 </div>
             </div>

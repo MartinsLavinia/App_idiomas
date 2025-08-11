@@ -24,48 +24,68 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $pergunta = $_POST['pergunta'];
     $conteudo = null;
 
-    // Constrói o conteúdo JSON com base no tipo de exercício
-    switch ($tipo) {
-        case 'normal':
-            $conteudo = json_encode([
-                'alternativas' => explode(',', $_POST['alternativas']),
-                'resposta_correta' => $_POST['resposta_correta']
-            ]);
-            break;
-        case 'especial':
-            $conteudo = json_encode([
-                'link_video' => $_POST['link_video'],
-                'pergunta_extra' => $_POST['pergunta_extra']
-            ]);
-            break;
-        case 'quiz':
-            $conteudo = json_encode([
-                'quiz_id' => $_POST['quiz_id']
-            ]);
-            break;
-    }
-
-    $database = new Database();
-    $conn = $database->conn;
-    
-    // Insere o novo exercício na tabela, usando Prepared Statement
-    $sql_insert = "INSERT INTO exercicios (caminho_id, ordem, tipo, pergunta, conteudo) VALUES (?, ?, ?, ?, ?)";
-    $stmt_insert = $conn->prepare($sql_insert);
-    
-    if ($stmt_insert) {
-        $stmt_insert->bind_param("iisss", $caminho_id, $ordem, $tipo, $pergunta, $conteudo);
-        
-        if ($stmt_insert->execute()) {
-            $mensagem = '<div class="alert alert-success">Exercício adicionado com sucesso!</div>';
-        } else {
-            $mensagem = '<div class="alert alert-danger">Erro ao adicionar exercício: ' . $stmt_insert->error . '</div>';
-        }
-        $stmt_insert->close();
+    // Validação simples (exemplo: não permitir campos vazios)
+    if (empty($ordem) || empty($pergunta)) {
+        $mensagem = '<div class="alert alert-danger">Por favor, preencha todos os campos obrigatórios.</div>';
     } else {
-        $mensagem = '<div class="alert alert-danger">Erro na preparação da consulta: ' . $conn->error . '</div>';
-    }
+        // Constrói o conteúdo JSON com base no tipo de exercício
+        switch ($tipo) {
+            case 'normal':
+                if (empty($_POST['alternativas']) || empty($_POST['resposta_correta'])) {
+                    $mensagem = '<div class="alert alert-danger">Alternativas e Resposta Correta são obrigatórias para este tipo de exercício.</div>';
+                } else {
+                    $conteudo = json_encode([
+                        'alternativas' => explode(',', $_POST['alternativas']),
+                        'resposta_correta' => $_POST['resposta_correta']
+                    ]);
+                }
+                break;
+            case 'especial':
+                if (empty($_POST['link_video']) || empty($_POST['pergunta_extra'])) {
+                    $mensagem = '<div class="alert alert-danger">O Link do Vídeo/Áudio e a Pergunta Extra são obrigatórios para este tipo de exercício.</div>';
+                } else {
+                    $conteudo = json_encode([
+                        'link_video' => $_POST['link_video'],
+                        'pergunta_extra' => $_POST['pergunta_extra']
+                    ]);
+                }
+                break;
+            case 'quiz':
+                if (empty($_POST['quiz_id'])) {
+                    $mensagem = '<div class="alert alert-danger">O ID do Quiz é obrigatório para este tipo de exercício.</div>';
+                } else {
+                    $conteudo = json_encode([
+                        'quiz_id' => $_POST['quiz_id']
+                    ]);
+                }
+                break;
+        }
 
-    $database->closeConnection();
+        // Se não houve erros, insere os dados no banco
+        if (empty($mensagem)) {
+            $database = new Database();
+            $conn = $database->conn;
+            
+            // Insere o novo exercício na tabela
+            $sql_insert = "INSERT INTO exercicios (caminho_id, ordem, tipo, pergunta, conteudo) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conn->prepare($sql_insert);
+            
+            if ($stmt_insert) {
+                $stmt_insert->bind_param("iisss", $caminho_id, $ordem, $tipo, $pergunta, $conteudo);
+                
+                if ($stmt_insert->execute()) {
+                    $mensagem = '<div class="alert alert-success">Exercício adicionado com sucesso!</div>';
+                } else {
+                    $mensagem = '<div class="alert alert-danger">Erro ao adicionar exercício: ' . $stmt_insert->error . '</div>';
+                }
+                $stmt_insert->close();
+            } else {
+                $mensagem = '<div class="alert alert-danger">Erro na preparação da consulta: ' . $conn->error . '</div>';
+            }
+
+            $database->closeConnection();
+        }
+    }
 }
 
 // BUSCA AS INFORMAÇÕES DO CAMINHO PARA EXIBIÇÃO NO TÍTULO
@@ -98,10 +118,13 @@ $database->closeConnection();
         <div class="card">
             <div class="card-body">
                 <form action="adicionar_exercicio.php?caminho_id=<?php echo htmlspecialchars($caminho_id); ?>" method="POST">
+                    <!-- Campo Ordem -->
                     <div class="mb-3">
                         <label for="ordem" class="form-label">Ordem do Exercício</label>
                         <input type="number" class="form-control" id="ordem" name="ordem" required>
                     </div>
+
+                    <!-- Campo Tipo -->
                     <div class="mb-3">
                         <label for="tipo" class="form-label">Tipo de Exercício</label>
                         <select class="form-select" id="tipo" name="tipo" required>
@@ -110,11 +133,14 @@ $database->closeConnection();
                             <option value="quiz">Quiz (ID de um quiz)</option>
                         </select>
                     </div>
+
+                    <!-- Campo Pergunta -->
                     <div class="mb-3">
                         <label for="pergunta" class="form-label">Pergunta</label>
                         <textarea class="form-control" id="pergunta" name="pergunta" required></textarea>
                     </div>
-                    
+
+                    <!-- Campos Dinâmicos -->
                     <div id="conteudo-campos">
                         <div id="campos-normal">
                             <div class="mb-3">
@@ -137,7 +163,7 @@ $database->closeConnection();
                                 <textarea class="form-control" id="pergunta_extra" name="pergunta_extra"></textarea>
                             </div>
                         </div>
-                        
+
                         <div id="campos-quiz" style="display: none;">
                             <div class="mb-3">
                                 <label for="quiz_id" class="form-label">ID do Quiz</label>
@@ -145,15 +171,15 @@ $database->closeConnection();
                             </div>
                         </div>
                     </div>
-                    
+
                     <button type="submit" class="btn btn-success">Salvar Exercício</button>
                 </form>
             </div>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-    // LÓGICA JAVASCRIPT PARA ALTERNAR OS CAMPOS DINÂMICOS
     document.addEventListener('DOMContentLoaded', function() {
         const tipoSelect = document.getElementById('tipo');
         const camposNormal = document.getElementById('campos-normal');
