@@ -1,63 +1,277 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jornada de Aprendizagem</title>
+    <title>Leadership Factory</title>
     <style>
-        @media (max-width: 480px) {
-            .jornada_icon {
-                width: 70px;
-                height: 80px;
-            }
-        }
+       * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-        .container {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 20px;
-        max-width: 800px;
-        margin: auto;
-        }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    color: #333;
+}
 
-        .item {
-        width: 80px;
-        height: 80px;
-        object-fit: contain;
-        }
+.container {
+    max-width: 400px;
+    margin: auto;
+    padding: 20px;
+    background: #ffffff;
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
 
-        /* linha ímpar: normal */
-        .item:nth-child(10n+1) { grid-column: 1; }
-        .item:nth-child(10n+2) { grid-column: 2; }
-        .item:nth-child(10n+3) { grid-column: 3; }
-        .item:nth-child(10n+4) { grid-column: 4; }
-        .item:nth-child(10n+5) { grid-column: 5; }
+header.header {
+    grid-column: 1 / span 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 10px;
+}
 
-        /* linha par: invertida */
-        .item:nth-child(10n+6) { grid-column: 5; }
-        .item:nth-child(10n+7) { grid-column: 4; }
-        .item:nth-child(10n+8) { grid-column: 3; }
-        .item:nth-child(10n+9) { grid-column: 2; }
-        .item:nth-child(10n+10) { grid-column: 1; }
+.profile-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.profile-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.app-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+.notification-icon {
+    font-size: 20px;
+    color: #ffa500;
+}
+
+.welcome-section {
+    grid-column: 1 / span 2;
+    text-align: center;
+}
+
+.welcome-text {
+    font-size: 16px;
+    color: #666;
+    font-weight: 400;
+}
+
+.stats-section {
+    grid-column: 1 / span 2;
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 14px;
+}
+
+.stat-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.stat-number {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
+
+.leadership-path {
+    grid-column: 1 / span 2;
+    display: contents;
+}
+
+.level {
+    position: relative;
+  display: flex;
+  align-items: center;
+  margin: 40px 0; /* espaço entre os níveis */
+}
+
+.level-circle {
+    width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2; /* garante que fique acima da linha */
+  border: 2px solid #333;
+  font-size: 24px;
+}
+
+.commitment {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.trust {
+    background: linear-gradient(135deg, #ffa726 0%, #ffcc02 100%);
+}
+
+.execution {
+    background: linear-gradient(135deg, #b794f6 0%, #9f7aea 100%);
+}
+
+.level-info {
+    margin-left: 20px;
+}
+
+.level-number {
+    font-size: 12px;
+    color: #999;
+    margin-bottom: 2px;
+}
+
+.level-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.progress-bar {
+    background: #ddd;
+    height: 8px;
+    border-radius: 4px;
+    margin-top: 5px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #4cafef;
+    border-radius: 3px;
+}
+
+.trust .progress-fill {
+    background: linear-gradient(90deg, #ffa726 0%, #ffcc02 100%);
+}
+
+.execution .progress-fill {
+    background: linear-gradient(90deg, #b794f6 0%, #9f7aea 100%);
+}
+
+.completed .progress-fill {
+    background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.progress-text {
+    font-size: 12px;
+    color: #666;
+    font-weight: 500;
+}
+
+.image-placeholder {
+    border-radius: 15px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: #555;
+}
+
+/* Linha tracejada vertical */
+.level:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 25px; /* metade do círculo */
+  top: 50px; /* começa na base do círculo */
+  width: 2px;
+  height: calc(100% + 40px); /* 100% do container + margin */
+  border-left: 2px dashed #333;
+  z-index: 1; /* atrás dos círculos */
+}
+
 
 
 
     </style>
 </head>
 <body>
-    
-
     <div class="container">
-  <img src="icone_jornada.png" class="item">
-  <img src="icone_jornada.png" class="item">
-  <img src="icone_jornada.png" class="item">
-  <img src="icone_jornada.png" class="item">
-  <img src="icone_jornada.png" class="item">
-  <img src="icone_jornada.png" class="item">
-  <img src="icone_jornada.png" class="item">
-  <img src="icone_jornada.png" class="item">
-  <img src="icone_jornada.png" class="item">
-</div>
+    <!-- Header -->
+    <header class="header">
+        <div class="profile-section">
+            <img src="https://via.placeholder.com/50x50/E8E8E8/999999?text=👤" alt="Profile" class="profile-image">
+            <h1 class="app-title">Leadership Factory</h1>
+        </div>
+        <div class="notification-icon">
+            <span class="bell-icon">🔔</span>
+        </div>
+    </header>
 
+    <!-- Welcome -->
+    <div class="welcome-section">
+        <p class="welcome-text">Morning Salma, You finished</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-section">
+        <div class="stat-item"><div>⛰️</div><div>15</div><div>Missions</div></div>
+        <div class="stat-item"><div>⏱️</div><div>4</div><div>Hours</div></div>
+        <div class="stat-item"><div>🏆</div><div>3</div><div>Badges</div></div>
+    </div>
+
+    <!-- 10 níveis -->
+    <!-- Linha 1 -->
+    <div class="level"><div class="level-circle commitment">💡</div><div class="level-info"><div>Level 1</div><div>Commitment</div></div></div>
+
+    <!-- Linha 2 -->
+    <div class="level"><div class="level-circle trust">📊</div><div class="level-info"><div>Level 2</div><div>Trust</div></div></div>
+
+    <!-- Linha 3 -->
+    <div class="level"><div class="level-circle execution">👑</div><div class="level-info"><div>Level 3</div><div>Execution</div></div></div>
+
+    <!-- Linha 4 -->
+    <div class="level"><div class="level-circle commitment">🚀</div><div class="level-info"><div>Level 4</div><div>Initiative</div></div></div>
+
+    <!-- Linha 5 -->
+    <div class="level"><div class="level-circle trust">🛡️</div><div class="level-info"><div>Level 5</div><div>Reliability</div></div></div>
+
+    <!-- Linha 6 -->
+    <!-- <div class="image-placeholder"><img src="linhasteste.png" alt="linha curva da jornada"></div> -->
+    <div class="level"><div class="level-circle execution">🎯</div><div class="level-info"><div>Level 6</div><div>Focus</div></div></div>
+
+    <!-- Linha 7 -->
+    <div class="level"><div class="level-circle commitment">📈</div><div class="level-info"><div>Level 7</div><div>Growth</div></div></div>
+    <!-- Linha 8 -->
+    <div class="level"><div class="level-circle trust">💬</div><div class="level-info"><div>Level 8</div><div>Communication</div></div></div>
+
+    <!-- Linha 9 -->
+    <div class="level"><div class="level-circle execution">🤝</div><div class="level-info"><div>Level 9</div><div>Collaboration</div></div></div>
+
+    <!-- Linha 10 -->
+    <div class="level"><div class="level-circle commitment">🌟</div><div class="level-info"><div>Level 10</div><div>Leadership</div></div></div>
+</div>
 </body>
 </html>
