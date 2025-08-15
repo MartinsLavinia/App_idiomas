@@ -93,6 +93,117 @@ $database->closeConnection();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel do Usuário - <?php echo htmlspecialchars($idioma_escolhido); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .unidade-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .unidade-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border-color: #007bff;
+        }
+        
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+        }
+        
+        .popup-modal {
+            max-width: 800px;
+            margin: 2rem auto;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        
+        .atividade-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid #dee2e6;
+        }
+        
+        .atividade-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            border-color: #007bff;
+        }
+        
+        .atividade-icon {
+            font-size: 2.5rem;
+            color: #007bff;
+            margin-bottom: 1rem;
+        }
+        
+        .exercicio-container {
+            min-height: 400px;
+        }
+        
+        .progress-bar-custom {
+            height: 8px;
+            border-radius: 4px;
+        }
+        
+        .btn-resposta {
+            margin: 0.5rem 0;
+            padding: 1rem;
+            text-align: left;
+            border: 2px solid #dee2e6;
+            background: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-resposta:hover {
+            border-color: #007bff;
+            background: #f8f9fa;
+        }
+        
+        .btn-resposta.selected {
+            border-color: #007bff;
+            background: #e3f2fd;
+        }
+        
+        .btn-resposta.correct {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        
+        .btn-resposta.incorrect {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+        
+        .feedback-container {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: none;
+        }
+        
+        .feedback-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .feedback-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
@@ -148,19 +259,31 @@ $database->closeConnection();
                     </div>
 
                     <h4>Unidades do Nível <?php echo htmlspecialchars($nivel_usuario); ?></h4>
-                    <div class="list-group">
+                    <div class="row">
                         <?php if (count($unidades) > 0): ?>
                             <?php foreach ($unidades as $unidade): ?>
-                                <a href="#" class="list-group-item list-group-item-action mb-2">
-                                    <div class="d-flex w-100 justify-content-between">
-                                        <h5 class="mb-1">Unidade <?php echo htmlspecialchars($unidade['numero_unidade']); ?>: <?php echo htmlspecialchars($unidade['titulo']); ?></h5>
+                                <div class="col-md-6 mb-3">
+                                    <div class="card unidade-card h-100" onclick="abrirAtividades(<?php echo $unidade['id']; ?>, '<?php echo htmlspecialchars($unidade['titulo']); ?>', <?php echo $unidade['numero_unidade']; ?>)">
+                                        <div class="card-body">
+                                            <h5 class="card-title">
+                                                <i class="fas fa-book-open me-2"></i>
+                                                Unidade <?php echo htmlspecialchars($unidade['numero_unidade']); ?>
+                                            </h5>
+                                            <h6 class="card-subtitle mb-2 text-muted"><?php echo htmlspecialchars($unidade['titulo']); ?></h6>
+                                            <p class="card-text"><?php echo htmlspecialchars($unidade['descricao']); ?></p>
+                                            <div class="progress progress-bar-custom">
+                                                <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <small class="text-muted">0% concluído</small>
+                                        </div>
                                     </div>
-                                    <p class="mb-1"><?php echo htmlspecialchars($unidade['descricao']); ?></p>
-                                </a>
+                                </div>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <div class="alert alert-info" role="alert">
-                                Nenhuma unidade encontrada para este nível e idioma.
+                            <div class="col-12">
+                                <div class="alert alert-info" role="alert">
+                                    Nenhuma unidade encontrada para este nível e idioma.
+                                </div>
                             </div>
                         <?php endif; ?>
                     </div>
@@ -169,6 +292,393 @@ $database->closeConnection();
         </div>
     </div>
 
+    <!-- Modal de Atividades -->
+    <div class="modal fade" id="modalAtividades" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg popup-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tituloAtividades">Atividades da Unidade</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="listaAtividades" class="row">
+                        <!-- Atividades serão carregadas aqui via AJAX -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Exercícios -->
+    <div class="modal fade" id="modalExercicios" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg popup-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tituloExercicios">Exercícios</h5>
+                    <div class="d-flex align-items-center">
+                        <span id="contadorExercicios" class="badge bg-primary me-3">1/12</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                </div>
+                <div class="modal-body exercicio-container">
+                    <div class="progress progress-bar-custom mb-4">
+                        <div id="progressoExercicios" class="progress-bar" role="progressbar" style="width: 8.33%" aria-valuenow="8.33" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <div id="conteudoExercicio">
+                        <!-- Conteúdo do exercício será carregado aqui via AJAX -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="voltarParaAtividades()">
+                        <i class="fas fa-arrow-left me-2"></i>Voltar
+                    </button>
+                    <button type="button" id="btnEnviarResposta" class="btn btn-primary" onclick="enviarResposta()">
+                        Enviar Resposta
+                    </button>
+                    <button type="button" id="btnProximoExercicio" class="btn btn-success" onclick="proximoExercicio()" style="display: none;">
+                        Próximo <i class="fas fa-arrow-right ms-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Variáveis globais
+        let unidadeAtual = null;
+        let atividadeAtual = null;
+        let exercicioAtual = null;
+        let exerciciosLista = [];
+        let exercicioIndex = 0;
+        let respostaSelecionada = null;
+
+        // Função para abrir modal de atividades
+        function abrirAtividades(unidadeId, tituloUnidade, numeroUnidade) {
+            unidadeAtual = unidadeId;
+            document.getElementById('tituloAtividades').textContent = `Atividades da Unidade ${numeroUnidade}: ${tituloUnidade}`;
+            
+            // Carregar atividades via AJAX
+            fetch(`get_atividades.php?unidade_id=${unidadeId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        exibirAtividades(data.atividades);
+                        new bootstrap.Modal(document.getElementById('modalAtividades')).show();
+                    } else {
+                        alert('Erro ao carregar atividades: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Erro ao carregar atividades');
+                });
+        }
+
+        // Função para exibir atividades no modal
+        function exibirAtividades(atividades) {
+            const container = document.getElementById('listaAtividades');
+            container.innerHTML = '';
+
+            atividades.forEach(atividade => {
+                const col = document.createElement('div');
+                col.className = 'col-md-6 mb-3';
+                
+                col.innerHTML = `
+                    <div class="card atividade-card h-100" onclick="abrirExercicios(${atividade.id}, '${atividade.nome}')">
+                        <div class="card-body text-center">
+                            <i class="${atividade.icone} atividade-icon"></i>
+                            <h6 class="card-title">${atividade.nome}</h6>
+                            <p class="card-text small">${atividade.descricao}</p>
+                            <div class="progress progress-bar-custom">
+                                <div class="progress-bar" role="progressbar" style="width: ${atividade.progresso || 0}%" aria-valuenow="${atividade.progresso || 0}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small class="text-muted">${atividade.progresso || 0}% concluído</small>
+                            ${atividade.explicacao_teorica ? `<br><button class="btn btn-sm btn-outline-info mt-2" onclick="event.stopPropagation(); mostrarExplicacao('${atividade.explicacao_teorica}')"><i class="fas fa-info-circle"></i> Teoria</button>` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(col);
+            });
+        }
+
+        // Função para abrir exercícios de uma atividade
+        function abrirExercicios(atividadeId, nomeAtividade) {
+            atividadeAtual = atividadeId;
+            exercicioIndex = 0;
+            
+            document.getElementById('tituloExercicios').textContent = nomeAtividade;
+            
+            // Carregar exercícios via AJAX
+            fetch(`get_exercicios.php?atividade_id=${atividadeId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        exerciciosLista = data.exercicios;
+                        if (exerciciosLista.length > 0) {
+                            // Fechar modal de atividades e abrir modal de exercícios
+                            bootstrap.Modal.getInstance(document.getElementById('modalAtividades')).hide();
+                            exibirExercicio(0);
+                            new bootstrap.Modal(document.getElementById('modalExercicios')).show();
+                        } else {
+                            alert('Nenhum exercício encontrado para esta atividade');
+                        }
+                    } else {
+                        alert('Erro ao carregar exercícios: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Erro ao carregar exercícios');
+                });
+        }
+
+        // Função para exibir um exercício específico
+        function exibirExercicio(index) {
+            if (index >= exerciciosLista.length) {
+                // Todos os exercícios foram concluídos
+                alert('Parabéns! Você concluiu todos os exercícios desta atividade!');
+                bootstrap.Modal.getInstance(document.getElementById('modalExercicios')).hide();
+                return;
+            }
+
+            exercicioIndex = index;
+            exercicioAtual = exerciciosLista[index];
+            respostaSelecionada = null;
+
+            // Atualizar contador e progresso
+            document.getElementById('contadorExercicios').textContent = `${index + 1}/${exerciciosLista.length}`;
+            const progresso = ((index + 1) / exerciciosLista.length) * 100;
+            document.getElementById('progressoExercicios').style.width = `${progresso}%`;
+            document.getElementById('progressoExercicios').setAttribute('aria-valuenow', progresso);
+
+            // Exibir conteúdo do exercício
+            const container = document.getElementById('conteudoExercicio');
+            container.innerHTML = gerarHtmlExercicio(exercicioAtual);
+
+            // Resetar botões
+            document.getElementById('btnEnviarResposta').style.display = 'inline-block';
+            document.getElementById('btnProximoExercicio').style.display = 'none';
+            
+            // Limpar feedback anterior
+            const feedbackContainer = document.querySelector('.feedback-container');
+            if (feedbackContainer) {
+                feedbackContainer.style.display = 'none';
+            }
+        }
+
+        // Função para gerar HTML do exercício baseado no tipo
+        function gerarHtmlExercicio(exercicio) {
+            let html = `<h5 class="mb-4">${exercicio.pergunta}</h5>`;
+
+            try {
+                const conteudo = JSON.parse(exercicio.conteudo);
+
+                switch (exercicio.tipo_exercicio) {
+                    case 'multipla_escolha':
+                        html += '<div class="opcoes-resposta">';
+                        if (conteudo.alternativas) {
+                            conteudo.alternativas.forEach((alt, index) => {
+                                const letra = String.fromCharCode(65 + index); // A, B, C, D
+                                html += `
+                                    <button class="btn btn-resposta w-100" onclick="selecionarResposta('${alt.id || letra}', this)">
+                                        <strong>${letra})</strong> ${alt.texto || alt}
+                                    </button>
+                                `;
+                            });
+                        }
+                        html += '</div>';
+                        break;
+
+                    case 'texto_livre':
+                        html += `
+                            <div class="mb-3">
+                                <textarea class="form-control" id="respostaTexto" rows="3" placeholder="Digite sua resposta aqui..."></textarea>
+                            </div>
+                        `;
+                        break;
+
+                    case 'fala':
+                        html += `
+                            <div class="text-center">
+                                <div class="mb-4">
+                                    <i class="fas fa-microphone fa-5x text-muted" id="microfoneIcon"></i>
+                                </div>
+                                <p class="lead mb-4">Frase para pronunciar:</p>
+                                <p class="fs-4 fw-bold text-primary">"${conteudo.frase_esperada}"</p>
+                                <button class="btn btn-primary btn-lg" id="btnGravar" onclick="iniciarGravacao()">
+                                    <i class="fas fa-microphone me-2"></i>Clique para Gravar
+                                </button>
+                                <div id="statusGravacao" class="mt-3"></div>
+                            </div>
+                        `;
+                        break;
+
+                    default:
+                        html += '<p class="text-muted">Tipo de exercício não implementado ainda.</p>';
+                }
+
+                // Adicionar container de feedback
+                html += `
+                    <div class="feedback-container" id="feedbackContainer">
+                        <div id="feedbackContent"></div>
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error('Erro ao parsear conteúdo do exercício:', error);
+                html += '<p class="text-danger">Erro ao carregar exercício.</p>';
+            }
+
+            return html;
+        }
+
+        // Função para selecionar resposta em múltipla escolha
+        function selecionarResposta(resposta, elemento) {
+            // Remover seleção anterior
+            document.querySelectorAll('.btn-resposta').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // Adicionar seleção atual
+            elemento.classList.add('selected');
+            respostaSelecionada = resposta;
+        }
+
+        // Função para enviar resposta
+        function enviarResposta() {
+            let resposta = null;
+
+            switch (exercicioAtual.tipo_exercicio) {
+                case 'multipla_escolha':
+                    resposta = respostaSelecionada;
+                    break;
+                case 'texto_livre':
+                    resposta = document.getElementById('respostaTexto').value.trim();
+                    break;
+                case 'fala':
+                    // Para exercícios de fala, a resposta será processada diferentemente
+                    resposta = 'fala_processada';
+                    break;
+            }
+
+            if (!resposta) {
+                alert('Por favor, selecione ou digite uma resposta.');
+                return;
+            }
+
+            // Enviar resposta via AJAX
+            fetch('processar_exercicio.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    exercicio_id: exercicioAtual.id,
+                    resposta: resposta,
+                    tipo_exercicio: exercicioAtual.tipo_exercicio
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                mostrarFeedback(data);
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao processar resposta');
+            });
+        }
+
+        // Função para mostrar feedback
+        function mostrarFeedback(resultado) {
+            const feedbackContainer = document.getElementById('feedbackContainer');
+            const feedbackContent = document.getElementById('feedbackContent');
+            
+            if (resultado.correto) {
+                feedbackContainer.className = 'feedback-container feedback-success';
+                feedbackContent.innerHTML = `
+                    <i class="fas fa-check-circle me-2"></i>
+                    <strong>Correto!</strong> ${resultado.explicacao || 'Muito bem!'}
+                `;
+                
+                // Marcar resposta correta visualmente
+                if (exercicioAtual.tipo_exercicio === 'multipla_escolha') {
+                    document.querySelectorAll('.btn-resposta').forEach(btn => {
+                        if (btn.classList.contains('selected')) {
+                            btn.classList.add('correct');
+                        }
+                    });
+                }
+                
+                // Mostrar botão próximo
+                document.getElementById('btnEnviarResposta').style.display = 'none';
+                document.getElementById('btnProximoExercicio').style.display = 'inline-block';
+                
+            } else {
+                feedbackContainer.className = 'feedback-container feedback-error';
+                feedbackContent.innerHTML = `
+                    <i class="fas fa-times-circle me-2"></i>
+                    <strong>Incorreto.</strong> ${resultado.explicacao || 'Tente novamente!'}
+                    ${resultado.dica ? `<br><small><i class="fas fa-lightbulb me-1"></i><strong>Dica:</strong> ${resultado.dica}</small>` : ''}
+                `;
+                
+                // Marcar resposta incorreta visualmente
+                if (exercicioAtual.tipo_exercicio === 'multipla_escolha') {
+                    document.querySelectorAll('.btn-resposta').forEach(btn => {
+                        if (btn.classList.contains('selected')) {
+                            btn.classList.add('incorrect');
+                        }
+                    });
+                }
+            }
+            
+            feedbackContainer.style.display = 'block';
+        }
+
+        // Função para ir para o próximo exercício
+        function proximoExercicio() {
+            exibirExercicio(exercicioIndex + 1);
+        }
+
+        // Função para voltar para atividades
+        function voltarParaAtividades() {
+            bootstrap.Modal.getInstance(document.getElementById('modalExercicios')).hide();
+            new bootstrap.Modal(document.getElementById('modalAtividades')).show();
+        }
+
+        // Função para mostrar explicação teórica
+        function mostrarExplicacao(explicacao) {
+            alert(explicacao); // Implementação simples - pode ser melhorada com um modal dedicado
+        }
+
+        // Função para iniciar gravação (exercícios de fala)
+        function iniciarGravacao() {
+            const microfone = document.getElementById('microfoneIcon');
+            const btnGravar = document.getElementById('btnGravar');
+            const status = document.getElementById('statusGravacao');
+            
+            // Simular gravação (implementação real requereria Web Speech API)
+            microfone.className = 'fas fa-microphone fa-5x text-danger';
+            btnGravar.disabled = true;
+            btnGravar.innerHTML = '<i class="fas fa-stop me-2"></i>Gravando...';
+            status.innerHTML = '<div class="text-info"><i class="fas fa-circle text-danger me-2"></i>Ouvindo...</div>';
+            
+            // Simular processamento após 3 segundos
+            setTimeout(() => {
+                microfone.className = 'fas fa-microphone fa-5x text-success';
+                btnGravar.innerHTML = '<i class="fas fa-check me-2"></i>Gravação Concluída';
+                status.innerHTML = '<div class="text-success"><i class="fas fa-check-circle me-2"></i>Processamento concluído!</div>';
+                
+                // Simular resposta processada
+                respostaSelecionada = 'fala_processada';
+                
+                // Habilitar botão de enviar
+                setTimeout(() => {
+                    document.getElementById('btnEnviarResposta').disabled = false;
+                }, 1000);
+            }, 3000);
+        }
+    </script>
 </body>
 </html>
