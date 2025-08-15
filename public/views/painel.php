@@ -1,29 +1,29 @@
 <?php
 session_start();
 // Inclua o arquivo de conexão em POO
-include_once __DIR__ . '/../../conexao.php';
+include_once __DIR__ . "/../../conexao.php";
 
 // Crie uma instância da classe Database para obter a conexão
 $database = new Database();
 $conn = $database->conn;
 
 // Redireciona se o usuário não estiver logado
-if (!isset($_SESSION['id_usuario'])) {
+if (!isset($_SESSION["id_usuario"])) {
     // Feche a conexão antes de redirecionar
     $database->closeConnection();
     header("Location: index.php");
     exit();
 }
 
-$id_usuario = $_SESSION['id_usuario'];
+$id_usuario = $_SESSION["id_usuario"];
 $idioma_escolhido = null;
 $nivel_usuario = null;
-$nome_usuario = $_SESSION['nome_usuario'] ?? 'usuário';
+$nome_usuario = $_SESSION["nome_usuario"] ?? "usuário";
 $mostrar_selecao_idioma = false;
 
 // Processa seleção de idioma para usuários sem progresso
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['idioma_inicial'])) {
-    $idioma_inicial = $_POST['idioma_inicial'];
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["idioma_inicial"])) {
+    $idioma_inicial = $_POST["idioma_inicial"];
     $nivel_inicial = "A1";
     
     // Insere progresso inicial para o usuário
@@ -44,9 +44,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['idioma_inicial'])) {
 }
 
 // Tenta obter o idioma e o nível da URL (se veio do pop-up de resultados)
-if (isset($_GET['idioma']) && isset($_GET['nivel_escolhido'])) {
-    $idioma_escolhido = $_GET['idioma'];
-    $nivel_usuario = $_GET['nivel_escolhido'];
+if (isset($_GET["idioma"]) && isset($_GET["nivel_escolhido"])) {
+    $idioma_escolhido = $_GET["idioma"];
+    $nivel_usuario = $_GET["nivel_escolhido"];
     
     // Atualiza o nível do usuário no banco de dados com a escolha final
     $sql_update_nivel = "UPDATE progresso_usuario SET nivel = ? WHERE id_usuario = ? AND idioma = ?";
@@ -65,8 +65,8 @@ if (isset($_GET['idioma']) && isset($_GET['nivel_escolhido'])) {
     $stmt_progresso->close();
 
     if ($resultado) {
-        $idioma_escolhido = $resultado['idioma'];
-        $nivel_usuario = $resultado['nivel'];
+        $idioma_escolhido = $resultado["idioma"];
+        $nivel_usuario = $resultado["nivel"];
     } else {
         // Se o usuário não tem progresso, mostra seleção de idioma
         $mostrar_selecao_idioma = true;
@@ -263,14 +263,14 @@ $database->closeConnection();
                         <?php if (count($unidades) > 0): ?>
                             <?php foreach ($unidades as $unidade): ?>
                                 <div class="col-md-6 mb-3">
-                                    <div class="card unidade-card h-100" onclick="abrirAtividades(<?php echo $unidade['id']; ?>, '<?php echo htmlspecialchars($unidade['titulo']); ?>', <?php echo $unidade['numero_unidade']; ?>)">
+                                    <div class="card unidade-card h-100" onclick="abrirAtividades(<?php echo $unidade["id"]; ?>, '<?php echo htmlspecialchars($unidade["titulo"]); ?>', <?php echo $unidade["numero_unidade"]; ?>)">
                                         <div class="card-body">
                                             <h5 class="card-title">
                                                 <i class="fas fa-book-open me-2"></i>
-                                                Unidade <?php echo htmlspecialchars($unidade['numero_unidade']); ?>
+                                                Unidade <?php echo htmlspecialchars($unidade["numero_unidade"]); ?>
                                             </h5>
-                                            <h6 class="card-subtitle mb-2 text-muted"><?php echo htmlspecialchars($unidade['titulo']); ?></h6>
-                                            <p class="card-text"><?php echo htmlspecialchars($unidade['descricao']); ?></p>
+                                            <h6 class="card-subtitle mb-2 text-muted"><?php echo htmlspecialchars($unidade["titulo"]); ?></h6>
+                                            <p class="card-text"><?php echo htmlspecialchars($unidade["descricao"]); ?></p>
                                             <div class="progress progress-bar-custom">
                                                 <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                                             </div>
@@ -356,329 +356,310 @@ $database->closeConnection();
         // Função para abrir modal de atividades
         function abrirAtividades(unidadeId, tituloUnidade, numeroUnidade) {
             unidadeAtual = unidadeId;
-            document.getElementById('tituloAtividades').textContent = `Atividades da Unidade ${numeroUnidade}: ${tituloUnidade}`;
+            document.getElementById("tituloAtividades").textContent = `Atividades da Unidade ${numeroUnidade}: ${tituloUnidade}`;
             
             // Carregar atividades via AJAX
-            fetch(`get_atividades.php?unidade_id=${unidadeId}`)
+            fetch(`admin/controller/get_atividades.php?unidade_id=${unidadeId}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
                         exibirAtividades(data.atividades);
-                        new bootstrap.Modal(document.getElementById('modalAtividades')).show();
+                        new bootstrap.Modal(document.getElementById("modalAtividades")).show();
                     } else {
-                        alert('Erro ao carregar atividades: ' + data.message);
+                        alert("Erro ao carregar atividades: " + data.message);
                     }
                 })
                 .catch(error => {
-                    console.error('Erro:', error);
-                    alert('Erro ao carregar atividades');
+                    console.error("Erro:", error);
+                    alert("Erro ao carregar atividades");
                 });
         }
 
         // Função para exibir atividades no modal
         function exibirAtividades(atividades) {
-            const container = document.getElementById('listaAtividades');
-            container.innerHTML = '';
+            const container = document.getElementById("listaAtividades");
+            container.innerHTML = "";
 
             atividades.forEach(atividade => {
-                const col = document.createElement('div');
-                col.className = 'col-md-6 mb-3';
+                const col = document.createElement("div");
+                col.className = "col-md-6 mb-3";
                 
                 col.innerHTML = `
                     <div class="card atividade-card h-100" onclick="abrirExercicios(${atividade.id}, '${atividade.nome}')">
                         <div class="card-body text-center">
-                            <i class="${atividade.icone} atividade-icon"></i>
-                            <h6 class="card-title">${atividade.nome}</h6>
-                            <p class="card-text small">${atividade.descricao}</p>
-                            <div class="progress progress-bar-custom">
-                                <div class="progress-bar" role="progressbar" style="width: ${atividade.progresso || 0}%" aria-valuenow="${atividade.progresso || 0}" aria-valuemin="0" aria-valuemax="100"></div>
+                            <i class="fas ${atividade.icone} atividade-icon"></i>
+                            <h5 class="card-title">${atividade.nome}</h5>
+                            <p class="card-text text-muted">${atividade.descricao}</p>
+                            <div class="progress progress-bar-custom mb-2">
+                                <div class="progress-bar" role="progressbar" style="width: ${atividade.progresso}%" aria-valuenow="${atividade.progresso}" aria-valuemin="0" aria-valuemax="100"></div>
                             </div>
-                            <small class="text-muted">${atividade.progresso || 0}% concluído</small>
-                            ${atividade.explicacao_teorica ? `<br><button class="btn btn-sm btn-outline-info mt-2" onclick="event.stopPropagation(); mostrarExplicacao('${atividade.explicacao_teorica}')"><i class="fas fa-info-circle"></i> Teoria</button>` : ''}
+                            <small class="text-muted">${atividade.progresso}% concluído</small>
+                            <button type="button" class="btn btn-sm btn-outline-info mt-2" onclick="event.stopPropagation(); abrirTeoriaAtividade(${atividade.id}, '${atividade.nome}')">
+                                <i class="fas fa-info-circle me-1"></i>Teoria
+                            </button>
                         </div>
                     </div>
                 `;
-                
                 container.appendChild(col);
             });
         }
 
-        // Função para abrir exercícios de uma atividade
-        function abrirExercicios(atividadeId, nomeAtividade) {
+        // Função para abrir modal de exercícios
+        function abrirExercicios(atividadeId, tituloAtividade) {
             atividadeAtual = atividadeId;
-            exercicioIndex = 0;
-            
-            document.getElementById('tituloExercicios').textContent = nomeAtividade;
+            document.getElementById("tituloExercicios").textContent = `Exercícios: ${tituloAtividade}`;
             
             // Carregar exercícios via AJAX
-            fetch(`get_exercicios.php?atividade_id=${atividadeId}`)
+            fetch(`admin/controller/get_exercicio.php?atividade_id=${atividadeId}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
                         exerciciosLista = data.exercicios;
+                        exercicioIndex = 0;
                         if (exerciciosLista.length > 0) {
-                            // Fechar modal de atividades e abrir modal de exercícios
-                            bootstrap.Modal.getInstance(document.getElementById('modalAtividades')).hide();
-                            exibirExercicio(0);
-                            new bootstrap.Modal(document.getElementById('modalExercicios')).show();
+                            carregarExercicio(exercicioIndex);
+                            new bootstrap.Modal(document.getElementById("modalExercicios")).show();
                         } else {
-                            alert('Nenhum exercício encontrado para esta atividade');
+                            alert("Nenhum exercício encontrado para esta atividade.");
                         }
                     } else {
-                        alert('Erro ao carregar exercícios: ' + data.message);
+                        alert("Erro ao carregar exercícios: " + data.message);
                     }
                 })
                 .catch(error => {
-                    console.error('Erro:', error);
-                    alert('Erro ao carregar exercícios');
+                    console.error("Erro:", error);
+                    alert("Erro ao carregar exercícios");
                 });
         }
 
-        // Função para exibir um exercício específico
-        function exibirExercicio(index) {
-            if (index >= exerciciosLista.length) {
-                // Todos os exercícios foram concluídos
-                alert('Parabéns! Você concluiu todos os exercícios desta atividade!');
-                bootstrap.Modal.getInstance(document.getElementById('modalExercicios')).hide();
-                return;
-            }
-
-            exercicioIndex = index;
+        // Função para carregar um exercício específico
+        function carregarExercicio(index) {
             exercicioAtual = exerciciosLista[index];
+            const conteudoExercicioDiv = document.getElementById("conteudoExercicio");
+            conteudoExercicioDiv.innerHTML = ""; // Limpa conteúdo anterior
             respostaSelecionada = null;
 
-            // Atualizar contador e progresso
-            document.getElementById('contadorExercicios').textContent = `${index + 1}/${exerciciosLista.length}`;
+            document.getElementById("contadorExercicios").textContent = `${index + 1}/${exerciciosLista.length}`;
             const progresso = ((index + 1) / exerciciosLista.length) * 100;
-            document.getElementById('progressoExercicios').style.width = `${progresso}%`;
-            document.getElementById('progressoExercicios').setAttribute('aria-valuenow', progresso);
+            document.getElementById("progressoExercicios").style.width = `${progresso}%`;
+            document.getElementById("progressoExercicios").setAttribute("aria-valuenow", progresso);
 
-            // Exibir conteúdo do exercício
-            const container = document.getElementById('conteudoExercicio');
-            container.innerHTML = gerarHtmlExercicio(exercicioAtual);
+            let htmlConteudo = `
+                <p class="fs-5 mb-4">${exercicioAtual.pergunta}</p>
+            `;
 
-            // Resetar botões
-            document.getElementById('btnEnviarResposta').style.display = 'inline-block';
-            document.getElementById('btnProximoExercicio').style.display = 'none';
-            
-            // Limpar feedback anterior
-            const feedbackContainer = document.querySelector('.feedback-container');
-            if (feedbackContainer) {
-                feedbackContainer.style.display = 'none';
-            }
-        }
-
-        // Função para gerar HTML do exercício baseado no tipo
-        function gerarHtmlExercicio(exercicio) {
-            let html = `<h5 class="mb-4">${exercicio.pergunta}</h5>`;
-
+            // Parse do conteúdo JSON
+            let conteudo = {};
             try {
-                const conteudo = JSON.parse(exercicio.conteudo);
+                conteudo = JSON.parse(exercicioAtual.conteudo);
+            } catch (e) {
+                console.error("Erro ao fazer parse do conteúdo:", e);
+                conteudo = {};
+            }
 
-                switch (exercicio.tipo_exercicio) {
-                    case 'multipla_escolha':
-                        html += '<div class="opcoes-resposta">';
-                        if (conteudo.alternativas) {
-                            conteudo.alternativas.forEach((alt, index) => {
-                                const letra = String.fromCharCode(65 + index); // A, B, C, D
-                                html += `
-                                    <button class="btn btn-resposta w-100" onclick="selecionarResposta('${alt.id || letra}', this)">
-                                        <strong>${letra})</strong> ${alt.texto || alt}
-                                    </button>
-                                `;
-                            });
-                        }
-                        html += '</div>';
-                        break;
-
-                    case 'texto_livre':
-                        html += `
-                            <div class="mb-3">
-                                <textarea class="form-control" id="respostaTexto" rows="3" placeholder="Digite sua resposta aqui..."></textarea>
-                            </div>
+            if (exercicioAtual.tipo_exercicio === "multipla_escolha") {
+                if (conteudo.alternativas) {
+                    conteudo.alternativas.forEach(alt => {
+                        htmlConteudo += `
+                            <button type="button" class="btn btn-light btn-resposta w-100" data-id="${alt.id}" onclick="selecionarResposta(this)">
+                                ${alt.texto}
+                            </button>
                         `;
-                        break;
-
-                    case 'fala':
-                        html += `
-                            <div class="text-center">
-                                <div class="mb-4">
-                                    <i class="fas fa-microphone fa-5x text-muted" id="microfoneIcon"></i>
-                                </div>
-                                <p class="lead mb-4">Frase para pronunciar:</p>
-                                <p class="fs-4 fw-bold text-primary">"${conteudo.frase_esperada}"</p>
-                                <button class="btn btn-primary btn-lg" id="btnGravar" onclick="iniciarGravacao()">
-                                    <i class="fas fa-microphone me-2"></i>Clique para Gravar
-                                </button>
-                                <div id="statusGravacao" class="mt-3"></div>
-                            </div>
-                        `;
-                        break;
-
-                    default:
-                        html += '<p class="text-muted">Tipo de exercício não implementado ainda.</p>';
+                    });
                 }
-
-                // Adicionar container de feedback
-                html += `
-                    <div class="feedback-container" id="feedbackContainer">
-                        <div id="feedbackContent"></div>
+            } else if (exercicioAtual.tipo_exercicio === "texto_livre") {
+                htmlConteudo += `
+                    <textarea id="respostaTextoLivre" class="form-control" rows="4" placeholder="Digite sua resposta aqui..."></textarea>
+                `;
+            } else if (exercicioAtual.tipo_exercicio === "fala") {
+                htmlConteudo += `
+                    <div class="text-center">
+                        <i class="fas fa-microphone fa-5x text-primary mb-3" id="microfoneIcon" style="cursor: pointer;" onclick="iniciarGravacao()"></i>
+                        <p id="statusGravacao" class="text-muted">Clique no microfone para falar</p>
+                        <p id="fraseParaFalar" class="fs-4">"${conteudo.frase_esperada || ''}"</p>
                     </div>
                 `;
-
-            } catch (error) {
-                console.error('Erro ao parsear conteúdo do exercício:', error);
-                html += '<p class="text-danger">Erro ao carregar exercício.</p>';
+            } else if (exercicioAtual.tipo_exercicio === "especial") {
+                // Lógica para exercícios especiais (resumo, cena final)
+                htmlConteudo += `
+                    <div class="alert alert-info">Este é um exercício especial.</div>
+                    <div id="conteudoEspecial"></div>
+                `;
+                // Chamar função específica para carregar conteúdo especial
+                carregarConteudoEspecial(conteudo);
             }
 
-            return html;
+            conteudoExercicioDiv.innerHTML = htmlConteudo;
+            document.getElementById("btnEnviarResposta").style.display = "block";
+            document.getElementById("btnProximoExercicio").style.display = "none";
+            // Remover feedback anterior
+            const feedbackDiv = document.getElementById("feedbackExercicio");
+            if (feedbackDiv) feedbackDiv.remove();
         }
 
-        // Função para selecionar resposta em múltipla escolha
-        function selecionarResposta(resposta, elemento) {
-            // Remover seleção anterior
-            document.querySelectorAll('.btn-resposta').forEach(btn => {
-                btn.classList.remove('selected');
+        // Função para selecionar resposta (múltipla escolha)
+        function selecionarResposta(button) {
+            document.querySelectorAll(".btn-resposta").forEach(btn => {
+                btn.classList.remove("selected");
             });
-            
-            // Adicionar seleção atual
-            elemento.classList.add('selected');
-            respostaSelecionada = resposta;
+            button.classList.add("selected");
+            respostaSelecionada = button.dataset.id;
         }
 
         // Função para enviar resposta
         function enviarResposta() {
-            let resposta = null;
-
-            switch (exercicioAtual.tipo_exercicio) {
-                case 'multipla_escolha':
-                    resposta = respostaSelecionada;
-                    break;
-                case 'texto_livre':
-                    resposta = document.getElementById('respostaTexto').value.trim();
-                    break;
-                case 'fala':
-                    // Para exercícios de fala, a resposta será processada diferentemente
-                    resposta = 'fala_processada';
-                    break;
-            }
-
-            if (!resposta) {
-                alert('Por favor, selecione ou digite uma resposta.');
+            let respostaUsuario = null;
+            if (exercicioAtual.tipo_exercicio === "multipla_escolha") {
+                respostaUsuario = respostaSelecionada;
+            } else if (exercicioAtual.tipo_exercicio === "texto_livre") {
+                respostaUsuario = document.getElementById("respostaTextoLivre").value;
+            } else if (exercicioAtual.tipo_exercicio === "fala") {
+                // A resposta da fala será processada pela Web Speech API
+                // Por enquanto, apenas para demonstração
+                respostaUsuario = "resposta_fala_simulada"; 
+            } else if (exercicioAtual.tipo_exercicio === "especial") {
+                // Lógica de envio para exercícios especiais
+                // Isso pode ser mais complexo e envolver outro endpoint
+                alert("Funcionalidade de envio para exercícios especiais ainda não implementada.");
                 return;
             }
 
-            // Enviar resposta via AJAX
-            fetch('processar_exercicio.php', {
-                method: 'POST',
+            if (!respostaUsuario) {
+                alert("Por favor, selecione ou digite uma resposta.");
+                return;
+            }
+
+            // Enviar resposta para o backend
+            fetch(`admin/controller/processar_exercicio.php`, {
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json',
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
                     exercicio_id: exercicioAtual.id,
-                    resposta: resposta,
+                    resposta: respostaUsuario,
                     tipo_exercicio: exercicioAtual.tipo_exercicio
                 })
             })
             .then(response => response.json())
             .then(data => {
-                mostrarFeedback(data);
+                exibirFeedback(data);
+                document.getElementById("btnEnviarResposta").style.display = "none";
+                document.getElementById("btnProximoExercicio").style.display = "block";
             })
             .catch(error => {
-                console.error('Erro:', error);
-                alert('Erro ao processar resposta');
+                console.error("Erro ao enviar resposta:", error);
+                alert("Erro ao processar sua resposta.");
             });
         }
 
-        // Função para mostrar feedback
-        function mostrarFeedback(resultado) {
-            const feedbackContainer = document.getElementById('feedbackContainer');
-            const feedbackContent = document.getElementById('feedbackContent');
-            
-            if (resultado.correto) {
-                feedbackContainer.className = 'feedback-container feedback-success';
-                feedbackContent.innerHTML = `
-                    <i class="fas fa-check-circle me-2"></i>
-                    <strong>Correto!</strong> ${resultado.explicacao || 'Muito bem!'}
-                `;
-                
-                // Marcar resposta correta visualmente
-                if (exercicioAtual.tipo_exercicio === 'multipla_escolha') {
-                    document.querySelectorAll('.btn-resposta').forEach(btn => {
-                        if (btn.classList.contains('selected')) {
-                            btn.classList.add('correct');
+        // Função para exibir feedback
+        function exibirFeedback(data) {
+            const conteudoExercicioDiv = document.getElementById("conteudoExercicio");
+            let feedbackHtml = `
+                <div id="feedbackExercicio" class="feedback-container ${data.correto ? 'feedback-success' : 'feedback-error'}">
+                    <p class="mb-0"><strong>${data.correto ? 'Correto!' : 'Incorreto!'}</strong> ${data.explicacao}</p>
+                </div>
+            `;
+            conteudoExercicioDiv.insertAdjacentHTML('beforeend', feedbackHtml);
+
+            // Marcar a resposta correta/incorreta para múltipla escolha
+            if (exercicioAtual.tipo_exercicio === "multipla_escolha") {
+                document.querySelectorAll(".btn-resposta").forEach(btn => {
+                    btn.disabled = true; // Desabilita botões após resposta
+                    const altId = btn.dataset.id;
+                    
+                    // Parse do conteúdo para encontrar a alternativa correta
+                    let conteudo = {};
+                    try {
+                        conteudo = JSON.parse(exercicioAtual.conteudo);
+                    } catch (e) {
+                        console.error("Erro ao fazer parse do conteúdo:", e);
+                    }
+                    
+                    if (conteudo.alternativas) {
+                        const alternativaCorreta = conteudo.alternativas.find(alt => alt.correta);
+                        if (alternativaCorreta && altId === alternativaCorreta.id) {
+                            btn.classList.add("correct");
+                        } else if (btn.classList.contains("selected")) {
+                            btn.classList.add("incorrect");
                         }
-                    });
-                }
-                
-                // Mostrar botão próximo
-                document.getElementById('btnEnviarResposta').style.display = 'none';
-                document.getElementById('btnProximoExercicio').style.display = 'inline-block';
-                
-            } else {
-                feedbackContainer.className = 'feedback-container feedback-error';
-                feedbackContent.innerHTML = `
-                    <i class="fas fa-times-circle me-2"></i>
-                    <strong>Incorreto.</strong> ${resultado.explicacao || 'Tente novamente!'}
-                    ${resultado.dica ? `<br><small><i class="fas fa-lightbulb me-1"></i><strong>Dica:</strong> ${resultado.dica}</small>` : ''}
-                `;
-                
-                // Marcar resposta incorreta visualmente
-                if (exercicioAtual.tipo_exercicio === 'multipla_escolha') {
-                    document.querySelectorAll('.btn-resposta').forEach(btn => {
-                        if (btn.classList.contains('selected')) {
-                            btn.classList.add('incorrect');
-                        }
-                    });
-                }
+                    }
+                });
             }
-            
-            feedbackContainer.style.display = 'block';
         }
 
         // Função para ir para o próximo exercício
         function proximoExercicio() {
-            exibirExercicio(exercicioIndex + 1);
+            exercicioIndex++;
+            if (exercicioIndex < exerciciosLista.length) {
+                carregarExercicio(exercicioIndex);
+            } else {
+                alert("Atividade concluída!");
+                // Fechar modal de exercícios e talvez reabrir o de atividades
+                const modalExercicios = bootstrap.Modal.getInstance(document.getElementById("modalExercicios"));
+                if (modalExercicios) modalExercicios.hide();
+                // Opcional: recarregar atividades para atualizar progresso
+                // abrirAtividades(unidadeAtual, document.getElementById('tituloAtividades').textContent.split(': ')[1], document.getElementById('tituloAtividades').textContent.split(' ')[3].replace(':', ''));
+            }
         }
 
-        // Função para voltar para atividades
+        // Função para voltar para o modal de atividades
         function voltarParaAtividades() {
-            bootstrap.Modal.getInstance(document.getElementById('modalExercicios')).hide();
-            new bootstrap.Modal(document.getElementById('modalAtividades')).show();
+            const modalExercicios = bootstrap.Modal.getInstance(document.getElementById("modalExercicios"));
+            if (modalExercicios) modalExercicios.hide();
+            new bootstrap.Modal(document.getElementById("modalAtividades")).show();
         }
 
-        // Função para mostrar explicação teórica
-        function mostrarExplicacao(explicacao) {
-            alert(explicacao); // Implementação simples - pode ser melhorada com um modal dedicado
-        }
-
-        // Função para iniciar gravação (exercícios de fala)
+        // Funções para Exercício de Fala (simulação)
         function iniciarGravacao() {
-            const microfone = document.getElementById('microfoneIcon');
-            const btnGravar = document.getElementById('btnGravar');
-            const status = document.getElementById('statusGravacao');
-            
-            // Simular gravação (implementação real requereria Web Speech API)
-            microfone.className = 'fas fa-microphone fa-5x text-danger';
-            btnGravar.disabled = true;
-            btnGravar.innerHTML = '<i class="fas fa-stop me-2"></i>Gravando...';
-            status.innerHTML = '<div class="text-info"><i class="fas fa-circle text-danger me-2"></i>Ouvindo...</div>';
-            
-            // Simular processamento após 3 segundos
+            document.getElementById("statusGravacao").textContent = "Gravando...";
+            document.getElementById("microfoneIcon").classList.add("text-danger");
+            // Simular gravação e reconhecimento
             setTimeout(() => {
-                microfone.className = 'fas fa-microphone fa-5x text-success';
-                btnGravar.innerHTML = '<i class="fas fa-check me-2"></i>Gravação Concluída';
-                status.innerHTML = '<div class="text-success"><i class="fas fa-check-circle me-2"></i>Processamento concluído!</div>';
-                
-                // Simular resposta processada
-                respostaSelecionada = 'fala_processada';
-                
-                // Habilitar botão de enviar
+                document.getElementById("statusGravacao").textContent = "Processando...";
                 setTimeout(() => {
-                    document.getElementById('btnEnviarResposta').disabled = false;
-                }, 1000);
-            }, 3000);
+                    document.getElementById("statusGravacao").textContent = "Concluído!";
+                    document.getElementById("microfoneIcon").classList.remove("text-danger");
+                    // Aqui você chamaria enviarResposta() com o resultado real da fala
+                    // Para demonstração, vamos simular uma resposta correta
+                    exibirFeedback({ correto: true, explicacao: "Sua pronúncia está ótima!" });
+                    document.getElementById("btnEnviarResposta").style.display = "none";
+                    document.getElementById("btnProximoExercicio").style.display = "block";
+                }, 1500);
+            }, 2000);
         }
+
+        // Funções para Exercícios Especiais (simulação)
+        function carregarConteudoEspecial(conteudo) {
+            const conteudoEspecialDiv = document.getElementById("conteudoEspecial");
+            if (conteudo.tipo === "resumo") {
+                conteudoEspecialDiv.innerHTML = `<p>Conteúdo do resumo: ${conteudo.texto_resumo}</p>`;
+            } else if (conteudo.tipo === "cena_final") {
+                conteudoEspecialDiv.innerHTML = `<p>Cena final: ${conteudo.descricao_cena}</p>`;
+            }
+        }
+
+        // Funções para Explicações Teóricas (simulação)
+        function abrirTeoriaAtividade(atividadeId, tituloAtividade) {
+            alert(`Abrindo teoria para a atividade: ${tituloAtividade} (ID: ${atividadeId})`);
+            // Aqui você faria um fetch para admin/controller/explicacoes_teoricas.php
+            // e exibiria o conteúdo em um novo modal.
+        }
+
+        // Inicialização do modal de seleção de idioma se necessário
+        document.addEventListener('DOMContentLoaded', function() {
+            <?php if ($mostrar_selecao_idioma): ?>
+                var idiomaModal = new bootstrap.Modal(document.getElementById('idiomaModal'), {
+                    backdrop: 'static',
+                    keyboard: false
+                });
+                idiomaModal.show();
+            <?php endif; ?>
+        });
     </script>
+    <script src="../js/exercicio_fala.js"></script>
+    <script src="../js/exercicios_especiais.js"></script>
+    <script src="../js/explicacoes_teoricas.js"></script>
 </body>
 </html>
