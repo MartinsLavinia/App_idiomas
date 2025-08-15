@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leadership Factory</title>
     <style>
-       * {
+       style.css
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -19,18 +20,18 @@ body {
 }
 
 .container {
-    max-width: 400px;
+    max-width: 1200px; /* Aumentar para layout de PC */
     margin: auto;
     padding: 20px;
     background: #ffffff;
     min-height: 100vh;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr); /* 3 colunas */
     gap: 20px;
 }
 
 header.header {
-    grid-column: 1 / span 2;
+    grid-column: 1 / span 3; /* Ocupa todas as 3 colunas */
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -62,7 +63,7 @@ header.header {
 }
 
 .welcome-section {
-    grid-column: 1 / span 2;
+    grid-column: 1 / span 3; /* Ocupa todas as 3 colunas */
     text-align: center;
 }
 
@@ -73,10 +74,11 @@ header.header {
 }
 
 .stats-section {
-    grid-column: 1 / span 2;
+    grid-column: 1 / span 3; /* Ocupa todas as 3 colunas */
     display: flex;
     justify-content: space-around;
     text-align: center;
+    margin-bottom: 20px;
 }
 
 .stat-item {
@@ -105,28 +107,34 @@ header.header {
 }
 
 .leadership-path {
-    grid-column: 1 / span 2;
-    display: contents;
+    grid-column: 1 / span 3; /* Ocupa todas as 3 colunas */
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Sub-grid para os níveis */
+    gap: 20px;
+    position: relative;
 }
 
 .level {
     position: relative;
-  display: flex;
-  align-items: center;
-  margin: 40px 0; /* espaço entre os níveis */
+    display: flex;
+    align-items: center;
+    margin: 40px 0; /* espaço entre os níveis */
+    flex-direction: column; /* Para alinhar verticalmente em cada coluna */
+    text-align: center;
 }
 
 .level-circle {
-    width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2; /* garante que fique acima da linha */
-  border: 2px solid #333;
-  font-size: 24px;
+    width: 70px; /* Aumentar tamanho para PC */
+    height: 70px; /* Aumentar tamanho para PC */
+    border-radius: 50%;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2; /* garante que fique acima da linha */
+    border: 2px solid #333;
+    font-size: 30px; /* Aumentar tamanho do ícone */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .commitment {
@@ -142,17 +150,17 @@ header.header {
 }
 
 .level-info {
-    margin-left: 20px;
+    margin-top: 10px; /* Espaço entre círculo e info */
 }
 
 .level-number {
-    font-size: 12px;
+    font-size: 14px;
     color: #999;
     margin-bottom: 2px;
 }
 
 .level-name {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 600;
     color: #333;
     margin-bottom: 8px;
@@ -164,6 +172,7 @@ header.header {
     border-radius: 4px;
     margin-top: 5px;
     overflow: hidden;
+    width: 100px; /* Ajustar largura da barra de progresso */
 }
 
 .progress-fill {
@@ -190,6 +199,60 @@ header.header {
     font-weight: 500;
 }
 
+/* Linha tracejada conectando os níveis em zigue-zague */
+.leadership-path::before {
+    content: 
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        /* Linha horizontal tracejada do nível 1 para 2 */
+        repeating-linear-gradient(90deg, transparent 0%, transparent 5px, #ccc 5px, #ccc 10px),
+        /* Linha horizontal tracejada do nível 2 para 3 */
+        repeating-linear-gradient(90deg, transparent 0%, transparent 5px, #ccc 5px, #ccc 10px),
+        /* Linha horizontal tracejada do nível 4 para 5 */
+        repeating-linear-gradient(90deg, transparent 0%, transparent 5px, #ccc 5px, #ccc 10px),
+        /* Linha horizontal tracejada do nível 5 para 6 */
+        repeating-linear-gradient(90deg, transparent 0%, transparent 5px, #ccc 5px, #ccc 10px),
+        /* Linha horizontal tracejada do nível 7 para 8 */
+        repeating-linear-gradient(90deg, transparent 0%, transparent 5px, #ccc 5px, #ccc 10px),
+        /* Linha horizontal tracejada do nível 8 para 9 */
+        repeating-linear-gradient(90deg, transparent 0%, transparent 5px, #ccc 5px, #ccc 10px),
+    background-size: 
+        66.66% 2px,  /* Linha 1-2: da coluna 1 até coluna 2 */
+        33.33% 2px,  /* Linha 2-3: da coluna 2 até coluna 3 */
+        66.66% 2px,  /* Linha 4-5: da coluna 1 até coluna 2 */
+        33.33% 2px,  /* Linha 5-6: da coluna 2 até coluna 3 */
+        66.66% 2px,  /* Linha 7-8: da coluna 1 até coluna 2 */
+        33.33% 2px,  /* Linha 8-9: da coluna 2 até coluna 3 */
+    background-position: 
+        calc(33.33% - 35px) 105px,  /* Posição da linha 1-2 */
+        calc(66.66% - 35px) 105px,  /* Posição da linha 2-3 */
+        calc(33.33% - 35px) 285px,  /* Posição da linha 4-5 */
+        calc(66.66% - 35px) 285px,  /* Posição da linha 5-6 */
+        calc(33.33% - 35px) 465px,  /* Posição da linha 7-8 */
+        calc(66.66% - 35px) 465px,  /* Posição da linha 8-9 */
+    background-repeat: no-repeat;
+    z-index: 0;
+}
+
+/* Linhas horizontais entre níveis na mesma linha */
+.level:not(:nth-child(3n)):not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 50%; 
+  left: 50%;
+  transform: translateY(-50%);
+  width: 100%; /* até o próximo círculo */
+  height: 2px;
+  border-top: 2px dashed #ccc;
+  z-index: 1;
+}
+
+
+
 .image-placeholder {
     border-radius: 15px;
     height: 100px;
@@ -200,16 +263,55 @@ header.header {
     color: #555;
 }
 
-/* Linha tracejada vertical */
-.level:not(:last-child)::after {
-  content: "";
-  position: absolute;
-  left: 25px; /* metade do círculo */
-  top: 50px; /* começa na base do círculo */
-  width: 2px;
-  height: calc(100% + 40px); /* 100% do container + margin */
-  border-left: 2px dashed #333;
-  z-index: 1; /* atrás dos círculos */
+/* Media Queries para responsividade */
+@media (max-width: 768px) {
+    .container {
+        grid-template-columns: 1fr; /* Uma coluna em telas menores */
+        max-width: 400px;
+    }
+
+    header.header,
+    .welcome-section,
+    .stats-section,
+    .leadership-path {
+        grid-column: 1 / span 1;
+    }
+
+    .leadership-path {
+        grid-template-columns: 1fr; /* Uma coluna para os níveis em telas menores */
+    }
+
+    .level {
+        flex-direction: row;
+        text-align: left;
+        margin: 20px 0;
+    }
+
+    .level-circle {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+    }
+
+    .level-info {
+        margin-left: 15px;
+        margin-top: 0;
+    }
+
+    .progress-bar {
+        width: 80px;
+    }
+
+    .level:not(:last-child)::after {
+        left: 25px;
+        top: 50px;
+        height: calc(100% + 20px);
+    }
+
+    .level:nth-child(odd)::before,
+    .level:nth-child(even)::before {
+        display: none; /* Remover linhas horizontais em mobile */
+    }
 }
 
 
@@ -219,59 +321,62 @@ header.header {
 </head>
 <body>
     <div class="container">
-    <!-- Header -->
-    <header class="header">
-        <div class="profile-section">
-            <img src="https://via.placeholder.com/50x50/E8E8E8/999999?text=👤" alt="Profile" class="profile-image">
-            <h1 class="app-title">Leadership Factory</h1>
+        <!-- Header -->
+        <header class="header">
+            <div class="profile-section">
+                <img src="https://via.placeholder.com/50x50/E8E8E8/999999?text=👤" alt="Profile" class="profile-image">
+                <h1 class="app-title">Leadership Factory</h1>
+            </div>
+            <div class="notification-icon">
+                <span class="bell-icon">🔔</span>
+            </div>
+        </header>
+
+        <!-- Welcome -->
+        <div class="welcome-section">
+            <p class="welcome-text">Morning Salma, You finished</p>
         </div>
-        <div class="notification-icon">
-            <span class="bell-icon">🔔</span>
+
+        <!-- Stats -->
+        <div class="stats-section">
+            <div class="stat-item"><div>⛰️</div><div>15</div><div>Missions</div></div>
+            <div class="stat-item"><div>⏱️</div><div>4</div><div>Hours</div></div>
+            <div class="stat-item"><div>🏆</div><div>3</div><div>Badges</div></div>
         </div>
-    </header>
 
-    <!-- Welcome -->
-    <div class="welcome-section">
-        <p class="welcome-text">Morning Salma, You finished</p>
+  <!-- Leadership Path -->
+        <div class="leadership-path">
+            <!-- Linha 1 -->
+            <div class="level"><div class="level-circle commitment">💡</div><div class="level-info"><div>Level 1</div><div>Commitment</div></div></div>
+
+            <!-- Linha 2 -->
+            <div class="level"><div class="level-circle trust">📊</div><div class="level-info"><div>Level 2</div><div>Trust</div></div></div>
+
+            <!-- Linha 3 -->
+            <div class="level"><div class="level-circle execution">👑</div><div class="level-info"><div>Level 3</div><div>Execution</div></div></div>
+
+            <!-- Linha 4 -->
+            <div class="level"><div class="level-circle commitment">🚀</div><div class="level-info"><div>Level 4</div><div>Initiative</div></div></div>
+
+            <!-- Linha 5 -->
+            <div class="level"><div class="level-circle trust">🛡️</div><div class="level-info"><div>Level 5</div><div>Reliability</div></div></div>
+
+            <!-- Linha 6 -->
+            <div class="level"><div class="level-circle execution">🎯</div><div class="level-info"><div>Level 6</div><div>Focus</div></div></div>
+
+            <!-- Linha 7 -->
+            <div class="level"><div class="level-circle commitment">📈</div><div class="level-info"><div>Level 7</div><div>Growth</div></div></div>
+
+            <!-- Linha 8 -->
+            <div class="level"><div class="level-circle trust">💬</div><div class="level-info"><div>Level 8</div><div>Communication</div></div></div>
+
+            <!-- Linha 9 -->
+            <div class="level"><div class="level-circle execution">🤝</div><div class="level-info"><div>Level 9</div><div>Collaboration</div></div></div>
+
+            <!-- Linha 10 -->
+            <div class="level"><div class="level-circle commitment">🌟</div><div class="level-info"><div>Level 10</div><div>Leadership</div></div></div>
+            
+        </div>
     </div>
-
-    <!-- Stats -->
-    <div class="stats-section">
-        <div class="stat-item"><div>⛰️</div><div>15</div><div>Missions</div></div>
-        <div class="stat-item"><div>⏱️</div><div>4</div><div>Hours</div></div>
-        <div class="stat-item"><div>🏆</div><div>3</div><div>Badges</div></div>
-    </div>
-
-    <!-- 10 níveis -->
-    <!-- Linha 1 -->
-    <div class="level"><div class="level-circle commitment">💡</div><div class="level-info"><div>Level 1</div><div>Commitment</div></div></div>
-
-    <!-- Linha 2 -->
-    <div class="level"><div class="level-circle trust">📊</div><div class="level-info"><div>Level 2</div><div>Trust</div></div></div>
-
-    <!-- Linha 3 -->
-    <div class="level"><div class="level-circle execution">👑</div><div class="level-info"><div>Level 3</div><div>Execution</div></div></div>
-
-    <!-- Linha 4 -->
-    <div class="level"><div class="level-circle commitment">🚀</div><div class="level-info"><div>Level 4</div><div>Initiative</div></div></div>
-
-    <!-- Linha 5 -->
-    <div class="level"><div class="level-circle trust">🛡️</div><div class="level-info"><div>Level 5</div><div>Reliability</div></div></div>
-
-    <!-- Linha 6 -->
-    <!-- <div class="image-placeholder"><img src="linhasteste.png" alt="linha curva da jornada"></div> -->
-    <div class="level"><div class="level-circle execution">🎯</div><div class="level-info"><div>Level 6</div><div>Focus</div></div></div>
-
-    <!-- Linha 7 -->
-    <div class="level"><div class="level-circle commitment">📈</div><div class="level-info"><div>Level 7</div><div>Growth</div></div></div>
-    <!-- Linha 8 -->
-    <div class="level"><div class="level-circle trust">💬</div><div class="level-info"><div>Level 8</div><div>Communication</div></div></div>
-
-    <!-- Linha 9 -->
-    <div class="level"><div class="level-circle execution">🤝</div><div class="level-info"><div>Level 9</div><div>Collaboration</div></div></div>
-
-    <!-- Linha 10 -->
-    <div class="level"><div class="level-circle commitment">🌟</div><div class="level-info"><div>Level 10</div><div>Leadership</div></div></div>
-</div>
 </body>
 </html>
