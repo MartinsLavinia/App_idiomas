@@ -469,7 +469,9 @@ $database->closeConnection();
                 }
             } else if (exercicioAtual.tipo_exercicio === "texto_livre") {
                 htmlConteudo += `
-                    <textarea id="respostaTextoLivre" class="form-control" rows="4" placeholder="Digite sua resposta aqui..."></textarea>
+                    <div class="mb-3">
+                        <textarea id="respostaTextoLivre" class="form-control" rows="4" placeholder="Digite sua resposta aqui..." style="width: 100%; min-height: 100px;"></textarea>
+                    </div>
                 `;
             } else if (exercicioAtual.tipo_exercicio === "fala") {
                 htmlConteudo += `
@@ -512,7 +514,12 @@ $database->closeConnection();
             if (exercicioAtual.tipo_exercicio === "multipla_escolha") {
                 respostaUsuario = respostaSelecionada;
             } else if (exercicioAtual.tipo_exercicio === "texto_livre") {
-                respostaUsuario = document.getElementById("respostaTextoLivre").value;
+                const textarea = document.getElementById("respostaTextoLivre");
+                if (!textarea) {
+                    alert("Campo de resposta não encontrado!");
+                    return;
+                }
+                respostaUsuario = textarea.value.trim();
             } else if (exercicioAtual.tipo_exercicio === "fala") {
                 // A resposta da fala será processada pela Web Speech API
                 // Por enquanto, apenas para demonstração
