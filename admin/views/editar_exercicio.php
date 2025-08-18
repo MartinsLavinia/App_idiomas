@@ -24,16 +24,63 @@ $conn = $database->conn;
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $ordem = $_POST['ordem'];
     $tipo = $_POST['tipo'];
+    $tipo_exercicio = $_POST['tipo_exercicio'] ?? 'multipla_escolha';
     $pergunta = $_POST['pergunta'];
     $conteudo = null;
 
     // Constrói o conteúdo JSON com base no tipo de exercício
     switch ($tipo) {
         case 'normal':
-            $conteudo = json_encode([
-                'alternativas' => explode(',', $_POST['alternativas']),
-                'resposta_correta' => $_POST['resposta_correta']
-            ]);
+            if ($tipo_exercicio === 'multipla_escolha') {
+                if (!empty($_POST['alt_texto'])) {
+                    $alternativas = [];
+                    foreach ($_POST['alt_texto'] as $index => $texto) {
+                        if (!empty($texto)) {
+                            $alternativas[] = [
+                                'id' => chr(97 + $index),
+                                'texto' => $texto,
+                                'correta' => ($index == $_POST['alt_correta'])
+                            ];
+                        }
+                    }
+                    $conteudo = json_encode([
+                        'alternativas' => $alternativas,
+                        'explicacao' => $_POST['explicacao'] ?? ''
+                    ]);
+                } else {
+                    // Fallback para formato antigo
+                    $conteudo = json_encode([
+                        'alternativas' => explode(',', $_POST['alternativas']),
+                        'resposta_correta' => $_POST['resposta_correta']
+                    ]);
+                }
+            } elseif ($tipo_exercicio === 'texto_livre') {
+                $alternativas_aceitas = !empty($_POST['alternativas_aceitas']) ? 
+                    array_map('trim', explode(',', $_POST['alternativas_aceitas'])) : 
+                    [$_POST['resposta_esperada']];
+                $conteudo = json_encode([
+                    'resposta_correta' => $_POST['resposta_esperada'],
+                    'alternativas_aceitas' => $alternativas_aceitas,
+                    'dica' => $_POST['dica_texto'] ?? ''
+                ]);
+            } elseif ($tipo_exercicio === 'fala') {
+                $palavras_chave = !empty($_POST['palavras_chave']) ? 
+                    array_map('trim', explode(',', $_POST['palavras_chave'])) : 
+                    [];
+                $conteudo = json_encode([
+                    'frase_esperada' => $_POST['frase_esperada'],
+                    'pronuncia_fonetica' => $_POST['pronuncia_fonetica'] ?? '',
+                    'palavras_chave' => $palavras_chave,
+                    'tolerancia_erro' => 0.8
+                ]);
+            } elseif ($tipo_exercicio === 'audicao') {
+                $conteudo = json_encode([
+                    'audio_url' => $_POST['audio_url'],
+                    'transcricao' => $_POST['transcricao'],
+                    'pergunta_audio' => $_POST['pergunta_audio'],
+                    'resposta_correta' => $_POST['resposta_audio_correta']
+                ]);
+            }
             break;
         case 'especial':
             $conteudo = json_encode([
@@ -119,6 +166,16 @@ $database->closeConnection();
                             <option value="quiz" <?php if ($exercicio['tipo'] == 'quiz') echo 'selected'; ?>>Quiz (ID de um quiz)</option>
                         </select>
                     </div>
+                    
+                    <div class="mb-3">
+                        <label for="tipo_exercicio" class="form-label">Subtipo do Exercício</label>
+                        <select class="form-select" id="tipo_exercicio" name="tipo_exercicio" required>
+                            <option value="multipla_escolha">Múltipla Escolha</option>
+                            <option value="texto_livre">Texto Livre (Completar)</option>
+                            <option value="fala">Exercício de Fala</option>
+                            <option value="audicao" <?php echo (isset($exercicio['tipo_exercicio']) && $exercicio['tipo_exercicio'] == 'audicao') ? 'selected' : ''; ?>>Exercício de Audição</option>
+                        </select>
+                    </div>
                     <div class="mb-3">
                         <label for="pergunta" class="form-label">Pergunta</label>
                         <textarea class="form-control" id="pergunta" name="pergunta" required><?php echo htmlspecialchars($exercicio['pergunta']); ?></textarea>
@@ -126,13 +183,72 @@ $database->closeConnection();
                     
                     <div id="conteudo-campos">
                         <div id="campos-normal" style="display: none;">
-                            <div class="mb-3">
-                                <label for="alternativas" class="form-label">Alternativas (separadas por vírgula)</label>
-                                <input type="text" class="form-control" id="alternativas" name="alternativas" value="<?php echo isset($conteudo_array['alternativas']) ? htmlspecialchars(implode(',', $conteudo_array['alternativas'])) : ''; ?>">
+                            <!-- Campos para Múltipla Escolha -->
+                            <div id="campos-multipla" class="subtipo-campos">
+                                <h5>Múltipla Escolha</h5>
+                                <div class="mb-3">
+                                    <label for="alternativas" class="form-label">Alternativas (formato antigo)</label>
+                                    <input type="text" class="form-control" id="alternativas" name="alternativas" value="<?php echo isset($conteudo_array['alternativas']) && is_array($conteudo_array['alternativas']) ? htmlspecialchars(implode(',', $conteudo_array['alternativas'])) : ''; ?>">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="resposta_correta" class="form-label">Resposta Correta</label>
+                                    <input type="text" class="form-control" id="resposta_correta" name="resposta_correta" value="<?php echo isset($conteudo_array['resposta_correta']) ? htmlspecialchars($conteudo_array['resposta_correta']) : ''; ?>">
+                                </div>
                             </div>
-                            <div class="mb-3">
-                                <label for="resposta_correta" class="form-label">Resposta Correta</label>
-                                <input type="text" class="form-control" id="resposta_correta" name="resposta_correta" value="<?php echo isset($conteudo_array['resposta_correta']) ? htmlspecialchars($conteudo_array['resposta_correta']) : ''; ?>">
+                            
+                            <!-- Campos para Texto Livre -->
+                            <div id="campos-texto" class="subtipo-campos" style="display: none;">
+                                <h5>Texto Livre</h5>
+                                <div class="mb-3">
+                                    <label for="resposta_esperada" class="form-label">Resposta Esperada</label>
+                                    <input type="text" class="form-control" id="resposta_esperada" name="resposta_esperada" value="<?php echo isset($conteudo_array['resposta_correta']) ? htmlspecialchars($conteudo_array['resposta_correta']) : ''; ?>">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="alternativas_aceitas" class="form-label">Alternativas Aceitas</label>
+                                    <input type="text" class="form-control" id="alternativas_aceitas" name="alternativas_aceitas" value="<?php echo isset($conteudo_array['alternativas_aceitas']) ? htmlspecialchars(implode(',', $conteudo_array['alternativas_aceitas'])) : ''; ?>">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dica_texto" class="form-label">Dica</label>
+                                    <textarea class="form-control" id="dica_texto" name="dica_texto"><?php echo isset($conteudo_array['dica']) ? htmlspecialchars($conteudo_array['dica']) : ''; ?></textarea>
+                                </div>
+                            </div>
+                            
+                            <!-- Campos para Fala -->
+                            <div id="campos-fala" class="subtipo-campos" style="display: none;">
+                                <h5>Exercício de Fala</h5>
+                                <div class="mb-3">
+                                    <label for="frase_esperada" class="form-label">Frase para Pronunciar</label>
+                                    <input type="text" class="form-control" id="frase_esperada" name="frase_esperada" value="<?php echo isset($conteudo_array['frase_esperada']) ? htmlspecialchars($conteudo_array['frase_esperada']) : ''; ?>">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="pronuncia_fonetica" class="form-label">Pronúncia Fonética</label>
+                                    <input type="text" class="form-control" id="pronuncia_fonetica" name="pronuncia_fonetica" value="<?php echo isset($conteudo_array['pronuncia_fonetica']) ? htmlspecialchars($conteudo_array['pronuncia_fonetica']) : ''; ?>">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="palavras_chave" class="form-label">Palavras-chave</label>
+                                    <input type="text" class="form-control" id="palavras_chave" name="palavras_chave" value="<?php echo isset($conteudo_array['palavras_chave']) ? htmlspecialchars(implode(',', $conteudo_array['palavras_chave'])) : ''; ?>">
+                                </div>
+                            </div>
+                            
+                            <!-- Campos para Áudio -->
+                            <div id="campos-audicao" class="subtipo-campos" style="display: none;">
+                                <h5>Exercício de Audição</h5>
+                                <div class="mb-3">
+                                    <label for="audio_url" class="form-label">URL do Áudio</label>
+                                    <input type="url" class="form-control" id="audio_url" name="audio_url" value="<?php echo isset($conteudo_array['audio_url']) ? htmlspecialchars($conteudo_array['audio_url']) : ''; ?>" placeholder="https://exemplo.com/audio.mp3">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="transcricao" class="form-label">Transcrição do Áudio</label>
+                                    <textarea class="form-control" id="transcricao" name="transcricao" placeholder="Texto que é falado no áudio"><?php echo isset($conteudo_array['transcricao']) ? htmlspecialchars($conteudo_array['transcricao']) : ''; ?></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="pergunta_audio" class="form-label">Pergunta sobre o Áudio</label>
+                                    <input type="text" class="form-control" id="pergunta_audio" name="pergunta_audio" value="<?php echo isset($conteudo_array['pergunta_audio']) ? htmlspecialchars($conteudo_array['pergunta_audio']) : ''; ?>" placeholder="O que a pessoa disse?">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="resposta_audio_correta" class="form-label">Resposta Correta</label>
+                                    <input type="text" class="form-control" id="resposta_audio_correta" name="resposta_audio_correta" value="<?php echo isset($conteudo_array['resposta_correta']) ? htmlspecialchars($conteudo_array['resposta_correta']) : ''; ?>">
+                                </div>
                             </div>
                         </div>
 
@@ -164,35 +280,62 @@ $database->closeConnection();
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         const tipoSelect = document.getElementById('tipo');
+        const tipoExercicioSelect = document.getElementById('tipo_exercicio');
         const camposNormal = document.getElementById('campos-normal');
         const camposEspecial = document.getElementById('campos-especial');
         const camposQuiz = document.getElementById('campos-quiz');
         
-        function mostrarCampos(tipo) {
+        const camposMultipla = document.getElementById('campos-multipla');
+        const camposTexto = document.getElementById('campos-texto');
+        const camposFala = document.getElementById('campos-fala');
+        const camposAudicao = document.getElementById('campos-audicao');
+        
+        // Definir tipo_exercicio baseado no conteúdo existente
+        tipoExercicioSelect.value = 'multipla_escolha';
+        
+        function mostrarCampos() {
+            // Esconder todos os campos principais
             camposNormal.style.display = 'none';
             camposEspecial.style.display = 'none';
             camposQuiz.style.display = 'none';
             
-            switch (tipo) {
-                case 'normal':
-                    camposNormal.style.display = 'block';
-                    break;
-                case 'especial':
-                    camposEspecial.style.display = 'block';
-                    break;
-                case 'quiz':
-                    camposQuiz.style.display = 'block';
-                    break;
+            // Esconder todos os subcampos
+            camposMultipla.style.display = 'none';
+            camposTexto.style.display = 'none';
+            camposFala.style.display = 'none';
+            camposAudicao.style.display = 'none';
+
+            if (tipoSelect.value === 'normal') {
+                camposNormal.style.display = 'block';
+                
+                // Mostrar subcampo baseado no tipo de exercício
+                switch (tipoExercicioSelect.value) {
+                    case 'multipla_escolha':
+                        camposMultipla.style.display = 'block';
+                        break;
+                    case 'texto_livre':
+                        camposTexto.style.display = 'block';
+                        break;
+                    case 'fala':
+                        camposFala.style.display = 'block';
+                        break;
+                    case 'audicao':
+                        camposAudicao.style.display = 'block';
+                        break;
+                }
+            } else if (tipoSelect.value === 'especial') {
+                camposEspecial.style.display = 'block';
+            } else if (tipoSelect.value === 'quiz') {
+                camposQuiz.style.display = 'block';
             }
         }
         
-        // Inicializa os campos com o tipo atual do exercício
-        mostrarCampos(tipoSelect.value);
+        // Inicializar
+        mostrarCampos();
 
-        // Adiciona um listener para mudanças
-        tipoSelect.addEventListener('change', function() {
-            mostrarCampos(this.value);
-        });
+        // Listeners
+        tipoSelect.addEventListener('change', mostrarCampos);
+        tipoExercicioSelect.addEventListener('change', mostrarCampos);
     });
     </script>
 </body>

@@ -4,6 +4,10 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
+}
+
 session_start();
 include_once __DIR__ . '/../../conexao.php';
 
@@ -26,107 +30,101 @@ try {
     $database = new Database();
     $conn = $database->conn;
 
-    // Buscar atividades da unidade com progresso do usuário
-    $sql = "
+    // Buscar informações da unidade
+    $sql_unidade = "SELECT idioma, nivel FROM unidades WHERE id = ?";
+    $stmt_unidade = $conn->prepare($sql_unidade);
+    $stmt_unidade->bind_param("i", $unidade_id);
+    $stmt_unidade->execute();
+    $unidade_info = $stmt_unidade->get_result()->fetch_assoc();
+    $stmt_unidade->close();
+
+    if (!$unidade_info) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Unidade não encontrada'
+        ]);
+        exit();
+    }
+
+    // Buscar caminhos de aprendizagem para esta unidade
+    $sql_caminhos = "
         SELECT 
-            a.id,
-            a.nome,
-            a.descricao,
-            a.icone,
-            a.tipo,
-            a.ordem,
-            a.explicacao_teorica,
-            COUNT(e.id) as total_exercicios,
-            COUNT(pd.id) as exercicios_concluidos,
+            c.id,
+            c.nome_caminho as nome,
+            CONCAT('Atividade de ', c.nome_caminho) as descricao,
             CASE 
-                WHEN COUNT(e.id) > 0 THEN ROUND((COUNT(pd.id) / COUNT(e.id)) * 100, 2)
-                ELSE 0 
-            END as progresso
-        FROM atividades a
-        LEFT JOIN exercicios e ON a.id = e.atividade_id
-        LEFT JOIN progresso_detalhado pd ON e.id = pd.exercicio_id AND pd.id_usuario = ?
-        WHERE a.unidade_id = ?
-        GROUP BY a.id, a.nome, a.descricao, a.icone, a.tipo, a.ordem, a.explicacao_teorica
-        ORDER BY a.ordem ASC
+                WHEN c.nome_caminho LIKE '%Comida%' THEN 'fa-utensils'
+                WHEN c.nome_caminho LIKE '%Sauda%' THEN 'fa-hand-wave'
+                WHEN c.nome_caminho LIKE '%Rotina%' THEN 'fa-clock'
+                ELSE 'fa-graduation-cap'
+            END as icone,
+            'geral' as tipo,
+            c.id as ordem,
+            '' as explicacao_teorica,
+            COUNT(e.id) as total_exercicios,
+            0 as exercicios_concluidos,
+            0 as progresso
+        FROM caminhos_aprendizagem c
+        LEFT JOIN exercicios e ON c.id = e.caminho_id
+        WHERE c.idioma = ? AND c.nivel = ?
+        GROUP BY c.id, c.nome_caminho
+        ORDER BY c.id
     ";
 
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ii", $id_usuario, $unidade_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $stmt_caminhos = $conn->prepare($sql_caminhos);
+    $stmt_caminhos->bind_param("ss", $unidade_info['idioma'], $unidade_info['nivel']);
+    $stmt_caminhos->execute();
+    $result_caminhos = $stmt_caminhos->get_result();
     
     $atividades = [];
-    while ($row = $result->fetch_assoc()) {
+    while ($row = $result_caminhos->fetch_assoc()) {
         $atividades[] = $row;
     }
     
-    $stmt->close();
-    $database->closeConnection();
-
-    // Se não encontrou atividades na nova estrutura, buscar nos caminhos antigos
+    $stmt_caminhos->close();
+    
+    // Se não encontrou atividades, criar atividades padrão
     if (empty($atividades)) {
-        $database = new Database();
-        $conn = $database->conn;
-
-        // Buscar informações da unidade
-        $sql_unidade = "SELECT idioma, nivel FROM unidades WHERE id = ?";
-        $stmt_unidade = $conn->prepare($sql_unidade);
-        $stmt_unidade->bind_param("i", $unidade_id);
-        $stmt_unidade->execute();
-        $unidade_info = $stmt_unidade->get_result()->fetch_assoc();
-        $stmt_unidade->close();
-
-        if ($unidade_info) {
-            // Buscar caminhos de aprendizagem compatíveis
-            $sql_caminhos = "
-                SELECT 
-                    c.id,
-                    c.nome_caminho as nome,
-                    CONCAT('Atividade de ', c.nome_caminho) as descricao,
-                    CASE 
-                        WHEN c.nome_caminho LIKE '%Conversação%' OR c.nome_caminho LIKE '%Conversa%' THEN 'fa-comments'
-                        WHEN c.nome_caminho LIKE '%Vocabulário%' OR c.nome_caminho LIKE '%Vocab%' THEN 'fa-book'
-                        WHEN c.nome_caminho LIKE '%Pronúncia%' OR c.nome_caminho LIKE '%Pronun%' THEN 'fa-microphone'
-                        WHEN c.nome_caminho LIKE '%Escrita%' OR c.nome_caminho LIKE '%Escrev%' THEN 'fa-pen'
-                        WHEN c.nome_caminho LIKE '%Audição%' OR c.nome_caminho LIKE '%Audio%' OR c.nome_caminho LIKE '%Escuta%' THEN 'fa-headphones'
-                        ELSE 'fa-graduation-cap'
-                    END as icone,
-                    CASE 
-                        WHEN c.nome_caminho LIKE '%Conversação%' OR c.nome_caminho LIKE '%Conversa%' THEN 'conversacao'
-                        WHEN c.nome_caminho LIKE '%Vocabulário%' OR c.nome_caminho LIKE '%Vocab%' THEN 'vocabulario'
-                        WHEN c.nome_caminho LIKE '%Pronúncia%' OR c.nome_caminho LIKE '%Pronun%' THEN 'pronuncia'
-                        WHEN c.nome_caminho LIKE '%Escrita%' OR c.nome_caminho LIKE '%Escrev%' THEN 'escrita'
-                        WHEN c.nome_caminho LIKE '%Audição%' OR c.nome_caminho LIKE '%Audio%' OR c.nome_caminho LIKE '%Escuta%' THEN 'audicao'
-                        ELSE 'gramatica'
-                    END as tipo,
-                    ROW_NUMBER() OVER (ORDER BY c.id) as ordem,
-                    NULL as explicacao_teorica,
-                    COUNT(e.id) as total_exercicios,
-                    0 as exercicios_concluidos,
-                    0 as progresso
-                FROM caminhos_aprendizagem c
-                LEFT JOIN exercicios e ON c.id = e.caminho_id
-                WHERE c.idioma = ? AND c.nivel = ?
-                GROUP BY c.id, c.nome_caminho
-                ORDER BY c.id
-            ";
-
-            $stmt_caminhos = $conn->prepare($sql_caminhos);
-            $stmt_caminhos->bind_param("ss", $unidade_info['idioma'], $unidade_info['nivel']);
-            $stmt_caminhos->execute();
-            $result_caminhos = $stmt_caminhos->get_result();
-            
-            while ($row = $result_caminhos->fetch_assoc()) {
-                // Usar ID negativo para diferenciar de atividades reais
-                $row['id'] = -$row['id'];
-                $atividades[] = $row;
-            }
-            
-            $stmt_caminhos->close();
-        }
-        
-        $database->closeConnection();
+        $atividades = [
+            [
+                'id' => 1,
+                'nome' => 'Vocabulário Básico',
+                'descricao' => 'Aprenda palavras essenciais',
+                'icone' => 'fa-book',
+                'tipo' => 'vocabulario',
+                'ordem' => 1,
+                'explicacao_teorica' => '',
+                'total_exercicios' => 5,
+                'exercicios_concluidos' => 0,
+                'progresso' => 0
+            ],
+            [
+                'id' => 2,
+                'nome' => 'Conversação',
+                'descricao' => 'Pratique diálogos básicos',
+                'icone' => 'fa-comments',
+                'tipo' => 'conversacao',
+                'ordem' => 2,
+                'explicacao_teorica' => '',
+                'total_exercicios' => 3,
+                'exercicios_concluidos' => 0,
+                'progresso' => 0
+            ],
+            [
+                'id' => 3,
+                'nome' => 'Gramática',
+                'descricao' => 'Estude regras básicas',
+                'icone' => 'fa-graduation-cap',
+                'tipo' => 'gramatica',
+                'ordem' => 3,
+                'explicacao_teorica' => '',
+                'total_exercicios' => 4,
+                'exercicios_concluidos' => 0,
+                'progresso' => 0
+            ]
+        ];
     }
+    $database->closeConnection();
 
     echo json_encode([
         'success' => true,
@@ -136,7 +134,7 @@ try {
 } catch (Exception $e) {
     echo json_encode([
         'success' => false,
-        'message' => 'Erro interno do servidor: ' . $e->getMessage()
+        'message' => 'Erro: ' . $e->getMessage()
     ]);
 }
 ?>

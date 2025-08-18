@@ -213,7 +213,7 @@ $database->closeConnection();
                 <span class="navbar-text text-white me-3">
                     Bem-vindo, <?php echo htmlspecialchars($nome_usuario); ?>!
                 </span>
-                <a href="logout.php" class="btn btn-outline-light">Sair</a>
+                <a href="//logout.php" class="btn btn-outline-light">Sair</a>
             </div>
         </div>
     </nav>
@@ -359,7 +359,7 @@ $database->closeConnection();
             document.getElementById("tituloAtividades").textContent = `Atividades da Unidade ${numeroUnidade}: ${tituloUnidade}`;
             
             // Carregar atividades via AJAX
-            fetch(`admin/controller/get_atividades.php?unidade_id=${unidadeId}`)
+            fetch(`../../admin/controller/get_atividades.php?unidade_id=${unidadeId}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -410,7 +410,7 @@ $database->closeConnection();
             document.getElementById("tituloExercicios").textContent = `Exercícios: ${tituloAtividade}`;
             
             // Carregar exercícios via AJAX
-            fetch(`admin/controller/get_exercicio.php?atividade_id=${atividadeId}`)
+            fetch(`../../admin/controller/get_exercicio.php?atividade_id=${atividadeId}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -469,7 +469,9 @@ $database->closeConnection();
                 }
             } else if (exercicioAtual.tipo_exercicio === "texto_livre") {
                 htmlConteudo += `
-                    <textarea id="respostaTextoLivre" class="form-control" rows="4" placeholder="Digite sua resposta aqui..."></textarea>
+                    <div class="mb-3">
+                        <textarea id="respostaTextoLivre" class="form-control" rows="4" placeholder="Digite sua resposta aqui..." style="width: 100%; min-height: 100px;"></textarea>
+                    </div>
                 `;
             } else if (exercicioAtual.tipo_exercicio === "fala") {
                 htmlConteudo += `
@@ -512,7 +514,12 @@ $database->closeConnection();
             if (exercicioAtual.tipo_exercicio === "multipla_escolha") {
                 respostaUsuario = respostaSelecionada;
             } else if (exercicioAtual.tipo_exercicio === "texto_livre") {
-                respostaUsuario = document.getElementById("respostaTextoLivre").value;
+                const textarea = document.getElementById("respostaTextoLivre");
+                if (!textarea) {
+                    alert("Campo de resposta não encontrado!");
+                    return;
+                }
+                respostaUsuario = textarea.value.trim();
             } else if (exercicioAtual.tipo_exercicio === "fala") {
                 // A resposta da fala será processada pela Web Speech API
                 // Por enquanto, apenas para demonstração
@@ -530,7 +537,7 @@ $database->closeConnection();
             }
 
             // Enviar resposta para o backend
-            fetch(`admin/controller/processar_exercicio.php`, {
+            fetch(`../../admin/controller/processar_exercicio.php`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

@@ -1,512 +1,596 @@
+// Sistema de Exercícios de Fala com Correção de Áudio
 class ExercicioFala {
     constructor() {
-        this.recognition = null;
+        this.mediaRecorder = null;
+        this.audioChunks = [];
         this.isRecording = false;
-        this.isSupported = this.checkSupport();
-        this.currentExercise = null;
-        this.attempts = 0;
-        this.maxAttempts = 3;
+        this.audioContext = null;
+        this.analyser = null;
+        this.dataArray = null;
+        this.animationId = null;
     }
 
-    /**
-     * Verifica se o navegador suporta Web Speech API
-     */
-    checkSupport() {
-        return 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
-    }
-
-    /**
-     * Inicializa o reconhecimento de fala
-     */
-    initRecognition() {
-        if (!this.isSupported) {
-            console.warn('Web Speech API não suportada neste navegador');
+    // Inicializar o sistema de áudio
+    async inicializar() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                } 
+            });
+            
+            this.mediaRecorder = new MediaRecorder(stream, {
+                mimeType: 'audio/webm;codecs=opus'
+            });
+            
+            this.setupAudioVisualization(stream);
+            this.setupRecorderEvents();
+            
+            return true;
+        } catch (error) {
+            console.error('Erro ao acessar microfone:', error);
+            this.mostrarErro('Não foi possível acessar o microfone. Verifique as permissões.');
             return false;
         }
-
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        this.recognition = new SpeechRecognition();
-        
-        // Configurações do reconhecimento
-        this.recognition.continuous = false;
-        this.recognition.interimResults = false;
-        this.recognition.lang = 'en-US'; // Pode ser alterado dinamicamente
-        this.recognition.maxAlternatives = 3;
-
-        // Event listeners
-        this.recognition.onstart = () => this.onRecordingStart();
-        this.recognition.onresult = (event) => this.onRecordingResult(event);
-        this.recognition.onerror = (event) => this.onRecordingError(event);
-        this.recognition.onend = () => this.onRecordingEnd();
-
-        return true;
     }
 
-    /**
-     * Inicia a gravação
-     */
-    startRecording(exerciseData) {
-        if (!this.isSupported) {
-            this.showFallbackInterface(exerciseData);
+    // Configurar visualização de áudio
+    setupAudioVisualization(stream) {
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        this.analyser = this.audioContext.createAnalyser();
+        const source = this.audioContext.createMediaStreamSource(stream);
+        
+        source.connect(this.analyser);
+        this.analyser.fftSize = 256;
+        
+        const bufferLength = this.analyser.frequencyBinCount;
+        this.dataArray = new Uint8Array(bufferLength);
+    }
+
+    // Configurar eventos do gravador
+    setupRecorderEvents() {
+        this.mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                this.audioChunks.push(event.data);
+            }
+        };
+
+        this.mediaRecorder.onstop = () => {
+            this.processarAudio();
+        };
+    }
+
+    // Iniciar gravação
+    iniciarGravacao(exercicioId, fraseEsperada) {
+        if (!this.mediaRecorder) {
+            this.mostrarErro('Sistema de áudio não inicializado');
             return;
         }
 
-        if (!this.recognition) {
-            if (!this.initRecognition()) {
-                this.showFallbackInterface(exerciseData);
-                return;
-            }
-        }
-
-        this.currentExercise = exerciseData;
-        this.attempts++;
-
-        // Configurar idioma baseado no exercício
-        if (exerciseData.idioma) {
-            this.recognition.lang = exerciseData.idioma === 'Ingles' ? 'en-US' : 'ja-JP';
-        }
-
-        try {
-            this.recognition.start();
-        } catch (error) {
-            console.error('Erro ao iniciar reconhecimento:', error);
-            this.showError('Erro ao iniciar gravação. Tente novamente.');
-        }
-    }
-
-    /**
-     * Para a gravação
-     */
-    stopRecording() {
-        if (this.recognition && this.isRecording) {
-            this.recognition.stop();
-        }
-    }
-
-    /**
-     * Callback quando a gravação inicia
-     */
-    onRecordingStart() {
+        this.audioChunks = [];
+        this.exercicioId = exercicioId;
+        this.fraseEsperada = fraseEsperada;
+        
+        this.mediaRecorder.start();
         this.isRecording = true;
-        this.updateUI('recording');
-        console.log('Gravação iniciada');
+        
+        this.atualizarInterface('gravando');
+        this.iniciarVisualizacao();
+        
+        // Auto-parar após 10 segundos
+        setTimeout(() => {
+            if (this.isRecording) {
+                this.pararGravacao();
+            }
+        }, 10000);
     }
 
-    /**
-     * Callback quando há resultado do reconhecimento
-     */
-    onRecordingResult(event) {
-        const results = event.results;
-        const transcript = results[0][0].transcript.toLowerCase().trim();
-        const confidence = results[0][0].confidence;
-
-        console.log('Resultado:', transcript, 'Confiança:', confidence);
-
-        // Processar resultado
-        this.processResult(transcript, confidence);
-    }
-
-    /**
-     * Callback quando há erro no reconhecimento
-     */
-    onRecordingError(event) {
-        console.error('Erro no reconhecimento:', event.error);
-        
-        let errorMessage = 'Erro no reconhecimento de voz.';
-        
-        switch (event.error) {
-            case 'no-speech':
-                errorMessage = 'Nenhuma fala detectada. Tente falar mais alto.';
-                break;
-            case 'audio-capture':
-                errorMessage = 'Erro ao capturar áudio. Verifique seu microfone.';
-                break;
-            case 'not-allowed':
-                errorMessage = 'Permissão de microfone negada. Permita o acesso ao microfone.';
-                break;
-            case 'network':
-                errorMessage = 'Erro de rede. Verifique sua conexão.';
-                break;
+    // Parar gravação
+    pararGravacao() {
+        if (this.mediaRecorder && this.isRecording) {
+            this.mediaRecorder.stop();
+            this.isRecording = false;
+            this.pararVisualizacao();
+            this.atualizarInterface('processando');
         }
-
-        this.showError(errorMessage);
-        this.updateUI('error');
     }
 
-    /**
-     * Callback quando a gravação termina
-     */
-    onRecordingEnd() {
-        this.isRecording = false;
-        console.log('Gravação finalizada');
+    // Processar áudio gravado
+    async processarAudio() {
+        try {
+            const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+            const audioBase64 = await this.blobToBase64(audioBlob);
+            
+            await this.enviarParaCorrecao(audioBase64);
+            
+        } catch (error) {
+            console.error('Erro ao processar áudio:', error);
+            this.mostrarErro('Erro ao processar o áudio gravado');
+        }
     }
 
-    /**
-     * Processa o resultado do reconhecimento
-     */
-    processResult(transcript, confidence) {
-        if (!this.currentExercise) return;
-
-        const expectedPhrase = this.currentExercise.frase_esperada.toLowerCase();
-        const similarity = this.calculateSimilarity(transcript, expectedPhrase);
-        const threshold = this.currentExercise.tolerancia_erro || 0.8;
-
-        console.log('Similaridade:', similarity, 'Threshold:', threshold);
-
-        const isCorrect = similarity >= threshold && confidence >= 0.7;
-
-        this.showResult({
-            transcript: transcript,
-            expected: expectedPhrase,
-            similarity: similarity,
-            confidence: confidence,
-            isCorrect: isCorrect,
-            attempts: this.attempts
+    // Converter blob para base64
+    blobToBase64(blob) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const base64 = reader.result.split(',')[1];
+                resolve(base64);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
         });
     }
 
-    /**
-     * Calcula similaridade entre duas strings
-     */
-    calculateSimilarity(str1, str2) {
-        // Normalizar strings
-        const normalize = (str) => str.toLowerCase().replace(/[^\w\s]/g, '').trim();
-        const s1 = normalize(str1);
-        const s2 = normalize(str2);
+    // Enviar áudio para correção
+    async enviarParaCorrecao(audioBase64) {
+        try {
+            const response = await fetch('admin/controller/correcao_audio.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    exercicio_id: this.exercicioId,
+                    audio_data: audioBase64,
+                    frase_esperada: this.fraseEsperada
+                })
+            });
 
-        // Verificar palavras-chave se disponíveis
-        if (this.currentExercise.palavras_chave) {
-            const keywords = this.currentExercise.palavras_chave;
-            const foundKeywords = keywords.filter(keyword => 
-                s1.includes(keyword.toLowerCase())
-            );
-            const keywordScore = foundKeywords.length / keywords.length;
+            const resultado = await response.json();
             
-            // Se encontrou a maioria das palavras-chave, considerar como boa similaridade
-            if (keywordScore >= 0.7) {
-                return Math.max(keywordScore, this.levenshteinSimilarity(s1, s2));
-            }
-        }
-
-        return this.levenshteinSimilarity(s1, s2);
-    }
-
-    /**
-     * Calcula similaridade usando distância de Levenshtein
-     */
-    levenshteinSimilarity(str1, str2) {
-        const matrix = [];
-        const len1 = str1.length;
-        const len2 = str2.length;
-
-        for (let i = 0; i <= len2; i++) {
-            matrix[i] = [i];
-        }
-
-        for (let j = 0; j <= len1; j++) {
-            matrix[0][j] = j;
-        }
-
-        for (let i = 1; i <= len2; i++) {
-            for (let j = 1; j <= len1; j++) {
-                if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
-                    matrix[i][j] = matrix[i - 1][j - 1];
-                } else {
-                    matrix[i][j] = Math.min(
-                        matrix[i - 1][j - 1] + 1,
-                        matrix[i][j - 1] + 1,
-                        matrix[i - 1][j] + 1
-                    );
-                }
-            }
-        }
-
-        const distance = matrix[len2][len1];
-        const maxLength = Math.max(len1, len2);
-        return maxLength === 0 ? 1 : (maxLength - distance) / maxLength;
-    }
-
-    /**
-     * Atualiza a interface do usuário
-     */
-    updateUI(state) {
-        const microfoneIcon = document.getElementById('microfoneIcon');
-        const btnGravar = document.getElementById('btnGravar');
-        const status = document.getElementById('statusGravacao');
-
-        if (!microfoneIcon || !btnGravar || !status) return;
-
-        switch (state) {
-            case 'recording':
-                microfoneIcon.className = 'fas fa-microphone fa-5x text-danger';
-                microfoneIcon.style.animation = 'pulse 1s infinite';
-                btnGravar.disabled = true;
-                btnGravar.innerHTML = '<i class="fas fa-stop me-2"></i>Gravando...';
-                status.innerHTML = '<div class="text-info"><i class="fas fa-circle text-danger me-2"></i>Ouvindo... Fale agora!</div>';
-                break;
-
-            case 'processing':
-                microfoneIcon.className = 'fas fa-microphone fa-5x text-warning';
-                microfoneIcon.style.animation = 'none';
-                btnGravar.innerHTML = '<i class="fas fa-cog fa-spin me-2"></i>Processando...';
-                status.innerHTML = '<div class="text-warning"><i class="fas fa-cog fa-spin me-2"></i>Processando sua fala...</div>';
-                break;
-
-            case 'success':
-                microfoneIcon.className = 'fas fa-microphone fa-5x text-success';
-                microfoneIcon.style.animation = 'none';
-                btnGravar.innerHTML = '<i class="fas fa-check me-2"></i>Sucesso!';
-                btnGravar.disabled = false;
-                break;
-
-            case 'error':
-                microfoneIcon.className = 'fas fa-microphone fa-5x text-danger';
-                microfoneIcon.style.animation = 'none';
-                btnGravar.innerHTML = '<i class="fas fa-microphone me-2"></i>Tentar Novamente';
-                btnGravar.disabled = false;
-                break;
-
-            case 'ready':
-            default:
-                microfoneIcon.className = 'fas fa-microphone fa-5x text-muted';
-                microfoneIcon.style.animation = 'none';
-                btnGravar.innerHTML = '<i class="fas fa-microphone me-2"></i>Clique para Gravar';
-                btnGravar.disabled = false;
-                status.innerHTML = '';
-                break;
-        }
-    }
-
-    /**
-     * Mostra o resultado do exercício
-     */
-    showResult(result) {
-        this.updateUI('processing');
-
-        setTimeout(() => {
-            const feedbackContainer = document.getElementById('feedbackContainer');
-            const feedbackContent = document.getElementById('feedbackContent');
-
-            if (result.isCorrect) {
-                this.updateUI('success');
-                feedbackContainer.className = 'feedback-container feedback-success';
-                feedbackContent.innerHTML = `
-                    <i class="fas fa-check-circle me-2"></i>
-                    <strong>Excelente!</strong> Sua pronúncia está correta.
-                    <br><small>Você disse: "${result.transcript}"</small>
-                    <br><small>Precisão: ${Math.round(result.similarity * 100)}%</small>
-                `;
-
-                // Habilitar botão próximo
-                document.getElementById('btnEnviarResposta').style.display = 'none';
-                document.getElementById('btnProximoExercicio').style.display = 'inline-block';
-
+            if (resultado.success) {
+                this.mostrarResultado(resultado.resultado);
             } else {
-                this.updateUI('error');
-                feedbackContainer.className = 'feedback-container feedback-error';
-                
-                let feedbackText = `
-                    <i class="fas fa-times-circle me-2"></i>
-                    <strong>Tente novamente.</strong> Sua pronúncia precisa melhorar.
-                    <br><small>Você disse: "${result.transcript}"</small>
-                    <br><small>Esperado: "${result.expected}"</small>
-                    <br><small>Precisão: ${Math.round(result.similarity * 100)}%</small>
-                `;
-
-                if (this.attempts < this.maxAttempts) {
-                    feedbackText += `<br><small><i class="fas fa-lightbulb me-1"></i><strong>Dica:</strong> Fale mais devagar e articule bem as palavras.</small>`;
-                } else {
-                    feedbackText += `<br><small><i class="fas fa-info-circle me-1"></i>Você pode continuar para o próximo exercício.</small>`;
-                    document.getElementById('btnEnviarResposta').style.display = 'none';
-                    document.getElementById('btnProximoExercicio').style.display = 'inline-block';
-                }
-
-                feedbackContent.innerHTML = feedbackText;
+                this.mostrarErro(resultado.message || 'Erro ao analisar áudio');
             }
-
-            feedbackContainer.style.display = 'block';
-
-            // Enviar resultado para o servidor
-            this.sendResultToServer(result);
-
-        }, 1000);
+            
+        } catch (error) {
+            console.error('Erro ao enviar áudio:', error);
+            this.mostrarErro('Erro de conexão ao enviar áudio');
+        }
     }
 
-    /**
-     * Mostra interface alternativa quando Web Speech API não está disponível
-     */
-    showFallbackInterface(exerciseData) {
-        const container = document.getElementById('conteudoExercicio');
+    // Mostrar resultado da análise
+    mostrarResultado(resultado) {
+        const container = document.getElementById('resultado-audio');
+        if (!container) return;
+
+        const { status, pontuacao_percentual, feedback_detalhado } = resultado;
         
-        container.innerHTML = `
-            <h5 class="mb-4">${exerciseData.pergunta || 'Exercício de Pronúncia'}</h5>
-            <div class="text-center">
-                <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    Seu navegador não suporta reconhecimento de voz automático.
+        let statusClass = '';
+        let statusTexto = '';
+        let icone = '';
+        
+        switch (status) {
+            case 'correto':
+                statusClass = 'resultado-correto';
+                statusTexto = 'Excelente!';
+                icone = '✅';
+                break;
+            case 'meio_correto':
+                statusClass = 'resultado-meio-correto';
+                statusTexto = 'Bom, mas pode melhorar';
+                icone = '⚠️';
+                break;
+            case 'errado':
+                statusClass = 'resultado-errado';
+                statusTexto = 'Precisa praticar mais';
+                icone = '❌';
+                break;
+        }
+
+        let html = `
+            <div class="resultado-feedback ${statusClass}">
+                <div class="resultado-header">
+                    <span class="resultado-icone">${icone}</span>
+                    <h3>${statusTexto}</h3>
+                    <div class="pontuacao">${pontuacao_percentual}%</div>
                 </div>
-                <div class="mb-4">
-                    <i class="fas fa-volume-up fa-5x text-primary"></i>
-                </div>
-                <p class="lead mb-4">Frase para pronunciar:</p>
-                <p class="fs-4 fw-bold text-primary">"${exerciseData.frase_esperada}"</p>
                 
-                ${exerciseData.pronuncia_fonetica ? `
-                    <p class="text-muted mb-4">
-                        <small>Pronúncia: ${exerciseData.pronuncia_fonetica}</small>
-                    </p>
-                ` : ''}
-                
-                <div class="mb-4">
-                    <button class="btn btn-primary me-2" onclick="playAudioExample()">
-                        <i class="fas fa-play me-2"></i>Ouvir Exemplo
-                    </button>
-                    <button class="btn btn-success" onclick="markSpeechComplete()">
-                        <i class="fas fa-check me-2"></i>Pratiquei a Pronúncia
-                    </button>
+                <div class="transcricao-comparacao">
+                    <div class="frase-esperada">
+                        <strong>Esperado:</strong> "${feedback_detalhado.frase_esperada}"
+                    </div>
+                    <div class="frase-transcrita">
+                        <strong>Você disse:</strong> "${feedback_detalhado.frase_transcrita}"
+                    </div>
                 </div>
-                
-                <div class="alert alert-info">
-                    <small>
-                        <i class="fas fa-lightbulb me-2"></i>
-                        <strong>Dica:</strong> Pratique a pronúncia em voz alta e clique em "Pratiquei a Pronúncia" quando estiver pronto.
-                    </small>
+        `;
+
+        // Mostrar palavras corretas e incorretas
+        if (feedback_detalhado.palavras_corretas.length > 0) {
+            html += `
+                <div class="palavras-corretas">
+                    <strong>✅ Palavras corretas:</strong> 
+                    ${feedback_detalhado.palavras_corretas.join(', ')}
                 </div>
-            </div>
+            `;
+        }
+
+        if (feedback_detalhado.palavras_incorretas.length > 0) {
+            html += `<div class="palavras-incorretas">
+                <strong>❌ Palavras para melhorar:</strong>
+                <ul>`;
             
-            <div class="feedback-container" id="feedbackContainer">
-                <div id="feedbackContent"></div>
+            feedback_detalhado.palavras_incorretas.forEach(palavra => {
+                html += `
+                    <li>
+                        <strong>${palavra.esperada}</strong> 
+                        (você disse: "${palavra.transcrita}")
+                        <br><em>${palavra.sugestao}</em>
+                    </li>
+                `;
+            });
+            
+            html += `</ul></div>`;
+        }
+
+        // Mostrar sugestões
+        if (feedback_detalhado.sugestoes.length > 0) {
+            html += `
+                <div class="sugestoes">
+                    <strong>💡 Sugestões:</strong>
+                    <ul>
+            `;
+            
+            feedback_detalhado.sugestoes.forEach(sugestao => {
+                html += `<li>${sugestao}</li>`;
+            });
+            
+            html += `</ul></div>`;
+        }
+
+        // Mostrar pontos de melhoria
+        if (feedback_detalhado.pontos_melhoria.length > 0) {
+            html += `
+                <div class="pontos-melhoria">
+                    <strong>🎯 Pontos para melhorar:</strong>
+                    <ul>
+            `;
+            
+            feedback_detalhado.pontos_melhoria.forEach(ponto => {
+                html += `<li>${ponto}</li>`;
+            });
+            
+            html += `</ul></div>`;
+        }
+
+        html += `
+                <div class="acoes-resultado">
+                    <button onclick="exercicioFala.tentarNovamente()" class="btn-tentar-novamente">
+                        🔄 Tentar Novamente
+                    </button>
+                    <button onclick="exercicioFala.proximoExercicio()" class="btn-proximo">
+                        ➡️ Próximo Exercício
+                    </button>
+                </div>
             </div>
         `;
+
+        container.innerHTML = html;
+        this.atualizarInterface('resultado');
     }
 
-    /**
-     * Mostra mensagem de erro
-     */
-    showError(message) {
-        const status = document.getElementById('statusGravacao');
-        if (status) {
-            status.innerHTML = `<div class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>${message}</div>`;
+    // Atualizar interface baseada no estado
+    atualizarInterface(estado) {
+        const btnGravar = document.getElementById('btn-gravar');
+        const btnParar = document.getElementById('btn-parar');
+        const statusGravacao = document.getElementById('status-gravacao');
+        const visualizador = document.getElementById('visualizador-audio');
+
+        if (!btnGravar || !btnParar || !statusGravacao) return;
+
+        switch (estado) {
+            case 'pronto':
+                btnGravar.disabled = false;
+                btnGravar.textContent = '🎤 Gravar';
+                btnParar.disabled = true;
+                statusGravacao.textContent = 'Clique em gravar e fale a frase';
+                statusGravacao.className = 'status-pronto';
+                if (visualizador) visualizador.style.display = 'none';
+                break;
+                
+            case 'gravando':
+                btnGravar.disabled = true;
+                btnParar.disabled = false;
+                statusGravacao.textContent = '🔴 Gravando... Fale agora!';
+                statusGravacao.className = 'status-gravando';
+                if (visualizador) visualizador.style.display = 'block';
+                break;
+                
+            case 'processando':
+                btnGravar.disabled = true;
+                btnParar.disabled = true;
+                statusGravacao.textContent = '⏳ Analisando sua pronúncia...';
+                statusGravacao.className = 'status-processando';
+                if (visualizador) visualizador.style.display = 'none';
+                break;
+                
+            case 'resultado':
+                btnGravar.disabled = false;
+                btnGravar.textContent = '🎤 Gravar Novamente';
+                btnParar.disabled = true;
+                statusGravacao.textContent = 'Resultado da análise:';
+                statusGravacao.className = 'status-resultado';
+                break;
         }
     }
 
-    /**
-     * Envia resultado para o servidor
-     */
-    sendResultToServer(result) {
-        if (!exercicioAtual) return;
+    // Iniciar visualização de áudio
+    iniciarVisualizacao() {
+        const canvas = document.getElementById('canvas-visualizacao');
+        if (!canvas || !this.analyser) return;
 
-        fetch('processar_exercicio.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                exercicio_id: exercicioAtual.id,
-                resposta: result.isCorrect ? 'fala_processada' : 'fala_incorreta',
-                tipo_exercicio: 'fala',
-                detalhes: {
-                    transcript: result.transcript,
-                    similarity: result.similarity,
-                    confidence: result.confidence,
-                    attempts: result.attempts
-                }
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Resultado enviado:', data);
-        })
-        .catch(error => {
-            console.error('Erro ao enviar resultado:', error);
-        });
+        const ctx = canvas.getContext('2d');
+        const WIDTH = canvas.width;
+        const HEIGHT = canvas.height;
+
+        const draw = () => {
+            if (!this.isRecording) return;
+
+            this.animationId = requestAnimationFrame(draw);
+
+            this.analyser.getByteFrequencyData(this.dataArray);
+
+            ctx.fillStyle = 'rgb(240, 240, 240)';
+            ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+            const barWidth = (WIDTH / this.dataArray.length) * 2.5;
+            let barHeight;
+            let x = 0;
+
+            for (let i = 0; i < this.dataArray.length; i++) {
+                barHeight = (this.dataArray[i] / 255) * HEIGHT;
+
+                ctx.fillStyle = `rgb(${barHeight + 100}, 50, 50)`;
+                ctx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight);
+
+                x += barWidth + 1;
+            }
+        };
+
+        draw();
     }
 
-    /**
-     * Reseta o estado do exercício
-     */
-    reset() {
-        this.currentExercise = null;
-        this.attempts = 0;
-        this.updateUI('ready');
+    // Parar visualização
+    pararVisualizacao() {
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = null;
+        }
+    }
+
+    // Tentar novamente
+    tentarNovamente() {
+        document.getElementById('resultado-audio').innerHTML = '';
+        this.atualizarInterface('pronto');
+    }
+
+    // Próximo exercício
+    proximoExercicio() {
+        // Implementar navegação para próximo exercício
+        if (typeof proximoExercicio === 'function') {
+            proximoExercicio();
+        }
+    }
+
+    // Mostrar erro
+    mostrarErro(mensagem) {
+        const container = document.getElementById('resultado-audio');
+        if (container) {
+            container.innerHTML = `
+                <div class="erro-audio">
+                    <span class="erro-icone">❌</span>
+                    <p>${mensagem}</p>
+                    <button onclick="exercicioFala.tentarNovamente()" class="btn-tentar-novamente">
+                        Tentar Novamente
+                    </button>
+                </div>
+            `;
+        }
+        this.atualizarInterface('pronto');
     }
 }
 
-// Instância global do exercício de fala
+// Instância global
 const exercicioFala = new ExercicioFala();
 
-// Funções globais para integração com o HTML
-function iniciarGravacao() {
-    if (!exercicioAtual || exercicioAtual.tipo_exercicio !== 'fala') {
-        console.error('Exercício de fala não encontrado');
-        return;
+// Funções para integração com o sistema existente
+async function iniciarExercicioFala(exercicioId, fraseEsperada) {
+    const sucesso = await exercicioFala.inicializar();
+    if (sucesso) {
+        exercicioFala.exercicioId = exercicioId;
+        exercicioFala.fraseEsperada = fraseEsperada;
+        exercicioFala.atualizarInterface('pronto');
     }
+}
 
-    try {
-        const conteudo = JSON.parse(exercicioAtual.conteudo);
-        exercicioFala.startRecording(conteudo);
-    } catch (error) {
-        console.error('Erro ao parsear conteúdo do exercício:', error);
-        exercicioFala.showError('Erro ao carregar exercício de fala.');
+function gravarAudio() {
+    if (!exercicioFala.isRecording) {
+        exercicioFala.iniciarGravacao(exercicioFala.exercicioId, exercicioFala.fraseEsperada);
     }
 }
 
 function pararGravacao() {
-    exercicioFala.stopRecording();
+    exercicioFala.pararGravacao();
 }
 
-function playAudioExample() {
-    // Implementar reprodução de áudio de exemplo
-    console.log('Reproduzindo áudio de exemplo...');
-    // Aqui seria implementada a reprodução do áudio de exemplo
+// CSS para os estilos (adicionar ao head da página)
+const estilosAudio = `
+<style>
+.resultado-feedback {
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-function markSpeechComplete() {
-    // Marcar exercício como completo para navegadores sem suporte
-    const feedbackContainer = document.getElementById('feedbackContainer');
-    const feedbackContent = document.getElementById('feedbackContent');
-    
-    feedbackContainer.className = 'feedback-container feedback-success';
-    feedbackContent.innerHTML = `
-        <i class="fas fa-check-circle me-2"></i>
-        <strong>Ótimo!</strong> Continue praticando sua pronúncia.
-    `;
-    feedbackContainer.style.display = 'block';
-    
-    // Habilitar botão próximo
-    document.getElementById('btnEnviarResposta').style.display = 'none';
-    document.getElementById('btnProximoExercicio').style.display = 'inline-block';
-    
-    // Enviar resultado simulado para o servidor
-    if (exercicioAtual) {
-        fetch('processar_exercicio.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                exercicio_id: exercicioAtual.id,
-                resposta: 'fala_processada',
-                tipo_exercicio: 'fala'
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Resultado enviado:', data);
-        })
-        .catch(error => {
-            console.error('Erro ao enviar resultado:', error);
-        });
-    }
+.resultado-correto {
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    border: 2px solid #28a745;
 }
 
-// CSS para animação de pulse
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-        100% { transform: scale(1); }
-    }
+.resultado-meio-correto {
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    border: 2px solid #ffc107;
+}
+
+.resultado-errado {
+    background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+    border: 2px solid #dc3545;
+}
+
+.resultado-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.resultado-icone {
+    font-size: 2em;
+}
+
+.pontuacao {
+    background: rgba(255,255,255,0.8);
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    margin-left: auto;
+}
+
+.transcricao-comparacao {
+    background: rgba(255,255,255,0.5);
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+}
+
+.frase-esperada, .frase-transcrita {
+    margin: 5px 0;
+}
+
+.palavras-corretas {
+    color: #155724;
+    margin: 10px 0;
+}
+
+.palavras-incorretas {
+    color: #721c24;
+    margin: 10px 0;
+}
+
+.palavras-incorretas ul {
+    margin: 5px 0 0 20px;
+}
+
+.palavras-incorretas li {
+    margin: 5px 0;
+}
+
+.sugestoes, .pontos-melhoria {
+    margin: 15px 0;
+}
+
+.sugestoes ul, .pontos-melhoria ul {
+    margin: 5px 0 0 20px;
+}
+
+.acoes-resultado {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.btn-tentar-novamente, .btn-proximo {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.btn-tentar-novamente {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-tentar-novamente:hover {
+    background: #5a6268;
+}
+
+.btn-proximo {
+    background: #007bff;
+    color: white;
+}
+
+.btn-proximo:hover {
+    background: #0056b3;
+}
+
+.status-gravando {
+    color: #dc3545;
+    font-weight: bold;
+    animation: pulse 1s infinite;
+}
+
+.status-processando {
+    color: #ffc107;
+    font-weight: bold;
+}
+
+.status-pronto {
+    color: #28a745;
+}
+
+.status-resultado {
+    color: #007bff;
+    font-weight: bold;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.erro-audio {
+    text-align: center;
+    padding: 20px;
+    background: #f8d7da;
+    border: 2px solid #dc3545;
+    border-radius: 10px;
+    margin: 20px 0;
+}
+
+.erro-icone {
+    font-size: 2em;
+    display: block;
+    margin-bottom: 10px;
+}
+
+#visualizador-audio {
+    margin: 15px 0;
+    text-align: center;
+}
+
+#canvas-visualizacao {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background: #f8f9fa;
+}
+</style>
 `;
-document.head.appendChild(style);
+
+// Adicionar estilos ao head se não existirem
+if (!document.getElementById('estilos-audio')) {
+    const styleElement = document.createElement('div');
+    styleElement.id = 'estilos-audio';
+    styleElement.innerHTML = estilosAudio;
+    document.head.appendChild(styleElement);
+}
+
