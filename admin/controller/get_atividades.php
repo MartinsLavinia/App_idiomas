@@ -26,107 +26,98 @@ try {
     $database = new Database();
     $conn = $database->conn;
 
-    // Buscar atividades da unidade com progresso do usuário
-    $sql = "
-        SELECT 
-            a.id,
-            a.nome,
-            a.descricao,
-            a.icone,
-            a.tipo,
-            a.ordem,
-            a.explicacao_teorica,
-            COUNT(e.id) as total_exercicios,
-            COUNT(pd.id) as exercicios_concluidos,
-            CASE 
-                WHEN COUNT(e.id) > 0 THEN ROUND((COUNT(pd.id) / COUNT(e.id)) * 100, 2)
-                ELSE 0 
-            END as progresso
-        FROM atividades a
-        LEFT JOIN exercicios e ON a.id = e.atividade_id
-        LEFT JOIN progresso_detalhado pd ON e.id = pd.exercicio_id AND pd.id_usuario = ?
-        WHERE a.unidade_id = ?
-        GROUP BY a.id, a.nome, a.descricao, a.icone, a.tipo, a.ordem, a.explicacao_teorica
-        ORDER BY a.ordem ASC
-    ";
+    // Buscar informações da unidade
+    $sql_unidade = "SELECT idioma, nivel FROM unidades WHERE id = ?";
+    $stmt_unidade = $conn->prepare($sql_unidade);
+    if (!$stmt_unidade) {
+        throw new Exception("Erro ao preparar consulta da unidade: " . $conn->error);
+    }
+    $stmt_unidade->bind_param("i", $unidade_id);
+    $stmt_unidade->execute();
+    $unidade_info = $stmt_unidade->get_result()->fetch_assoc();
+    $stmt_unidade->close();
 
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ii", $id_usuario, $unidade_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
     $atividades = [];
-    while ($row = $result->fetch_assoc()) {
-        $atividades[] = $row;
+    
+    if (!$unidade_info) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Unidade não encontrada com ID: ' . $unidade_id
+        ]);
+        exit();
     }
     
-    $stmt->close();
-    $database->closeConnection();
+    if ($unidade_info) {
+        // Buscar caminhos de aprendizagem (atividades) para esta unidade
+        $sql_caminhos = "
+            SELECT 
+                c.id,
+                c.nome_caminho as nome,
+                CONCAT('Atividade de ', c.nome_caminho) as descricao,
+                CASE 
+                    WHEN c.nome_caminho LIKE '%Conversação%' OR c.nome_caminho LIKE '%Conversa%' THEN 'fa-comments'
+                    WHEN c.nome_caminho LIKE '%Vocabulário%' OR c.nome_caminho LIKE '%Vocab%' THEN 'fa-book'
+                    WHEN c.nome_caminho LIKE '%Pronúncia%' OR c.nome_caminho LIKE '%Pronun%' THEN 'fa-microphone'
+                    WHEN c.nome_caminho LIKE '%Escrita%' OR c.nome_caminho LIKE '%Escrev%' THEN 'fa-pen'
+                    WHEN c.nome_caminho LIKE '%Audição%' OR c.nome_caminho LIKE '%Audio%' OR c.nome_caminho LIKE '%Escuta%' THEN 'fa-headphones'
+                    WHEN c.nome_caminho LIKE '%Comida%' OR c.nome_caminho LIKE '%Aliment%' THEN 'fa-utensils'
+                    WHEN c.nome_caminho LIKE '%Saudações%' OR c.nome_caminho LIKE '%Cumpriment%' THEN 'fa-hand-wave'
+                    WHEN c.nome_caminho LIKE '%Rotina%' OR c.nome_caminho LIKE '%Diária%' THEN 'fa-clock'
+                    ELSE 'fa-graduation-cap'
+                END as icone,
+                CASE 
+                    WHEN c.nome_caminho LIKE '%Conversação%' OR c.nome_caminho LIKE '%Conversa%' THEN 'conversacao'
+                    WHEN c.nome_caminho LIKE '%Vocabulário%' OR c.nome_caminho LIKE '%Vocab%' THEN 'vocabulario'
+                    WHEN c.nome_caminho LIKE '%Pronúncia%' OR c.nome_caminho LIKE '%Pronun%' THEN 'pronuncia'
+                    WHEN c.nome_caminho LIKE '%Escrita%' OR c.nome_caminho LIKE '%Escrev%' THEN 'escrita'
+                    WHEN c.nome_caminho LIKE '%Audição%' OR c.nome_caminho LIKE '%Audio%' OR c.nome_caminho LIKE '%Escuta%' THEN 'audicao'
+                    ELSE 'gramatica'
+                END as tipo,
+                ROW_NUMBER() OVER (ORDER BY c.id) as ordem,
+                NULL as explicacao_teorica,
+                COUNT(e.id) as total_exercicios,
+                0 as exercicios_concluidos,
+                CASE 
+                    WHEN COUNT(e.id) > 0 THEN 0
+                    ELSE 0 
+                END as progresso
+            FROM caminhos_aprendizagem c
+            LEFT JOIN exercicios e ON c.id = e.caminho_id
+            WHERE c.idioma = ? AND c.nivel = ?
+            GROUP BY c.id, c.nome_caminho
+            ORDER BY c.id
+        ";
 
-    // Se não encontrou atividades na nova estrutura, buscar nos caminhos antigos
-    if (empty($atividades)) {
-        $database = new Database();
-        $conn = $database->conn;
-
-        // Buscar informações da unidade
-        $sql_unidade = "SELECT idioma, nivel FROM unidades WHERE id = ?";
-        $stmt_unidade = $conn->prepare($sql_unidade);
-        $stmt_unidade->bind_param("i", $unidade_id);
-        $stmt_unidade->execute();
-        $unidade_info = $stmt_unidade->get_result()->fetch_assoc();
-        $stmt_unidade->close();
-
-        if ($unidade_info) {
-            // Buscar caminhos de aprendizagem compatíveis
-            $sql_caminhos = "
-                SELECT 
-                    c.id,
-                    c.nome_caminho as nome,
-                    CONCAT('Atividade de ', c.nome_caminho) as descricao,
-                    CASE 
-                        WHEN c.nome_caminho LIKE '%Conversação%' OR c.nome_caminho LIKE '%Conversa%' THEN 'fa-comments'
-                        WHEN c.nome_caminho LIKE '%Vocabulário%' OR c.nome_caminho LIKE '%Vocab%' THEN 'fa-book'
-                        WHEN c.nome_caminho LIKE '%Pronúncia%' OR c.nome_caminho LIKE '%Pronun%' THEN 'fa-microphone'
-                        WHEN c.nome_caminho LIKE '%Escrita%' OR c.nome_caminho LIKE '%Escrev%' THEN 'fa-pen'
-                        WHEN c.nome_caminho LIKE '%Audição%' OR c.nome_caminho LIKE '%Audio%' OR c.nome_caminho LIKE '%Escuta%' THEN 'fa-headphones'
-                        ELSE 'fa-graduation-cap'
-                    END as icone,
-                    CASE 
-                        WHEN c.nome_caminho LIKE '%Conversação%' OR c.nome_caminho LIKE '%Conversa%' THEN 'conversacao'
-                        WHEN c.nome_caminho LIKE '%Vocabulário%' OR c.nome_caminho LIKE '%Vocab%' THEN 'vocabulario'
-                        WHEN c.nome_caminho LIKE '%Pronúncia%' OR c.nome_caminho LIKE '%Pronun%' THEN 'pronuncia'
-                        WHEN c.nome_caminho LIKE '%Escrita%' OR c.nome_caminho LIKE '%Escrev%' THEN 'escrita'
-                        WHEN c.nome_caminho LIKE '%Audição%' OR c.nome_caminho LIKE '%Audio%' OR c.nome_caminho LIKE '%Escuta%' THEN 'audicao'
-                        ELSE 'gramatica'
-                    END as tipo,
-                    ROW_NUMBER() OVER (ORDER BY c.id) as ordem,
-                    NULL as explicacao_teorica,
-                    COUNT(e.id) as total_exercicios,
-                    0 as exercicios_concluidos,
-                    0 as progresso
-                FROM caminhos_aprendizagem c
-                LEFT JOIN exercicios e ON c.id = e.caminho_id
-                WHERE c.idioma = ? AND c.nivel = ?
-                GROUP BY c.id, c.nome_caminho
-                ORDER BY c.id
-            ";
-
-            $stmt_caminhos = $conn->prepare($sql_caminhos);
-            $stmt_caminhos->bind_param("ss", $unidade_info['idioma'], $unidade_info['nivel']);
-            $stmt_caminhos->execute();
-            $result_caminhos = $stmt_caminhos->get_result();
-            
-            while ($row = $result_caminhos->fetch_assoc()) {
-                // Usar ID negativo para diferenciar de atividades reais
-                $row['id'] = -$row['id'];
-                $atividades[] = $row;
-            }
-            
-            $stmt_caminhos->close();
+        $stmt_caminhos = $conn->prepare($sql_caminhos);
+        if (!$stmt_caminhos) {
+            throw new Exception("Erro ao preparar consulta dos caminhos: " . $conn->error);
+        }
+        $stmt_caminhos->bind_param("ss", $unidade_info['idioma'], $unidade_info['nivel']);
+        $stmt_caminhos->execute();
+        $result_caminhos = $stmt_caminhos->get_result();
+        
+        while ($row = $result_caminhos->fetch_assoc()) {
+            $atividades[] = $row;
         }
         
-        $database->closeConnection();
+        $stmt_caminhos->close();
+        
+        // Debug: verificar se encontrou atividades
+        if (empty($atividades)) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Nenhuma atividade encontrada para idioma: ' . $unidade_info['idioma'] . ', nível: ' . $unidade_info['nivel'],
+                'debug' => [
+                    'unidade_id' => $unidade_id,
+                    'idioma' => $unidade_info['idioma'],
+                    'nivel' => $unidade_info['nivel']
+                ]
+            ]);
+            exit();
+        }
     }
+    
+    $database->closeConnection();
 
     echo json_encode([
         'success' => true,

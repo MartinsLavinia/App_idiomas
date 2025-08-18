@@ -28,75 +28,41 @@ try {
 
     $exercicios = [];
 
-    // Verificar se é uma atividade real (ID positivo) ou um caminho antigo (ID negativo)
-    if ($atividade_id > 0) {
-        // Buscar exercícios da nova estrutura
-        $sql = "
-            SELECT 
-                e.id,
-                e.ordem,
-                e.tipo_exercicio,
-                e.tipo,
-                e.pergunta,
-                e.conteudo,
-                pd.tentativas,
-                pd.acertos,
-                pd.data_conclusao,
-                pd.pontuacao
-            FROM exercicios e
-            LEFT JOIN progresso_detalhado pd ON e.id = pd.exercicio_id AND pd.id_usuario = ?
-            WHERE e.atividade_id = ?
-            ORDER BY e.ordem ASC
-        ";
+    // Buscar exercícios do caminho de aprendizagem (atividade)
+    $caminho_id = $atividade_id;
+    
+    $sql = "
+        SELECT 
+            e.id,
+            e.ordem,
+            CASE 
+                WHEN e.tipo = 'normal' THEN 'multipla_escolha'
+                WHEN e.tipo = 'especial' THEN 'cena_final'
+                WHEN e.tipo = 'quiz' THEN 'multipla_escolha'
+                ELSE 'multipla_escolha'
+            END as tipo_exercicio,
+            e.tipo,
+            e.pergunta,
+            e.conteudo,
+            NULL as tentativas,
+            NULL as acertos,
+            NULL as data_conclusao,
+            NULL as pontuacao
+        FROM exercicios e
+        WHERE e.caminho_id = ?
+        ORDER BY e.ordem ASC
+    ";
 
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ii", $id_usuario, $atividade_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
-        while ($row = $result->fetch_assoc()) {
-            $exercicios[] = $row;
-        }
-        
-        $stmt->close();
-
-    } else {
-        // Buscar exercícios da estrutura antiga (caminhos)
-        $caminho_id = abs($atividade_id);
-        
-        $sql = "
-            SELECT 
-                e.id,
-                e.ordem,
-                CASE 
-                    WHEN e.tipo = 'normal' THEN 'multipla_escolha'
-                    WHEN e.tipo = 'especial' THEN 'cena_final'
-                    WHEN e.tipo = 'quiz' THEN 'multipla_escolha'
-                    ELSE 'multipla_escolha'
-                END as tipo_exercicio,
-                e.tipo,
-                e.pergunta,
-                e.conteudo,
-                NULL as tentativas,
-                NULL as acertos,
-                NULL as data_conclusao,
-                NULL as pontuacao
-            FROM exercicios e
-            WHERE e.caminho_id = ?
-            ORDER BY e.ordem ASC
-        ";
-
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $caminho_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
-        while ($row = $result->fetch_assoc()) {
-            $exercicios[] = $row;
-        }
-        
-        $stmt->close();
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $caminho_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    while ($row = $result->fetch_assoc()) {
+        $exercicios[] = $row;
     }
+    
+    $stmt->close();
 
     // Se não há exercícios, criar alguns exemplos
     if (empty($exercicios)) {
