@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apresentação de Curso</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-image: url('fundo2.png');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: Arial, sans-serif;
+            color: #333;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .bottom-section {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .carousel-container {
+            flex: 0 0 300px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .carousel {
+            display: flex;
+            width: max-content;
+            transition: transform 0.5s ease;
+        }
+
+        .carousel img {
+            width: 300px;
+            height: 200px;
+            object-fit: cover;
+            margin-right: 10px;
+            border-radius: 15px;
+            cursor: pointer;
+        }
+
+        .welcome-section {
+            flex: 1;
+            text-align: center;
+            padding: 20px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+        }
+
+        .welcome-section h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .welcome-section p {
+            font-size: 1.1rem;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="bottom-section">
+        <!-- Carrossel à esquerda -->
+        <div class="carousel-container">
+            <div class="carousel">
+                <img src="um.png" alt="Foto 1">
+                <img src="dois.png" alt="Foto 2">
+                <img src="tres.jpg" alt="Foto 3">
+            </div>
+        </div>
+
+    
+
+    <script>
+        const carousel = document.querySelector('.carousel');
+        const images = document.querySelectorAll('.carousel img');
+        let index = 0;
+
+        // Mudar imagem ao passar o mouse
+        images.forEach((img, i) => {
+            img.addEventListener('mouseenter', () => {
+                index = i;
+                carousel.style.transform = `translateX(-${(300 + 10) * index}px)`;
+            });
+        });
+    </script>
+
+</body>
+</html>
