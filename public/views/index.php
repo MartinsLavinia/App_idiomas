@@ -351,13 +351,20 @@ ob_end_flush();
                                 <label for="senha" class="form-label">Senha</label>
                                 <input type="password" class="form-control" id="senha" name="senha" required>
                             </div>
+                            <div class="mb-3 text-end">
+                                <a href="esqueci_senha.php">Esqueci a senha?</a>
+                            </div>
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-primary" id="btnLogin">
                                     <span id="btnText">Entrar</span>
                                     <span class="spinner-border spinner-border-sm d-none" id="btnSpinner" role="status" aria-hidden="true"></span>
                                 </button>
                             </div>
-                        </form>
+<div class="d-grid gap-2 mt-3">
+                                <button type="button" class="btn btn-danger" onclick="window.location.href=\'google_oauth.php?action=login\'">
+                                    <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google logo"> Entrar com Google
+                                </button>
+                            </div>
                         <div class="text-center mt-3">
                             <p>Não tem uma conta? <a href="cadastro.php">Cadastre-se aqui</a></p>
                         </div>
