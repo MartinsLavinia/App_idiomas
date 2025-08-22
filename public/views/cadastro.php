@@ -99,6 +99,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-primary">Cadastrar e Começar Quiz</button>
                             </div>
+                            <div class="d-grid gap-2 mt-3">
+                                <button type="button" class="btn btn-danger" onclick="window.location.href=\'google_oauth.php?action=register\'">
+                                    <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google logo"> Cadastrar com Google
+                                </button>
+                            </div>
                         </form>
                         <div class="text-center mt-3">
                             <p>Já tem uma conta? <a href="index.php">Faça login aqui</a></p>
