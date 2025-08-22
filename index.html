@@ -4,27 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="SpeakNut: Plataforma de aprendizado de idiomas. Escolha seu curso e aprenda inglês, espanhol, francês, japonês e mais.">
-    <meta name="keywords" content="SpeakNut, aprender idiomas, cursos online, inglês, espanhol, francês, japonês, coreano">
-    <meta name="author" content="SpeakNut">
-
-<!-- Metadados para redes sociais (Open Graph / Facebook) -->
-    <meta property="og:title" content="SpeakNut - Aprenda Idiomas Online">
-    <meta property="og:description" content="Plataforma interativa para aprender idiomas. Comece seu curso e amplie seus conhecimentos linguísticos.">
-    <meta property="og:image" content="logo-idiomas.png">
-    <meta property="og:url" content="https://www.seusite.com.br">
-    <meta property="og:type" content="website">
-
-<!-- Metadados para Twitter -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="SpeakNut - Aprenda Idiomas Online">
-    <meta name="twitter:description" content="Plataforma interativa para aprender idiomas. Comece seu curso e amplie seus conhecimentos linguísticos.">
-    <meta name="twitter:image" content="logo-idiomas.png">
-    <title>SpeakNut - Bem-vindos!</title>
+    <title>SpeakNut - Plataforma de Aprendizado de Idiomas</title>
     <style>
         * {
             margin: 0;
@@ -32,518 +12,263 @@
             box-sizing: border-box;
         }
 
-        body {
-            background-image: url('fundo-idiomas.png');
-            background-repeat: no-repeat;
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            margin: 0;
-            font-family: Arial, sans-serif;
-            color: #333;
+        body,
+        html {
+            height: 100%;
+            width: 100%;
+            font-family: 'Arial', sans-serif;
         }
 
-        /* Barra superior */
-        header {
-            display: flex;
-            justify-content: flex-end;
-            gap: 15px;
-            padding: 20px 30px;
-            position: relative;
+        .header {
+            position: absolute;
+            top: 20px;
+            left: 20px;
             z-index: 10;
         }
 
-        header button {
-            padding: 12px 24px;
-            border: 2px solid  rgb(94, 27, 156);;
-            border-radius: 10px;
-            cursor: pointer;
+        .header a {
+            text-decoration: none;
+            color: #333;
             font-weight: bold;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            font-family:Verdana, Geneva, Tahoma, sans-serif;
+            margin-right: 20px;
+            font-size: 16px;
         }
 
-        .btn-entrar {
-            background-color: #e3d5f7;
-            color: #000000;
+        .header a:hover {
+            color: #7c3aed;
         }
 
-        .btn-entrar:hover {
-            background-color: #e3d5f7;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        .container {
+            display: flex;
+            height: 100vh;
+            width: 100%;
         }
 
-        .btn-cadastrar {
-            background-color: #260e50;
-            color: rgb(255, 255, 255);
-        }
-
-        .btn-cadastrar:hover {
-            background-color: rgba(194, 145, 243, 1);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Área principal */
-        .main-content {
+        .metade-logo {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-            position: relative;
-        }
-
-        /* Logo */
-        .logo-section {
-            transform: translateX(100px);
-            margin-bottom: 0px;
-            animation: slideInFromTop 1.2s ease-out;
-        }
-
-        .logo img {
-    width: 600px; /* aumenta mais a logo */
-    max-width: 100%;
-    transform: translate(100px, 80px);
-    transition: transform 1s ease, opacity 1s ease;
-    opacity: 1;
-}
-
-
-        /* Seção inferior */
-        .bottom-section {
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            width: 100%;
-            max-width: 1200px;
-            margin-top: 40px;
-        }
-
-        /* Mascote */
-        .mascote-container {
-            flex: 0 0 400px;
-        }
-
-        .mascote {
-        max-width: 500px;
-        width: 100%;
-        height: auto;
-        transform: translateX(-100px);
-        
-         
-         /* move o mascote para a esquerda */
-         
-}
-
-        .welcome-section {
-            flex: 1;
-            text-align: center;
+            background: #f8f9fa;
             padding: 40px;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            /* mantém bordas arredondadas */
-            margin-left: 40px;
-            box-shadow: 0 0 20px rgba(107, 70, 193, 0.6), 0 0 40px rgba(107, 70, 193, 0.4);
-            backdrop-filter: blur(10px);
-            border: 3px solid #6b46c1;
-            max-width: 750px;
-            /* largura aumentada */
-            min-width: 450px;
-            /* garante que não fique pequena */
-            margin-bottom: 60px;
-
-            /* Animação */
-            opacity: 0;
-            transform: translateX(100px);
-            animation: slideInFull 1.5s ease-out forwards;
         }
 
-        .welcome-title {
-            font-size: 3rem;
+        .logo-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo-section img {
+            max-width: 500px;
+            /* tamanho da logo */
+            height: auto;
+            margin-bottom: 20px;
+        }
+
+        .welcome-text {
+            font-size: 36px;
             font-weight: bold;
-            color: #1a0d38;
-            margin-bottom: 15px;
-            text-shadow: 0 0 10px #a78be9,
-                0 0 20px rgba(84, 54, 153, 0.7),
-                0 0 30px rgba(60, 38, 110, 0.3);
-
+            color: #1f2937;
+            margin-bottom: 20px;
+            text-align: center;
+            line-height: 1.2;
         }
 
-        .welcome-subtitle {
-            font-size: 1.2rem;
-            color: #666;
-            line-height: 1.6;
+        .subtitle {
+            font-size: 18px;
+            color: #6b7280;
+            margin-bottom: 40px;
+            text-align: center;
         }
 
-        @keyframes slideInFull {
-            0% {
-                opacity: 0;
-                transform: translateX(100px) scale(0.95);
-            }
+        .cta-button {
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+        }
 
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+        }
+
+        .metade-fundo {
+            flex: 1;
+            background: linear-gradient(135deg, #7c3aed, #e385ec);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mascot {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, #ffe9a8, #f7c840);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            position: relative;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .mascot::before {
+            content: "🐿️";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 120px;
+        }
+
+        @keyframes float {
+
+            0%,
             100% {
-                opacity: 1;
-                transform: translateX(0) scale(1);
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-20px);
             }
         }
 
+        .decorative-elements {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
 
-        @keyframes fadeZoom {
-            0% {
-                opacity: 0;
-                transform: scale(0.5);
-            }
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+        }
 
+        .circle1 {
+            width: 100px;
+            height: 100px;
+            top: 20%;
+            left: 10%;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        .circle2 {
+            width: 60px;
+            height: 60px;
+            top: 70%;
+            right: 20%;
+            animation: pulse 3s ease-in-out infinite reverse;
+        }
+
+        @keyframes pulse {
+
+            0%,
             100% {
-                opacity: 1;
+                opacity: 0.3;
                 transform: scale(1);
             }
-        }
-
-        @keyframes slideInFromLeft {
-            0% {
-                opacity: 0;
-                transform: translateX(-100px);
-            }
-
-            100% {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        @keyframes slideInFromRight {
-            0% {
-                opacity: 0;
-                transform: translateX(100px);
-            }
-
-            100% {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        @keyframes mascoteBounce {
-
-            0%,
-            100% {
-                transform: translateY(0);
-            }
 
             50% {
-                transform: translateY(-10px);
+                opacity: 0.6;
+                transform: scale(1.1);
             }
         }
 
-        @keyframes welcomePulse {
-
-            0%,
-            100% {
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            }
-
-            50% {
-                box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
-            }
-        }
-
-        @keyframes titleTypewriter {
-            0% {
-                opacity: 0;
-                width: 0;
-            }
-
-            100% {
-                opacity: 1;
-                width: 100%;
-            }
-        }
-
-        @keyframes subtitleFadeIn {
-            0% {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Responsividade */
         @media (max-width: 768px) {
-            .logo-text {
-                font-size: 2.5rem;
-            }
-
-            .bottom-section {
+            .container {
                 flex-direction: column;
-                align-items: center;
-                gap: 30px;
             }
 
-            .welcome-section {
-                margin-left: 0;
-                margin-top: 20px;
+            .metade-logo,
+            .metade-fundo {
+                flex: none;
+                height: 50vh;
             }
 
-            .welcome-title {
-                font-size: 1.8rem;
+            .welcome-text {
+                font-size: 28px;
             }
 
-            .welcome-subtitle {
-                font-size: 1rem;
+            .mascot {
+                width: 200px;
+                height: 200px;
             }
 
-            header {
-                padding: 15px 20px;
-            }
-
-            header button {
-                padding: 10px 20px;
-                font-size: 12px;
+            .mascot::before {
+                font-size: 80px;
             }
         }
 
-        
-.speaknut-footer {
-  position: relative; /* não fixa na tela */
-  bottom: 0; /* fica no final da página */
-  width: 100%;
-  background-color: #1a0d38;
-  color: #e3d5f7;
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
-  padding: 50px 20px 20px 20px;
-  /* remove a animação de bottom */
-}
+        .cadastre-btn {
+            background-color: #260e50;
+            /* cor de fundo */
+            color: rgb(255, 255, 255);
+            /* cor do texto */
+            padding: 12px 24px;
+            /* espaço interno */
+            border: none;
+            /* sem borda */
+            border-radius: 20px;
+            /* cantos arredondados */
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            text-decoration: none;
+            /* remove sublinhado */
+        }
 
-
-.footer-top {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  max-width: 1200px;
-  margin: 0 auto;
-  gap: 40px;
-}
-
-.footer-column {
-  flex: 1 1 220px;
-}
-
-.footer-column h3 {
-  font-size: 1.2rem;
-  color: #a78be9; /* Lilás */
-  margin-bottom: 15px;
-  border-bottom: 2px solid #6b46c1;
-  display: inline-block;
-  padding-bottom: 5px;
-}
-
-.footer-column ul {
-  list-style: none;
-  padding: 0;
-}
-
-.footer-column ul li {
-  margin-bottom: 10px;
-}
-
-.footer-column ul li a {
-  text-decoration: none;
-  color: #e3d5f7;
-  transition: color 0.3s ease;
-}
-
-.footer-column ul li a:hover {
-  color: #ffffff;
-  text-shadow: 0 0 8px #a78be9;
-}
-
-.social-icons a {
-  color: #e3d5f7;
-  margin-right: 10px;
-  text-decoration: none;
-}
-
-.social-icons a:hover {
-  color: #fff;
-}
-
-.footer-bottom {
-  margin-top: 30px;
-  text-align: center;
-  font-size: 0.9rem;
-  color: #cbbde8;
-  border-top: 1px solid #6b46c1;
-  padding-top: 15px;
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-  .footer-top {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-  .footer-column {
-    flex: 1 1 100%;
-  }
-}
-
-        .scroll-hint {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 1rem;
-    color: #6b46c1;
-    text-align: center;
-    animation: bounce 1.5s infinite ease-in-out;
-    cursor: pointer;
-    z-index: 15;
-}
-
-@keyframes bounce {
-    0% { transform: translateX(-50%) translateY(0); opacity: 0.7; }
-    50% { transform: translateX(-50%) translateY(15px); opacity: 1; }
-    100% { transform: translateX(-50%) translateY(0); opacity: 0.7; }
-}
-
-/* Para simular “scroll tipo Pinterest” */
-html {
-    scroll-behavior: smooth;
-}
-
-      
+        .cadastre-btn:hover {
+            background-color: #1b063f;
+            color: rgb(255, 255, 255);
+            /* cor ao passar o mouse */
+        }
     </style>
-
-  
-
-
-    
 </head>
 
 <body>
+    <div class="header">
+        <a href="#cadastro" class="cadastre-btn"
+            style="color:white; font-family:Arial, Helvetica, sans-serif">Cadastre-se</a>
+        <a href=" #login" style="font-family:Arial, Helvetica, sans-serif">Entrar</a>
+    </div>
+
+
     <div class="container">
-        <header>
-            <button class="btn-entrar">Entrar</button>
-            <button class="btn-cadastrar">Cadastre-se</button>
-        </header>
-
-        <div class="main-content">
-            <div class="scroll-hint"></div>
-
+        <div class="metade-logo">
             <div class="logo-section">
-                <div class="logo">
-                    <img src="logo-idiomas.png" alt="Logo SpeakNut">
-                </div>
-            </div>
+                <!-- aqui entrou sua logo -->
+                <img src="logo-idiomas.png" alt="Logo SpeakNut">
 
-            <div class="bottom-section">
-                <div class="mascote-container">
-                    <img src="mascote.png" alt="Mascote SpeakNut" class="mascote">
+                <div class="welcome-text"> Seja bem-vindo ao SpeakNut
                 </div>
 
-                <div class="welcome-section">
-                    <h1 class="welcome-title">Seja bem-vindo ao SpeakNut</h1>
-                    <p class="welcome-subtitle">Sua nova plataforma de aprendizado de idiomas</p>
+                <div class="subtitle">
+                    Sua nova plataforma<br>
+                    de aprendizado de idiomas
                 </div>
+
+                <button class="cta-button" style="font-family:Arial, Helvetica, sans-serif">Descubra mais</button>
             </div>
         </div>
+
+        <div class="metade-fundo">
+            <div class="decorative-elements">
+                <div class="circle circle1"></div>
+                <div class="circle circle2"></div>
+            </div>
+            <div class="mascot"></div>
+        </div>
     </div>
-
-    
-
-    
-<footer class="speaknut-footer">
-  <div class="footer-top">
-    <div class="footer-column">
-      <h3>Serviços</h3>
-      <ul>
-        <li><a href="#">Cursos de Inglês</a></li>
-        <li><a href="#">Cursos de Espanhol</a></li>
-        <li><a href="#">Cursos de Japonês</a></li>
-        <li><a href="#">Cursos de Coreano</a></li>
-        <li><a href="#">Mentorias</a></li>
-      </ul>
-    </div>
-
-    <div class="footer-column">
-      <h3>Recursos</h3>
-      <ul>
-        <li><a href="#">Blog</a></li>
-        <li><a href="#">Podcast</a></li>
-        <li><a href="#">Materiais Gratuitos</a></li>
-        <li><a href="#">E-books</a></li>
-      </ul>
-    </div>
-
-    <div class="footer-column">
-      <h3>Institucional</h3>
-      <ul>
-        <li><a href="#">Sobre nós</a></li>
-        <li><a href="#">Carreiras</a></li>
-        <li><a href="#">Contato</a></li>
-        <li><a href="#">Política de Privacidade</a></li>
-      </ul>
-    </div>
-
-    <div class="footer-column">
-      <h3>Siga-nos</h3>
-      <div class="social-icons">
-        <a href="#"><i class="fab fa-facebook-f"></i></a>
-        <a href="#"><i class="fab fa-instagram"></i></a>
-        <a href="#"><i class="fab fa-youtube"></i></a>
-        <a href="#"><i class="fab fa-linkedin-in"></i></a>
-      </div>
-    </div>
-  </div>
-
-  <div class="footer-bottom">
-    <p>&copy; 2025 SpeakNut. Todos os direitos reservados.</p>
-  </div>
-</footer>
-
-
-<script>
-let startY = 0;
-
-// Para toque (mobile)
-window.addEventListener('touchstart', function(e) {
-    startY = e.touches[0].clientY;
-});
-
-window.addEventListener('touchend', function(e) {
-    let endY = e.changedTouches[0].clientY;
-    if (endY - startY > 50) { // arrastou pra baixo
-        window.location.href = 'conteudo.html';
-    }
-});
-
-// Para scroll (desktop)
-window.addEventListener('wheel', function(e) {
-    if (e.deltaY > 50) { // scroll pra baixo
-        window.location.href = 'conteudo.html';
-    }
-});
-
-// Clique direto no indicador
-document.querySelector('.scroll-hint').addEventListener('click', function() {
-    window.location.href = 'conteudo.html';
-});
-</script>
-
-
-
-
 </body>
 
 </html>
