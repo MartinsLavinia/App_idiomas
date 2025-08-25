@@ -65,6 +65,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             'dica' => $_POST['dica_texto'] ?? ''
                         ]);
                     }
+                } elseif ($tipo_exercicio === 'completar') {
+                    if (empty($_POST['frase_completar']) || empty($_POST['resposta_completar'])) {
+                        $mensagem = '<div class="alert alert-danger">Frase para completar e resposta são obrigatórias.</div>';
+                    } else {
+                        $alternativas_aceitas = !empty($_POST['alternativas_completar']) ? 
+                            array_map('trim', explode(',', $_POST['alternativas_completar'])) : 
+                            [$_POST['resposta_completar']];
+                        $conteudo = json_encode([
+                            'frase_completar' => $_POST['frase_completar'],
+                            'resposta_correta' => $_POST['resposta_completar'],
+                            'alternativas_aceitas' => $alternativas_aceitas,
+                            'dica' => $_POST['dica_completar'] ?? '',
+                            'placeholder' => $_POST['placeholder_completar'] ?? 'Digite sua resposta...'
+                        ]);
+                    }
                 } elseif ($tipo_exercicio === 'fala') {
                     if (empty($_POST['frase_esperada'])) {
                         $mensagem = '<div class="alert alert-danger">Frase esperada é obrigatória.</div>';
@@ -187,6 +202,7 @@ $database->closeConnection();
                         <select class="form-select" id="tipo_exercicio" name="tipo_exercicio" required>
                             <option value="multipla_escolha">Múltipla Escolha</option>
                             <option value="texto_livre">Texto Livre (Completar)</option>
+                            <option value="completar">Completar Frase</option>
                             <option value="fala">Exercício de Fala</option>
                             <option value="audicao">Exercício de Áudio</option>
                             <option value="audicao">Exercício de Audição</option>
@@ -209,12 +225,14 @@ $database->closeConnection();
                                     <label class="form-label">Alternativas</label>
                                     <div id="alternativas-container">
                                         <div class="input-group mb-2">
+                                            <span class="input-group-text">A</span>
                                             <input type="text" class="form-control" name="alt_texto[]" placeholder="Texto da alternativa">
                                             <div class="input-group-text">
                                                 <input type="radio" name="alt_correta" value="0" title="Marcar como correta">
                                             </div>
                                         </div>
                                         <div class="input-group mb-2">
+                                            <span class="input-group-text">B</span>
                                             <input type="text" class="form-control" name="alt_texto[]" placeholder="Texto da alternativa">
                                             <div class="input-group-text">
                                                 <input type="radio" name="alt_correta" value="1" title="Marcar como correta">
@@ -243,6 +261,33 @@ $database->closeConnection();
                                 <div class="mb-3">
                                     <label for="dica_texto" class="form-label">Dica</label>
                                     <textarea class="form-control" id="dica_texto" name="dica_texto" placeholder="Dica para ajudar o usuário"></textarea>
+                                </div>
+                            </div>
+                            
+                            <!-- Campos para Completar -->
+                            <div id="campos-completar" class="subtipo-campos" style="display: none;">
+                                <h5>Configuração - Completar Frase</h5>
+                                <div class="mb-3">
+                                    <label for="frase_completar" class="form-label">Frase para Completar</label>
+                                    <input type="text" class="form-control" id="frase_completar" name="frase_completar" placeholder="I _____ a student. (use _____ para indicar onde completar)">
+                                    <div class="form-text">Use _____ para indicar onde o usuário deve completar</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="resposta_completar" class="form-label">Resposta Correta</label>
+                                    <input type="text" class="form-control" id="resposta_completar" name="resposta_completar" placeholder="am">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="alternativas_completar" class="form-label">Alternativas Aceitas (separadas por vírgula)</label>
+                                    <input type="text" class="form-control" id="alternativas_completar" name="alternativas_completar" placeholder="am, 'm">
+                                    <div class="form-text">Outras formas aceitas da resposta</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="placeholder_completar" class="form-label">Placeholder do Campo</label>
+                                    <input type="text" class="form-control" id="placeholder_completar" name="placeholder_completar" placeholder="Digite sua resposta..." value="Digite sua resposta...">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dica_completar" class="form-label">Dica</label>
+                                    <textarea class="form-control" id="dica_completar" name="dica_completar" placeholder="Dica para ajudar o usuário"></textarea>
                                 </div>
                             </div>
                             
@@ -340,6 +385,7 @@ $database->closeConnection();
         
         const camposMultipla = document.getElementById('campos-multipla');
         const camposTexto = document.getElementById('campos-texto');
+        const camposCompletar = document.getElementById('campos-completar');
         const camposFala = document.getElementById('campos-fala');
         const camposAudicao = document.getElementById('campos-audicao');
 
@@ -352,6 +398,7 @@ $database->closeConnection();
             // Esconder todos os subcampos
             camposMultipla.style.display = 'none';
             camposTexto.style.display = 'none';
+            camposCompletar.style.display = 'none';
             camposFala.style.display = 'none';
             camposAudicao.style.display = 'none';
 
@@ -366,11 +413,11 @@ $database->closeConnection();
                     case 'texto_livre':
                         camposTexto.style.display = 'block';
                         break;
+                    case 'completar':
+                        camposCompletar.style.display = 'block';
+                        break;
                     case 'fala':
                         camposFala.style.display = 'block';
-                        break;
-                    case 'audicao':
-                        document.getElementById('campos-audicao').style.display = 'block';
                         break;
                     case 'audicao':
                         camposAudicao.style.display = 'block';
@@ -391,16 +438,18 @@ $database->closeConnection();
     });
     
     function adicionarAlternativa() {
-        const container = document.getElementById('alternativas-container');
+        const container = document.getElementById("alternativas-container");
         const index = container.children.length;
-        const novaAlternativa = document.createElement('div');
-        novaAlternativa.className = 'input-group mb-2';
+        const novaAlternativa = document.createElement("div");
+        novaAlternativa.className = "input-group mb-2";
+        const letra = String.fromCharCode(65 + index); // 65 é o código ASCII para 'A'
         novaAlternativa.innerHTML = `
+            <span class="input-group-text">${letra}</span>
             <input type="text" class="form-control" name="alt_texto[]" placeholder="Texto da alternativa">
             <div class="input-group-text">
                 <input type="radio" name="alt_correta" value="${index}" title="Marcar como correta">
             </div>
-            <button type="button" class="btn btn-outline-danger" onclick="this.parentElement.parentElement.remove()">×</button>
+            <button type="button" class="btn btn-outline-danger" onclick="this.parentElement.remove()">×</button>
         `;
         container.appendChild(novaAlternativa);
     }

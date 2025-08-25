@@ -75,6 +75,7 @@ $database->closeConnection();
             <button type="button" class="btn btn-secondary me-2" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
                 Gerenciar Idiomas
             </button>
+            <a href="gerenciar_teorias.php" class="btn btn-info">Gerenciar Teorias</a>
         </div>
 
         <?php if (isset($_GET['msg'])): ?>
