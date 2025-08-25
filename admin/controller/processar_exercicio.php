@@ -131,7 +131,8 @@ function processarExercicioDemo($exercicio_id, $resposta_usuario, $tipo_exercici
         'correto' => $correto,
         'explicacao' => $resposta_correta['explicacao'],
         'dica' => $correto ? null : $resposta_correta['dica'],
-        'pontuacao' => $correto ? 100 : 0
+        'pontuacao' => $correto ? 100 : 0,
+        'success' => true
     ];
 }
 
@@ -173,7 +174,8 @@ function processarMultiplaEscolha($resposta_usuario, $conteudo) {
         'correto' => $correto,
         'explicacao' => $conteudo['explicacao'] ?? ($correto ? 'Correto!' : 'Resposta incorreta.'),
         'dica' => $correto ? null : ($conteudo['dica'] ?? null),
-        'pontuacao' => $correto ? 100 : 0
+        'pontuacao' => $correto ? 100 : 0,
+        'success' => true
     ];
 }
 
@@ -182,18 +184,35 @@ function processarTextoLivre($resposta_usuario, $conteudo) {
     $alternativas_aceitas = $conteudo['alternativas_aceitas'] ?? [$resposta_correta];
 
     $correto = false;
+    $melhor_similaridade = 0;
+    
     foreach ($alternativas_aceitas as $alternativa) {
+        // Verificar correspondência exata
         if (stripos($resposta_usuario, $alternativa) !== false) {
             $correto = true;
+            $melhor_similaridade = 1.0;
             break;
         }
+        
+        // Calcular similaridade
+        $similaridade = calcularSimilaridade($resposta_usuario, $alternativa);
+        if ($similaridade > $melhor_similaridade) {
+            $melhor_similaridade = $similaridade;
+        }
+    }
+    
+    // Considerar correto se similaridade >= 80%
+    if (!$correto && $melhor_similaridade >= 0.8) {
+        $correto = true;
     }
 
     return [
         'correto' => $correto,
         'explicacao' => $conteudo['explicacao'] ?? ($correto ? 'Correto!' : 'Resposta incorreta.'),
         'dica' => $correto ? null : ($conteudo['dica'] ?? null),
-        'pontuacao' => $correto ? 100 : 0
+        'pontuacao' => $correto ? 100 : ($melhor_similaridade * 100),
+        'similaridade' => $melhor_similaridade,
+        'success' => true
     ];
 }
 
@@ -206,7 +225,8 @@ function processarFala($resposta_usuario, $conteudo) {
         'correto' => $correto,
         'explicacao' => $correto ? 'Excelente pronúncia!' : 'Tente novamente, prestando atenção à pronúncia.',
         'dica' => $correto ? null : 'Ouça o áudio de exemplo e pratique devagar.',
-        'pontuacao' => $correto ? 100 : 0
+        'pontuacao' => $correto ? 100 : 0,
+        'success' => true
     ];
 }
 
@@ -220,8 +240,28 @@ function processarArrastarSoltar($resposta_usuario, $conteudo) {
         'correto' => $correto,
         'explicacao' => $conteudo['explicacao'] ?? ($correto ? 'Correto!' : 'Verifique as posições dos elementos.'),
         'dica' => $correto ? null : ($conteudo['dica'] ?? 'Leia as categorias com atenção.'),
-        'pontuacao' => $correto ? 100 : 0
+        'pontuacao' => $correto ? 100 : 0,
+        'success' => true
     ];
+}
+
+function calcularSimilaridade($str1, $str2) {
+    $str1 = strtolower(trim($str1));
+    $str2 = strtolower(trim($str2));
+    
+    if ($str1 === $str2) {
+        return 1.0;
+    }
+    
+    // Calcular similaridade usando Levenshtein distance
+    $distancia = levenshtein($str1, $str2);
+    $max_length = max(strlen($str1), strlen($str2));
+    
+    if ($max_length == 0) {
+        return 1.0;
+    }
+    
+    return 1 - ($distancia / $max_length);
 }
 
 function registrarProgresso($conn, $id_usuario, $exercicio_id, $acertou, $pontuacao) {

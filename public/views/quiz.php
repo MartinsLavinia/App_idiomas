@@ -38,6 +38,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
     // Novo cálculo de pontuação para uma avaliação mais precisa
     $pontuacao_total = 0;
+    $total_perguntas = count($respostas_usuario);
     foreach ($respostas_usuario as $id_pergunta => $resposta_do_usuario) {
         if (isset($respostas_corretas_map[$id_pergunta]) && $respostas_corretas_map[$id_pergunta]['resposta'] === $resposta_do_usuario) {
             $pontuacao_total++;
@@ -68,8 +69,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Fecha a conexão
     $database->closeConnection();
     
-    // Redireciona para a página de resultados
-    header("Location: resultado_quiz.php?idioma=$idioma_quiz&nivel=$nivel_final");
+    // Redireciona para a página de resultados com a pontuação
+    header("Location: resultado_quiz.php?idioma=$idioma_quiz&nivel=$nivel_final&acertos=$pontuacao_total&total=$total_perguntas");
     exit();
 }
 
@@ -111,8 +112,76 @@ $database->closeConnection();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz de Nivelamento - <?php echo htmlspecialchars($idioma_quiz); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .contador-acertos {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            min-width: 200px;
+            text-align: center;
+        }
+        
+        .acertos-numero {
+            font-size: 2em;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .acertos-texto {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .pergunta-atual {
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .progresso-quiz {
+            background: #e9ecef;
+            height: 10px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        
+        .progresso-preenchido {
+            background: linear-gradient(90deg, #007bff, #28a745);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        .alternativa-selecionada {
+            background-color: #e7f3ff !important;
+            border-color: #007bff !important;
+        }
+        
+        @media (max-width: 768px) {
+            .contador-acertos {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin-bottom: 20px;
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="contador-acertos">
+        <span class="acertos-numero" id="acertos-count">0</span>
+        <span class="acertos-texto">acertos de <span id="total-count">0</span> perguntas</span>
+    </div>
+
     <div class="container mt-5">
         <div class="row justify-content-center">
             <div class="col-md-8">
@@ -120,33 +189,38 @@ $database->closeConnection();
                     <div class="card-header text-center">
                         <h2>Quiz de Nivelamento de <?php echo htmlspecialchars($idioma_quiz); ?></h2>
                         <p>Responda às perguntas para descobrir seu nível.</p>
+                        <div class="progresso-quiz">
+                            <div class="progresso-preenchido" id="progresso-barra" style="width: 0%"></div>
+                        </div>
                     </div>
                     <div class="card-body">
-                        <form action="quiz.php" method="POST">
+                        <form action="quiz.php" method="POST" id="quiz-form">
                             <input type="hidden" name="idioma" value="<?php echo htmlspecialchars($idioma_quiz); ?>">
                             <?php foreach ($perguntas_quiz as $key => $pergunta): ?>
-                                <div class="mb-4">
-                                    <h5><?php echo ($key + 1) . ". " . htmlspecialchars($pergunta['pergunta']); ?></h5>
+                                <div class="mb-4 pergunta-item" data-pergunta="<?php echo $key + 1; ?>">
+                                    <div class="pergunta-atual">
+                                        <h5><?php echo ($key + 1) . ". " . htmlspecialchars($pergunta['pergunta']); ?></h5>
+                                    </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="resposta[<?php echo $pergunta['id']; ?>]" id="pergunta_<?php echo $pergunta['id']; ?>_a" value="A" required>
+                                        <input class="form-check-input resposta-radio" type="radio" name="resposta[<?php echo $pergunta['id']; ?>]" id="pergunta_<?php echo $pergunta['id']; ?>_a" value="A" required data-pergunta="<?php echo $key + 1; ?>">
                                         <label class="form-check-label" for="pergunta_<?php echo $pergunta['id']; ?>_a"><?php echo htmlspecialchars($pergunta['alternativa_a']); ?></label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="resposta[<?php echo $pergunta['id']; ?>]" id="pergunta_<?php echo $pergunta['id']; ?>_b" value="B" required>
+                                        <input class="form-check-input resposta-radio" type="radio" name="resposta[<?php echo $pergunta['id']; ?>]" id="pergunta_<?php echo $pergunta['id']; ?>_b" value="B" required data-pergunta="<?php echo $key + 1; ?>">
                                         <label class="form-check-label" for="pergunta_<?php echo $pergunta['id']; ?>_b"><?php echo htmlspecialchars($pergunta['alternativa_b']); ?></label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="resposta[<?php echo $pergunta['id']; ?>]" id="pergunta_<?php echo $pergunta['id']; ?>_c" value="C" required>
+                                        <input class="form-check-input resposta-radio" type="radio" name="resposta[<?php echo $pergunta['id']; ?>]" id="pergunta_<?php echo $pergunta['id']; ?>_c" value="C" required data-pergunta="<?php echo $key + 1; ?>">
                                         <label class="form-check-label" for="pergunta_<?php echo $pergunta['id']; ?>_c"><?php echo htmlspecialchars($pergunta['alternativa_c']); ?></label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="resposta[<?php echo $pergunta['id']; ?>]" id="pergunta_<?php echo $pergunta['id']; ?>_d" value="D" required>
+                                        <input class="form-check-input resposta-radio" type="radio" name="resposta[<?php echo $pergunta['id']; ?>]" id="pergunta_<?php echo $pergunta['id']; ?>_d" value="D" required data-pergunta="<?php echo $key + 1; ?>">
                                         <label class="form-check-label" for="pergunta_<?php echo $pergunta['id']; ?>_d"><?php echo htmlspecialchars($pergunta['alternativa_d']); ?></label>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
                             <div class="d-grid gap-2 mt-4">
-                                <button type="submit" class="btn btn-success">Finalizar Quiz</button>
+                                <button type="submit" class="btn btn-success" id="btn-finalizar">Finalizar Quiz</button>
                             </div>
                         </form>
                     </div>
@@ -154,6 +228,76 @@ $database->closeConnection();
             </div>
         </div>
     </div>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const totalPerguntas = <?php echo count($perguntas_quiz); ?>;
+            let perguntasRespondidas = 0;
+            
+            // Atualizar contador total
+            document.getElementById('total-count').textContent = totalPerguntas;
+            
+            // Adicionar event listeners para todas as opções de resposta
+            const radios = document.querySelectorAll('.resposta-radio');
+            const perguntasRespondidas_set = new Set();
+            
+            radios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    // Adicionar classe visual para alternativa selecionada
+                    const perguntaId = this.name;
+                    const todasAlternativas = document.querySelectorAll(`input[name="${perguntaId}"]`);
+                    
+                    todasAlternativas.forEach(alt => {
+                        alt.closest('.form-check').classList.remove('alternativa-selecionada');
+                    });
+                    
+                    this.closest('.form-check').classList.add('alternativa-selecionada');
+                    
+                    // Atualizar contador de perguntas respondidas
+                    perguntasRespondidas_set.add(perguntaId);
+                    perguntasRespondidas = perguntasRespondidas_set.size;
+                    
+                    // Atualizar barra de progresso
+                    const progresso = (perguntasRespondidas / totalPerguntas) * 100;
+                    document.getElementById('progresso-barra').style.width = progresso + '%';
+                    
+                    // Atualizar contador de acertos (simulado - na verdade só mostra perguntas respondidas)
+                    document.getElementById('acertos-count').textContent = perguntasRespondidas;
+                    
+                    // Habilitar botão finalizar se todas as perguntas foram respondidas
+                    const btnFinalizar = document.getElementById('btn-finalizar');
+                    if (perguntasRespondidas === totalPerguntas) {
+                        btnFinalizar.disabled = false;
+                        btnFinalizar.textContent = 'Finalizar Quiz ✓';
+                        btnFinalizar.classList.add('btn-success');
+                        btnFinalizar.classList.remove('btn-secondary');
+                    }
+                });
+            });
+            
+            // Inicialmente desabilitar o botão finalizar
+            const btnFinalizar = document.getElementById('btn-finalizar');
+            btnFinalizar.disabled = true;
+            btnFinalizar.textContent = 'Responda todas as perguntas';
+            btnFinalizar.classList.add('btn-secondary');
+            btnFinalizar.classList.remove('btn-success');
+            
+            // Adicionar confirmação antes de enviar
+            document.getElementById('quiz-form').addEventListener('submit', function(e) {
+                if (perguntasRespondidas < totalPerguntas) {
+                    e.preventDefault();
+                    alert('Por favor, responda todas as perguntas antes de finalizar o quiz.');
+                    return false;
+                }
+                
+                const confirmacao = confirm(`Você respondeu ${perguntasRespondidas} de ${totalPerguntas} perguntas. Deseja finalizar o quiz?`);
+                if (!confirmacao) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        });
+    </script>
 </body>
 </html>

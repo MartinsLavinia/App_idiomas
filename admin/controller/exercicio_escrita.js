@@ -1,4 +1,3 @@
-// Sistema de Exercícios de Escrita com Correção Automática
 class ExercicioEscrita {
     constructor() {
         this.exercicioAtual = null;
@@ -7,6 +6,8 @@ class ExercicioEscrita {
         this.respostaCorreta = null;
         this.alternativasAceitas = [];
         this.tipoExercicio = 'texto_livre';
+        this.acertosTotal = 0;
+        this.exerciciosRealizados = 0;
     }
 
     // Inicializar exercício de escrita
@@ -19,6 +20,7 @@ class ExercicioEscrita {
         
         this.criarInterface(pergunta);
         this.configurarEventos();
+        this.mostrarContadorAcertos();
     }
 
     // Criar interface do exercício
@@ -31,11 +33,19 @@ class ExercicioEscrita {
 
         container.innerHTML = `
             <div class="exercicio-escrita">
+                <div class="contador-acertos">
+                    <div class="acertos-info">
+                        <span class="acertos-numero">${this.acertosTotal}</span>
+                        <span class="acertos-texto">acertos de ${this.exerciciosRealizados} exercícios</span>
+                    </div>
+                </div>
+                
                 <div class="pergunta-escrita">
                     <h3>${pergunta}</h3>
                     ${this.tipoExercicio === 'completar_frase' ? '<p class="dica">💡 Complete a frase com a palavra ou expressão correta</p>' : ''}
                     ${this.tipoExercicio === 'traducao' ? '<p class="dica">💡 Traduza a frase para o português ou inglês</p>' : ''}
                     ${this.tipoExercicio === 'gramatica' ? '<p class="dica">💡 Use a gramática correta para completar</p>' : ''}
+                    ${this.tipoExercicio === 'texto_livre' ? '<p class="dica">💡 Digite sua resposta no campo abaixo</p>' : ''}
                 </div>
                 
                 <div class="area-resposta">
@@ -96,6 +106,24 @@ class ExercicioEscrita {
                     this.verificarResposta();
                 }
             });
+            
+            // Focar automaticamente no campo de texto
+            textarea.focus();
+        }
+    }
+
+    // Mostrar contador de acertos
+    mostrarContadorAcertos() {
+        const contadorElement = document.querySelector('.contador-acertos');
+        if (contadorElement) {
+            const percentual = this.exerciciosRealizados > 0 ? Math.round((this.acertosTotal / this.exerciciosRealizados) * 100) : 0;
+            contadorElement.innerHTML = `
+                <div class="acertos-info">
+                    <span class="acertos-numero">${this.acertosTotal}</span>
+                    <span class="acertos-texto">acertos de ${this.exerciciosRealizados} exercícios</span>
+                    <span class="acertos-percentual">(${percentual}%)</span>
+                </div>
+            `;
         }
     }
 
@@ -116,7 +144,8 @@ class ExercicioEscrita {
         this.desabilitarInterface(true);
 
         try {
-            const response = await fetch('admin/controller/correcao_escrita.php', {
+            // Usar o arquivo corrigido de correção de escrita
+            const response = await fetch('admin/controller/correçao_escrita_progresso_usuario_corrigido.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -134,6 +163,13 @@ class ExercicioEscrita {
             
             if (resultado.success) {
                 this.mostrarResultado(resultado.resultado);
+                
+                // Atualizar contadores
+                this.exerciciosRealizados++;
+                if (resultado.resultado.correto) {
+                    this.acertosTotal++;
+                }
+                this.mostrarContadorAcertos();
             } else {
                 this.mostrarErro(resultado.message || 'Erro ao verificar resposta');
             }
@@ -347,6 +383,8 @@ class ExercicioEscrita {
         
         const btnVerificar = document.getElementById('btn-verificar');
         if (btnVerificar) btnVerificar.disabled = true;
+        
+        if (textarea) textarea.focus();
     }
 
     // Tentar novamente
@@ -439,12 +477,9 @@ class ExercicioEscrita {
 
     // Próximo exercício
     proximoExercicio() {
-        // Implementar navegação para próximo exercício
-        if (typeof proximoExercicio === 'function') {
-            proximoExercicio();
-        } else {
-            console.log('Função proximoExercicio não definida');
-        }
+        // Aqui você pode implementar a lógica para carregar o próximo exercício
+        console.log('Carregando próximo exercício...');
+        // Por exemplo: window.location.href = 'proximo_exercicio.php';
     }
 
     // Atualizar contador de tentativas
@@ -452,35 +487,6 @@ class ExercicioEscrita {
         const contador = document.getElementById('contador-tentativas');
         if (contador) {
             contador.innerHTML = `Tentativa: <strong>${this.tentativas}</strong> de ${this.maxTentativas}`;
-        }
-    }
-
-    // Desabilitar/habilitar interface durante verificação
-    desabilitarInterface(desabilitar) {
-        const elementos = [
-            'resposta-usuario',
-            'btn-verificar',
-            'btn-dica',
-            'btn-limpar'
-        ];
-
-        elementos.forEach(id => {
-            const elemento = document.getElementById(id);
-            if (elemento) {
-                elemento.disabled = desabilitar;
-            }
-        });
-
-        if (desabilitar) {
-            const btnVerificar = document.getElementById('btn-verificar');
-            if (btnVerificar) {
-                btnVerificar.textContent = '⏳ Verificando...';
-            }
-        } else {
-            const btnVerificar = document.getElementById('btn-verificar');
-            if (btnVerificar) {
-                btnVerificar.textContent = '✓ Verificar Resposta';
-            }
         }
     }
 
@@ -495,6 +501,23 @@ class ExercicioEscrita {
                 </div>
             `;
         }
+    }
+
+    // Desabilitar/habilitar interface
+    desabilitarInterface(desabilitar) {
+        const elementos = document.querySelectorAll('#exercicio-escrita-container button, #exercicio-escrita-container textarea');
+        elementos.forEach(elemento => {
+            elemento.disabled = desabilitar;
+        });
+    }
+
+    // Obter estatísticas
+    obterEstatisticas() {
+        return {
+            acertos: this.acertosTotal,
+            exercicios: this.exerciciosRealizados,
+            percentual: this.exerciciosRealizados > 0 ? Math.round((this.acertosTotal / this.exerciciosRealizados) * 100) : 0
+        };
     }
 }
 
@@ -514,6 +537,37 @@ const estilosEscrita = `
     margin: 0 auto;
     padding: 20px;
     font-family: Arial, sans-serif;
+}
+
+.contador-acertos {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.acertos-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.acertos-numero {
+    font-size: 2em;
+    font-weight: bold;
+}
+
+.acertos-texto {
+    font-size: 1em;
+}
+
+.acertos-percentual {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #ffd700;
 }
 
 .pergunta-escrita {
@@ -841,6 +895,11 @@ const estilosEscrita = `
     .pontuacao-escrita {
         margin-left: 0;
     }
+    
+    .acertos-info {
+        flex-direction: column;
+        gap: 5px;
+    }
 }
 </style>
 `;
@@ -852,4 +911,3 @@ if (!document.getElementById('estilos-escrita')) {
     styleElement.innerHTML = estilosEscrita;
     document.head.appendChild(styleElement);
 }
-
