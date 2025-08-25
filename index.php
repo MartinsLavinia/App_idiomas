@@ -1,0 +1,85 @@
+<?php
+// Inclua o arquivo de conexão
+include 'conexao.php';
+
+// Inicia a sessão para usar no redirecionamento
+session_start();
+
+// A lógica de login vem aqui
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    
+    // Crie uma instância da classe Database para obter a conexão
+    $database = new Database();
+    $conn = $database->conn;
+    
+    $email = $_POST['email'];
+    $senha = $_POST['senha'];
+
+    $sql = "SELECT id, nome, senha FROM usuarios WHERE email = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $stmt->store_result();
+    $stmt->bind_result($id_usuario, $nome_usuario, $senha_hash);
+    $stmt->fetch();
+
+    if ($stmt->num_rows > 0 && password_verify($senha, $senha_hash)) {
+        // Login bem-sucedido: inicia a sessão
+        $_SESSION['id_usuario'] = $id_usuario;
+        $_SESSION['nome_usuario'] = $nome_usuario; // Armazena o nome na sessão para personalização
+        header("Location: painel.php"); // Redireciona para o painel do usuário
+        exit();
+    } else {
+        $erro_login = "Email ou senha incorretos.";
+    }
+
+    $stmt->close();
+    
+    // Feche a conexão usando o método da classe
+    $database->closeConnection();
+}
+?>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Site de Idiomas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                <div class="card">
+                    <div class="card-header text-center">
+                        <h2>Entrar</h2>
+                    </div>
+                    <div class="card-body">
+                        <?php if (isset($erro_login)): ?>
+                            <div class="alert alert-danger"><?php echo $erro_login; ?></div>
+                        <?php endif; ?>
+                        <form action="login.php" method="POST">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">E-mail</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="senha" class="form-label">Senha</label>
+                                <input type="password" class="form-control" id="senha" name="senha" required>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">Entrar</button>
+                            </div>
+                        </form>
+                        <div class="text-center mt-3">
+                            <p>Não tem uma conta? <a href="cadastro.php">Cadastre-se aqui</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
