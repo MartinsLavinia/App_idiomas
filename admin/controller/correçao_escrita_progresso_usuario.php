@@ -26,25 +26,27 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Verificar se os dados necessários foram enviados
 $input = json_decode(file_get_contents('php://input'), true);
 
-if (!isset($input['exercicio_id']) || !isset($input['audio_data']) || !isset($input['frase_esperada'])) {
+if (!isset($input['exercicio_id']) || !isset($input['resposta_usuario']) || !isset($input['resposta_esperada'])) {
     echo json_encode(['success' => false, 'message' => 'Dados incompletos']);
     exit();
 }
 
 $exercicio_id = (int)$input['exercicio_id'];
-$audio_data = $input['audio_data']; // Base64 encoded audio
-$frase_esperada = trim(strtolower($input['frase_esperada']));
+$resposta_usuario = trim($input['resposta_usuario']);
+$resposta_esperada = trim($input['resposta_esperada']);
+$alternativas_aceitas = $input['alternativas_aceitas'] ?? [$resposta_esperada];
+$tipo_exercicio = $input['tipo_exercicio'] ?? 'texto_livre';
 $id_usuario = $_SESSION['id_usuario'];
 
 try {
     $database = new Database();
     $conn = $database->conn;
 
-    // Simular análise de áudio (em produção, usaria APIs como Google Speech-to-Text)
-    $resultado_analise = analisarAudio($audio_data, $frase_esperada);
+    // Analisar resposta escrita
+    $resultado_analise = analisarResposta($resposta_usuario, $resposta_esperada, $alternativas_aceitas, $tipo_exercicio);
     
     // Atualizar progresso do usuário na tabela progresso_usuario
-    atualizarProgressoAudio($conn, $exercicio_id, $id_usuario, $resultado_analise);
+    atualizarProgressoEscrita($conn, $exercicio_id, $id_usuario, $resultado_analise);
     
     $database->closeConnection();
 
@@ -60,198 +62,123 @@ try {
     ]);
 }
 
-function analisarAudio($audio_data, $frase_esperada) {
-    // Simular transcrição do áudio (em produção, usaria API real)
-    $transcricoes_simuladas = [
-        'hello' => ['hello', 'helo', 'hallo', 'hellow'],
-        'good morning' => ['good morning', 'gud morning', 'good mornin', 'goo morning'],
-        'how are you' => ['how are you', 'how r you', 'how are u', 'ow are you'],
-        'my name is' => ['my name is', 'mai name is', 'my nam is', 'mi name is'],
-        'thank you' => ['thank you', 'tank you', 'thank u', 'tanku'],
-        'nice to meet you' => ['nice to meet you', 'nice to met you', 'nic to meet you']
-    ];
+function analisarResposta($resposta_usuario, $resposta_esperada, $alternativas_aceitas, $tipo_exercicio) {
+    $resposta_usuario = strtolower(trim($resposta_usuario));
+    $resposta_esperada = strtolower(trim($resposta_esperada));
     
-    // Encontrar a transcrição mais próxima
-    $transcricao_simulada = simularTranscricao($frase_esperada, $transcricoes_simuladas);
+    // Normalizar alternativas aceitas
+    $alternativas_normalizadas = array_map(function($alt) {
+        return strtolower(trim($alt));
+    }, $alternativas_aceitas);
     
-    // Calcular pontuação baseada na similaridade
-    $pontuacao = calcularSimilaridade($frase_esperada, $transcricao_simulada);
+    // Verificar se a resposta está correta
+    $correto = false;
+    $pontuacao = 0;
+    $erros_encontrados = [];
+    $pontos_positivos = [];
+    $sugestoes_melhoria = [];
     
-    // Determinar status baseado na pontuação
-    $status = determinarStatus($pontuacao);
+    // Verificar correspondência exata
+    if (in_array($resposta_usuario, $alternativas_normalizadas)) {
+        $correto = true;
+        $pontuacao = 1.0;
+        $pontos_positivos[] = 'Resposta completamente correta!';
+    } else {
+        // Verificar correspondência parcial
+        $melhor_similaridade = 0;
+        foreach ($alternativas_normalizadas as $alternativa) {
+            $similaridade = calcularSimilaridade($resposta_usuario, $alternativa);
+            if ($similaridade > $melhor_similaridade) {
+                $melhor_similaridade = $similaridade;
+            }
+        }
+        
+        $pontuacao = $melhor_similaridade;
+        
+        if ($melhor_similaridade >= 0.8) {
+            $correto = true;
+            $pontos_positivos[] = 'Resposta quase perfeita!';
+            if ($melhor_similaridade < 1.0) {
+                $sugestoes_melhoria[] = 'Verifique a ortografia de algumas palavras.';
+            }
+        } elseif ($melhor_similaridade >= 0.6) {
+            $pontos_positivos[] = 'Você está no caminho certo!';
+            $erros_encontrados[] = [
+                'descricao' => 'Resposta parcialmente correta',
+                'sugestao' => 'Revise a estrutura da frase e a ortografia.'
+            ];
+            $sugestoes_melhoria[] = 'Tente usar palavras mais precisas.';
+        } else {
+            $erros_encontrados[] = [
+                'descricao' => 'Resposta incorreta',
+                'sugestao' => 'Releia a pergunta e tente novamente.'
+            ];
+            $sugestoes_melhoria[] = 'Pense no contexto da pergunta.';
+            $sugestoes_melhoria[] = 'Use palavras simples que você conhece bem.';
+        }
+    }
     
-    // Gerar feedback detalhado
-    $feedback_detalhado = gerarFeedbackDetalhado($frase_esperada, $transcricao_simulada, $pontuacao, $status);
+    // Determinar status
+    $status = 'errado';
+    if ($pontuacao >= 0.9) {
+        $status = 'correto';
+    } elseif ($pontuacao >= 0.8) {
+        $status = 'quase_correto';
+    } elseif ($pontuacao >= 0.6) {
+        $status = 'meio_correto';
+    }
     
     return [
-        'transcricao' => $transcricao_simulada,
-        'pontuacao' => $pontuacao,
         'status' => $status,
-        'feedback_detalhado' => $feedback_detalhado
+        'pontuacao' => $pontuacao,
+        'correto' => $correto,
+        'resposta_usuario' => $resposta_usuario,
+        'resposta_esperada' => $resposta_esperada,
+        'erros_encontrados' => $erros_encontrados,
+        'pontos_positivos' => $pontos_positivos,
+        'sugestoes_melhoria' => $sugestoes_melhoria
     ];
 }
 
-function simularTranscricao($frase_esperada, $transcricoes_simuladas) {
-    // Buscar transcrição simulada baseada na frase esperada
-    foreach ($transcricoes_simuladas as $frase => $variacoes) {
-        if (strpos($frase_esperada, $frase) !== false) {
-            // Retornar uma variação aleatória para simular diferentes níveis de pronúncia
-            $rand = rand(0, 100);
-            if ($rand < 30) {
-                return $variacoes[0]; // Pronúncia perfeita
-            } elseif ($rand < 60) {
-                return $variacoes[1]; // Pronúncia boa
-            } elseif ($rand < 80) {
-                return $variacoes[2]; // Pronúncia média
-            } else {
-                return $variacoes[3]; // Pronúncia ruim
-            }
-        }
+function calcularSimilaridade($str1, $str2) {
+    $str1 = strtolower(trim($str1));
+    $str2 = strtolower(trim($str2));
+    
+    if ($str1 === $str2) {
+        return 1.0;
     }
-    
-    // Se não encontrar, simular uma transcrição com base na frase esperada
-    return simularErrosPronuncia($frase_esperada);
-}
-
-function simularErrosPronuncia($frase) {
-    $erros_comuns = [
-        'th' => 'd',
-        'r' => 'w',
-        'v' => 'b',
-        'ing' => 'in',
-        'ed' => 'd'
-    ];
-    
-    $frase_com_erros = $frase;
-    $rand = rand(0, 100);
-    
-    if ($rand < 20) {
-        // 20% chance de pronúncia perfeita
-        return $frase;
-    } elseif ($rand < 50) {
-        // 30% chance de um erro pequeno
-        foreach ($erros_comuns as $correto => $erro) {
-            if (strpos($frase_com_erros, $correto) !== false) {
-                $frase_com_erros = str_replace($correto, $erro, $frase_com_erros);
-                break;
-            }
-        }
-    } else {
-        // 50% chance de múltiplos erros
-        foreach ($erros_comuns as $correto => $erro) {
-            if (strpos($frase_com_erros, $correto) !== false && rand(0, 1)) {
-                $frase_com_erros = str_replace($correto, $erro, $frase_com_erros);
-            }
-        }
-    }
-    
-    return $frase_com_erros;
-}
-
-function calcularSimilaridade($esperada, $transcrita) {
-    $esperada = strtolower(trim($esperada));
-    $transcrita = strtolower(trim($transcrita));
     
     // Calcular similaridade usando Levenshtein distance
-    $distancia = levenshtein($esperada, $transcrita);
-    $max_length = max(strlen($esperada), strlen($transcrita));
+    $distancia = levenshtein($str1, $str2);
+    $max_length = max(strlen($str1), strlen($str2));
     
     if ($max_length == 0) {
         return 1.0;
     }
     
     $similaridade = 1 - ($distancia / $max_length);
-    return round($similaridade, 2);
-}
-
-function determinarStatus($pontuacao) {
-    if ($pontuacao >= 0.9) {
-        return 'correto';
-    } elseif ($pontuacao >= 0.7) {
-        return 'meio_correto';
-    } else {
-        return 'errado';
-    }
-}
-
-function gerarFeedbackDetalhado($esperada, $transcrita, $pontuacao, $status) {
-    $feedback = [
-        'status' => $status,
-        'pontuacao_percentual' => round($pontuacao * 100),
-        'frase_esperada' => $esperada,
-        'frase_transcrita' => $transcrita,
-        'palavras_corretas' => [],
-        'palavras_incorretas' => [],
-        'sugestoes' => [],
-        'pontos_melhoria' => []
-    ];
     
-    // Analisar palavra por palavra
-    $palavras_esperadas = explode(' ', $esperada);
-    $palavras_transcritas = explode(' ', $transcrita);
-    
-    for ($i = 0; $i < count($palavras_esperadas); $i++) {
-        $palavra_esperada = $palavras_esperadas[$i];
-        $palavra_transcrita = isset($palavras_transcritas[$i]) ? $palavras_transcritas[$i] : '';
-        
-        if ($palavra_esperada === $palavra_transcrita) {
-            $feedback['palavras_corretas'][] = $palavra_esperada;
-        } else {
-            $feedback['palavras_incorretas'][] = [
-                'esperada' => $palavra_esperada,
-                'transcrita' => $palavra_transcrita,
-                'sugestao' => gerarSugestaoPalavra($palavra_esperada, $palavra_transcrita)
-            ];
+    // Verificar se contém palavras-chave
+    $palavras_str2 = explode(' ', $str2);
+    $palavras_encontradas = 0;
+    foreach ($palavras_str2 as $palavra) {
+        if (strpos($str1, $palavra) !== false) {
+            $palavras_encontradas++;
         }
     }
     
-    // Gerar sugestões baseadas no status
-    switch ($status) {
-        case 'correto':
-            $feedback['sugestoes'][] = 'Excelente pronúncia! Continue praticando para manter a qualidade.';
-            $feedback['sugestoes'][] = 'Sua pronúncia está muito clara e precisa.';
-            break;
-            
-        case 'meio_correto':
-            $feedback['sugestoes'][] = 'Boa pronúncia! Há alguns pontos que podem ser melhorados.';
-            $feedback['sugestoes'][] = 'Tente falar um pouco mais devagar para melhorar a clareza.';
-            $feedback['pontos_melhoria'][] = 'Foque na articulação das consoantes';
-            $feedback['pontos_melhoria'][] = 'Pratique a entonação das palavras';
-            break;
-            
-        case 'errado':
-            $feedback['sugestoes'][] = 'Continue praticando! A pronúncia melhora com o tempo.';
-            $feedback['sugestoes'][] = 'Tente ouvir a pronúncia correta várias vezes antes de repetir.';
-            $feedback['sugestoes'][] = 'Fale mais devagar e articule bem cada palavra.';
-            $feedback['pontos_melhoria'][] = 'Trabalhe na pronúncia individual de cada palavra';
-            $feedback['pontos_melhoria'][] = 'Pratique os sons mais difíceis separadamente';
-            $feedback['pontos_melhoria'][] = 'Use um espelho para observar o movimento da boca';
-            break;
+    if (count($palavras_str2) > 0) {
+        $bonus_palavras = ($palavras_encontradas / count($palavras_str2)) * 0.3;
+        $similaridade = min(1.0, $similaridade + $bonus_palavras);
     }
     
-    return $feedback;
+    return round($similaridade, 2);
 }
 
-function gerarSugestaoPalavra($esperada, $transcrita) {
-    $sugestoes = [
-        'hello' => 'Pronuncie como "hê-LÔU", com ênfase na segunda sílaba',
-        'good' => 'Pronuncie como "GUD", com som de U fechado',
-        'morning' => 'Pronuncie como "MÓR-ning", com R bem marcado',
-        'how' => 'Pronuncie como "RÁU", começando com som de R',
-        'are' => 'Pronuncie como "ÁR", com R no final',
-        'you' => 'Pronuncie como "IÚ", som de I seguido de U',
-        'name' => 'Pronuncie como "NÊIM", com som de EI',
-        'thank' => 'Pronuncie como "ZÊNK", com TH como Z',
-        'nice' => 'Pronuncie como "NÁIS", com som de AI',
-        'meet' => 'Pronuncie como "MÍT", com I longo'
-    ];
-    
-    return isset($sugestoes[$esperada]) ? $sugestoes[$esperada] : "Pratique a pronúncia de '{$esperada}' várias vezes";
-}
-
-function atualizarProgressoAudio($conn, $exercicio_id, $id_usuario, $resultado_analise) {
+function atualizarProgressoEscrita($conn, $exercicio_id, $id_usuario, $resultado_analise) {
     $pontuacao = $resultado_analise['pontuacao'];
-    $feedback_json = json_encode($resultado_analise['feedback_detalhado']);
+    $correto = $resultado_analise['correto'];
+    $feedback_json = json_encode($resultado_analise);
     
     // Verificar se já existe progresso para este exercício na tabela progresso_usuario
     $sql_check = "SELECT id, tentativas, acertos FROM progresso_usuario WHERE exercicio_id = ? AND id_usuario = ?";
@@ -265,12 +192,12 @@ function atualizarProgressoAudio($conn, $exercicio_id, $id_usuario, $resultado_a
     if ($progresso_existente) {
         // Atualizar progresso existente
         $novas_tentativas = $progresso_existente['tentativas'] + 1;
-        $novos_acertos = $progresso_existente['acertos'] + ($pontuacao >= 0.7 ? 1 : 0);
-        $concluido = $pontuacao >= 0.7 ? 1 : 0;
+        $novos_acertos = $progresso_existente['acertos'] + ($correto ? 1 : 0);
+        $concluido = $correto ? 1 : 0;
         
         $sql_update = "
             UPDATE progresso_usuario 
-            SET tentativas = ?, acertos = ?, concluido = ?, pontuacao = ?, data_conclusao = ?, feedback_audio = ?
+            SET tentativas = ?, acertos = ?, concluido = ?, pontuacao = ?, data_conclusao = ?, feedback_escrita = ?
             WHERE id = ?
         ";
         
@@ -295,8 +222,8 @@ function atualizarProgressoAudio($conn, $exercicio_id, $id_usuario, $resultado_a
         
         // Criar novo progresso
         $tentativas = 1;
-        $acertos = $pontuacao >= 0.7 ? 1 : 0;
-        $concluido = $pontuacao >= 0.7 ? 1 : 0;
+        $acertos = $correto ? 1 : 0;
+        $concluido = $correto ? 1 : 0;
         $data_conclusao = $concluido ? date('Y-m-d H:i:s') : null;
         
         $idioma = $exercicio_info['idioma'] ?? 'Ingles';
@@ -305,7 +232,7 @@ function atualizarProgressoAudio($conn, $exercicio_id, $id_usuario, $resultado_a
         
         $sql_insert = "
             INSERT INTO progresso_usuario 
-            (id_usuario, idioma, nivel, caminho_id, exercicio_id, exercicio_atual, concluido, tentativas, acertos, pontuacao, data_conclusao, feedback_audio) 
+            (id_usuario, idioma, nivel, caminho_id, exercicio_id, exercicio_atual, concluido, tentativas, acertos, pontuacao, data_conclusao, feedback_escrita) 
             VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?)
         ";
         
@@ -316,4 +243,3 @@ function atualizarProgressoAudio($conn, $exercicio_id, $id_usuario, $resultado_a
     }
 }
 ?>
-
