@@ -1,6 +1,6 @@
 <?php
 // Certifique-se de que a sua classe Database já está incluída
-include_once __DIR__ . '/../conexao.php';
+include_once __DIR__ . '/../../conexao.php';
 
 class AdminManager {
     private $conn;

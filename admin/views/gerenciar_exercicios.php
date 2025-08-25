@@ -11,7 +11,7 @@ if (!isset($_SESSION['id_admin'])) {
 
 // Verifica se o ID do caminho foi passado via URL
 if (!isset($_GET['caminho_id']) || !is_numeric($_GET['caminho_id'])) {
-    header("Location: gerenciar_caminhos.php");
+    header("Location: gerenciar_caminho.php");
     exit();
 }
 
@@ -35,7 +35,7 @@ $caminho_info = $stmt_caminho->get_result()->fetch_assoc();
 $stmt_caminho->close();
 
 if (!$caminho_info) {
-    header("Location: gerenciar_caminhos.php");
+    header("Location: gerenciar_caminho.php");
     exit();
 }
 
@@ -61,7 +61,7 @@ $database->closeConnection();
 <body>
     <div class="container mt-5">
         <h2 class="mb-4">Exercícios do Caminho: <?php echo htmlspecialchars($caminho_info['nome_caminho']) . ' (' . htmlspecialchars($caminho_info['nivel']) . ')'; ?></h2>
-        <a href="gerenciar_caminhos.php" class="btn btn-secondary mb-3">← Voltar para Caminhos</a>
+        <a href="gerenciar_caminho.php" class="btn btn-secondary mb-3">← Voltar para Caminhos</a>
         <a href="adicionar_atividades.php?caminho_id=<?php echo htmlspecialchars($caminho_id); ?>" class="btn btn-success mb-3">Adicionar Novo Exercício</a>
         
         <?php echo $mensagem; ?>

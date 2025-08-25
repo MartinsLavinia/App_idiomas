@@ -1,6 +1,5 @@
 <?php
-include_once __DIR__ . '/../../conexao.php';
-// A classe AdminManager também precisa subir um nível a partir da pasta 'views'
+
 include_once __DIR__ . '/../models/AdminManager.php'; 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -41,10 +40,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <label for="senha" class="form-label">Senha:</label>
                     <input type="password" class="form-control" id="senha" name="senha" required>
                 </div>
-               <div class="d-grid gap-2">
+               <div class="mb-3 text-end">
+                    <a href="esqueci_senha_admin.php">Esqueci a senha?</a>
+                </div>
+                <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-primary" id="btnLogin">
                                     <span id="btnText">Entrar</span>
                                     <span class="spinner-border spinner-border-sm d-none" id="btnSpinner" role="status" aria-hidden="true"></span>
+                                </button>
+                            </div>
+                            <div class="d-grid gap-2 mt-3">
+                                <button type="button" class="btn btn-danger" onclick="window.location.href=\'google_oauth_admin.php?action=login\'">
+                                    <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google logo"> Entrar com Google
                                 </button>
                             </div>
             </form>
