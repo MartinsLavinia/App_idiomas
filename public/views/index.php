@@ -50,18 +50,9 @@ ob_end_flush();
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-        }
+     }
 
-        body {
-            background-image: url('fundo-idiomas.png');
-            background-repeat: no-repeat;
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            margin: 0;
-            font-family: Arial, sans-serif;
-            color: #333;
-        }
+    
 
         /* Barra superior */
         header {
@@ -82,28 +73,6 @@ ob_end_flush();
             font-size: 14px;
             transition: all 0.3s ease;
             backdrop-filter: blur(10px);
-        }
-
-        .btn-entrar {
-            background-color: rgba(227, 213, 247, 0.8);
-            color: #6b46c1;
-        }
-
-        .btn-entrar:hover {
-            background-color: rgba(227, 213, 247, 1);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn-cadastrar {
-            background-color: rgba(194, 145, 243, 0.8);
-            color: white;
-        }
-
-        .btn-cadastrar:hover {
-            background-color: rgba(194, 145, 243, 1);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
         /* Área principal */
@@ -324,18 +293,60 @@ ob_end_flush();
                 font-size: 12px;
             }
         }
+
+
+        .zoom-hover {
+        transition: transform 0.3s ease;
+        }
+
+        .zoom-hover:hover {
+        transform: scale(1.05);
+        }
+
+        .btn-google {
+            border-color: #6b46c1;
+            border-width: 2px;
+            border-radius: 10px;
+            background-color: #f2edffff;
+        }
+
+        .btn-google:hover {
+            border-color: #6b46c1;
+            background-color: #f2edffff;
+        }
+
+        .btn-entrar {
+            background-color: #6b46c1;
+            border-color: #4e2d9bff;
+            border-width: 2px;
+        }
+
+        .btn-entrar:hover {
+            background-color: #8e6ddbff;
+            border-color: #4e2d9bff;
+        }
+
+        
+        .teste-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        } 
+
+        .teste-body {
+            padding: 30px;
+        }
+        
+
     </style>
 </head>
 <body>
-     <header>
-            <button class="btn-entrar">Entrar</button>
-            <button class="btn-cadastrar">Cadastre-se</button>
-        </header>
-    <div class="container mt-5">
+    <div class="container mt-5 teste-body">
         <div class="row justify-content-center">
             <div class="col-md-5">
                 <div class="card">
-                    <div class="card-header text-center">
+                    <div class="card-header text-center teste-header">
                         <h2>Entrar</h2>
                     </div>
                     <div class="card-body">
@@ -352,16 +363,16 @@ ob_end_flush();
                                 <input type="password" class="form-control" id="senha" name="senha" required>
                             </div>
                             <div class="mb-3 text-end">
-                                <a href="esqueci_senha.php">Esqueci a senha?</a>
+                                <a href="esqueci_senha.php">Esqueceu a senha?</a>
                             </div>
                             <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-primary" id="btnLogin">
-                                    <span id="btnText">Entrar</span>
+                                <button type="submit" class="btn btn-primary btn-entrar" id="btnLogin">
+                                    <span id="btnText btn-entrar">Entrar</span>
                                     <span class="spinner-border spinner-border-sm d-none" id="btnSpinner" role="status" aria-hidden="true"></span>
                                 </button>
                             </div>
 <div class="d-grid gap-2 mt-3">
-                                <button type="button" class="btn btn-danger" onclick="window.location.href=\'google_oauth.php?action=login\'">
+                                <button type="button" class="btn btn-google zoom-hover" onclick="window.location.href=\'google_oauth.php?action=login\'">
                                     <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google logo"> Entrar com Google
                                 </button>
                             </div>
