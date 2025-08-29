@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carrossel Fullscreen com Gradiente e Bolinhas</title>
+    <title>Bem-vindos ao SpeakNut - Plataforma de Aprendizado de Idiomas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
+
     <style>
         html,
         body {
@@ -21,7 +23,7 @@
             justify-content: center;
             /* centraliza o container geral */
             align-items: center;
-            background: linear-gradient(135deg, #ceb9f1, #e385ec);
+            background: linear-gradient(135deg, #7c3aed, #e385ec);
             position: relative;
         }
 
@@ -122,25 +124,6 @@
         }
 
 
-        /* Texto ao lado */
-        .texto {
-            flex: 1;
-            color: white;
-            max-width: 800px;
-            background: rgba(0, 0, 0, 0.219);
-            /* fundo semi-transparente */
-            padding: 30px;
-            border-radius: 15px;
-            /* cantos arredondados */
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-            /* sombra suave */
-            backdrop-filter: blur(8px);
-            /* efeito vidro fosco */
-        }
-
-
-
-
         .texto h1 {
             font-size: 1.8rem;
             line-height: 1.4;
@@ -161,9 +144,27 @@
         }
 
         .logo img {
-            width: 150px;
+            width: 200px;
             /* tamanho da logo */
             height: auto;
+        }
+
+        @keyframes fadeDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+                /* começa mais acima */
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+                /* desce até a posição normal */
+            }
+        }
+
+        .div-titulo {
+            animation: fadeDown 1s ease-out;
         }
     </style>
 </head>
@@ -179,25 +180,13 @@
     </div>
 
 
-    <div class="conteudo">
-        <!-- Carrossel -->
-        <div class="carousel-container" id="carousel-container">
-            <button class="arrow arrow-left">&#10094;</button>
-            <div class="carousel" id="carousel">
-                <img src="um.png" alt="Foto 1">
-                <img src="dois.png" alt="Foto 2">
-                <img src="tres.png" alt="Foto 3">
-            </div>
-            <button class="arrow arrow-right">&#10095;</button>
-        </div>
-
-        <!-- Texto ao lado -->
-        <div class="texto">
-            <h1 class="titulo-principal">
-                No SpeakNut, nosso foco é acelerar seu aprendizado com uma abordagem prática e divertida.
-                Explore conteúdos teóricos claros e exercícios que fixam o que você aprende.
-            </h1>
-        </div>
+    <div class="div-titulo" style="margin-right: 1000px;">
+        <h1 class="titulo-principal"
+            style="color:white; margin: 30px; padding-left: 20px; font-size: 60px; font-family: 'Montserrat', sans-serif;">
+            Aprenda com o SpeakNut
+            <span style="color:yellow; font-family: 'Montserrat', sans-serif; font-weight: 900;"><br>ONDE ESTIVER</span>
+        </h1>
+    </div>
 
     </div>
 
@@ -216,6 +205,7 @@
             index = i;
             const imageWidth = images[index].clientWidth;
             carousel.style.transform = `translateX(-${imageWidth * index}px)`;
+
         }
 
         leftArrow.addEventListener('click', () => showSlide(index - 1));
