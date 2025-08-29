@@ -299,3 +299,51 @@ $database->closeConnection();
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
+
+<!-- Modal de Notificação -->
+<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="notificationModalLabel">Notificação</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="notificationModalBody">
+        <!-- A mensagem será inserida aqui -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const status = urlParams.get('status');
+    const message = urlParams.get('message');
+
+    if (status && message) {
+        const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
+        const modalBody = document.getElementById('notificationModalBody');
+        
+        modalBody.textContent = decodeURIComponent(message.replace(/\+/g, ' '));
+        
+        const modalTitle = document.getElementById('notificationModalLabel');
+        if (status === 'success') {
+            modalTitle.textContent = 'Sucesso';
+        } else if (status === 'error') {
+            modalTitle.textContent = 'Erro';
+        }
+
+        notificationModal.show();
+
+        // Limpa a URL para evitar que o modal apareça novamente ao recarregar
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search.replace(/&?status=[^&]*/, '').replace(/&?message=[^&]*/, ''));
+    }
+});
+</script>
+
