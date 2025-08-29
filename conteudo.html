@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carrossel Fullscreen com Gradiente e Bolinhas</title>
+    <title>Bem-vindos ao SpeakNut - Plataforma de Aprendizado de Idiomas</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
 
     <style>
@@ -204,7 +204,8 @@
             if (i >= images.length) i = 0;
             index = i;
             const imageWidth = images[index].clientWidth;
-            carousel.style.transform = translateX(-${ imageWidth * index}px);
+            carousel.style.transform = `translateX(-${imageWidth * index}px)`;
+
         }
 
         leftArrow.addEventListener('click', () => showSlide(index - 1));
