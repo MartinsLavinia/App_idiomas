@@ -60,6 +60,7 @@ $database->closeConnection();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciar Caminhos - Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
     <div class="container mt-5">
@@ -75,8 +76,27 @@ $database->closeConnection();
             <button type="button" class="btn btn-secondary me-2" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
                 Gerenciar Idiomas
             </button>
-            <a href="gerenciar_teorias.php" class="btn btn-info">Gerenciar Teorias</a>
+            <a href="gerenciar_teorias.php" class="btn btn-info me-2">Gerenciar Teorias</a>
+            <a href="gerenciar_usuarios.php" class="btn btn-success me-2">👥 Gerenciar Usuários</a>
+            <a href="estatisticas_usuarios.php" class="btn btn-warning">📊 Estatísticas</a>
         </div>
+
+        <!-- Notificações -->
+        <?php if (isset($_SESSION['success'])): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle"></i> <?php echo htmlspecialchars($_SESSION['success']); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <?php unset($_SESSION['success']); ?>
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['error'])): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle"></i> <?php echo htmlspecialchars($_SESSION['error']); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <?php unset($_SESSION['error']); ?>
+        <?php endif; ?>
 
         <div class="card mb-4">
             <div class="card-header">
@@ -270,9 +290,30 @@ $database->closeConnection();
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p>
-                        Use o botão "Adicionar Novo Idioma com Quiz" para criar um novo idioma do zero.
+                    <!-- Formulário para adicionar idioma simples -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">➕ Adicionar Novo Idioma (Simples)</h6>
+                        </div>
+                        <div class="card-body">
+                            <form action="adicionar_idioma_simples.php" method="POST">
+                                <div class="row g-3">
+                                    <div class="col-md-8">
+                                        <input type="text" class="form-control" name="nome_idioma" placeholder="Nome do idioma (ex: Alemão)" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="submit" class="btn btn-success w-100">Adicionar</button>
+                                    </div>
+                                </div>
+                                <small class="text-muted">Adiciona apenas o idioma. Você pode criar o quiz depois.</small>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <p class="text-muted">
+                        Use o botão "Adicionar Novo Idioma com Quiz" para criar um novo idioma completo com quiz de nivelamento.
                     </p>
+                    
                     <h5>Idiomas Existentes</h5>
                     <ul class="list-group">
                         <?php if (!empty($idiomas_db)): ?>
