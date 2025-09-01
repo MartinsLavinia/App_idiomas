@@ -4,35 +4,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saiba mais! - SpeakNut</title>
+    <title>Bem-vindos ao SpeakNut - Plataforma de Aprendizado de Idiomas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
 
     <style>
-
         html,
         body {
-    margin: 0;
-    padding: 0;
-    min-height: 100%; /* usa min-height em vez de height fixa */
-    width: 100%;
-    font-family: Arial, sans-serif;
-    overflow-x: hidden; /* trava só a rolagem horizontal */
-}
-
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
 
         body {
             display: flex;
-            flex-direction: column; /* permitir empilhar bloco de texto e quadrados */
+            justify-content: center;
+            /* centraliza o container geral */
             align-items: center;
-            background: linear-gradient(135deg, #ffffff, #ffffff);
+            background: linear-gradient(135deg, #7c3aed, #e385ec);
             position: relative;
-            
+        }
+
+        /* container que segura carrossel + texto */
+        .conteudo {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 80%;
+            /* deixa proporcional na tela */
+            max-width: 1200px;
+            gap: 80px;
+            /* espaço entre carrossel e texto */
+            z-index: 1;
         }
 
         /* Bolinhas decorativas */
         .circle {
             position: absolute;
             border-radius: 50%;
-             background: #7c3aedcb; /* cor alterada */
+            background: rgba(255, 255, 255, 0.1);
         }
 
         .circle1 {
@@ -52,73 +64,78 @@
         }
 
         @keyframes pulse {
-            0%, 100% {
+
+            0%,
+            100% {
                 opacity: 0.3;
                 transform: scale(1);
             }
+
             50% {
                 opacity: 0.6;
                 transform: scale(1.1);
             }
         }
 
-        .bloco-texto {
-            display: flex;
-            align-items: center;
-            gap: 130px;
-            margin-top: 100px; /* dá espaço do topo */
-            z-index: 1;
-        }
-
-        /* Esquilo */
-        .container-esquilo img {
+        .carousel-container {
             width: 400px;
-            height: auto;
-            margin-left: 50px;
-            animation: esquilo-desliza-fade 0.8s ease-out forwards,
-                       esquilo-flutua 3s ease-in-out 0.8s infinite;
-        }
-
-        @keyframes esquilo-desliza-fade {
-            0% {
-                transform: translateX(200px);
-                opacity: 0;
-            }
-            100% {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes esquilo-flutua {
-            0%, 100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-15px);
-            }
-        }
-
-        /* Texto */
-        .texto {
-            flex: 1;
-            color: white;
-            max-width: 800px;
-            background: linear-gradient(135deg,#7c3aed63, white);
-            padding: 30px;
+            overflow: hidden;
             border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.288);
-            backdrop-filter: blur(8px);
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
         }
+
+        .carousel {
+            display: flex;
+            transition: transform 0.7s ease-in-out;
+        }
+
+        .carousel img {
+            width: 100%;
+            height: auto;
+            flex-shrink: 0;
+            border-radius: 15px;
+        }
+
+        .arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            font-size: 2rem;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            z-index: 2;
+        }
+
+        .arrow:hover {
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .arrow-left {
+            left: 10px;
+        }
+
+        .arrow-right {
+            right: 10px;
+        }
+
 
         .texto h1 {
-    font-size: 1.8rem;
-    line-height: 1.4;
-    margin-bottom: 10px;
-    color: white; /* cor alterada */
-}
+            font-size: 1.8rem;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
 
-        /* Logo */
+        .texto p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Logo fixa no canto superior esquerdo */
         .logo {
             position: absolute;
             top: 20px;
@@ -127,26 +144,28 @@
         }
 
         .logo img {
-            width: 150px;
+            width: 200px;
+            /* tamanho da logo */
             height: auto;
         }
 
-        /* Botões */
-        .cadastre-btn {
-            background-color: #260e50;
-            color: rgb(255, 255, 255);
-            padding: 12px 24px;
-            border: none;
-            border-radius: 20px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-            text-decoration: none;
+        @keyframes fadeDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+                /* começa mais acima */
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+                /* desce até a posição normal */
+            }
         }
 
-        .cadastre-btn:hover {
-            background-color: #1b063f;
+        .div-titulo {
+            animation: fadeUp 1s ease-out forwards;
+
         }
 
         .header {
@@ -156,90 +175,151 @@
             z-index: 10;
         }
 
+        /* Botões do header */
         .header a {
-            text-decoration: none;
-            color: #fff;
-            font-weight: bold;
-            margin-right: 20px;
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 20px;
             font-size: 16px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            font-family: Arial, Helvetica, sans-serif;
+            cursor: pointer;
         }
 
-        .header a:hover {
-            color: #7c3aed;
+        /* Cadastre-se */
+        .header a.cadastre-btn {
+            background-color: #260e50;
+            color: #ffffff;
         }
 
-        /* Quadrados abaixo do bloco de texto */
-        .quadrados-container {
-            display: flex;
-            justify-content: center;
-            gap: 200px;
-            margin-top: 50px;
-            z-index: 1;
+        .header a.cadastre-btn:hover {
+            background-color: #1b063f;
+            color: #ffffff;
         }
 
-    .quadrado {
-    width: 200px;   /* aumentei de 150px para 200px */
-    height: 200px;
-    background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(5px);
-    display: flex;             /* centralizar imagem */
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;          /* evita imagem vazar */
-}
+        /* Entrar */
+        .header a.login-btn {
+            background-color: transparent;
+            color: #260e50;
+            border: 2px solid #260e50;
+        }
 
-.quadrado img {
-    max-width: 80%;   /* faz a imagem caber */
-    max-height: 80%;
-}
+        .header a.login-btn:hover {
+            background-color: #260e50;
+            color: #ffffff;
+        }
 
+        /* Novo estilo para o mascote */
+        .mascote {
+            position: absolute;
+            bottom: 40px;
+            right: 50px;
+            width: 250px;
+            /* Ajuste o tamanho conforme a necessidade */
+            height: auto;
+            z-index: 10;
+            /* Garante que fique acima dos outros elementos */
+        }
     </style>
 </head>
 
 <body>
-    <!-- Bolinhas decorativas -->
+
+    <div class="header">
+        <a href="#cadastro" class="cadastre-btn"
+            style="color:white; font-family:Arial, Helvetica, sans-serif">Cadastre-se</a>
+        <a href=" #login" style="font-family:Arial, Helvetica, sans-serif; color:white;">Entrar</a>
+    </div>
+
     <div class="circle circle1"></div>
     <div class="circle circle2"></div>
 
-    <!-- Header -->
-    <div class="header">
-        <a href="#cadastro" class="cadastre-btn">Cadastre-se</a>
-        <a href="#login">Entrar</a>
-    </div>
-
-    <!-- Logo -->
     <div class="logo">
         <img src="menor.png" alt="Logo SpeakNut">
     </div>
 
-    <!-- Bloco esquilo + texto -->
-    <div class="bloco-texto">
-        <div class="container-esquilo">
-            <img src="esquilo2.png" alt="Esquilo">
+    <img src="mascotee.png" alt="Mascote SpeakNut" class="mascote"
+        style=" transform: translateY(-30px); padding-right: 80px;">
+
+    <div class="div-titulo"
+        style="display: flex; align-items: flex-start; justify-content: flex-start; gap: 20px; margin: 20px; transform: translateY(-150px);">
+
+        <h1 class="titulo-principal" style="transform: translateX(-300px);
+        color:white; margin-left: 20px; font-size: 60px; font-family: 'Montserrat', sans-serif; padding-bottom: 140px">
+            Aprenda com o SpeakNut
+            <span
+                style="color:yellow; font-family: 'Montserrat', sans-serif; font-weight: 900; padding-bottom: 30px;"><br>ONDE
+                ESTIVER</span>
+        </h1>
+
+    </div>
+
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 25px;
+            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 1200px; text-align: center; color: white; font-family: 'Montserrat', sans-serif;">
+
+        <div style="background: rgba(255,255,255,0.12); padding: 40px 60px; border-radius: 20px; width: 100%;">
+            <h2 style="font-size: 2rem; margin-bottom: 15px; color: yellow;">Por que escolher o SpeakNut?</h2>
+            <p style="font-size: 1.2rem; line-height: 1.7; margin-bottom: 20px;">
+                Nossa plataforma de aprendizado de idiomas foi criada para ajudar você a estudar de forma prática e
+                divertida. Com aulas interativas, exercícios personalizados e suporte em tempo real, você aprende no seu
+                ritmo,
+                de qualquer lugar do mundo.
+            </p>
+            <ul
+                style="list-style: none; padding: 0; font-size: 1.1rem; line-height: 1.8; text-align: left; max-width: 700px; margin: auto;">
+                <li>✔️ Aulas dinâmicas e personalizadas</li>
+                <li>✔️ Professores nativos disponíveis</li>
+                <li>✔️ Exercícios interativos e gamificação</li>
+                <li>✔️ Estude no computador, celular ou tablet</li>
+            </ul>
         </div>
 
-        <div class="texto">
-            <h1 class="titulo-principal;">
-                No SpeakNut, nosso foco é acelerar seu aprendizado com uma abordagem prática e divertida. 
-                Explore conteúdos teóricos claros e exercícios que fixam o que você aprende.
-            </h1>
-        </div>
+        <button
+            style="background: yellow; padding: 15px 40px; border-radius: 35px;
+                        font-weight: bold; border: none; color: black; font-size: 1.2rem;
+                        cursor: pointer; margin-top: 20px; box-shadow: 0px 5px 15px rgba(0,0,0,0.3); font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+            Comece agora gratuitamente 🚀
+        </button>
     </div>
 
-   <!-- Quadrados abaixo -->
-<div class="quadrados-container">
-    <div class="quadrado">
-        <img src="pc.png" alt="Computador">
-    </div>
-    <div class="quadrado">
-        <img src="livro.png" alt="Livro">
-    </div>
-    <div class="quadrado">
-        <img src="conversa.png" alt="Conversa">
-    </div>
-</div>
+    <script>
+        const carousel = document.getElementById('carousel');
+        const images = document.querySelectorAll('.carousel img');
+        const leftArrow = document.querySelector('.arrow-left');
+        const rightArrow = document.querySelector('.arrow-right');
+        const carouselContainer = document.getElementById('carousel-container');
+        let index = 0;
+        let autoSlideInterval;
 
+        function showSlide(i) {
+            if (i < 0) i = images.length - 1;
+            if (i >= images.length) i = 0;
+            index = i;
+            const imageWidth = images[index].clientWidth;
+            carousel.style.transform = `translateX(-${imageWidth * index}px)`;
+
+        }
+
+        leftArrow.addEventListener('click', () => showSlide(index - 1));
+        rightArrow.addEventListener('click', () => showSlide(index + 1));
+
+        function startAutoSlide() {
+            autoSlideInterval = setInterval(() => showSlide(index + 1), 2500);
+        }
+
+        function stopAutoSlide() {
+            clearInterval(autoSlideInterval);
+        }
+
+        carouselContainer.addEventListener('mouseenter', stopAutoSlide);
+        carouselContainer.addEventListener('mouseleave', startAutoSlide);
+
+        window.addEventListener('load', startAutoSlide);
+    </script>
 </body>
+
 </html>
