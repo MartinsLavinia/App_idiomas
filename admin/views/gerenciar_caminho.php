@@ -78,13 +78,6 @@ $database->closeConnection();
             <a href="gerenciar_teorias.php" class="btn btn-info">Gerenciar Teorias</a>
         </div>
 
-        <?php if (isset($_GET['msg'])): ?>
-            <div class="alert alert-info alert-dismissible fade show" role="alert">
-                <?php echo htmlspecialchars(urldecode($_GET['msg'])); ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        <?php endif; ?>
-
         <div class="card mb-4">
             <div class="card-header">
                 Pesquisar Caminhos
@@ -143,7 +136,15 @@ $database->closeConnection();
                             <td>
                                 <a href="gerenciar_exercicios.php?caminho_id=<?php echo htmlspecialchars($caminho['id']); ?>" class="btn btn-sm btn-info">Ver Exercícios</a>
                                 <a href="editar_caminho.php?id=<?php echo htmlspecialchars($caminho['id']); ?>" class="btn btn-sm btn-primary">Editar</a>
-                                <a href="eliminar_caminho.php?id=<?php echo htmlspecialchars($caminho['id']); ?>" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir este caminho?');">Eliminar</a>
+                                <button type="button" class="btn btn-sm btn-danger delete-btn" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#confirmDeleteModal"
+                                        data-id="<?php echo htmlspecialchars($caminho['id']); ?>" 
+                                        data-nome="<?php echo htmlspecialchars($caminho['nome_caminho']); ?>"
+                                        data-tipo="caminho"
+                                        data-action="eliminar_caminho.php">
+                                    Eliminar
+                                </button>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -280,7 +281,15 @@ $database->closeConnection();
                                     <span><?php echo htmlspecialchars($idioma['idioma']); ?></span>
                                     <div>
                                         <a href="gerenciador_quiz_nivelamento.php?idioma=<?php echo urlencode($idioma['idioma']); ?>" class="btn btn-info btn-sm me-2">Gerenciar Quiz</a>
-                                        <a href="excluir_idioma.php?idioma=<?php echo urlencode($idioma['idioma']); ?>" class="btn btn-danger btn-sm" onclick="return confirm('ATENÇÃO: Isso excluirá o idioma \'<?php echo htmlspecialchars($idioma['idioma']); ?>\' e TODOS os seus caminhos, exercícios e quizzes. Tem certeza?');">Excluir</a>
+                                        <button type="button" class="btn btn-danger btn-sm delete-btn" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#confirmDeleteModal"
+                                                data-id="<?php echo urlencode($idioma['idioma']); ?>" 
+                                                data-nome="<?php echo htmlspecialchars($idioma['idioma']); ?>"
+                                                data-tipo="idioma"
+                                                data-action="excluir_idioma.php">
+                                            Excluir
+                                        </button>
                                     </div>
                                 </li>
                             <?php endforeach; ?>
@@ -296,6 +305,96 @@ $database->closeConnection();
         </div>
     </div>
 
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmação de Exclusão</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="confirmDeleteModalBody">
+                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form id="deleteForm" method="POST" action="">
+                        <input type="hidden" name="id" id="deleteItemId">
+                        <button type="submit" class="btn btn-danger">Excluir</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="notificationModalLabel">Notificação</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="notificationModalBody">
+                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Lógica para o modal de confirmação de exclusão
+        const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+        if (confirmDeleteModal) {
+            confirmDeleteModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget; // Botão que acionou o modal
+                const itemId = button.getAttribute('data-id');
+                const itemName = button.getAttribute('data-nome');
+                const itemType = button.getAttribute('data-tipo');
+                const formAction = button.getAttribute('data-action');
+
+                const modalBody = confirmDeleteModal.querySelector('#confirmDeleteModalBody');
+                const modalForm = confirmDeleteModal.querySelector('#deleteForm');
+                const hiddenInput = confirmDeleteModal.querySelector('#deleteItemId');
+
+                let message = '';
+                if (itemType === 'idioma') {
+                    message = `Tem certeza que deseja excluir o idioma '<strong>${itemName}</strong>'? Isso excluirá todos os caminhos, exercícios e quizzes associados a ele.`;
+                } else {
+                    message = `Tem certeza que deseja excluir o caminho '<strong>${itemName}</strong>'?`;
+                }
+
+                modalBody.innerHTML = `<p>${message}</p>`;
+                modalForm.action = formAction;
+                hiddenInput.value = itemId;
+            });
+        }
+
+        // Lógica para o modal de notificação
+        const urlParams = new URLSearchParams(window.location.search);
+        const status = urlParams.get('status');
+        const message = urlParams.get('message');
+
+        if (status && message) {
+            const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
+            const modalBody = document.getElementById('notificationModalBody');
+            
+            modalBody.textContent = decodeURIComponent(message.replace(/\+/g, ' '));
+            
+            const modalTitle = document.getElementById('notificationModalLabel');
+            if (status === 'success') {
+                modalTitle.textContent = 'Sucesso';
+            } else if (status === 'error') {
+                modalTitle.textContent = 'Erro';
+            }
+
+            notificationModal.show();
+
+            // Limpa a URL para evitar que o modal apareça novamente ao recarregar
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    });
+    </script>
 </body>
 </html>

@@ -7,8 +7,8 @@ include_once __DIR__ . '/../../conexao.php';
 include_once __DIR__ . '/../models/CaminhoAprendizagem.php';
 
 // Verificação de segurança: Garante que apenas administradores logados possam acessar.
-if (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
-    header("Location: login.php");
+if (!isset($_SESSION['id_admin'])) {
+    header("Location: login_admin.html");
     exit();
 }
 
