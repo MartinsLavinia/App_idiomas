@@ -830,8 +830,9 @@
 <body>
     <!-- Header fixo -->
     <div class="header">
-        <a href="#index.php" class="cadastre-btn">Cadastre-se</a>
-        <a href="#login.php" class="login-btn">Entrar</a>
+       <a href="public/views/index.php" class="cadastre-btn">Cadastre-se</a>
+<a href="public/views/login.php" class="login-btn">Entrar</a>
+
     </div>
 
     <!-- Logo fixa -->
