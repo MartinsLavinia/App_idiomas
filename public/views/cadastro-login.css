@@ -1,0 +1,283 @@
+        /* Variáveis de cor para o tema */
+        :root {
+            --purple-main: #581c87;
+            --purple-light: #7e22ce;
+            --pink-wave: #db2777;
+            --yellow-accent: #fcd34d;
+            --white-text: #fff;
+            --dark-text: #333;
+            --light-background: #8a4eb8;
+        }
+
+        /* Estilos do corpo da página: centraliza e define o fundo */
+        body {
+            background: var(--purple-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+            color: var(--white-text);
+            position: relative;
+            overflow: hidden;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        /* Container que envolve tudo para o fundo degradê e as ondas */
+        .background-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--purple-main) 0%, var(--purple-light) 100%);
+            z-index: 0;
+        }
+
+        /* Canvas para as partículas */
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* Estilo das ondas SVG */
+        .waves {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 15vh;
+            min-height: 100px;
+            z-index: 2;
+        }
+
+        .parallax > use {
+            animation: move-wave 25s cubic-bezier(.55, .5, .45, .5) infinite;
+        }
+        .parallax > use:nth-child(1) {
+            animation-delay: -2s;
+            animation-duration: 7s;
+        }
+        .parallax > use:nth-child(2) {
+            animation-delay: -3s;
+            animation-duration: 10s;
+        }
+        .parallax > use:nth-child(3) {
+            animation-delay: -4s;
+            animation-duration: 13s;
+        }
+
+        @keyframes move-wave {
+            0% { transform: translate3d(-90px, 0, 0); }
+            100% { transform: translate3d(85px, 0, 0); }
+        }
+
+        /* Container do formulário */
+        .form-container {
+            position: relative;
+            z-index: 3;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            margin: auto;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+        }
+
+
+        /* Estilo dos inputs e do select */
+        .form-control, .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1rem;
+            background-color: var(--input-bg);
+            color: var(--light-text);
+            transition: all 0.3s ease;
+        }
+
+        /* Estilo para o campo de seleção do Bootstrap */
+        .form-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23e8eaf6' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 16px 12px;
+        }
+
+        .form-control::placeholder {
+            color: var(--light-text);
+            opacity: 0.6;
+        }
+
+        .form-control:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(79, 134, 247, 0.4);
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .form-container h2 {
+            color: var(--white-text);
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .form-container p {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1.5rem;
+        }
+
+        .form-select option {
+            background-color: var(--light-background);
+            color: var(--white-text);
+        }
+
+        /* Estilo dos campos */
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--white-text);
+        }
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--yellow-accent);
+            box-shadow: 0 0 0 2px rgba(252, 211, 77, 0.4);
+        }
+
+        .input-group select{
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(180, 79, 247, 0.4);
+            background-color: rgb(227, 184, 255);
+        }
+
+        .input-group select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(180, 79, 247, 0.4);
+            background-color: rgb(227, 184, 255);
+        }
+
+        /* Animação da seta ao focar o campo de seleção */
+        .select-wrapper:focus-within::after {
+            transform: translateY(-50%) rotate(180deg);
+            color: var(--accent-color);
+        }
+
+        /* Estilos do botão de login */
+        .btn-login {
+            background: var(--yellow-accent);
+            color: var(--dark-text);
+            border: none;
+            border-radius: 12px;
+            padding: 12px;
+            width: 100%;
+            font-weight: bold;
+            transition: background 0.2s, transform 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-login:hover {
+            background: #fde047;
+            transform: translateY(-2px);
+        }
+
+        /* Links */
+        .links-container {
+            margin-top: 1rem;
+        }
+
+        .links-container .link-senha {
+            color: var(--white-text);
+            font-weight: 600;
+            text-decoration: underline;
+            transition: color 0.3s;
+        }
+
+        .links-container a {
+            color: var(--yellow-accent);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .links-container a:hover {
+            color: #fde047;
+        }
+        
+        .social-login {
+            margin-top: 1.5rem;
+        }
+
+        .social-login button {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--white-text);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 12px;
+            padding: 12px;
+            width: 100%;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: background 0.3s, transform 0.2s;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            cursor: pointer;
+        }
+
+        .social-login button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+.parallax > use {
+    animation: move-wave 25s cubic-bezier(.55, .5, .45, .5) infinite;
+}
+.parallax > use:nth-child(1) {
+    animation-delay: -2s;
+    animation-duration: 7s;
+}
+.parallax > use:nth-child(2) {
+    animation-delay: -3s;
+    animation-duration: 10s;
+}
+.parallax > use:nth-child(3) {
+    animation-delay: -4s;
+    animation-duration: 13s;
+}
+
+@keyframes move-wave {
+    0% {
+        transform: translate3d(-90px, 0, 0);
+    }
+    100% {
+        transform: translate3d(85px, 0, 0);
+    }
+}
