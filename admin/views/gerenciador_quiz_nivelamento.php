@@ -18,18 +18,18 @@ if (empty($idioma_selecionado)) {
     exit();
 }
 
-// Lógica para adicionar uma nova pergunta
+// Lógica para adicionar uma nova pergunta (via POST)
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['acao']) && $_POST['acao'] === 'adicionar') {
     $pergunta = $_POST['pergunta'];
     $alternativa_a = $_POST['alternativa_a'];
     $alternativa_b = $_POST['alternativa_b'];
     $alternativa_c = $_POST['alternativa_c'];
-    $alternativa_d = $_POST['alternatitva_d'];
+    $alternativa_d = $_POST['alternativa_d'];
     $resposta_correta = $_POST['resposta_correta'];
 
-    $sql_insert_quiz = "INSERT INTO quiz_nivelamento (idioma, pergunta, alternativa_a, alternativa_b, alternativa_c,alternativa_d, resposta_correta) VALUES (?, ?, ?, ?, ?, ?)";
+    $sql_insert_quiz = "INSERT INTO quiz_nivelamento (idioma, pergunta, alternativa_a, alternativa_b, alternativa_c, alternativa_d, resposta_correta) VALUES (?, ?, ?, ?, ?, ?, ?)";
     $stmt_insert_quiz = $conn->prepare($sql_insert_quiz);
-    $stmt_insert_quiz->bind_param('ssssss', $idioma_selecionado, $pergunta, $alternativa_a, $alternativa_b, $alternativa_c,$alternativa_d, $resposta_correta);
+    $stmt_insert_quiz->bind_param('sssssss', $idioma_selecionado, $pergunta, $alternativa_a, $alternativa_b, $alternativa_c, $alternativa_d, $resposta_correta);
     
     if ($stmt_insert_quiz->execute()) {
         $msg = "Pergunta adicionada com sucesso!";
@@ -42,7 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['acao']) && $_POST['aca
     exit();
 }
 
-// Lógica para excluir uma pergunta
+// Lógica para excluir uma pergunta (via GET)
 if (isset($_GET['acao']) && $_GET['acao'] === 'excluir' && isset($_GET['id'])) {
     $id_pergunta = $_GET['id'];
 
@@ -62,7 +62,7 @@ if (isset($_GET['acao']) && $_GET['acao'] === 'excluir' && isset($_GET['id'])) {
 }
 
 // Lógica para buscar as perguntas do quiz de nivelamento
-$sql_quiz = "SELECT id, pergunta, alternativa_a, alternativa_b, alternativa_c,alternativa_d, resposta_correta FROM quiz_nivelamento WHERE idioma = ?";
+$sql_quiz = "SELECT id, pergunta, alternativa_a, alternativa_b, alternativa_c, alternativa_d, resposta_correta FROM quiz_nivelamento WHERE idioma = ?";
 $stmt_quiz = $conn->prepare($sql_quiz);
 $stmt_quiz->bind_param('s', $idioma_selecionado);
 $stmt_quiz->execute();
@@ -79,12 +79,29 @@ $database->closeConnection();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciar Quiz de Nivelamento - <?php echo htmlspecialchars($idioma_selecionado); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- 🔹 adicionado: CSS para rolagem suave dentro do modal -->
+    <style>
+        .scroll-area {
+            max-height: 60vh;           /* limita a área visível */
+            overflow-y: auto;           /* ativa rolagem vertical */
+            padding-right: 6px;         /* espaço pro scrollbar */
+            -webkit-overflow-scrolling: touch; /* scroll suave no iOS */
+            overscroll-behavior: contain;      /* evita “scroll bleed” pro fundo */
+        }
+        @media (min-height: 900px) {
+            .scroll-area { max-height: 70vh; }
+        }
+    </style>
 </head>
 <body>
     <div class="container mt-5">
         <h2 class="mb-4">Gerenciar Quiz de Nivelamento para <?php echo htmlspecialchars($idioma_selecionado); ?></h2>
         
         <a href="gerenciar_caminho.php" class="btn btn-secondary mb-4">Voltar para Gerenciar Caminhos</a>
+        <button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#addPerguntaModal">
+            Adicionar Nova Pergunta
+        </button>
 
         <?php if (isset($_GET['msg'])): ?>
             <div class="alert alert-info alert-dismissible fade show" role="alert">
@@ -92,48 +109,6 @@ $database->closeConnection();
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <?php endif; ?>
-
-        <div class="card mb-4">
-            <div class="card-header">
-                Adicionar Nova Pergunta
-            </div>
-            <div class="card-body">
-                <form action="gerenciar_quiz_nivelamento.php?idioma=<?php echo urlencode($idioma_selecionado); ?>" method="POST">
-                    <input type="hidden" name="acao" value="adicionar">
-                    <div class="mb-3">
-                        <label for="pergunta" class="form-label">Pergunta</label>
-                        <textarea class="form-control" id="pergunta" name="pergunta" rows="2" required></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="alternativa_a" class="form-label">Alternativa A</label>
-                        <input type="text" class="form-control" id="alternativa_a" name="alternativa_a" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="alternativa_b" class="form-label">Alternativa B</label>
-                        <input type="text" class="form-control" id="alternativa_b" name="alternativa_b" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="alternativa_c" class="form-label">Alterntiva C</label>
-                        <input type="text" class="form-control" id="alternativa_c" name="alternativa_c" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="alternativa_d" class="form-label">Alterntiva D</label>
-                        <input type="text" class="form-control" id="alternativa_D" name="alternativa_d" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="resposta_correta" class="form-label">Resposta Correta</label>
-                        <select id="resposta_correta" name="resposta_correta" class="form-select" required>
-                            <option value="">Selecione a resposta correta</option>
-                            <option value="A">Alternativa A</option>
-                            <option value="B">Alternativa B</option>
-                            <option value="C">Alternativa C</option>
-                            <option value="D">Alternativa D</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-success">Salvar Pergunta</button>
-                </form>
-            </div>
-        </div>
 
         <div class="mt-5">
             <h4 class="mb-3">Perguntas Existentes</h4>
@@ -145,6 +120,7 @@ $database->closeConnection();
                         <th>Opção A</th>
                         <th>Opção B</th>
                         <th>Opção C</th>
+                        <th>Opção D</th>
                         <th>Resposta Correta</th>
                         <th>Ações</th>
                     </tr>
@@ -162,13 +138,21 @@ $database->closeConnection();
                                 <td><?php echo htmlspecialchars($pergunta['resposta_correta']); ?></td>
                                 <td>
                                     <button type="button" class="btn btn-sm btn-primary me-2" data-bs-toggle="modal" data-bs-target="#editQuizModal_<?php echo $pergunta['id']; ?>">Editar</button>
-
-                                    <a href="gerenciar_quiz_nivelamento.php?idioma=<?php echo urlencode($idioma_selecionado); ?>&acao=excluir&id=<?php echo htmlspecialchars($pergunta['id']); ?>" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir esta pergunta?');">Excluir</a>
+                                    
+                                    <button type="button" class="btn btn-sm btn-danger delete-btn" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#confirmDeleteModal"
+                                            data-id="<?php echo htmlspecialchars($pergunta['id']); ?>" 
+                                            data-nome="<?php echo htmlspecialchars($pergunta['pergunta']); ?>"
+                                            data-action="gerenciar_quiz_nivelamento.php?idioma=<?php echo urlencode($idioma_selecionado); ?>&acao=excluir">
+                                        Excluir
+                                    </button>
                                 </td>
                             </tr>
                             
+                            <!-- Modal de Edição (🔹 adicionado: modal-dialog-scrollable + .scroll-area) -->
                             <div class="modal fade" id="editQuizModal_<?php echo $pergunta['id']; ?>" tabindex="-1" aria-labelledby="editQuizModalLabel_<?php echo $pergunta['id']; ?>" aria-hidden="true">
-                                <div class="modal-dialog">
+                                <div class="modal-dialog modal-dialog-scrollable"><!-- 🔹 -->
                                     <div class="modal-content">
                                         <form action="editar_quiz.php" method="POST">
                                             <input type="hidden" name="id" value="<?php echo htmlspecialchars($pergunta['id']); ?>">
@@ -177,7 +161,7 @@ $database->closeConnection();
                                                 <h5 class="modal-title" id="editQuizModalLabel_<?php echo $pergunta['id']; ?>">Editar Pergunta #<?php echo $pergunta['id']; ?></h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                             </div>
-                                            <div class="modal-body">
+                                            <div class="modal-body scroll-area"><!-- 🔹 -->
                                                 <div class="mb-3">
                                                     <label for="edit_pergunta_<?php echo $pergunta['id']; ?>" class="form-label">Pergunta</label>
                                                     <textarea class="form-control" id="edit_pergunta_<?php echo $pergunta['id']; ?>" name="pergunta" rows="2" required><?php echo htmlspecialchars($pergunta['pergunta']); ?></textarea>
@@ -196,7 +180,7 @@ $database->closeConnection();
                                                 </div>
                                                 <div class="mb-3">
                                                     <label for="edit_alternativa_d_<?php echo $pergunta['id']; ?>" class="form-label">Opção D</label>
-                                                    <input type="text" class="form-control" id="edit_alternativo_d_<?php echo $pergunta['id']; ?>" name="alternativa_d" value="<?php echo htmlspecialchars($pergunta['alternativa_d']); ?>" required>
+                                                    <input type="text" class="form-control" id="edit_alternativa_d_<?php echo $pergunta['id']; ?>" name="alternativa_d" value="<?php echo htmlspecialchars($pergunta['alternativa_d']); ?>" required>
                                                 </div>
                                                 <div class="mb-3">
                                                     <label for="edit_resposta_correta_<?php echo $pergunta['id']; ?>" class="form-label">Resposta Correta</label>
@@ -204,7 +188,7 @@ $database->closeConnection();
                                                         <option value="A" <?php echo ($pergunta['resposta_correta'] == 'A') ? 'selected' : ''; ?>>Opção A</option>
                                                         <option value="B" <?php echo ($pergunta['resposta_correta'] == 'B') ? 'selected' : ''; ?>>Opção B</option>
                                                         <option value="C" <?php echo ($pergunta['resposta_correta'] == 'C') ? 'selected' : ''; ?>>Opção C</option>
-                                                         <option value="C" <?php echo ($pergunta['resposta_correta'] == 'D') ? 'selected' : ''; ?>>Opção D</option>
+                                                        <option value="D" <?php echo ($pergunta['resposta_correta'] == 'D') ? 'selected' : ''; ?>>Opção D</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -219,7 +203,7 @@ $database->closeConnection();
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="7" class="text-center">Nenhuma pergunta de quiz encontrada para este idioma.</td>
+                            <td colspan="8" class="text-center">Nenhuma pergunta de quiz encontrada para este idioma.</td>
                         </tr>
                     <?php endif; ?>
                 </tbody>
@@ -227,6 +211,99 @@ $database->closeConnection();
         </div>
     </div>
 
+    <!-- Modal de Adicionar (🔹 adicionado: modal-dialog-scrollable + .scroll-area) -->
+    <div class="modal fade" id="addPerguntaModal" tabindex="-1" aria-labelledby="addPerguntaModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable"><!-- 🔹 -->
+            <div class="modal-content">
+                <form action="gerenciar_quiz_nivelamento.php?idioma=<?php echo urlencode($idioma_selecionado); ?>" method="POST">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addPerguntaModalLabel">Adicionar Nova Pergunta</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body scroll-area"><!-- 🔹 -->
+                        <input type="hidden" name="acao" value="adicionar">
+                        <div class="mb-3">
+                            <label for="pergunta" class="form-label">Pergunta</label>
+                            <textarea class="form-control" id="pergunta" name="pergunta" rows="2" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="alternativa_a" class="form-label">Alternativa A</label>
+                            <input type="text" class="form-control" id="alternativa_a" name="alternativa_a" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="alternativa_b" class="form-label">Alternativa B</label>
+                            <input type="text" class="form-control" id="alternativa_b" name="alternativa_b" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="alternativa_c" class="form-label">Alternativa C</label>
+                            <input type="text" class="form-control" id="alternativa_c" name="alternativa_c" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="alternativa_d" class="form-label">Alternativa D</label>
+                            <input type="text" class="form-control" id="alternativa_d" name="alternativa_d" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="resposta_correta" class="form-label">Resposta Correta</label>
+                            <select id="resposta_correta" name="resposta_correta" class="form-select" required>
+                                <option value="">Selecione a resposta correta</option>
+                                <option value="A">Alternativa A</option>
+                                <option value="B">Alternativa B</option>
+                                <option value="C">Alternativa C</option>
+                                <option value="D">Alternativa D</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        <button type="submit" class="btn btn-success">Salvar Pergunta</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmação de exclusão -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmação de Exclusão</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="confirmDeleteModalBody"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form id="deleteForm" method="GET" action="">
+                        <input type="hidden" name="acao" value="excluir">
+                        <input type="hidden" name="idioma" value="<?php echo urlencode($idioma_selecionado); ?>">
+                        <input type="hidden" name="id" id="deleteItemId">
+                        <button type="submit" class="btn btn-danger">Excluir</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+        if (confirmDeleteModal) {
+            confirmDeleteModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const itemId = button.getAttribute('data-id');
+                const formAction = button.getAttribute('data-action');
+
+                const modalBody = confirmDeleteModal.querySelector('#confirmDeleteModalBody');
+                const modalForm = confirmDeleteModal.querySelector('#deleteForm');
+                const hiddenInput = confirmDeleteModal.querySelector('#deleteItemId');
+
+                modalBody.innerHTML = `<p>Tem certeza que deseja excluir a pergunta de ID <strong>${itemId}</strong>?</p>`;
+                modalForm.action = formAction;
+                hiddenInput.value = itemId;
+            });
+        }
+    });
+    </script>
 </body>
 </html>

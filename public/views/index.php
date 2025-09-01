@@ -1,394 +1,204 @@
 <?php
-session_start();
-ob_start(); // Garante que o header() funcione corretamente
-
+// Inclua o arquivo de conexão em POO
 include_once __DIR__ . '/../../conexao.php';
+
+// Inicia a sessão no topo do arquivo para uso posterior
+session_start();
+
+// Variável para armazenar a mensagem de erro, se houver.
+$erro_cadastro = "";
+
+// Lógica de cadastro
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    
+    // Crie uma instância da classe Database para obter a conexão
     $database = new Database();
     $conn = $database->conn;
-
-    $email = trim($_POST['email']);
+    
+    $nome = $_POST['nome'];
+    $email = $_POST['email'];
     $senha = $_POST['senha'];
+    $idioma = $_POST['idioma'];
 
-    $sql = "SELECT id, nome, senha FROM usuarios WHERE email = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $stmt->store_result();
+    // 1. VERIFICAÇÃO: Verifica se o e-mail já existe no banco de dados.
+    $sql_check_email = "SELECT id FROM usuarios WHERE email = ?";
+    $stmt_check = $conn->prepare($sql_check_email);
+    $stmt_check->bind_param("s", $email);
+    $stmt_check->execute();
+    $result_check = $stmt_check->get_result();
 
-    if ($stmt->num_rows > 0) {
-        $stmt->bind_result($id_usuario, $nome_usuario, $senha_hash);
-        $stmt->fetch();
-
-        if (password_verify($senha, $senha_hash)) {
-            $_SESSION['id_usuario'] = $id_usuario;
-            $_SESSION['nome_usuario'] = $nome_usuario;
-            header("Location: painel.php");
-            exit();
-        } else {
-            $erro_login = "Email ou senha incorretos.";
-        }
+    if ($result_check->num_rows > 0) {
+        // Se o e-mail já existe, define a mensagem de erro.
+        $erro_cadastro = "Este e-mail já está cadastrado. Por favor, tente fazer login.";
     } else {
-        $erro_login = "Email ou senha incorretos.";
-    }
+        // 2. CADASTRO: Se o e-mail não existe, procede com a inserção do usuário.
+        $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
 
-    $stmt->close();
+        // Prepare e execute a inserção na tabela 'usuarios'
+        $sql_usuario = "INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)";
+        $stmt_usuario = $conn->prepare($sql_usuario);
+        $stmt_usuario->bind_param("sss", $nome, $email, $senha_hash);
+
+        if ($stmt_usuario->execute()) {
+            // Se o cadastro do usuário for bem-sucedido, pegue o ID dele
+            $id_usuario = $conn->insert_id;
+            
+            // Prepare e execute a inserção na tabela 'progresso_usuario'
+            $sql_progresso = "INSERT INTO progresso_usuario (id_usuario, idioma, nivel) VALUES (?, ?, ?)";
+            $stmt_progresso = $conn->prepare($sql_progresso);
+            $nivel_inicial = "A1";
+            $stmt_progresso->bind_param("iss", $id_usuario, $idioma, $nivel_inicial);
+
+            if ($stmt_progresso->execute()) {
+                // Sucesso: inicia a sessão e redireciona para o quiz
+                $_SESSION['id_usuario'] = $id_usuario;
+                // Salva o nome do usuário na sessão para personalização no painel
+                $_SESSION['nome_usuario'] = $nome; 
+                header("Location: quiz.php?idioma=$idioma");
+                exit(); 
+            } else {
+                $erro_cadastro = "Erro ao registrar o progresso: " . $stmt_progresso->error;
+            }
+            $stmt_progresso->close();
+        } else {
+            $erro_cadastro = "Erro no cadastro do usuário: " . $stmt_usuario->error;
+        }
+        $stmt_usuario->close();
+    }
+    
+    // Feche a conexão usando o método da classe
     $database->closeConnection();
 }
-
-ob_end_flush();
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Site de Idiomas</title>
+    <title>Cadastro - Site de Idiomas</title>
+    <link href="cadastro-login.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-     * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background-image: url('fundo-idiomas.png');
-            background-repeat: no-repeat;
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            margin: 0;
-            font-family: Arial, sans-serif;
-            color: #333;
-        }
-
-        /* Barra superior */
-        header {
-            display: flex;
-            justify-content: flex-end;
-            gap: 15px;
-            padding: 20px 30px;
-            position: relative;
-            z-index: 10;
-        }
-
-        header button {
-            padding: 12px 24px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        .btn-entrar {
-            background-color: rgba(227, 213, 247, 0.8);
-            color: #6b46c1;
-        }
-
-        .btn-entrar:hover {
-            background-color: rgba(227, 213, 247, 1);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn-cadastrar {
-            background-color: rgba(194, 145, 243, 0.8);
-            color: white;
-        }
-
-        .btn-cadastrar:hover {
-            background-color: rgba(194, 145, 243, 1);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Área principal */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            position: relative;
-        }
-
-        /* Logo */
-        .logo-section {
-            transform: translateX(100px);
-            margin-bottom: 0px;
-            animation: slideInFromTop 1.2s ease-out;
-        }
-
-        .logo img {
-            max-width: 600px;
-            //* aumentei de 500px para 600px *//
-            transform: translate(100px, 80px);
-            transition: transform 1s ease, opacity 1s ease;
-            opacity: 1;
-        }
-
-        /* Seção inferior */
-        .bottom-section {
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            width: 100%;
-            max-width: 1200px;
-            margin-top: 40px;
-        }
-
-        /* Mascote */
-        .mascote-container {
-            flex: 0 0 300px;
-        }
-
-        .mascote {
-            max-width: 500px;
-            /* aumentei de 300px para 400px */
-            width: 100%;
-            height: auto;
-        }
-
-        .welcome-section {
-            flex: 1;
-            text-align: center;
-            padding: 40px;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            /* mantém bordas arredondadas */
-            margin-left: 40px;
-            box-shadow: 0 0 20px rgba(107, 70, 193, 0.6), 0 0 40px rgba(107, 70, 193, 0.4);
-            backdrop-filter: blur(10px);
-            border: 3px solid #6b46c1;
-            max-width: 750px;
-            /* largura aumentada */
-            min-width: 450px;
-            /* garante que não fique pequena */
-
-            /* Animação */
-            opacity: 0;
-            transform: translateX(100px);
-            animation: slideInFull 1.5s ease-out forwards;
-        }
-
-        .welcome-title {
-            font-size: 3rem;
-            font-weight: bold;
-            color: #000000;
-            margin-bottom: 15px;
-            text-shadow: 0 0 10px rgba(107, 70, 193, 0.7),
-                0 0 20px rgba(107, 70, 193, 0.7),
-                0 0 30px rgba(107, 70, 193, 0.3);
-
-        }
-
-        .welcome-subtitle {
-            font-size: 1.2rem;
-            color: #666;
-            line-height: 1.6;
-        }
-
-        @keyframes slideInFull {
-            0% {
-                opacity: 0;
-                transform: translateX(100px) scale(0.95);
-            }
-
-            100% {
-                opacity: 1;
-                transform: translateX(0) scale(1);
-            }
-        }
-
-
-        @keyframes fadeZoom {
-            0% {
-                opacity: 0;
-                transform: scale(0.5);
-            }
-
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        @keyframes slideInFromLeft {
-            0% {
-                opacity: 0;
-                transform: translateX(-100px);
-            }
-
-            100% {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        @keyframes slideInFromRight {
-            0% {
-                opacity: 0;
-                transform: translateX(100px);
-            }
-
-            100% {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        @keyframes mascoteBounce {
-
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-
-            50% {
-                transform: translateY(-10px);
-            }
-        }
-
-        @keyframes welcomePulse {
-
-            0%,
-            100% {
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            }
-
-            50% {
-                box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
-            }
-        }
-
-        @keyframes titleTypewriter {
-            0% {
-                opacity: 0;
-                width: 0;
-            }
-
-            100% {
-                opacity: 1;
-                width: 100%;
-            }
-        }
-
-        @keyframes subtitleFadeIn {
-            0% {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Responsividade */
-        @media (max-width: 768px) {
-            .logo-text {
-                font-size: 2.5rem;
-            }
-
-            .bottom-section {
-                flex-direction: column;
-                align-items: center;
-                gap: 30px;
-            }
-
-            .welcome-section {
-                margin-left: 0;
-                margin-top: 20px;
-            }
-
-            .welcome-title {
-                font-size: 1.8rem;
-            }
-
-            .welcome-subtitle {
-                font-size: 1rem;
-            }
-
-            header {
-                padding: 15px 20px;
-            }
-
-            header button {
-                padding: 10px 20px;
-                font-size: 12px;
-            }
-        }
-    </style>
 </head>
 <body>
-     <header>
-            <button class="btn-entrar">Entrar</button>
-            <button class="btn-cadastrar">Cadastre-se</button>
-        </header>
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-5">
-                <div class="card">
-                    <div class="card-header text-center">
-                        <h2>Entrar</h2>
-                    </div>
-                    <div class="card-body">
-                        <?php if (isset($erro_login)): ?>
-                            <div class="alert alert-danger"><?php echo $erro_login; ?></div>
-                        <?php endif; ?>
-                        <form action="index.php" method="POST" id="formLogin">
-                            <div class="mb-3">
-                                <label for="email" class="form-label">E-mail</label>
-                                <input type="email" class="form-control" id="email" name="email" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="senha" class="form-label">Senha</label>
-                                <input type="password" class="form-control" id="senha" name="senha" required>
-                            </div>
-                            <div class="mb-3 text-end">
-                                <a href="esqueci_senha.php">Esqueci a senha?</a>
-                            </div>
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-primary" id="btnLogin">
-                                    <span id="btnText">Entrar</span>
-                                    <span class="spinner-border spinner-border-sm d-none" id="btnSpinner" role="status" aria-hidden="true"></span>
-                                </button>
-                            </div>
-<div class="d-grid gap-2 mt-3">
-                                <button type="button" class="btn btn-danger" onclick="window.location.href=\'google_oauth.php?action=login\'">
-                                    <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google logo"> Entrar com Google
-                                </button>
-                            </div>
-                        <div class="text-center mt-3">
-                            <p>Não tem uma conta? <a href="cadastro.php">Cadastre-se aqui</a></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="background-container">
+        <canvas id="particles-js"></canvas>
+        <!-- Ondas SVG -->
+        <svg class="waves" xmlns="http://www.w3.org/2000/svg" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+            <defs>
+                <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+            </defs>
+            <g class="parallax">
+                <use class="wave1" xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7)" />
+                <use class="wave2" xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
+                <use class="wave3" xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
+            </g>
+        </svg>
     </div>
 
-    <!-- Scripts Bootstrap + JS de carregamento -->
+    <div class="form-container">
+        <h2>Crie sua conta</h2>
+        <p>Preencha os dados para começar</p>
+
+        <?php if (!empty($erro_cadastro)): ?>
+  <div style="background-color: rgba(255, 0, 0, 0.2); border: 1px solid rgba(255, 0, 0, 0.4); color: white; padding: 10px; border-radius: 8px; margin-bottom: 1rem;">
+    <?php echo $erro_cadastro; ?>
+  </div>
+<?php endif; ?>
+        
+        <form action="cadastro.php" method="POST">
+            <div class="input-group">
+                <input type="text" id="nome" name="nome" placeholder="Nome Completo" required>
+            </div>
+            <div class="input-group">
+                <input type="email" id="email" name="email" placeholder="E-mail" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="senha" name="senha" placeholder="Senha" required>
+            </div>
+            <div class="input-group">
+                <label for="idioma" style="display:none;">Escolha seu primeiro idioma</label>
+                <select class="form-select" id="idioma" name="idioma" required>
+                    <option value="" disabled selected>Selecione seu primeiro idioma</option>
+                    <option value="Ingles">Inglês</option>
+                    <option value="Japones">Japonês</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-login">Cadastrar e Começar Quiz</button>
+        </form>
+
+        <div class="social-login">
+            <button onclick="window.location.href='google_oauth.php?action=register'">
+                <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google logo"> Cadastrar com Google
+            </button>
+        </div>
+        
+        <div class="links-container">
+            <p style="font-size: 0.9rem; margin-top: 1rem; color: rgba(255, 255, 255, 0.6);">
+                Já tem uma conta? <a href="login.php" style="color: var(--yellow-accent);">Faça login aqui</a>
+            </p>
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.getElementById("formLogin").addEventListener("submit", function () {
-            const btnLogin = document.getElementById("btnLogin");
-            const btnText = document.getElementById("btnText");
-            const btnSpinner = document.getElementById("btnSpinner");
+        // Particle animation script
+        const canvas = document.getElementById('particles-js');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let w, h;
 
-            // Mostra o spinner e atualiza o texto
-            btnText.textContent = "Entrando...";
-            btnSpinner.classList.remove("d-none");
+        function resizeCanvas() {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+        }
 
-            // Desativa o botão para evitar cliques duplos
-            btnLogin.disabled = true;
-        });
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function createParticle() {
+            return {
+                x: Math.random() * w,
+                y: Math.random() * h,
+                radius: Math.random() * 2,
+                color: `rgba(255, 255, 255, ${Math.random() * 0.5 + 0.5})`,
+                velocity: {
+                    x: (Math.random() - 0.5) * 0.5,
+                    y: (Math.random() - 0.5) * 0.5,
+                }
+            };
+        }
+
+        function init() {
+            particles = [];
+            for (let i = 0; i < 100; i++) {
+                particles.push(createParticle());
+            }
+        }
+
+        function drawParticles() {
+            ctx.clearRect(0, 0, w, h);
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+
+                p.x += p.velocity.x;
+                p.y += p.velocity.y;
+
+                if (p.x < 0 || p.x > w || p.y < 0 || p.y > h) {
+                    particles[i] = createParticle();
+                }
+            }
+            requestAnimationFrame(drawParticles);
+        }
+
+        window.onload = function() {
+            init();
+            drawParticles();
+        }
+
     </script>
 </body>
 </html>
