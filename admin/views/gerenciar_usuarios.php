@@ -27,7 +27,7 @@ $sql_usuarios = "
         u.ultimo_login,
         u.ativo,
         COALESCE(qr.nivel_resultado, 'Não avaliado') as nivel_atual,
-        COUNT(DISTINCT pu.id_caminho) as caminhos_iniciados,
+        COUNT(DISTINCT pu.caminho_id) as caminhos_iniciados,
         AVG(pu.progresso) as progresso_medio
     FROM usuarios u
     LEFT JOIN (

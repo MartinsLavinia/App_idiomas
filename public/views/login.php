@@ -73,7 +73,7 @@ ob_end_flush();
     <?php if (isset($erro_login)): ?>
         <div style="background-color: rgba(255, 0, 0, 0.2); border: 1px solid rgba(255, 0, 0, 0.4); color: white; padding: 10px; border-radius: 8px; margin-bottom: 1rem;"><?php echo $erro_login; ?></div>
     <?php endif; ?>
-    <form action="index.php" method="POST">
+    <form action="login.php" method="POST">
         <div class="input-group">
             <input type="email" id="email" name="email" placeholder="E-mail" required>
         </div>

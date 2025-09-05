@@ -98,7 +98,7 @@ $database->closeConnection();
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Paleta de Cores */
+    /* Paleta de Cores */
 :root {
     --roxo-principal: #6a0dad;
     --roxo-escuro: #4c087c;
@@ -107,9 +107,12 @@ $database->closeConnection();
     --preto-texto: #212529;
     --cinza-claro: #f8f9fa;
     --cinza-medio: #dee2e6;
+    --verde-concluido: #28a745;
+    --azul-progresso: #0f766e;
+    --cinza-fundo-card: #e9ecef;
 }
 
-/* Estilos Gerais do Corpo */
+/* Estilos Gerais do Corpo (manter os seus) */
 body {
     font-family: 'Poppins', sans-serif;
     background-color: var(--cinza-claro);
@@ -122,7 +125,7 @@ body {
     to { opacity: 1; }
 }
 
-/* Barra de Navegação */
+/* Barra de Navegação (manter os seus) */
 .navbar {
     background: var(--roxo-principal) !important;
     border-bottom: 3px solid var(--amarelo-detalhe);
@@ -146,79 +149,174 @@ body {
     color: var(--preto-texto);
 }
 
-/* Estilos de Cartões (Cards) */
-.card {
-    border: none;
-    border-radius: 1rem;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+/* --- Novos Estilos para as Unidades (Layout de Cards Moderno) --- */
+
+.units-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* 280px min, preenche o espaço */
+    gap: 25px; /* Espaçamento entre os cards */
+    padding: 20px 0;
 }
 
-.card-header {
-    background-color: var(--roxo-principal);
-    color: var(--branco);
-    border-radius: 1rem 1rem 0 0 !important;
-    padding: 1.5rem;
-}
-
-.card-header h2 {
-    font-weight: 700;
-    letter-spacing: 0.5px;
-}
-
-/* Card de Unidade (unidade-card) */
-.unidade-card {
+.unit-card {
+    background-color: var(--branco);
+    border-radius: 15px; /* Bordas mais arredondadas */
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08); /* Sombra mais pronunciada */
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     cursor: pointer;
-    border: 2px solid transparent;
+    overflow: hidden; /* Garante que nada transborde */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Empurra o rodapé para baixo */
+    min-height: 200px; /* Altura mínima para os cards */
+    position: relative;
+    border: 2px solid transparent; /* Borda para destaque */
+    animation: fadeInUp 0.6s ease-out forwards;
+    opacity: 0; /* Esconde inicialmente para a animação */
 }
 
-.unidade-card:hover {
+.unit-card:hover {
     transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    border-color: var(--amarelo-detalhe);
+    box-shadow: 0 15px 45px rgba(0,0,0,0.15);
+    border-color: var(--roxo-principal); /* Destaca no hover */
 }
 
-.unidade-card .progress {
-    height: 10px;
-    background-color: var(--cinza-medio);
+/* Estilos para o cabeçalho do card da unidade */
+.card-header-unit {
+    background-color: var(--roxo-principal);
+    color: var(--branco);
+    padding: 15px 20px;
+    border-top-left-radius: 13px; /* Arredondamento top */
+    border-top-right-radius: 13px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    box-shadow: inset 0 -3px 10px rgba(0,0,0,0.2);
 }
 
-.unidade-card .progress-bar {
+.unit-number-badge {
     background-color: var(--amarelo-detalhe);
-    animation: progressFill 1s ease-out forwards;
+    color: var(--preto-texto);
+    padding: 5px 12px;
+    border-radius: 50px;
+    font-size: 0.85em;
+    font-weight: 600;
+    margin-bottom: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
-@keyframes progressFill {
-    from { width: 0; }
+.card-title-unit {
+    font-size: 1.3em;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.3;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
 }
 
-/* Card de Atividade (atividade-card) */
-.atividade-card {
-    transition: all 0.3s ease;
-    cursor: pointer;
-    border: 1px solid var(--cinza-medio);
-    border-radius: 0.75rem;
-    background: var(--branco);
+/* Estilos para o corpo do card da unidade */
+.card-body-unit {
+    padding: 20px;
+    flex-grow: 1; /* Permite que o corpo ocupe o espaço restante */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
-.atividade-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-    border-color: var(--roxo-principal);
+.card-text-unit {
+    font-size: 0.95em;
+    color: var(--preto-texto);
+    margin-bottom: 15px;
+    line-height: 1.5;
 }
 
-.atividade-icon {
-    font-size: 3rem;
-    color: var(--amarelo-detalhe);
-    margin-bottom: 1rem;
-    transition: transform 0.3s ease;
+/* Container da barra de progresso */
+.progress-container-unit {
+    width: 100%;
+    background-color: var(--cinza-fundo-card); /* Fundo da barra de progresso */
+    border-radius: 10px;
+    height: 12px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
 }
 
-.atividade-card:hover .atividade-icon {
-    transform: scale(1.1);
+.progress-bar-unit {
+    height: 100%;
+    background-color: var(--azul-progresso); /* Cor da barra cheia */
+    border-radius: 10px;
+    transition: width 0.6s ease-out;
+    width: 0%; /* Inicia em 0 para animação */
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
-/* Estilos de Modal */
+.progress-text-unit {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8em;
+    font-weight: 600;
+    color: var(--preto-texto);
+    text-shadow: 0 0 5px rgba(255,255,255,0.7); /* Para legibilidade */
+}
+
+/* Estados da Unidade */
+.unit-card.completed {
+    border-color: var(--verde-concluido);
+    box-shadow: 0 8px 30px rgba(40, 167, 69, 0.2);
+}
+
+.unit-card.completed .card-header-unit {
+    background-color: var(--verde-concluido);
+}
+
+.unit-card.completed .unit-number-badge {
+    background-color: var(--branco);
+    color: var(--verde-concluido);
+}
+
+.unit-card.completed .progress-bar-unit {
+    background-color: var(--verde-concluido);
+}
+
+.completion-badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background-color: var(--verde-concluido);
+    color: var(--branco);
+    padding: 5px 10px;
+    border-radius: 0 10px 0 15px;
+    font-size: 0.8em;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transform: rotate(5deg);
+}
+
+.unit-card.in-progress {
+    border-color: var(--azul-progresso);
+}
+
+.unit-card.in-progress .card-header-unit {
+    background-color: var(--roxo-principal); /* Pode ser outro tom ou manter o principal */
+}
+
+/* Animação de entrada para os cards */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* --- Estilos de Modal (manter os seus) --- */
 .modal-overlay {
     background-color: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(8px);
@@ -267,7 +365,7 @@ body {
     background-size: 0.8rem;
 }
 
-/* Botões de Resposta do Quiz */
+/* Botões de Resposta do Quiz (manter os seus) */
 .btn-resposta {
     margin: 0.75rem 0;
     padding: 1rem 1.5rem;
@@ -315,7 +413,7 @@ body {
     50% { transform: translateX(5px); }
 }
 
-/* Estilos de Feedback */
+/* Estilos de Feedback (manter os seus) */
 .feedback-container {
     margin-top: 1.5rem;
     padding: 1.5rem;
@@ -361,7 +459,7 @@ body {
     transform: scale(1.05);
 }
 
-/* Animações e Efeitos */
+/* Animações e Efeitos (manter os seus) */
 .fs-4 .badge {
     background-color: var(--amarelo-detalhe) !important;
     color: var(--preto-texto);
@@ -380,6 +478,90 @@ body {
 .progress-bar-custom .progress-bar {
     background-color: var(--amarelo-detalhe);
     box-shadow: 0 0 10px var(--amarelo-detalhe);
+}
+
+/* Ajustes para mobile */
+@media (max-width: 768px) {
+    .units-grid-container {
+        grid-template-columns: 1fr; /* Uma coluna em telas pequenas */
+    }
+}
+
+/* Estilo para o efeito roxo/branco nos cards */
+.unit-card.split-effect {
+    /* Cria um gradiente linear que vai do roxo (topo) ao branco (base) */
+    background: linear-gradient(to bottom, var(--roxo-principal) 50%, var(--branco) 50%);
+    /* Garante que a cor do texto seja legível */
+    color: var(--preto-texto); 
+}
+
+.unit-card.split-effect .card-header-unit {
+    background: transparent; /* Remove o fundo do header original para o gradiente dominar */
+    color: var(--branco); /* Mantém o texto branco no gradiente roxo */
+    box-shadow: none; /* Remove a sombra interna do header */
+    border-top-left-radius: 13px;
+    border-top-right-radius: 13px;
+    position: relative; /* Necessário para o posicionamento do título */
+    z-index: 2; /* Garante que o conteúdo do header fique acima do gradiente */
+}
+
+.unit-card.split-effect .unit-number-badge {
+    background-color: var(--amarelo-detalhe);
+    color: var(--preto-texto);
+    padding: 5px 12px;
+    border-radius: 50px;
+    font-size: 0.85em;
+    font-weight: 600;
+    margin-bottom: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    position: relative; /* Para garantir que fique acima do gradiente */
+    z-index: 3; 
+}
+
+.unit-card.split-effect .card-title-unit {
+    font-size: 1.3em;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.3;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+    position: relative; /* Para garantir que fique acima do gradiente */
+    z-index: 3; 
+}
+
+.unit-card.split-effect .card-body-unit {
+    padding: 20px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: var(--branco); /* O corpo principal do card será branco */
+    position: relative;
+    z-index: 1; /* Fica abaixo do header, mas acima do fundo do card */
+    border-bottom-left-radius: 13px; /* Arredondamento bottom */
+    border-bottom-right-radius: 13px;
+}
+
+.unit-card.split-effect .card-text-unit,
+.unit-card.split-effect .progress-text-unit {
+    color: var(--preto-texto); /* Garante que o texto no corpo branco seja legível */
+}
+
+/* Opcional: Estilo para quando o card está completo */
+.unit-card.completed.split-effect {
+    background: linear-gradient(to bottom, var(--verde-concluido) 50%, var(--branco) 50%);
+}
+
+.unit-card.completed.split-effect .card-header-unit {
+    color: var(--branco);
+}
+
+.unit-card.completed.split-effect .unit-number-badge {
+    background-color: var(--branco);
+    color: var(--verde-concluido);
+}
+
+.unit-card.completed.split-effect .card-body-unit {
+    background-color: var(--branco); /* Mantém branco no corpo */
 }
     </style>
 </head>
@@ -437,38 +619,44 @@ body {
                     </div>
 
                     <h4>Unidades do Nível <?php echo htmlspecialchars($nivel_usuario); ?></h4>
-                    <div class="row">
-                        <?php if (count($unidades) > 0): ?>
-                            <?php foreach ($unidades as $unidade): ?>
-                                <div class="col-md-6 mb-3">
-                                    <div class="card unidade-card h-100" onclick="abrirAtividades(<?php echo $unidade["id"]; ?>, '<?php echo htmlspecialchars($unidade["titulo"]); ?>', <?php echo $unidade["numero_unidade"]; ?>)">
-                                        <div class="card-body">
-                                            <h5 class="card-title">
-                                                <i class="fas fa-book-open me-2"></i>
-                                                Unidade <?php echo htmlspecialchars($unidade["numero_unidade"]); ?>
-                                            </h5>
-                                            <h6 class="card-subtitle mb-2 text-muted"><?php echo htmlspecialchars($unidade["titulo"]); ?></h6>
-                                            <p class="card-text"><?php echo htmlspecialchars($unidade["descricao"]); ?></p>
-                                            <div class="progress progress-bar-custom">
-                                                <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                                            </div>
-                                            <small class="text-muted">0% concluído</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <div class="col-12">
-                                <div class="alert alert-info" role="alert">
-                                    Nenhuma unidade encontrada para este nível e idioma.
-                                </div>
-                            </div>
-                        <?php endif; ?>
+<div class="units-grid-container">
+    <?php if (count($unidades) > 0): ?>
+        <?php foreach ($unidades as $index => $unidade): ?>
+            <?php
+                // Simula um progresso para fins de demonstração (substitua pela lógica real se tiver)
+                $progresso_simulado = rand(0, 100); 
+                $status_unidade = ($progresso_simulado == 100) ? 'completed' : (($progresso_simulado > 0) ? 'in-progress' : 'not-started');
+            ?>
+            <div class="unit-card <?php echo $status_unidade; ?>" 
+                 onclick="abrirAtividades(<?php echo $unidade['id']; ?>, '<?php echo htmlspecialchars($unidade['titulo']); ?>', <?php echo $unidade['numero_unidade']; ?>)"
+                 style="animation-delay: <?php echo $index * 0.1; ?>s;">
+                <div class="card-header-unit">
+                    <span class="unit-number-badge">Unid. <?php echo htmlspecialchars($unidade['numero_unidade']); ?></span>
+                    <h5 class="card-title-unit mt-2"><?php echo htmlspecialchars($unidade['titulo']); ?></h5>
+                </div>
+                <div class="card-body-unit">
+                    <p class="card-text-unit"><?php echo htmlspecialchars(substr($unidade['descricao'], 0, 70)); ?>...</p>
+                    <div class="progress-container-unit">
+                        <div class="progress-bar-unit" style="width: <?php echo $progresso_simulado; ?>%;"></div>
+                        <span class="progress-text-unit"><?php echo $progresso_simulado; ?>%</span>
+                    </div>
+                </div>
+                <?php if ($status_unidade == 'completed'): ?>
+                    <div class="completion-badge">
+                        <i class="fas fa-check-circle"></i> Concluída
                     </div>
                 <?php endif; ?>
             </div>
+        <?php endforeach; ?>
+    <?php else: ?>
+        <div class="col-12">
+            <div class="alert alert-info" role="alert">
+                Nenhuma unidade encontrada para este nível e idioma.
+            </div>
         </div>
-    </div>
+    <?php endif; ?>
+</div>
+<?php endif; ?>
 
     <!-- Modal de Atividades -->
     <div class="modal fade" id="modalAtividades" tabindex="-1" aria-hidden="true">
