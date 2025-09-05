@@ -51,7 +51,7 @@ $sql_progress = "
         pu.data_inicio,
         pu.ultima_atividade
     FROM progresso_usuario pu
-    JOIN caminhos_aprendizagem ca ON pu.id_caminho = ca.id
+    JOIN caminhos_aprendizagem ca ON pu.caminho_id = ca.id
     WHERE pu.id_usuario = ?
     ORDER BY pu.ultima_atividade DESC
 ";
@@ -85,14 +85,14 @@ $stmt_quizzes->close();
 // Buscar exercícios recentes
 $sql_exercises = "
     SELECT 
-        e.titulo,
+        e.pergunta,
         ca.idioma,
         ca.nivel,
         re.pontuacao,
         re.data_resposta
     FROM respostas_exercicios re
     JOIN exercicios e ON re.id_exercicio = e.id
-    JOIN caminhos_aprendizagem ca ON e.id_caminho = ca.id
+    JOIN caminhos_aprendizagem ca ON e.caminho_id = ca.id
     WHERE re.id_usuario = ?
     ORDER BY re.data_resposta DESC
     LIMIT 10

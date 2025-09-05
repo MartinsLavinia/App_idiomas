@@ -23,26 +23,26 @@ $usuarios_ativos = $result_ativos->fetch_assoc()['ativos'];
 
 // Usuários por nível (baseado no último quiz realizado)
 $sql_usuarios_por_nivel = "
-    SELECT 
+    SELECT
         COALESCE(qr.nivel_resultado, 'Sem nível') as nivel,
         COUNT(DISTINCT u.id) as quantidade
     FROM usuarios u
     LEFT JOIN (
-        SELECT 
+        SELECT
             id_usuario,
             nivel_resultado,
             ROW_NUMBER() OVER (PARTITION BY id_usuario ORDER BY data_realizacao DESC) as rn
         FROM quiz_resultados
     ) qr ON u.id = qr.id_usuario AND qr.rn = 1
-    GROUP BY COALESCE(qr.nivel_resultado, 'Sem nível')
-    ORDER BY 
-        CASE 
-            WHEN qr.nivel_resultado = 'A1' THEN 1
-            WHEN qr.nivel_resultado = 'A2' THEN 2
-            WHEN qr.nivel_resultado = 'B1' THEN 3
-            WHEN qr.nivel_resultado = 'B2' THEN 4
-            WHEN qr.nivel_resultado = 'C1' THEN 5
-            WHEN qr.nivel_resultado = 'C2' THEN 6
+    GROUP BY nivel
+    ORDER BY
+        CASE
+            WHEN nivel = 'A1' THEN 1
+            WHEN nivel = 'A2' THEN 2
+            WHEN nivel = 'B1' THEN 3
+            WHEN nivel = 'B2' THEN 4
+            WHEN nivel = 'C1' THEN 5
+            WHEN nivel = 'C2' THEN 6
             ELSE 7
         END
 ";
@@ -54,7 +54,7 @@ while ($row = $result_niveis->fetch_assoc()) {
 
 // Idiomas mais populares (baseado nos quizzes realizados)
 $sql_idiomas_populares = "
-    SELECT 
+    SELECT
         qn.idioma,
         COUNT(DISTINCT qr.id_usuario) as usuarios_unicos,
         COUNT(qr.id) as total_quizzes
@@ -70,15 +70,15 @@ while ($row = $result_idiomas->fetch_assoc()) {
     $idiomas_populares[] = $row;
 }
 
-// Progresso dos usuários nos caminhos
+// Progresso dos usuários nos caminhos (CORRIGIDO)
 $sql_progresso_caminhos = "
-    SELECT 
+    SELECT
         ca.idioma,
         ca.nivel,
         COUNT(DISTINCT pu.id_usuario) as usuarios_iniciaram,
         AVG(pu.progresso) as progresso_medio
     FROM progresso_usuario pu
-    JOIN caminhos_aprendizagem ca ON pu.id_caminho = ca.id
+    JOIN caminhos_aprendizagem ca ON pu.caminho_id = ca.id
     GROUP BY ca.idioma, ca.nivel
     ORDER BY ca.idioma, ca.nivel
 ";
@@ -90,10 +90,10 @@ while ($row = $result_progresso->fetch_assoc()) {
 
 // Usuários registrados por mês (últimos 12 meses)
 $sql_registros_mensais = "
-    SELECT 
+    SELECT
         DATE_FORMAT(data_registro, '%Y-%m') as mes,
         COUNT(*) as novos_usuarios
-    FROM usuarios 
+    FROM usuarios
     WHERE data_registro >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
     GROUP BY DATE_FORMAT(data_registro, '%Y-%m')
     ORDER BY mes DESC
@@ -106,16 +106,16 @@ while ($row = $result_mensais->fetch_assoc()) {
 
 // Exercícios mais realizados
 $sql_exercicios_populares = "
-    SELECT 
-        e.titulo,
+    SELECT
+        e.pergunta,
         ca.idioma,
         ca.nivel,
         COUNT(re.id) as total_realizacoes,
         AVG(re.pontuacao) as pontuacao_media
     FROM respostas_exercicios re
     JOIN exercicios e ON re.id_exercicio = e.id
-    JOIN caminhos_aprendizagem ca ON e.id_caminho = ca.id
-    GROUP BY e.id, e.titulo, ca.idioma, ca.nivel
+    JOIN caminhos_aprendizagem ca ON e.caminho_id = ca.id
+    GROUP BY e.id, e.pergunta, ca.idioma, ca.nivel
     ORDER BY total_realizacoes DESC
     LIMIT 15
 ";
@@ -174,7 +174,6 @@ $database->closeConnection();
             <a href="gerenciar_caminho.php" class="btn btn-secondary">← Voltar ao Gerenciamento</a>
         </div>
 
-        <!-- Cards de Estatísticas Gerais -->
         <div class="row mb-4">
             <div class="col-md-3">
                 <div class="stat-card text-center">
@@ -203,7 +202,6 @@ $database->closeConnection();
         </div>
 
         <div class="row">
-            <!-- Gráfico de Usuários por Nível -->
             <div class="col-md-6">
                 <div class="table-container">
                     <h4 class="mb-3">👥 Distribuição por Níveis</h4>
@@ -213,7 +211,6 @@ $database->closeConnection();
                 </div>
             </div>
 
-            <!-- Gráfico de Idiomas Populares -->
             <div class="col-md-6">
                 <div class="table-container">
                     <h4 class="mb-3">🌍 Idiomas Mais Populares</h4>
@@ -224,7 +221,6 @@ $database->closeConnection();
             </div>
         </div>
 
-        <!-- Registros Mensais -->
         <div class="row">
             <div class="col-12">
                 <div class="table-container">
@@ -236,9 +232,7 @@ $database->closeConnection();
             </div>
         </div>
 
-        <!-- Tabelas de Dados -->
         <div class="row">
-            <!-- Progresso nos Caminhos -->
             <div class="col-md-6">
                 <div class="table-container">
                     <h4 class="mb-3">🎯 Progresso nos Caminhos</h4>
@@ -261,9 +255,9 @@ $database->closeConnection();
                                     <td>
                                         <div class="progress" style="height: 20px;">
                                             <div class="progress-bar" role="progressbar" 
-                                                 style="width: <?php echo round($progresso['progresso_medio']); ?>%"
-                                                 aria-valuenow="<?php echo round($progresso['progresso_medio']); ?>" 
-                                                 aria-valuemin="0" aria-valuemax="100">
+                                                style="width: <?php echo round($progresso['progresso_medio']); ?>%"
+                                                aria-valuenow="<?php echo round($progresso['progresso_medio']); ?>" 
+                                                aria-valuemin="0" aria-valuemax="100">
                                                 <?php echo round($progresso['progresso_medio']); ?>%
                                             </div>
                                         </div>
@@ -276,7 +270,6 @@ $database->closeConnection();
                 </div>
             </div>
 
-            <!-- Exercícios Mais Populares -->
             <div class="col-md-6">
                 <div class="table-container">
                     <h4 class="mb-3">🏆 Exercícios Mais Realizados</h4>
