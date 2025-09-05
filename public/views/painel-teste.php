@@ -487,82 +487,6 @@ body {
     }
 }
 
-/* Estilo para o efeito roxo/branco nos cards */
-.unit-card.split-effect {
-    /* Cria um gradiente linear que vai do roxo (topo) ao branco (base) */
-    background: linear-gradient(to bottom, var(--roxo-principal) 50%, var(--branco) 50%);
-    /* Garante que a cor do texto seja legível */
-    color: var(--preto-texto); 
-}
-
-.unit-card.split-effect .card-header-unit {
-    background: transparent; /* Remove o fundo do header original para o gradiente dominar */
-    color: var(--branco); /* Mantém o texto branco no gradiente roxo */
-    box-shadow: none; /* Remove a sombra interna do header */
-    border-top-left-radius: 13px;
-    border-top-right-radius: 13px;
-    position: relative; /* Necessário para o posicionamento do título */
-    z-index: 2; /* Garante que o conteúdo do header fique acima do gradiente */
-}
-
-.unit-card.split-effect .unit-number-badge {
-    background-color: var(--amarelo-detalhe);
-    color: var(--preto-texto);
-    padding: 5px 12px;
-    border-radius: 50px;
-    font-size: 0.85em;
-    font-weight: 600;
-    margin-bottom: 5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    position: relative; /* Para garantir que fique acima do gradiente */
-    z-index: 3; 
-}
-
-.unit-card.split-effect .card-title-unit {
-    font-size: 1.3em;
-    font-weight: 700;
-    margin: 0;
-    line-height: 1.3;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
-    position: relative; /* Para garantir que fique acima do gradiente */
-    z-index: 3; 
-}
-
-.unit-card.split-effect .card-body-unit {
-    padding: 20px;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    background-color: var(--branco); /* O corpo principal do card será branco */
-    position: relative;
-    z-index: 1; /* Fica abaixo do header, mas acima do fundo do card */
-    border-bottom-left-radius: 13px; /* Arredondamento bottom */
-    border-bottom-right-radius: 13px;
-}
-
-.unit-card.split-effect .card-text-unit,
-.unit-card.split-effect .progress-text-unit {
-    color: var(--preto-texto); /* Garante que o texto no corpo branco seja legível */
-}
-
-/* Opcional: Estilo para quando o card está completo */
-.unit-card.completed.split-effect {
-    background: linear-gradient(to bottom, var(--verde-concluido) 50%, var(--branco) 50%);
-}
-
-.unit-card.completed.split-effect .card-header-unit {
-    color: var(--branco);
-}
-
-.unit-card.completed.split-effect .unit-number-badge {
-    background-color: var(--branco);
-    color: var(--verde-concluido);
-}
-
-.unit-card.completed.split-effect .card-body-unit {
-    background-color: var(--branco); /* Mantém branco no corpo */
-}
     </style>
 </head>
 <body>
@@ -624,12 +548,15 @@ body {
         <?php foreach ($unidades as $index => $unidade): ?>
             <?php
                 // Simula um progresso para fins de demonstração (substitua pela lógica real se tiver)
-                $progresso_simulado = rand(0, 100); 
+                $progresso_simulado = rand(0, 100);
                 $status_unidade = ($progresso_simulado == 100) ? 'completed' : (($progresso_simulado > 0) ? 'in-progress' : 'not-started');
             ?>
-            <div class="unit-card <?php echo $status_unidade; ?>" 
+            <div class="unit-card <?php echo $status_unidade; ?> has-floating-bubbles"
                  onclick="abrirAtividades(<?php echo $unidade['id']; ?>, '<?php echo htmlspecialchars($unidade['titulo']); ?>', <?php echo $unidade['numero_unidade']; ?>)"
                  style="animation-delay: <?php echo $index * 0.1; ?>s;">
+
+                <div class="floating-bubbles-container"></div>
+
                 <div class="card-header-unit">
                     <span class="unit-number-badge">Unid. <?php echo htmlspecialchars($unidade['numero_unidade']); ?></span>
                     <h5 class="card-title-unit mt-2"><?php echo htmlspecialchars($unidade['titulo']); ?></h5>
