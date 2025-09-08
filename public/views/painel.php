@@ -3,9 +3,11 @@ session_start();
 // Inclua o arquivo de conexão em POO
 include_once __DIR__ . "/../../conexao.php";
 
+
 // Crie uma instância da classe Database para obter a conexão
 $database = new Database();
 $conn = $database->conn;
+
 
 // Redireciona se o usuário não estiver logado
 if (!isset($_SESSION["id_usuario"])) {
@@ -15,22 +17,24 @@ if (!isset($_SESSION["id_usuario"])) {
     exit();
 }
 
+
 $id_usuario = $_SESSION["id_usuario"];
 $idioma_escolhido = null;
 $nivel_usuario = null;
 $nome_usuario = $_SESSION["nome_usuario"] ?? "usuário";
 $mostrar_selecao_idioma = false;
 
+
 // Processa seleção de idioma para usuários sem progresso
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["idioma_inicial"])) {
     $idioma_inicial = $_POST["idioma_inicial"];
     $nivel_inicial = "A1";
-    
+   
     // Insere progresso inicial para o usuário
     $sql_insert_progresso = "INSERT INTO progresso_usuario (id_usuario, idioma, nivel) VALUES (?, ?, ?)";
     $stmt_insert = $conn->prepare($sql_insert_progresso);
     $stmt_insert->bind_param("iss", $id_usuario, $idioma_inicial, $nivel_inicial);
-    
+   
     if ($stmt_insert->execute()) {
         $stmt_insert->close();
         // Redireciona para o quiz de nivelamento
@@ -43,17 +47,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["idioma_inicial"])) {
     $stmt_insert->close();
 }
 
+
 // Tenta obter o idioma e o nível da URL (se veio do pop-up de resultados)
 if (isset($_GET["idioma"]) && isset($_GET["nivel_escolhido"])) {
     $idioma_escolhido = $_GET["idioma"];
     $nivel_usuario = $_GET["nivel_escolhido"];
-    
+   
     // Atualiza o nível do usuário no banco de dados com a escolha final
     $sql_update_nivel = "UPDATE progresso_usuario SET nivel = ? WHERE id_usuario = ? AND idioma = ?";
     $stmt_update_nivel = $conn->prepare($sql_update_nivel);
     $stmt_update_nivel->bind_param("sis", $nivel_usuario, $id_usuario, $idioma_escolhido);
     $stmt_update_nivel->execute();
     $stmt_update_nivel->close();
+
 
 } else {
     // Se não veio da URL, busca o último idioma e nível do banco de dados
@@ -64,6 +70,7 @@ if (isset($_GET["idioma"]) && isset($_GET["nivel_escolhido"])) {
     $resultado = $stmt_progresso->get_result()->fetch_assoc();
     $stmt_progresso->close();
 
+
     if ($resultado) {
         $idioma_escolhido = $resultado["idioma"];
         $nivel_usuario = $resultado["nivel"];
@@ -72,6 +79,7 @@ if (isset($_GET["idioma"]) && isset($_GET["nivel_escolhido"])) {
         $mostrar_selecao_idioma = true;
     }
 }
+
 
 // Busca unidades apenas se o usuário tem progresso
 if (!$mostrar_selecao_idioma) {
@@ -82,6 +90,7 @@ if (!$mostrar_selecao_idioma) {
     $unidades = $stmt_unidades->get_result()->fetch_all(MYSQLI_ASSOC);
     $stmt_unidades->close();
 }
+
 
 // Feche a conexão usando o método da classe
 $database->closeConnection();
@@ -97,6 +106,9 @@ $database->closeConnection();
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- link direto dos icones -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=home" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=cards_star" />
     <style>
         /* Paleta de Cores */
 :root {
@@ -109,18 +121,22 @@ $database->closeConnection();
     --cinza-medio: #dee2e6;
 }
 
+
 /* Estilos Gerais do Corpo */
 body {
     font-family: 'Poppins', sans-serif;
     background-color: var(--cinza-claro);
     color: var(--preto-texto);
     animation: fadeIn 1s ease-in-out;
+    transition: margin-left 0.5s; /* Transição suave para o conteúdo principal */
 }
+
 
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
 }
+
 
 /* Barra de Navegação */
 .navbar {
@@ -129,10 +145,12 @@ body {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
+
 .navbar-brand {
     font-weight: 700;
     letter-spacing: 1px;
 }
+
 
 .btn-outline-light {
     color: var(--amarelo-detalhe);
@@ -141,10 +159,12 @@ body {
     transition: all 0.3s ease;
 }
 
+
 .btn-outline-light:hover {
     background-color: var(--amarelo-detalhe);
     color: var(--preto-texto);
 }
+
 
 /* Estilos de Cartões (Cards) */
 .card {
@@ -153,6 +173,7 @@ body {
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
 }
 
+
 .card-header {
     background-color: var(--roxo-principal);
     color: var(--branco);
@@ -160,10 +181,12 @@ body {
     padding: 1.5rem;
 }
 
+
 .card-header h2 {
     font-weight: 700;
     letter-spacing: 0.5px;
 }
+
 
 /* Card de Unidade (unidade-card) */
 .unidade-card {
@@ -172,25 +195,30 @@ body {
     border: 2px solid transparent;
 }
 
+
 .unidade-card:hover {
     transform: translateY(-8px) scale(1.02);
     box-shadow: 0 10px 30px rgba(0,0,0,0.15);
     border-color: var(--amarelo-detalhe);
 }
 
+
 .unidade-card .progress {
     height: 10px;
     background-color: var(--cinza-medio);
 }
+
 
 .unidade-card .progress-bar {
     background-color: var(--amarelo-detalhe);
     animation: progressFill 1s ease-out forwards;
 }
 
+
 @keyframes progressFill {
     from { width: 0; }
 }
+
 
 /* Card de Atividade (atividade-card) */
 .atividade-card {
@@ -201,11 +229,13 @@ body {
     background: var(--branco);
 }
 
+
 .atividade-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 25px rgba(0,0,0,0.1);
     border-color: var(--roxo-principal);
 }
+
 
 .atividade-icon {
     font-size: 3rem;
@@ -214,9 +244,11 @@ body {
     transition: transform 0.3s ease;
 }
 
+
 .atividade-card:hover .atividade-icon {
     transform: scale(1.1);
 }
+
 
 /* Estilos de Modal */
 .modal-overlay {
@@ -224,10 +256,12 @@ body {
     backdrop-filter: blur(8px);
 }
 
+
 .popup-modal {
     max-width: 900px;
     animation: modalSlideIn 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
+
 
 @keyframes modalSlideIn {
     from {
@@ -240,11 +274,13 @@ body {
     }
 }
 
+
 .modal-content {
     border-radius: 1.5rem;
     border: none;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
 }
+
 
 .modal-header {
     border-bottom: none;
@@ -254,18 +290,22 @@ body {
     border-radius: 1.5rem 1.5rem 0 0;
 }
 
+
 .modal-header h5 {
     font-weight: 600;
 }
+
 
 .modal-body {
     padding: 2rem;
 }
 
+
 .btn-close {
     filter: invert(1);
     background-size: 0.8rem;
 }
+
 
 /* Botões de Resposta do Quiz */
 .btn-resposta {
@@ -280,11 +320,13 @@ body {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
+
 .btn-resposta:hover {
     border-color: var(--amarelo-detalhe);
     background: var(--cinza-claro);
     transform: translateY(-2px);
 }
+
 
 .btn-resposta.selected {
     border-color: var(--roxo-principal);
@@ -292,11 +334,13 @@ body {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
+
 .btn-resposta.correct {
     border-color: #28a745;
     background: #d4edda;
     animation: correctAnim 0.5s ease;
 }
+
 
 .btn-resposta.incorrect {
     border-color: #dc3545;
@@ -304,16 +348,19 @@ body {
     animation: incorrectAnim 0.5s ease;
 }
 
+
 @keyframes correctAnim {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.03); }
 }
+
 
 @keyframes incorrectAnim {
     0%, 100% { transform: translateX(0); }
     25%, 75% { transform: translateX(-5px); }
     50% { transform: translateX(5px); }
 }
+
 
 /* Estilos de Feedback */
 .feedback-container {
@@ -324,6 +371,7 @@ body {
     display: none;
     animation: slideInUp 0.5s ease;
 }
+
 
 @keyframes slideInUp {
     from {
@@ -336,17 +384,20 @@ body {
     }
 }
 
+
 .feedback-success {
     background: #e6ffed;
     border: 1px solid #28a745;
     color: #155724;
 }
 
+
 .feedback-error {
     background: #fff0f0;
     border: 1px solid #dc3545;
     color: #721c24;
 }
+
 
 .btn-proximo-custom {
     background-color: var(--roxo-principal);
@@ -355,11 +406,13 @@ body {
     transition: all 0.3s ease;
 }
 
+
 .btn-proximo-custom:hover {
     background-color: var(--roxo-escuro);
     border-color: var(--roxo-escuro);
     transform: scale(1.05);
 }
+
 
 /* Animações e Efeitos */
 .fs-4 .badge {
@@ -371,30 +424,218 @@ body {
     animation: pulse 2s infinite ease-in-out;
 }
 
+
 @keyframes pulse {
     0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
     70% { box-shadow: 0 0 0 15px rgba(255, 215, 0, 0); }
     100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
 }
 
+
 .progress-bar-custom .progress-bar {
     background-color: var(--amarelo-detalhe);
     box-shadow: 0 0 10px var(--amarelo-detalhe);
 }
+
+
+
+
+#myHeader {
+    height: 100%;
+    width: 250px;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: #f1f1f1;
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.header-content {
+    padding: 0 15px;
+    flex-grow: 1; /* Permite que o conteúdo principal ocupe o espaço disponível */
+}
+
+#myHeader img {
+    display: block;
+    margin: 0 auto 20px auto;
+    max-width: 200px;
+}
+
+#myHeader nav ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+#myHeader nav li {
+    margin-bottom: 10px;
+}
+
+#myHeader nav a {
+    text-decoration: none;
+    font-size: 18px;
+    color: #333; /* Cor do texto */
+    display: flex;
+    align-items: center;
+    padding: 10px 20px; /* Ajuste o padding para um espaçamento melhor */
+     border: 2px solid transparent;
+    border-width: 2px; /* Borda de 2px */
+    border-color: transparent; /* Inicialmente sem borda */
+    border-radius: 15px;
+    transition: border-color 0.3s ease, color 0.3s ease; /* Transição suave para borda e cor */
+    opacity: 1; /* Garante visibilidade */
+}
+
+/* Estilo para os ícones */
+#myHeader nav a i {
+    margin-right: 10px;
+    width: 20px; /* Garante um espaço consistente para o ícone */
+    text-align: center;
+}
+
+/* Efeito de hover e foco */
+#myHeader nav a:hover,
+#myHeader nav a:focus {
+    color: #000; /* Cor do texto e ícone no hover */
+    background-color: #e0e0e0; /* Fundo sutil para destacar */
+    border-color: #333; /* Borda visível com cor mais escura */
+    outline: none; /* Remove o contorno padrão do navegador */
+}
+
+/* Efeito de foco para quando o link estiver ativo ou selecionado */
+#myHeader nav a:focus,
+#myHeader nav a:active {
+    color: #f1f1f1; /* Cor do texto */
+    background-color: transparent; /* Sem fundo alterado */
+    border-color: #000; /* Borda preta */
+    outline: none; /* Remove o outline do navegador */
+}
+
+/* Efeito para quando o header estiver fechado */
+#myHeader.closed {
+    width: 60px;
+}
+
+#myHeader.closed .header-content h1,
+#myHeader.closed .header-content nav ul li a span.text {
+    display: none;
+}
+
+#myHeader.closed .header-content nav ul li a {
+    justify-content: center; /* Centraliza o ícone */
+}
+
+#myHeader.closed .header-content nav ul li a i {
+    margin-right: 0;
+}
+
+#myHeader.closed .logo {
+    max-width: 50px;
+    margin-bottom: 10px;
+}
+
+#myHeader.closed .toggle-button {
+    font-size: 24px;
+    padding: 15px 10px;
+    transform: rotate(180deg);
+}
+
+.toggle-button {
+    background: none;
+    border: none;
+    font-size: 30px;
+    cursor: pointer;
+    padding: 10px 20px;
+    color: #818181;
+    align-self: center;
+    margin-bottom: 20px;
+    transition: 0.3s;
+}
+
+/* Responsividade */
+@media screen and (max-width: 768px) {
+    #myHeader {
+        width: 200px;
+    }
+
+    #myHeader.closed {
+        width: 0;
+    }
+
+    #myHeader.closed .header-content nav ul li a span.text {
+        display: none;
+    }
+
+    .toggle-button {
+        display: block !important;
+    }
+
+    body.shifted {
+        margin-left: 200px;
+    }
+}
+
+body.shifted {
+    margin-left: 250px;
+    transition: margin-left 0.5s;
+}
+
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+    transition: margin-left 0.5s;
+}
+
+.main-content.shifted {
+    margin-left: 60px;
+}
+
+@media screen and (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+    }
+    .main-content.shifted {
+        margin-left: 0;
+    }
+    body.shifted {
+        margin-left: 0;
+    }
+}
+
+
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="#">Site de Idiomas</a>
-            <div class="d-flex">
-                <span class="navbar-text text-white me-3">
-                    Bem-vindo, <?php echo htmlspecialchars($nome_usuario); ?>!
-                </span>
-                <a href="//logout.php" class="btn btn-outline-light">Sair</a>
-            </div>
-        </div>
-    </nav>
+    <header id="myHeader">
+    <div class="header-content">
+        <img src="..\..\imagens\logo-idiomas.png" alt="Logo SpeakNut">
+        <nav>
+            <ul>
+                <li>
+                    <a href="painel.php">
+                        <span class="material-symbols-outlined">home</span>
+                        Início
+                    </a>
+                </li>
+                <li>
+                    <a href="flashcards.php">
+                        <span class="material-symbols-outlined">cards_star</span>
+                        Flash Cards
+                    </a>
+                </li> 
+            </ul>
+        </nav>
+    </div>
+    <button id="toggleButton" class="toggle-button">☰</button>
+</header>
+
 
     <div class="container mt-5">
         <div class="row justify-content-center">
@@ -436,6 +677,7 @@ body {
                         </div>
                     </div>
 
+
                     <!-- Seção Flash Cards -->
                     <div class="card mb-4">
                         <div class="card-body">
@@ -461,6 +703,7 @@ body {
                             </div>
                         </div>
                     </div>
+
 
                     <!-- Seção Gerenciamento de Palavras -->
                     <div class="card mb-4">
@@ -498,7 +741,7 @@ body {
                                     </button>
                                 </div>
                             </div>
-                            
+                           
                             <!-- Lista de Palavras -->
                             <div id="listaPalavras" class="row">
                                 <div class="col-12 text-center">
@@ -510,6 +753,7 @@ body {
                             </div>
                         </div>
                     </div>
+
 
                     <h4>Unidades do Nível <?php echo htmlspecialchars($nivel_usuario); ?></h4>
                     <div class="row">
@@ -544,6 +788,7 @@ body {
             </div>
         </div>
     </div>
+
 
     <!-- Modal Adicionar Palavra -->
     <div class="modal fade" id="modalAdicionarPalavra" tabindex="-1" aria-hidden="true">
@@ -607,6 +852,7 @@ body {
         </div>
     </div>
 
+
     <!-- Modal de Atividades -->
     <div class="modal fade" id="modalAtividades" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg popup-modal">
@@ -623,6 +869,7 @@ body {
             </div>
         </div>
     </div>
+
 
     <!-- Modal de Exercícios -->
     <div class="modal fade" id="modalExercicios" tabindex="-1" aria-hidden="true">
@@ -658,10 +905,64 @@ body {
         </div>
     </div>
 
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+
+
+const header = document.getElementById('myHeader');
+        const toggleButton = document.getElementById('toggleButton');
+        const body = document.body;
+
+        toggleButton.addEventListener('click', () => {
+            header.classList.toggle('closed');
+            body.classList.toggle('shifted');
+            // Para a versão mobile, o conteúdo principal também precisa ter seu margin-left ajustado.
+            // Vamos fazer isso com uma classe adicional no body.
+            const mainContent = document.querySelector('.main-content');
+            if (mainContent) {
+                if (window.innerWidth <= 768) {
+                    // Em telas pequenas, quando o header está fechado (width: 0), o main-content não precisa de margem.
+                    // Quando o header está aberto, ele ocupa a tela inteira, então o main-content também não precisa de margem.
+                    // A transição de margin-left no .main-content cuida disso.
+                } else {
+                    mainContent.classList.toggle('shifted');
+                }
+            }
+        });
+
+        // Opcional: Se você quiser que o header se feche automaticamente em telas muito pequenas
+        // quando a página carrega ou redimensiona:
+        window.addEventListener('resize', () => {
+            if (window.innerWidth <= 768) {
+                if (!header.classList.contains('closed')) {
+                    header.classList.add('closed');
+                    body.classList.add('shifted'); // Adiciona a classe shifted ao body para ajustar o margin-left
+                    const mainContent = document.querySelector('.main-content');
+                    if (mainContent) {
+                        mainContent.classList.add('shifted');
+                    }
+                }
+            } else {
+                // Em telas maiores, remove as classes se o header estava fechado
+                if (header.classList.contains('closed')) {
+                    header.classList.remove('closed');
+                    body.classList.remove('shifted');
+                    const mainContent = document.querySelector('.main-content');
+                    if (mainContent) {
+                        mainContent.classList.remove('shifted');
+                    }
+                }
+            }
+        });
+
+        // Executa a verificação no carregamento da página também
+        window.dispatchEvent(new Event('resize'));
+
+
         // Garante que o script só execute após o DOM estar completamente carregado
 document.addEventListener('DOMContentLoaded', function() {
+
 
     // --- Variáveis Globais ---
     let unidadeAtual = null;
@@ -671,11 +972,14 @@ document.addEventListener('DOMContentLoaded', function() {
     let exercicioIndex = 0;
     let respostaSelecionada = null;
 
+
     // Inicializa os Modais do Bootstrap
     const modalAtividades = new bootstrap.Modal(document.getElementById('modalAtividades'));
     const modalExercicios = new bootstrap.Modal(document.getElementById('modalExercicios'));
 
+
     // --- Manipulação de Eventos e UI ---
+
 
     // Adiciona evento de clique para os cards de unidade (se existirem no seu HTML)
     const unidadeCards = document.querySelectorAll('.unidade-card');
@@ -686,6 +990,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const titulo = card.dataset.titulo;
             const numero = card.dataset.numero;
 
+
             if (unidadeId && titulo && numero) {
                 abrirAtividades(unidadeId, titulo, numero);
             }
@@ -695,6 +1000,7 @@ document.addEventListener('DOMContentLoaded', function() {
             card.addEventListener('animationend', () => card.classList.remove('animate__pulse'), { once: true });
         });
     });
+
 
     // Animação para os botões de resposta dos exercícios (seleção)
     const btnResposta = document.querySelectorAll('.btn-resposta');
@@ -707,7 +1013,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+
     // --- Funções Principais de Navegação e Lógica ---
+
 
     // Função para abrir modal de atividades
     window.abrirAtividades = function(unidadeId, tituloUnidade, numeroUnidade) {
@@ -715,10 +1023,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (modalExercicios && modalExercicios._isShown) {
             modalExercicios.hide();
         }
-        
+       
         unidadeAtual = unidadeId;
         document.getElementById("tituloAtividades").textContent = `Atividades da Unidade ${numeroUnidade}: ${tituloUnidade}`;
-        
+       
         // Carregar atividades via AJAX
         fetch(`../../admin/controller/get_atividades.php?unidade_id=${unidadeId}`)
             .then(response => response.json())
@@ -736,15 +1044,17 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     };
 
+
     // Função para exibir atividades no modal
     function exibirAtividades(atividades) {
         const container = document.getElementById("listaAtividades");
         container.innerHTML = ""; // Limpa o container antes de adicionar novas atividades
 
+
         atividades.forEach(atividade => {
             const col = document.createElement("div");
             col.className = "col-md-6 mb-3";
-            
+           
             col.innerHTML = `
                 <div class="card atividade-card h-100" onclick="abrirExercicios(${atividade.id}, '${atividade.nome}')">
                     <div class="card-body text-center">
@@ -765,11 +1075,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+
     // Função para abrir modal de exercícios
     window.abrirExercicios = function(atividadeId, tituloAtividade) {
         atividadeAtual = atividadeId;
         document.getElementById("tituloExercicios").textContent = `Exercícios: ${tituloAtividade}`;
-        
+       
         // Carregar exercícios via AJAX
         fetch(`../../admin/controller/get_exercicio.php?atividade_id=${atividadeId}`)
             .then(response => response.json())
@@ -795,14 +1106,17 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     };
 
+
     // Função para carregar um exercício específico no modal de Exercícios
     function carregarExercicio(index) {
         if (!exerciciosLista || exerciciosLista.length === 0) return;
+
 
         exercicioAtual = exerciciosLista[index];
         const conteudoExercicioDiv = document.getElementById("conteudoExercicio");
         conteudoExercicioDiv.innerHTML = ""; // Limpa conteúdo anterior
         respostaSelecionada = null; // Reseta a resposta selecionada
+
 
         // Atualiza contador de progresso do exercício
         document.getElementById("contadorExercicios").textContent = `${index + 1}/${exerciciosLista.length}`;
@@ -813,9 +1127,11 @@ document.addEventListener('DOMContentLoaded', function() {
             progressoBar.setAttribute("aria-valuenow", progresso);
         }
 
+
         let htmlConteudo = `
             <p class="fs-5 mb-4">${exercicioAtual.pergunta}</p>
         `;
+
 
         // Parse do conteúdo JSON do exercício
         let conteudo = {};
@@ -825,6 +1141,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error("Erro ao fazer parse do conteúdo do exercício:", e);
             conteudo = {};
         }
+
 
         // Renderiza o conteúdo com base no tipo de exercício
         if (exercicioAtual.tipo_exercicio === "multipla_escolha") {
@@ -861,16 +1178,19 @@ document.addEventListener('DOMContentLoaded', function() {
             carregarConteudoEspecial(conteudo);
         }
 
+
         conteudoExercicioDiv.innerHTML = htmlConteudo;
+
 
         // Atualiza botões de ação
         document.getElementById("btnEnviarResposta").style.display = "block";
         document.getElementById("btnProximoExercicio").style.display = "none";
-        
+       
         // Remove feedback anterior se existir
         const feedbackDiv = document.getElementById("feedbackExercicio");
         if (feedbackDiv) feedbackDiv.remove();
     }
+
 
     // Função para selecionar resposta (botão de múltipla escolha)
     window.selecionarResposta = function(button) {
@@ -883,14 +1203,16 @@ document.addEventListener('DOMContentLoaded', function() {
         respostaSelecionada = button.dataset.id; // Armazena o ID da resposta selecionada
     };
 
+
     // Função para enviar a resposta do usuário
     window.enviarResposta = function() {
         let respostaUsuario = null;
-        
+       
         if (!exercicioAtual) {
             alert("Erro: Nenhum exercício está ativo.");
             return;
         }
+
 
         // Captura a resposta com base no tipo de exercício
         if (exercicioAtual.tipo_exercicio === "multipla_escolha") {
@@ -905,18 +1227,20 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (exercicioAtual.tipo_exercicio === "fala") {
             // A resposta da fala é gerada pela função iniciarGravacao() e processada no feedback
             // Para este ponto, apenas simulamos que a resposta seria enviada
-            respostaUsuario = "aguardando_processamento_fala"; 
+            respostaUsuario = "aguardando_processamento_fala";
         } else if (exercicioAtual.tipo_exercicio === "especial") {
             // Lógica de envio para exercícios especiais (pode requerer um endpoint diferente ou lógica mais complexa)
             alert("A funcionalidade de envio para exercícios especiais ainda está em desenvolvimento.");
             return;
         }
 
+
         // Validação básica da resposta
         if (!respostaUsuario) {
             alert("Por favor, selecione uma opção ou digite sua resposta.");
             return;
         }
+
 
         // Envia a resposta para o backend
         fetch(`../../admin/controller/processar_exercicio.php`, {
@@ -945,30 +1269,32 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
+
     // Função para exibir feedback (correto/incorreto)
     window.exibirFeedback = function(data) {
         const conteudoExercicioDiv = document.getElementById("conteudoExercicio");
-        
+       
         // Cria o elemento de feedback dinamicamente
         const feedbackDiv = document.createElement('div');
         feedbackDiv.id = "feedbackExercicio";
         feedbackDiv.className = `feedback-container ${data.correto ? 'feedback-success' : 'feedback-error'} mt-3 p-3 rounded`;
         feedbackDiv.innerHTML = `<p class="mb-0"><strong>${data.correto ? 'Correto!' : 'Incorreto!'}</strong> ${data.explicacao}</p>`;
-        
+       
         conteudoExercicioDiv.appendChild(feedbackDiv);
+
 
         // Atualiza a aparência dos botões de múltipla escolha após a resposta
         if (exercicioAtual.tipo_exercicio === "multipla_escolha") {
             document.querySelectorAll(".btn-resposta").forEach(btn => {
                 btn.disabled = true; // Desabilita todos os botões
                 const altId = btn.dataset.id;
-                
+               
                 // Parse do conteúdo do exercício para encontrar a alternativa correta
                 let conteudo = {};
                 try {
                     conteudo = JSON.parse(exercicioAtual.conteudo);
                 } catch (e) { console.error("Erro ao parsear conteúdo:", e); }
-                
+               
                 if (conteudo.alternativas) {
                     const alternativaCorreta = conteudo.alternativas.find(alt => alt.correta);
                     if (alternativaCorreta && altId === alternativaCorreta.id) {
@@ -980,6 +1306,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     };
+
 
     // Função para avançar para o próximo exercício
     window.proximoExercicio = function() {
@@ -994,16 +1321,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
+
     // Função para voltar para atividades
     window.voltarParaAtividades = function() {
         modalExercicios.hide();
         modalAtividades.show();
     };
 
+
     // Função para abrir teoria da atividade (placeholder)
     window.abrirTeoriaAtividade = function(atividadeId, nomeAtividade) {
         alert(`Teoria da atividade "${nomeAtividade}" será implementada em breve.`);
     };
+
 
     // Função para carregar conteúdo especial (placeholder)
     function carregarConteudoEspecial(conteudo) {
@@ -1011,54 +1341,56 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log("Carregando conteúdo especial:", conteudo);
     }
 
+
     // Função para iniciar gravação (placeholder para exercícios de fala)
     window.iniciarGravacao = function() {
         alert("Funcionalidade de gravação de fala será implementada em breve.");
     };
 
+
     // ==================== FUNCIONALIDADES DE FLASHCARDS ====================
-    
+   
     // Variáveis globais para flashcards
     let modalAdicionarPalavra = null;
     let palavrasCarregadas = [];
-    
+   
     // Inicialização dos modais de flashcards
     modalAdicionarPalavra = new bootstrap.Modal(document.getElementById('modalAdicionarPalavra'));
-    
+   
     // Carrega palavras do usuário ao inicializar
     if (typeof carregarPalavras === 'function') {
         carregarPalavras();
     }
-    
+   
     // Função para abrir modal de adicionar palavra
     window.abrirModalAdicionarPalavra = function() {
         // Limpa o formulário
         document.getElementById('formAdicionarPalavra').reset();
-        
+       
         // Define valores padrão baseados no usuário atual
         document.getElementById('palavraIdioma').value = '<?php echo htmlspecialchars($idioma_escolhido ?? "Ingles"); ?>';
         document.getElementById('palavraNivel').value = '<?php echo htmlspecialchars($nivel_usuario ?? "A1"); ?>';
-        
+       
         modalAdicionarPalavra.show();
     };
-    
+   
     // Função para adicionar nova palavra
     window.adicionarPalavra = function() {
         const form = document.getElementById('formAdicionarPalavra');
         const formData = new FormData(form);
-        
+       
         // Validação básica
         const palavraFrente = formData.get('palavra_frente').trim();
         const palavraVerso = formData.get('palavra_verso').trim();
-        
+       
         if (!palavraFrente || !palavraVerso) {
             alert('Por favor, preencha a palavra e sua tradução.');
             return;
         }
-        
+       
         // Adiciona dados do usuário atual
         formData.append('action', 'criar_flashcard_rapido');
-        
+       
         fetch('flashcard_controller.php', {
             method: 'POST',
             body: formData
@@ -1078,18 +1410,18 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Erro de conexão. Tente novamente.');
         });
     };
-    
+   
     // Função para carregar palavras do usuário
     window.carregarPalavras = function() {
         const status = document.getElementById('filtroPalavrasStatus').value;
         const idioma = '<?php echo htmlspecialchars($idioma_escolhido ?? ""); ?>';
         const nivel = '<?php echo htmlspecialchars($nivel_usuario ?? ""); ?>';
-        
+       
         let url = `flashcard_controller.php?action=listar_palavras_usuario`;
         if (idioma) url += `&idioma=${encodeURIComponent(idioma)}`;
         if (nivel) url += `&nivel=${encodeURIComponent(nivel)}`;
         if (status !== '') url += `&aprendidas=${status}`;
-        
+       
         fetch(url)
         .then(response => response.json())
         .then(data => {
@@ -1106,11 +1438,11 @@ document.addEventListener('DOMContentLoaded', function() {
             exibirErroPalavras('Erro de conexão. Tente novamente.');
         });
     };
-    
+   
     // Função para exibir palavras na interface
     window.exibirPalavras = function(palavras) {
         const container = document.getElementById('listaPalavras');
-        
+       
         if (palavras.length === 0) {
             container.innerHTML = `
                 <div class="col-12 text-center">
@@ -1123,14 +1455,14 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             return;
         }
-        
+       
         let html = '';
         palavras.forEach(palavra => {
             const aprendida = palavra.aprendido == 1;
             const statusClass = aprendida ? 'success' : 'secondary';
             const statusIcon = aprendida ? 'check-circle' : 'clock';
             const statusText = aprendida ? 'Aprendida' : 'Estudando';
-            
+           
             html += `
                 <div class="col-md-6 col-lg-4 mb-3 palavra-item" data-palavra="${palavra.frente.toLowerCase()}" data-traducao="${palavra.verso.toLowerCase()}">
                     <div class="card h-100">
@@ -1146,7 +1478,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <i class="fas fa-layer-group me-1"></i>${palavra.nome_deck}
                             </small>
                             <div class="mt-2">
-                                ${aprendida ? 
+                                ${aprendida ?
                                     `<button class="btn btn-outline-secondary btn-sm" onclick="alterarStatusPalavra(${palavra.id}, false)">
                                         <i class="fas fa-undo me-1"></i>Estudar Novamente
                                     </button>` :
@@ -1163,19 +1495,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             `;
         });
-        
+       
         container.innerHTML = html;
     };
-    
+   
     // Função para filtrar palavras localmente
     window.filtrarPalavrasLocal = function() {
         const busca = document.getElementById('filtroPalavrasBusca').value.toLowerCase();
         const items = document.querySelectorAll('.palavra-item');
-        
+       
         items.forEach(item => {
             const palavra = item.dataset.palavra;
             const traducao = item.dataset.traducao;
-            
+           
             if (palavra.includes(busca) || traducao.includes(busca)) {
                 item.style.display = 'block';
             } else {
@@ -1183,15 +1515,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     };
-    
+   
     // Função para alterar status de palavra (aprendida/não aprendida)
     window.alterarStatusPalavra = function(idFlashcard, marcarComoAprendida) {
         const action = marcarComoAprendida ? 'marcar_como_aprendido' : 'desmarcar_como_aprendido';
-        
+       
         const formData = new FormData();
         formData.append('action', action);
         formData.append('id_flashcard', idFlashcard);
-        
+       
         fetch('flashcard_controller.php', {
             method: 'POST',
             body: formData
@@ -1209,17 +1541,17 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Erro de conexão. Tente novamente.');
         });
     };
-    
+   
     // Função para excluir palavra
     window.excluirPalavra = function(idFlashcard) {
         if (!confirm('Tem certeza que deseja excluir esta palavra?')) {
             return;
         }
-        
+       
         const formData = new FormData();
         formData.append('action', 'excluir_flashcard');
         formData.append('id_flashcard', idFlashcard);
-        
+       
         fetch('flashcard_controller.php', {
             method: 'POST',
             body: formData
@@ -1237,7 +1569,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Erro de conexão. Tente novamente.');
         });
     };
-    
+   
     // Função para exibir erro ao carregar palavras
     window.exibirErroPalavras = function(mensagem) {
         const container = document.getElementById('listaPalavras');
@@ -1251,8 +1583,10 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     };
 
+
 });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
