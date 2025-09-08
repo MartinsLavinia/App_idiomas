@@ -6,6 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SpeakNut - Plataforma de Aprendizado de Idiomas</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    integrity="sha512-dNmfa3J9frbzzT0jzkPQ5RMx9kzdJzTln+E2qxXfyd1+J9+jUz7pXxzO8P+yv2Nf6rHpn1b10bR6+H0w5LepZg=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
     <style>
     * {
         margin: 0;
@@ -1016,6 +1021,23 @@
             justify-content: center;
         }
     }
+    .subtitle-onde-estiver {
+        display: block;
+        font-size: 70px;
+        font-weight: 900;
+        color: #ffd700;
+        margin-top: 10px;
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    @media (max-width: 768px) {
+        .subtitle-onde-estiver {
+            font-size: 24px;
+            text-align: left;
+            padding-left: 50px;
+        }
+    }
+
     </style>
 </head>
 
@@ -1067,11 +1089,8 @@
 
 
         <div class="texto-principal">
-            <h1 class="titulo-principal">
-                Aprenda com o SpeakNut
-
-                <span class="titulo-destaque">ONDE ESTIVER</span>
-            </h1>
+            <h1 class="titulo-principal">Aprenda com o SpeakNut</h1>
+            <span class="subtitle-onde-estiver">ONDE ESTIVER</span>
         </div>
         </div>
 
@@ -1330,7 +1349,7 @@
             <div class="footer-column">
                 <h4>Contato</h4>
                 <p>Email: contato@speaknut.com</p>
-                <p>Telefone: (11) 98765-4321</p>
+                <p>Telefone: (12) 3954-33001</p>
                 <div class="social-icons">
                     <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
                     <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
@@ -1349,3 +1368,5 @@
 </body>
 
 </html>
+
+    
