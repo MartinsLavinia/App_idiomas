@@ -233,12 +233,7 @@ if (!$id_deck) {
 
         <!-- Lista de Flashcards -->
         <div id="listaFlashcards" class="row">
-            <div class="loading">
-                <div class="spinner-border" role="status">
-                    <span class="visually-hidden">Carregando...</span>
-                </div>
-                <p class="mt-2">Carregando flashcards...</p>
-            </div>
+            <!-- O conteúdo dos flashcards será carregado aqui via JavaScript -->
         </div>
     </div>
 

@@ -252,7 +252,7 @@ $database->closeConnection();
         <!-- Filtros -->
         <div class="filter-section">
             <div class="row align-items-end">
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <label for="filtroIdioma" class="form-label">Idioma</label>
                     <select class="form-select" id="filtroIdioma" onchange="aplicarFiltros()">
                         <option value="">Todos os idiomas</option>
@@ -260,26 +260,15 @@ $database->closeConnection();
                         <option value="Japones" <?php echo $idioma_atual === 'Japones' ? 'selected' : ''; ?>>Japonês</option>
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <label for="filtroNivel" class="form-label">Nível</label>
-                    <select class="form-select" id="filtroNivel" onchange="aplicarFiltros()">
-                        <option value="">Todos os níveis</option>
-                        <option value="A1" <?php echo $nivel_atual === 'A1' ? 'selected' : ''; ?>>A1</option>
-                        <option value="A2" <?php echo $nivel_atual === 'A2' ? 'selected' : ''; ?>>A2</option>
-                        <option value="B1" <?php echo $nivel_atual === 'B1' ? 'selected' : ''; ?>>B1</option>
-                        <option value="B2" <?php echo $nivel_atual === 'B2' ? 'selected' : ''; ?>>B2</option>
-                        <option value="C1" <?php echo $nivel_atual === 'C1' ? 'selected' : ''; ?>>C1</option>
-                        <option value="C2" <?php echo $nivel_atual === 'C2' ? 'selected' : ''; ?>>C2</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
+
+                <div class="col-md-4">
                     <label for="tipoDecks" class="form-label">Tipo</label>
                     <select class="form-select" id="tipoDecks" onchange="aplicarFiltros()">
                         <option value="meus">Meus Decks</option>
                         <option value="publicos">Decks Públicos</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <button class="btn btn-outline-secondary w-100" onclick="limparFiltros()">
                         <i class="fas fa-times me-2"></i>Limpar Filtros
                     </button>
@@ -289,12 +278,7 @@ $database->closeConnection();
 
         <!-- Lista de Decks -->
         <div id="listaDecks" class="row">
-            <div class="loading">
-                <div class="spinner-border" role="status">
-                    <span class="visually-hidden">Carregando...</span>
-                </div>
-                <p class="mt-2">Carregando seus decks...</p>
-            </div>
+            <!-- O conteúdo dos decks será carregado aqui via JavaScript -->
         </div>
     </div>
 
@@ -318,7 +302,7 @@ $database->closeConnection();
                             <textarea class="form-control" id="deckDescricao" name="descricao" rows="3"></textarea>
                         </div>
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-12">
                                 <div class="mb-3">
                                     <label for="deckIdioma" class="form-label">Idioma *</label>
                                     <select class="form-select" id="deckIdioma" name="idioma" required>
@@ -328,20 +312,7 @@ $database->closeConnection();
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="deckNivel" class="form-label">Nível *</label>
-                                    <select class="form-select" id="deckNivel" name="nivel" required>
-                                        <option value="">Selecione...</option>
-                                        <option value="A1">A1</option>
-                                        <option value="A2">A2</option>
-                                        <option value="B1">B1</option>
-                                        <option value="B2">B2</option>
-                                        <option value="C1">C1</option>
-                                        <option value="C2">C2</option>
-                                    </select>
-                                </div>
-                            </div>
+
                         </div>
                         <div class="mb-3">
                             <div class="form-check">
