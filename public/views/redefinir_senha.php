@@ -1,39 +1,21 @@
 <?php
 include_once __DIR__ . '/../../conexao.php';
-
+require "config_esquicisenha.ini";
+ini_set("SMTP", "smtp.eb.mil.br");
+$nome = $_POST["nome"];
+$email = $_POST["email"];
+$assunto = "Contato pelo Site";
 $mensagem = '';
 $tipo_mensagem = '';
 $token_valido = false;
 $token = '';
 
 // Verificar se o token foi fornecido
-if (isset($_GET['token'])) {
-    $token = $_GET['token'];
-    
-    $database = new Database();
-    $conn = $database->conn;
-    
-    // Verificar se o token existe e não expirou
-    $stmt = $conn->prepare("SELECT id, nome, email FROM usuarios WHERE reset_token = ? AND reset_expiracao > NOW()");
-    $stmt->bind_param("s", $token);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    if ($result->num_rows > 0) {
-        $token_valido = true;
-        $usuario = $result->fetch_assoc();
-    } else {
-        $mensagem = 'Link de recuperação inválido ou expirado. Solicite um novo link.';
-        $tipo_mensagem = 'danger';
-    }
-    
-    $stmt->close();
-    $database->closeConnection();
-} else {
-    $mensagem = 'Token de recuperação não fornecido.';
-    $tipo_mensagem = 'danger';
-}
+if ($certo == "1") {
 
+    // Função mail para enviar o e-mail
+    mail("$emaildest", "$assunto", "Nome: $nome\n\nEmail: $email\n\nMensagem:\n$mensagem\n\n...::: Recebido do site :::...", "From: $nome<$email>");
+}
 // Processar formulário de redefinição
 if ($_SERVER["REQUEST_METHOD"] == "POST" && $token_valido) {
     $nova_senha = $_POST['nova_senha'];
