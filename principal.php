@@ -1339,7 +1339,6 @@
                 <ul>
                     <li><a href="#welcome">Início</a></li>
                     <li><a href="#main">Sobre Nós</a></li>
-                    <li><a href="#units">Unidades</a></li>
                     <li><a href="#">Termos de Serviço</a></li>
                     <li><a href="#">Política de Privacidade</a></li>
                 </ul>
