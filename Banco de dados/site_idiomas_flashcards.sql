@@ -16,33 +16,38 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `exercicios`
+-- Table structure for table `flashcards`
 --
 
-DROP TABLE IF EXISTS `exercicios`;
+DROP TABLE IF EXISTS `flashcards`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `exercicios` (
+CREATE TABLE `flashcards` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `caminho_id` int NOT NULL,
-  `ordem` int NOT NULL,
-  `tipo` enum('normal','especial','quiz') NOT NULL,
-  `pergunta` text NOT NULL,
-  `conteudo` json DEFAULT NULL,
+  `id_deck` int NOT NULL,
+  `frente` text NOT NULL,
+  `verso` text NOT NULL,
+  `dica` text,
+  `imagem_frente` varchar(255) DEFAULT NULL,
+  `imagem_verso` varchar(255) DEFAULT NULL,
+  `audio_frente` varchar(255) DEFAULT NULL,
+  `audio_verso` varchar(255) DEFAULT NULL,
+  `dificuldade` enum('facil','medio','dificil') DEFAULT 'medio',
+  `ordem_no_deck` int DEFAULT '0',
+  `data_criacao` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `caminho_id` (`caminho_id`),
-  CONSTRAINT `exercicios_ibfk_1` FOREIGN KEY (`caminho_id`) REFERENCES `caminhos_aprendizagem` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `idx_deck_ordem` (`id_deck`,`ordem_no_deck`),
+  CONSTRAINT `flashcards_ibfk_1` FOREIGN KEY (`id_deck`) REFERENCES `flashcard_decks` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `exercicios`
+-- Dumping data for table `flashcards`
 --
 
-LOCK TABLES `exercicios` WRITE;
-/*!40000 ALTER TABLE `exercicios` DISABLE KEYS */;
-INSERT INTO `exercicios` VALUES (2,1,2,'normal','Complete a frase: I am so hungry, I could eat a ___.','{\"dica\": \"\", \"resposta_correta\": \"horse\", \"alternativas_aceitas\": [\"horse\"]}');
-/*!40000 ALTER TABLE `exercicios` ENABLE KEYS */;
+LOCK TABLES `flashcards` WRITE;
+/*!40000 ALTER TABLE `flashcards` DISABLE KEYS */;
+/*!40000 ALTER TABLE `flashcards` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -54,4 +59,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-08-25 13:46:02
+-- Dump completed on 2025-09-08 10:01:39

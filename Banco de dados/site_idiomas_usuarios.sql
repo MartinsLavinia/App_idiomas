@@ -16,29 +16,33 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `administradores`
+-- Table structure for table `usuarios`
 --
 
-DROP TABLE IF EXISTS `administradores`;
+DROP TABLE IF EXISTS `usuarios`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `administradores` (
+CREATE TABLE `usuarios` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `nome_usuario` varchar(50) NOT NULL,
-  `senhaadm` varchar(255) NOT NULL,
+  `nome` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `senha` varchar(255) NOT NULL,
+  `data_registro` datetime DEFAULT CURRENT_TIMESTAMP,
+  `ultimo_login` datetime DEFAULT NULL,
+  `ativo` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `nome_usuario` (`nome_usuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `administradores`
+-- Dumping data for table `usuarios`
 --
 
-LOCK TABLES `administradores` WRITE;
-/*!40000 ALTER TABLE `administradores` DISABLE KEYS */;
-INSERT INTO `administradores` VALUES (1,'amandamesquita818@gmail.com','$2y$10$e0fY5Yd9Li.LXDKFNqiMiu1XKT.9bjb8TuqtTwSokUGC59/SB.S26');
-/*!40000 ALTER TABLE `administradores` ENABLE KEYS */;
+LOCK TABLES `usuarios` WRITE;
+/*!40000 ALTER TABLE `usuarios` DISABLE KEYS */;
+INSERT INTO `usuarios` VALUES (1,'Amanda Mesquita','mandafarias553@gmail.com','$2y$10$aQewWxvDeBnK.OQvxZ3yIuP0sBHN4H9qBRPaHfVLl4Jkj2SsQA3Oy','2025-09-01 15:40:17',NULL,1),(2,'Nicolas','nicolas@gmail.com','$2y$10$7Vpd4b7OIelL3/0uLrBMzu7rt/dI/y6fIGz6PX2FS9ozwl7LzvOxy','2025-09-01 15:40:17',NULL,1),(4,'Lavínia','lavinia@gmail.com','$2y$10$PKtgrcg6EQCaRhXNRYsE0OjmJ48tHGcDRrofBXXkQYofeXc56Yi6.','2025-09-01 15:40:17',NULL,1),(5,'Sofia Luiza','sofia@gmail.com','$2y$10$aT4j4C/3do7Vx.WZPEF7PurDfWy182M6OrrCKb.jOPr8nrB9z63ta','2025-09-01 15:40:17',NULL,1),(7,'Isabella','isa@gmail.com','$2y$10$t/bldGnWn3piI5bzkwUdGeqMOUlbin8TBnosrmbMg8hiruxTNvcwq','2025-09-01 15:40:17',NULL,1);
+/*!40000 ALTER TABLE `usuarios` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -50,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-08-25 13:46:02
+-- Dump completed on 2025-09-08 10:01:39

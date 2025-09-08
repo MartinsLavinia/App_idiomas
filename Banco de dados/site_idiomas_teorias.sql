@@ -16,29 +16,32 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `caminhos_aprendizagem`
+-- Table structure for table `teorias`
 --
 
-DROP TABLE IF EXISTS `caminhos_aprendizagem`;
+DROP TABLE IF EXISTS `teorias`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `caminhos_aprendizagem` (
+CREATE TABLE `teorias` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `idioma` varchar(50) NOT NULL,
-  `nome_caminho` varchar(100) NOT NULL,
-  `nivel` varchar(2) NOT NULL,
+  `titulo` varchar(255) NOT NULL,
+  `nivel` varchar(10) NOT NULL,
+  `ordem` int NOT NULL,
+  `conteudo` text NOT NULL,
+  `resumo` text,
+  `palavras_chave` varchar(255) DEFAULT NULL,
+  `data_criacao` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `caminhos_aprendizagem`
+-- Dumping data for table `teorias`
 --
 
-LOCK TABLES `caminhos_aprendizagem` WRITE;
-/*!40000 ALTER TABLE `caminhos_aprendizagem` DISABLE KEYS */;
-INSERT INTO `caminhos_aprendizagem` VALUES (1,'Ingles','Comida','A1'),(2,'Ingles','Saudações e Apresentações','A1'),(3,'Ingles','Rotina Diária','A1');
-/*!40000 ALTER TABLE `caminhos_aprendizagem` ENABLE KEYS */;
+LOCK TABLES `teorias` WRITE;
+/*!40000 ALTER TABLE `teorias` DISABLE KEYS */;
+/*!40000 ALTER TABLE `teorias` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -50,4 +53,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-08-11 10:57:25
+-- Dump completed on 2025-09-08 10:01:38

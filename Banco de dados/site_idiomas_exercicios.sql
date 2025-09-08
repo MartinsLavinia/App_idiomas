@@ -16,29 +16,32 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `administradores`
+-- Table structure for table `exercicios`
 --
 
-DROP TABLE IF EXISTS `administradores`;
+DROP TABLE IF EXISTS `exercicios`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `administradores` (
+CREATE TABLE `exercicios` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `nome_usuario` varchar(50) NOT NULL,
-  `senhaadm` varchar(255) NOT NULL,
+  `caminho_id` int NOT NULL,
+  `ordem` int NOT NULL,
+  `tipo` enum('normal','especial','quiz') NOT NULL,
+  `pergunta` text NOT NULL,
+  `conteudo` json DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `nome_usuario` (`nome_usuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `caminho_id` (`caminho_id`),
+  CONSTRAINT `exercicios_ibfk_1` FOREIGN KEY (`caminho_id`) REFERENCES `caminhos_aprendizagem` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `administradores`
+-- Dumping data for table `exercicios`
 --
 
-LOCK TABLES `administradores` WRITE;
-/*!40000 ALTER TABLE `administradores` DISABLE KEYS */;
-INSERT INTO `administradores` VALUES (1,'amandamesquita818@gmail.com','$2y$10$e0fY5Yd9Li.LXDKFNqiMiu1XKT.9bjb8TuqtTwSokUGC59/SB.S26');
-/*!40000 ALTER TABLE `administradores` ENABLE KEYS */;
+LOCK TABLES `exercicios` WRITE;
+/*!40000 ALTER TABLE `exercicios` DISABLE KEYS */;
+/*!40000 ALTER TABLE `exercicios` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -50,4 +53,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-08-11 10:57:25
+-- Dump completed on 2025-09-08 10:01:39
