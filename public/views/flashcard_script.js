@@ -1,5 +1,6 @@
 let modalDeck = null;
 let deckAtual = null;
+const nivelAtual = '<?php echo $nivel_atual; ?>';
 // Inicialização
 document.addEventListener(\'DOMContentLoaded\', function() {
     modalDeck = new bootstrap.Modal(document.getElementById(\'modalDeck\'));
@@ -11,12 +12,17 @@ function carregarDecks() {
     const filtroIdioma = document.getElementById(\'filtroIdioma\').value;
     const tipoDecks = document.getElementById(\'tipoDecks\').value;
 
-    const url = `flashcard_controller.php?action=obter_decks&idioma=${filtroIdioma}&tipo=${tipoDecks}`;
+    let url;
+    if (tipoDecks === \'publicos\') {
+        url = `flashcard_controller.php?action=listar_decks_publicos&idioma=${filtroIdioma}&nivel=${nivelAtual}`;
+    } else {
+        url = `flashcard_controller.php?action=listar_decks&idioma=${filtroIdioma}&nivel=${nivelAtual}`;
+    }
 
     fetch(url)
         .then(response => response.json())
         .then(data => {
-            if (data.success) {         exibirDecks(data.decks);
+            if (data.success) { exibirDecks(data.decks);
             } else {
                 console.error('Erro ao carregar decks:', data.message);
                 exibirErroDecks('Erro ao carregar decks: ' + data.message);
@@ -99,8 +105,9 @@ function aplicarFiltros() {
 
 // Limpa filtros
 function limparFiltros() {
-    document.getElementById(\'filtroIdioma\').value = \'\';
+      document.getElementById(\'filtroIdioma\').value = \'\';
     document.getElementById(\'tipoDecks\').value = \'meus\';
+    document.getElementById(\'deckNivel\').value = \'\';
     carregarDecks();
 }
 
@@ -109,7 +116,9 @@ function abrirModalCriarDeck() {
     deckAtual = null;
     document.getElementById('tituloModalDeck').textContent = 'Novo Deck';
     document.getElementById('formDeck').reset();
-    document.getElementById('deckId').value = '';
+    document.getElementById(\'deckId\').value = \'\';
+    document.getElementById(\'deckIdioma\').value = filtroIdioma;
+    document.getElementById(\'deckNivel\').value = nivelAtual;
     modalDeck.show();
 }
 
@@ -146,4 +155,3 @@ function salvarDeck() {
 function estudarFlashcards() {
     window.location.href = 'flashcard_estudo.php';
 }
-

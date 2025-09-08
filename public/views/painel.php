@@ -451,8 +451,9 @@ body {
                                 </div>
                                 <div class="col-md-4 text-end">
                                     <a href="flashcards.php" class="btn btn-warning me-2">
-                                        <i class="fas fa-layer-group me-2"></i>Meus Decks
-                                    </a>
+                                        <i class="fas fa-layer-group me-2"></i>Meus Decks</a>
+                            </div>
+                            <div class="col-md-4 text-end">
                                     <a href="flashcard_estudo.php" class="btn btn-outline-warning">
                                         <i class="fas fa-play me-2"></i>Estudar
                                     </a>

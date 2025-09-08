@@ -238,12 +238,13 @@ $database->closeConnection();
                         <p class="text-muted mb-0">Estude com flashcards personalizados</p>
                     </div>
                     <div>
-                        <button class="btn btn-primary me-2" onclick="abrirModalCriarDeck()">
-                            <i class="fas fa-plus me-2"></i>Novo Deck
-                        </button>
-                        <button class="btn btn-warning" onclick="estudarFlashcards()">
-                            <i class="fas fa-play me-2"></i>Estudar Agora
-                        </button>
+                       <button class="btn btn-primary me-2" onclick="abrirModalCriarDeck()">
+    <i class="fas fa-plus me-2"></i>Novo Deck
+</button>
+                        <div class="btn btn-warning" onclick="estudarFlashcards()">
+                            <a  href="flashcard_estudo.php" >
+                            <i class="fas fa-play me-2"></i>Estudar Agora</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -302,13 +303,27 @@ $database->closeConnection();
                             <textarea class="form-control" id="deckDescricao" name="descricao" rows="3"></textarea>
                         </div>
                         <div class="row">
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="deckIdioma" class="form-label">Idioma *</label>
                                     <select class="form-select" id="deckIdioma" name="idioma" required>
                                         <option value="">Selecione...</option>
                                         <option value="Ingles">Inglês</option>
                                         <option value="Japones">Japonês</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="deckNivel" class="form-label">Nível *</label>
+                                    <select class="form-select" id="deckNivel" name="nivel" required>
+                                        <option value="">Selecione...</option>
+                                        <option value="A1">A1</option>
+                                        <option value="A2">A2</option>
+                                        <option value="B1">B1</option>
+                                        <option value="B2">B2</option>
+                                        <option value="C1">C1</option>
+                                        <option value="C2">C2</option>
                                     </select>
                                 </div>
                             </div>
