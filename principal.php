@@ -6,6 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SpeakNut - Plataforma de Aprendizado de Idiomas</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    integrity="sha512-dNmfa3J9frbzzT0jzkPQ5RMx9kzdJzTln+E2qxXfyd1+J9+jUz7pXxzO8P+yv2Nf6rHpn1b10bR6+H0w5LepZg=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
     <style>
     * {
         margin: 0;
@@ -54,8 +59,8 @@
 
     .header a.login-btn {
         background-color: transparent;
-        color: #260e50;
-
+        color: #f8f8f8ff;
+        font-family: Arial, Helvetica, sans-serif;
     }
 
     .header a.login-btn:hover {
@@ -139,7 +144,7 @@
 
     .metade-fundo {
         flex: 1;
-        background: linear-gradient(135deg, #7c3aed, #e385ec);
+        background: linear-gradient(135deg, #7e22ce, #581c87);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -180,7 +185,7 @@
     /* Seção 2 - Página principal com carrossel */
     .section-main {
         min-height: 100vh;
-        background: linear-gradient(135deg, #7c3aed, #e385ec);
+        background: linear-gradient(135deg, #7e22ce, #c88ff3ff);
         position: relative;
         display: flex;
         flex-direction: column;
@@ -343,7 +348,7 @@
     /* Nova Seção 3 - Unidades de Aprendizado */
     .section-units {
         min-height: 100vh;
-        background: linear-gradient(135deg, #4a5fdc, #b794f6);
+        background: linear-gradient(135deg, #7e22ce, #b794f6);
         position: relative;
         display: flex;
         flex-direction: column;
@@ -493,11 +498,14 @@
     .content-box {
         background: white;
         border-radius: 25px;
-        padding: 60px 40px;
+        padding: 40px;
+        /* Reduzido para melhor encaixe */
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
         margin: 0 auto;
-        max-width: 800px;
-        min-height: 300px;
+        max-width: 900px;
+        /* Aumentado para acomodar imagem e texto */
+        min-height: 350px;
+        /* Aumentado para melhor visualização */
         display: flex;
         align-items: center;
         justify-content: center;
@@ -522,14 +530,38 @@
 
     .content-slide {
         display: none;
-        text-align: center;
+        align-items: center;
+        /* Alinha imagem e texto verticalmente */
+        gap: 30px;
+        /* Espaço entre imagem e texto */
         font-family: 'Montserrat', sans-serif;
         animation: fadeIn 0.5s ease-in-out;
+        text-align: left;
+        /* Alinha o texto à esquerda */
     }
 
     .content-slide.active {
-        display: block;
+        display: flex;
+        /* Alterado para flex para alinhar os filhos */
     }
+
+    .content-image {
+        flex: 1;
+        /* Ocupa 50% do espaço */
+    }
+
+    .content-image img {
+        width: 100%;
+        height: auto;
+        border-radius: 15px;
+        object-fit: cover;
+    }
+
+    .content-text {
+        flex: 1;
+        /* Ocupa 50% do espaço */
+    }
+
 
     @keyframes fadeIn {
         from {
@@ -768,8 +800,14 @@
         }
 
         .content-box {
-            padding: 40px 20px;
-            margin: 0 20px;
+            padding: 20px;
+            margin: 0 10px;
+        }
+
+        .content-slide.active {
+            flex-direction: column;
+            /* Empilha imagem e texto em telas menores */
+            text-align: center;
         }
 
         .content-placeholder h3 {
@@ -847,6 +885,159 @@
             transform: translateX(-50%) translateY(-5px);
         }
     }
+
+    .scroll-anim {
+        opacity: 0;
+        transform: translateY(40px);
+        transition: all 0.7s ease-out;
+    }
+
+    .scroll-anim.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .site-footer {
+        background-color: #260e50;
+        /* Cor principal do seu design */
+        color: #f8f8f8;
+        padding: 50px 0;
+        font-family: 'Montserrat', sans-serif;
+        border-top: 5px solid #7e22ce;
+    }
+
+    .footer-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .footer-column {
+        flex: 1;
+        min-width: 220px;
+        margin: 20px;
+    }
+
+    .footer-column.logo-column {
+        flex-grow: 1.5;
+        /* Dá mais espaço para a coluna do logo */
+    }
+
+    .footer-logo img {
+        width: 180px;
+        margin-bottom: 15px;
+    }
+
+    .footer-column h4 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #ffd700;
+        /* Cor de destaque amarela */
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+    /* Linha decorativa abaixo dos títulos */
+    .footer-column h4::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -8px;
+        width: 40px;
+        height: 2px;
+        background-color: #a855f7;
+        /* Roxo mais claro */
+    }
+
+    .footer-column p,
+    .footer-column ul,
+    .footer-column li {
+        font-size: 15px;
+        line-height: 1.8;
+        color: #ccc;
+    }
+
+    .footer-column ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .footer-column ul li a {
+        color: #ccc;
+        text-decoration: none;
+        transition: color 0.3s ease, transform 0.3s ease;
+        display: inline-block;
+    }
+
+    .footer-column ul li a:hover {
+        color: #ffffff;
+        transform: translateX(5px);
+    }
+
+    .social-icons {
+        display: flex;
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .social-icons a {
+        color: #f8f8f8;
+        font-size: 22px;
+        transition: color 0.3s ease, transform 0.3s ease;
+    }
+
+    .social-icons a:hover {
+        color: #ffd700;
+        transform: translateY(-3px);
+    }
+
+    .footer-bottom {
+        text-align: center;
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #4a2c70;
+        /* Linha sutil de separação */
+        font-size: 14px;
+        color: #aaa;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .footer-container {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .footer-column h4::after {
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .social-icons {
+            justify-content: center;
+        }
+    }
+    .subtitle-onde-estiver {
+        display: block;
+        font-size: 70px;
+        font-weight: 900;
+        color: #ffd700;
+        margin-top: 10px;
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    @media (max-width: 768px) {
+        .subtitle-onde-estiver {
+            font-size: 24px;
+            text-align: left;
+            padding-left: 50px;
+        }
+    }
+
     </style>
 </head>
 
@@ -870,7 +1061,8 @@
                 <img src="logo-idiomas.png" alt="Logo SpeakNut">
                 <div class="welcome-text">Seja bem-vindo ao SpeakNut</div>
                 <div class="subtitle">
-                    Sua nova plataforma<br>
+                    Sua nova plataforma
+
                     de aprendizado de idiomas
                 </div>
                 <button class="cta-button" onclick="scrollToSection('main')">Descubra mais</button>
@@ -897,10 +1089,8 @@
 
 
         <div class="texto-principal">
-            <h1 class="titulo-principal">
-                Aprenda com o SpeakNut<br>
-                <span class="titulo-destaque">ONDE ESTIVER</span>
-            </h1>
+            <h1 class="titulo-principal">Aprenda com o SpeakNut</h1>
+            <span class="subtitle-onde-estiver">ONDE ESTIVER</span>
         </div>
         </div>
 
@@ -958,53 +1148,67 @@
             <div class="content-box">
                 <div class="content-carousel">
                     <div class="content-slide active">
-                        <h3>Estrutura de Aprendizado Personalizada</h3>
-                        <p>
-                            Cada unidade foi cuidadosamente desenvolvida para proporcionar uma experiência de
-                            aprendizado completa e eficaz.
-                            Você terá acesso a conteúdo teórico estruturado, exercícios práticos e avaliações que se
-                            adaptam ao seu ritmo de estudo.
-                        </p>
-                        <p>
-                            Nossa metodologia garante que você absorva o conhecimento de forma gradual e consistente,
-                            construindo uma base sólida para dominar o idioma escolhido.
-                        </p>
+                        <div class="content-image">
+                            <img src="persona.png" alt="Estrutura de Aprendizado">
+                        </div>
+                        <div class="content-text">
+                            <h3>Estrutura de Aprendizado Personalizada</h3>
+                            <p>
+                                Cada unidade foi cuidadosamente desenvolvida para proporcionar uma experiência de
+                                aprendizado completa e eficaz.
+                            </p>
+                            <p>
+                                Nossa metodologia garante que você absorva o conhecimento de forma gradual e
+                                consistente,
+                                construindo uma base sólida para dominar o idioma.
+                            </p>
+                        </div>
                     </div>
 
                     <div class="content-slide">
-                        <h3>Minigames Interativos</h3>
-                        <p>
-                            Transforme seu aprendizado em diversão com nossos minigames educativos!
-                            Pratique vocabulário, gramática e pronúncia através de jogos envolventes que tornam o estudo
-                            mais dinâmico e eficiente.
-                        </p>
-                        <p>
-                            Cada minigame é projetado para reforçar conceitos específicos, permitindo que você teste
-                            seus conhecimentos
-                            de forma lúdica e memorável, garantindo melhor retenção do conteúdo aprendido.
-                        </p>
+                        <div class="content-image">
+                            <img src="jogo.png" alt="Minigames Interativos">
+                        </div>
+                        <div class="content-text">
+                            <h3>Minigames Interativos</h3>
+                            <p>
+                                Transforme seu aprendizado em diversão com nossos minigames educativos!
+                                Pratique vocabulário, gramática e pronúncia de forma lúdica.
+                            </p>
+                            <p>
+                                Cada minigame é projetado para reforçar conceitos específicos, garantindo melhor
+                                retenção do conteúdo.
+                            </p>
+                        </div>
                     </div>
 
                     <div class="content-slide">
-                        <h3>Perguntas e Respostas Interativas</h3>
-                        <p>
-                            Desenvolva suas habilidades através de sessões interativas de perguntas e respostas.
-                            Nosso sistema adapta as questões ao seu nível de conhecimento, proporcionando desafios
-                            adequados ao seu progresso.
-                        </p>
-                        <p>
-                            Com feedback instantâneo e explicações detalhadas, você compreende não apenas as respostas
-                            corretas,
-                            mas também o raciocínio por trás de cada conceito, acelerando seu aprendizado.
-                        </p>
+                        <div class="content-image">
+                            <img src="balao.png" alt="Perguntas e Respostas">
+                        </div>
+                        <div class="content-text">
+                            <h3>Perguntas e Respostas Interativas</h3>
+                            <p>
+                                Desenvolva suas habilidades através de sessões interativas de perguntas e respostas com
+                                feedback instantâneo.
+                            </p>
+                            <p>
+                                Nosso sistema adapta as questões ao seu nível, proporcionando desafios
+                                adequados ao seu progresso e acelerando seu aprendizado.
+                                </ <p>
+                                Com feedback instantâneo e explicações detalhadas, você compreende não apenas as
+                                respostas
+                                corretas,
+                                mas também o raciocínio por trás de cada conceito, acelerando seu aprendizado.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <button class="scroll-button" onclick="scrollToSection('welcome')">
-            ↑ Voltar ao início
-        </button>
+            <button class="scroll-button" onclick="scrollToSection('welcome')">
+                ↑ Voltar ao início
+            </button>
     </section>
 
     <script>
@@ -1116,7 +1320,52 @@
     }
     </script>
 
+    <footer class="site-footer">
+        <div class="footer-container">
+
+            <!-- Coluna do Logo e Descrição -->
+            <div class="footer-column logo-column">
+                <div class="footer-logo">
+                    <!-- Use o caminho correto para sua imagem de logo -->
+                    <img src="menorteste.png" alt="Logo SpeakNut">
+                </div>
+                <p>Sua jornada para a fluência começa aqui. Aprenda idiomas de forma divertida e eficaz, onde quer que
+                    esteja.</p>
+            </div>
+
+            <!-- Coluna de Links Rápidos -->
+            <div class="footer-column">
+                <h4>Links Rápidos</h4>
+                <ul>
+                    <li><a href="#welcome">Início</a></li>
+                    <li><a href="#main">Sobre Nós</a></li>
+                    <li><a href="#">Termos de Serviço</a></li>
+                    <li><a href="#">Política de Privacidade</a></li>
+                </ul>
+            </div>
+
+            <!-- Coluna de Contato e Redes Sociais -->
+            <div class="footer-column">
+                <h4>Contato</h4>
+                <p>Email: contato@speaknut.com</p>
+                <p>Telefone: (12) 3954-33001</p>
+                <div class="social-icons">
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 SpeakNut. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
 
 </body>
 
 </html>
+
+    

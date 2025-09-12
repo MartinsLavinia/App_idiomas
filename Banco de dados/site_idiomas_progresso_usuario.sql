@@ -30,6 +30,9 @@ CREATE TABLE `progresso_usuario` (
   `caminho_id` int DEFAULT NULL,
   `exercicio_atual` int NOT NULL DEFAULT '1',
   `concluido` tinyint(1) NOT NULL DEFAULT '0',
+  `progresso` decimal(5,2) DEFAULT '0.00',
+  `data_inicio` datetime DEFAULT CURRENT_TIMESTAMP,
+  `ultima_atividade` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_progresso` (`id_usuario`,`caminho_id`),
   CONSTRAINT `progresso_usuario_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`)
@@ -42,7 +45,7 @@ CREATE TABLE `progresso_usuario` (
 
 LOCK TABLES `progresso_usuario` WRITE;
 /*!40000 ALTER TABLE `progresso_usuario` DISABLE KEYS */;
-INSERT INTO `progresso_usuario` VALUES (1,1,'Ingles','A1',0,1,0),(2,2,'Ingles','A2',0,1,0),(3,4,'Ingles','B1',0,1,0),(4,5,'Ingles','A1',NULL,1,0);
+INSERT INTO `progresso_usuario` VALUES (1,1,'Ingles','A1',0,1,0,0.00,'2025-09-01 15:48:25','2025-09-01 15:48:25'),(2,2,'Ingles','A2',0,1,0,0.00,'2025-09-01 15:48:25','2025-09-01 15:48:25'),(3,4,'Ingles','B1',0,1,0,0.00,'2025-09-01 15:48:25','2025-09-01 15:48:25'),(4,5,'Ingles','A1',NULL,1,0,0.00,'2025-09-01 15:48:25','2025-09-01 15:48:25');
 /*!40000 ALTER TABLE `progresso_usuario` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -55,4 +58,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-08-11 10:57:25
+-- Dump completed on 2025-09-08 10:01:39

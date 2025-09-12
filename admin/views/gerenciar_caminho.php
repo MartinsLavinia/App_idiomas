@@ -60,26 +60,349 @@ $database->closeConnection();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciar Caminhos - Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+.list-group-item {
+    background-color: var(--branco);
+    color: var(--preto-texto);
+    border: 1px solid var(--cinza-medio);
+}
+
+.list-group-item:hover {
+    background-color: var(--cinza-claro);
+    color: var(--preto-texto);
+}
+
+.list-group-item.active {
+    background-color: var(--roxo-principal);
+    color: var(--branco);
+    border-color: var(--roxo-principal);
+}
+
+.list-group-item.active:hover {
+    background-color: var(--roxo-escuro);
+    color: var(--branco);
+}
+
+.list-group-item i {
+    color: var(--amarelo-detalhe);
+}
+
+        /* Paleta de Cores */
+:root {
+    --roxo-principal: #6a0dad;
+    --roxo-escuro: #4c087c;
+    --amarelo-detalhe: #ffd700;
+    --branco: #ffffff;
+    --preto-texto: #212529;
+    --cinza-claro: #f8f9fa;
+    --cinza-medio: #dee2e6;
+}
+
+/* Estilos Gerais do Corpo */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--cinza-claro);
+    color: var(--preto-texto);
+    animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Barra de Navegação */
+.navbar {
+    background: var(--roxo-principal) !important;
+    border-bottom: 3px solid var(--amarelo-detalhe);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.btn-outline-light {
+    color: var(--amarelo-detalhe);
+    border-color: var(--amarelo-detalhe);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-light:hover {
+    background-color: var(--amarelo-detalhe);
+    color: var(--preto-texto);
+}
+
+/* Estilos de Cartões (Cards) */
+.card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+    background-color: var(--roxo-principal);
+    color: var(--branco);
+    border-radius: 1rem 1rem 0 0 !important;
+    padding: 1.5rem;
+}
+
+.card-header h2 {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* Card de Unidade (unidade-card) */
+.unidade-card {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.unidade-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    border-color: var(--amarelo-detalhe);
+}
+
+.unidade-card .progress {
+    height: 10px;
+    background-color: var(--cinza-medio);
+}
+
+.unidade-card .progress-bar {
+    background-color: var(--amarelo-detalhe);
+    animation: progressFill 1s ease-out forwards;
+}
+
+@keyframes progressFill {
+    from { width: 0; }
+}
+
+/* Card de Atividade (atividade-card) */
+.atividade-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 1px solid var(--cinza-medio);
+    border-radius: 0.75rem;
+    background: var(--branco);
+}
+
+.atividade-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    border-color: var(--roxo-principal);
+}
+
+.atividade-icon {
+    font-size: 3rem;
+    color: var(--amarelo-detalhe);
+    margin-bottom: 1rem;
+    transition: transform 0.3s ease;
+}
+
+.atividade-card:hover .atividade-icon {
+    transform: scale(1.1);
+}
+
+/* Estilos de Modal */
+.modal-overlay {
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+}
+
+.popup-modal {
+    max-width: 900px;
+    animation: modalSlideIn 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-content {
+    border-radius: 1.5rem;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    border-bottom: none;
+    padding: 1.5rem 2rem;
+    background-color: var(--roxo-principal);
+    color: var(--branco);
+    border-radius: 1.5rem 1.5rem 0 0;
+}
+
+.modal-header h5 {
+    font-weight: 600;
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+.btn-close {
+    filter: invert(1);
+    background-size: 0.8rem;
+}
+
+/* Botões de Resposta do Quiz */
+.btn-resposta {
+    margin: 0.75rem 0;
+    padding: 1rem 1.5rem;
+    text-align: left;
+    border: 2px solid var(--cinza-medio);
+    background: var(--branco);
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+    width: 100%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.btn-resposta:hover {
+    border-color: var(--amarelo-detalhe);
+    background: var(--cinza-claro);
+    transform: translateY(-2px);
+}
+
+.btn-resposta.selected {
+    border-color: var(--roxo-principal);
+    background: #e3d4ff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.btn-resposta.correct {
+    border-color: #28a745;
+    background: #d4edda;
+    animation: correctAnim 0.5s ease;
+}
+
+.btn-resposta.incorrect {
+    border-color: #dc3545;
+    background: #f8d7da;
+    animation: incorrectAnim 0.5s ease;
+}
+
+@keyframes correctAnim {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+}
+
+@keyframes incorrectAnim {
+    0%, 100% { transform: translateX(0); }
+    25%, 75% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+}
+
+/* Estilos de Feedback */
+.feedback-container {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    font-weight: 500;
+    display: none;
+    animation: slideInUp 0.5s ease;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.feedback-success {
+    background: #e6ffed;
+    border: 1px solid #28a745;
+    color: #155724;
+}
+
+.feedback-error {
+    background: #fff0f0;
+    border: 1px solid #dc3545;
+    color: #721c24;
+}
+
+.btn-proximo-custom {
+    background-color: var(--roxo-principal);
+    border-color: var(--roxo-principal);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-proximo-custom:hover {
+    background-color: var(--roxo-escuro);
+    border-color: var(--roxo-escuro);
+    transform: scale(1.05);
+}
+
+/* Animações e Efeitos */
+.fs-4 .badge {
+    background-color: var(--amarelo-detalhe) !important;
+    color: var(--preto-texto);
+    font-weight: 700;
+    padding: 0.5em 1em;
+    border-radius: 50px;
+    animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
+    70% { box-shadow: 0 0 0 15px rgba(255, 215, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+}
+
+.progress-bar-custom .progress-bar {
+    background-color: var(--amarelo-detalhe);
+    box-shadow: 0 0 10px var(--amarelo-detalhe);
+}
+    </style>
 </head>
 <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">Site de Idiomas</a>
+            <div class="d-flex">
+                <span class="navbar-text text-white me-3">
+                    Bem-vindo, Admin!
+                </span>
+                <a href="logout.php" class="btn btn-outline-light">Sair</a>
+            </div>
+        </div>
+    </nav>
     <div class="container mt-5">
         <h2 class="mb-4">Gerenciar Caminhos de Aprendizagem</h2>
 
-        <div class="d-flex justify-content-start mb-3">
-            <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#addCaminhoModal">
-                Adicionar Caminho
-            </button>
-            <button type="button" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#adicionarIdiomaCompletoModal">
-                Adicionar Novo Idioma com Quiz
-            </button>
-            <button type="button" class="btn btn-secondary me-2" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
-                Gerenciar Idiomas
-            </button>
-            <a href="gerenciar_teorias.php" class="btn btn-info me-2">Gerenciar Teorias</a>
-            <a href="gerenciar_usuarios.php" class="btn btn-success me-2">👥 Gerenciar Usuários</a>
-            <a href="estatisticas_usuarios.php" class="btn btn-warning">📊 Estatísticas</a>
-        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="list-group">
+                    <a href="#" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#addCaminhoModal"><i class="fas fa-plus-circle me-2"></i>Adicionar Caminho</a>
+                    <a href="#" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#adicionarIdiomaCompletoModal"><i class="fas fa-language me-2"></i>Adicionar Idioma com Quiz</a>
+                    <a href="#" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal"><i class="fas fa-globe me-2"></i>Gerenciar Idiomas</a>
+                    <a href="gerenciar_teorias.php" class="list-group-item list-group-item-action"><i class="fas fa-book-open me-2"></i>Gerenciar Teorias</a>
+                    <a href="gerenciar_usuarios.php" class="list-group-item list-group-item-action"><i class="fas fa-users me-2"></i>Gerenciar Usuários</a>
+                    <a href="estatisticas_usuarios.php" class="list-group-item list-group-item-action"><i class="fas fa-chart-bar me-2"></i>Estatísticas</a>
+                </div>
+            </div>
+            <div class="col-md-9">
 
         <!-- Notificações -->
         <?php if (isset($_SESSION['success'])): ?>
@@ -128,7 +451,7 @@ $database->closeConnection();
                             </select>
                         </div>
                         <div class="col-md-auto d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary">Pesquisar</button>
+                            <button type="submit" class="btn btn-primary" style="margin-top: 40px;">Pesquisar</button>
                         </div>
                     </div>
                 </form>
