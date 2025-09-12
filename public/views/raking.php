@@ -1,311 +1,304 @@
 <?php
-// Simulação de dados de usuários e suas pontuações
-// Em um projeto real, estes dados viriam de um banco de dados
-$usuarios_ranking = [
-    ['nome' => 'Alice', 'experiencia' => 1500, 'posicao' => 1],
-    ['nome' => 'Bob', 'experiencia' => 1250, 'posicao' => 2],
-    ['nome' => 'Carlos', 'experiencia' => 1100, 'posicao' => 3],
-    ['nome' => 'Diana', 'experiencia' => 950, 'posicao' => 4],
-    ['nome' => 'Eduardo', 'experiencia' => 800, 'posicao' => 5],
-    ['nome' => 'Fernanda', 'experiencia' => 750, 'posicao' => 6],
-    ['nome' => 'Gabriel', 'experiencia' => 600, 'posicao' => 7],
-    ['nome' => 'Helena', 'experiencia' => 550, 'posicao' => 8],
-    ['nome' => 'Igor', 'experiencia' => 400, 'posicao' => 9],
-    ['nome' => 'Julia', 'experiencia' => 300, 'posicao' => 10],
+// Simulação de dados de usuários
+$users = [
+    ["name" => "David", "experience" => 2000],
+    ["name" => "Bob", "experience" => 1500],
+    ["name" => "Alice", "experience" => 1200],
+    ["name" => "Eve", "experience" => 1000],
+    ["name" => "Charlie", "experience" => 900],
+    ["name" => "Frank", "experience" => 850],
+    ["name" => "Grace", "experience" => 780],
+    ["name" => "Heidi", "experience" => 620],
+    ["name" => "Ivan", "experience" => 550],
+    ["name" => "Judy", "experience" => 490],
 ];
 
-// Se precisar obter o nome do usuário logado (similar ao seu header):
-// $nome_usuario_logado = $_SESSION['nome_usuario'] ?? 'Usuário'; // Exemplo, dependendo da sua autenticação
+usort($users, function($a, $b) {
+    return $b["experience"] - $a["experience"];
+});
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ranking de Idiomas</title>
-    <link rel="stylesheet" href="estilos_gerais.css"> <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <title>Ranking de Usuários</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+
+
     <style>
-        /* Variáveis de cor globais (poderiam estar no seu CSS geral) */
-        :root {
-            --primary-bg: #2c3e50; /* Preto/Cinza escuro */
-            --secondary-bg: #34495e; /* Cinza um pouco mais claro */
-            --accent-purple: #6a0dad; /* Roxo vibrante */
-            --accent-yellow: #ffd700; /* Amarelo dourado */
-            --text-light: #ecf0f1; /* Branco/Cinza claro */
-            --text-dark: #333; /* Preto para textos secundários */
-            --border-color: rgba(255, 255, 255, 0.1);
-            --hover-transition: 0.3s ease-in-out;
-        }
+        /* Importação de fontes */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;500&display=swap');
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--primary-bg);
-            color: var(--text-light);
-            margin: 0;
-            padding: 0;
-            line-height: 1.6;
-        }
+:root {
+    --primary-purple: #8a2be2;
+    --accent-yellow: #ffd700;
+    --dark-text: #333333;
+    --light-background: #f8f8f8;
+    --card-background: #ffffff;
+    --border-light: #e0e0e0;
+    --shadow-light: rgba(0, 0, 0, 0.08);
+}
 
-        .main-content {
-            margin-left: 280px; /* Ajuste conforme a largura do seu header */
-            padding: 30px;
-            transition: margin-left 0.5s ease-in-out;
-        }
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--light-background);
+    color: var(--dark-text);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+}
 
-        .main-content.shifted { /* Classe adicionada ao body ou main */
-            margin-left: 90px; /* Ajuste conforme a largura do header fechado */
-        }
+.container {
+    background-color: var(--card-background);
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px var(--shadow-light);
+    text-align: center;
+    width: 100%;
+    max-width: 700px;
+    box-sizing: border-box;
+}
 
-        /* Estilos da Página de Ranking */
-        .ranking-container {
-            max-width: 900px;
-            margin: 40px auto;
-            background-color: var(--secondary-bg);
-            padding: 30px 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
-        }
+.main-title {
+    font-family: 'Poppins', sans-serif;
+    color: var(--primary-purple);
+    margin-bottom: 35px;
+    font-size: 2.8em;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
 
-        .ranking-header {
-            text-align: center;
-            margin-bottom: 40px;
-            padding-bottom: 20px;
-            border-bottom: var(--border-color);
-        }
+.ranking-list-wrapper {
+    max-height: 600px; /* Altura máxima para rolagem */
+    overflow-y: auto;
+    padding-right: 10px; /* Espaço para a barra de rolagem */
+}
 
-        .ranking-header h1 {
-            font-size: 2.8rem;
-            color: var(--accent-yellow);
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
+.ranking-list-wrapper::-webkit-scrollbar {
+    width: 8px;
+}
 
-        .ranking-header p {
-            font-size: 1.1rem;
-            color: rgba(236, 240, 241, 0.8);
-        }
+.ranking-list-wrapper::-webkit-scrollbar-track {
+    background: var(--light-background);
+    border-radius: 10px;
+}
 
-        .ranking-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
+.ranking-list-wrapper::-webkit-scrollbar-thumb {
+    background: var(--primary-purple);
+    border-radius: 10px;
+}
 
-        .ranking-item {
-            display: flex;
-            align-items: center;
-            padding: 15px 20px;
-            margin-bottom: 15px;
-            background-color: var(--primary-bg); /* Fundo mais escuro para os itens */
-            border-radius: 10px;
-            transition: background-color var(--hover-transition), transform 0.3s ease;
-            cursor: pointer; /* Indica que é clicável */
-            border: 1px solid transparent; /* Para efeito de hover */
-        }
+#ranking-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
 
-        .ranking-item:hover {
-            background-color: var(--secondary-bg);
-            transform: translateY(-5px);
-            border-color: var(--accent-yellow); /* Borda amarela no hover */
-        }
+.ranking-item {
+    background-color: var(--card-background);
+    margin-bottom: 15px;
+    padding: 18px 25px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    font-size: 1.1em;
+    border: 1px solid var(--border-light);
+    transition: all 0.3s ease-in-out;
+    position: relative;
+    overflow: hidden;
+}
 
-        .ranking-item .position {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: var(--accent-yellow);
-            width: 50px; /* Largura fixa para a posição */
-            text-align: center;
-            margin-right: 25px;
-            flex-shrink: 0; /* Evita que o número de posição encolha */
-        }
+.ranking-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+    background-color: var(--primary-purple);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+}
 
-        .ranking-item .user-info {
-            display: flex;
-            align-items: center;
-            flex-grow: 1; /* Ocupa o espaço restante */
-        }
+.ranking-item:hover {
+    box-shadow: 0 6px 15px var(--shadow-light);
+    transform: translateY(-3px);
+}
 
-        .ranking-item .profile-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background-color: var(--accent-purple); /* Roxo para os ícones de perfil */
-            color: var(--text-light);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-right: 20px;
-            flex-shrink: 0;
-            box-shadow: 0 0 10px var(--accent-purple);
-        }
+.ranking-item:hover::before {
+    transform: translateX(0);
+}
 
-        .ranking-item .username {
-            font-size: 1.1rem;
-            font-weight: 500;
-            color: var(--text-light);
-        }
+.position-wrapper {
+    width: 40px;
+    text-align: center;
+    margin-right: 20px;
+    flex-shrink: 0;
+}
 
-        .ranking-item .experience {
-            font-size: 1rem;
-            color: rgba(236, 240, 241, 0.8);
-            font-weight: 500;
-            margin-left: 20px;
-            flex-shrink: 0;
-        }
+.position-number {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    color: var(--primary-purple);
+    font-size: 1.3em;
+}
 
-        .ranking-item .experience span {
-            color: var(--accent-yellow);
-            font-weight: bold;
-        }
+.icon-medal {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
 
-        /* Estilos para o topo do ranking (Top 3) */
-        .ranking-item.top-3 {
-            border-left: 5px solid var(--accent-yellow); /* Borda lateral amarela */
-            background-color: var(--primary-bg); /* Mantém o fundo escuro para destaque */
-        }
+.icon-medal.gold {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffd700"><path d="M12 2L9.19 8.63L2 9.24L7.46 13.06L5.88 20.18L12 16.5L18.12 20.18L16.54 13.06L22 9.24L14.81 8.63L12 2Z"/></svg>');
+}
 
-        .ranking-item.top-3 .position {
-            color: var(--accent-yellow);
-        }
+.icon-medal.silver {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23c0c0c0"><path d="M12 2L9.19 8.63L2 9.24L7.46 13.06L5.88 20.18L12 16.5L18.12 20.18L16.54 13.06L22 9.24L14.81 8.63L12 2Z"/></svg>');
+}
 
-        .ranking-item.top-3 .profile-icon {
-            background-color: var(--accent-purple);
-            box-shadow: 0 0 15px var(--accent-purple);
-        }
+.icon-medal.bronze {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23cd7f32"><path d="M12 2L9.19 8.63L2 9.24L7.46 13.06L5.88 20.18L12 16.5L18.12 20.18L16.54 13.06L22 9.24L14.81 8.63L12 2Z"/></svg>');
+}
 
-        /* Adaptações para o cabeçalho e main-content em telas pequenas */
-        @media screen and (max-width: 768px) {
-            .main-content {
-                margin-left: 0 !important;
-                padding: 20px;
-            }
-            .ranking-container {
-                padding: 25px;
-            }
-            .ranking-header h1 {
-                font-size: 2rem;
-            }
-            .ranking-item .position {
-                font-size: 1.5rem;
-                width: 40px;
-                margin-right: 15px;
-            }
-            .ranking-item .profile-icon {
-                width: 40px;
-                height: 40px;
-                font-size: 1.2rem;
-                margin-right: 15px;
-            }
-            .ranking-item .username {
-                font-size: 1rem;
-            }
-            .ranking-item .experience {
-                font-size: 0.9rem;
-            }
-        }
+.user-info {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    text-align: left;
+}
+
+.avatar {
+    width: 45px;
+    height: 45px;
+    background-color: var(--border-light);
+    border-radius: 50%;
+    margin-right: 15px;
+    border: 2px solid var(--primary-purple); /* Borda roxa para avatares */
+    flex-shrink: 0;
+}
+
+.name {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    color: var(--dark-text);
+    font-size: 1.2em;
+}
+
+.experience-info {
+    display: flex;
+    align-items: center; /* Alinha o ícone e o texto na mesma linha */
+    margin-left: 20px;
+    flex-shrink: 0;
+}
+
+.experience-value {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    color: var(--accent-yellow);
+    font-size: 1.1em;
+    display: flex;
+    align-items: center;
+}
+
+.star-icon {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffd700"><path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z"/></svg>');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin-right: 5px;
+}
+
+/* Remove the progress bar styles */
+.progress-bar-container,
+.progress-bar {
+    display: none;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .container {
+        padding: 25px;
+    }
+
+    .main-title {
+        font-size: 2em;
+    }
+
+    .ranking-item {
+        flex-wrap: wrap;
+        justify-content: center;
+        text-align: center;
+        padding: 15px;
+    }
+
+    .position-wrapper,
+    .user-info,
+    .experience-info {
+        width: 100%;
+        justify-content: center;
+        margin: 5px 0;
+    }
+
+    .avatar {
+        margin-right: 10px;
+    }
+
+    .name {
+        font-size: 1.1em;
+    }
+
+    .experience-value {
+        font-size: 1em;
+    }
+}
+
+
     </style>
 </head>
 <body>
-    <header id="myHeader">
-        <div class="header-content">
-            <img src="..\..\imagens\logo-idiomas.png" alt="Logo SpeakNut" class="logo">
-            <div class="user-profile">
-                <div class="profile-image">
-                    <?php
-                        // Exemplo de como mostrar a inicial do nome do usuário
-                        $inicial_usuario = strtoupper(substr($nome_usuario, 0, 1));
-                        echo htmlspecialchars($inicial_usuario);
-                    ?>
-                </div>
-                <div class="username">
-                    Bem-vindo, <?php echo htmlspecialchars($nome_usuario); ?>!
-                </div>
-                <a href="../../logout.php" class="logout-btn">Sair</a>
-            </div>
-            <nav>
-                <ul>
-                    <li>
-                        <a href="painel.php" class="nav-link-item">
-                            <span class="material-symbols-outlined">home</span>
-                            <span>Início</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="flashcards.php" class="nav-link-item">
-                            <span class="material-symbols-outlined">cards_star</span>
-                            <span>Flash Cards</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="ranking.php" class="nav-link-item active"> <span class="material-symbols-outlined">leaderboard</span>
-                            <span>Ranking</span>
-                        </a>
-                    </li>
-                    </ul>
-            </nav>
-        </div>
-        <button id="toggleButton" class="toggle-button">
-            <span class="material-symbols-outlined">menu_open</span>
-        </button>
-    </header>
-
-    <main class="main-content">
-        <div class="ranking-container">
-            <div class="ranking-header">
-                <h1><span class="material-symbols-outlined">leaderboard</span> Ranking Global</h1>
-                <p>Descubra os alunos com mais experiência e dedicação!</p>
-            </div>
-            <ul class="ranking-list">
-                <?php foreach ($usuarios_ranking as $usuario): ?>
-                    <?php
-                        // Adiciona uma classe especial para os 3 primeiros colocados
-                        $item_class = 'ranking-item';
-                        if ($usuario['posicao'] <= 3) {
-                            $item_class .= ' top-3';
-                        }
-                    ?>
-                    <li class="<?php echo $item_class; ?>">
-                        <div class="position"><?php echo htmlspecialchars($usuario['posicao']); ?>º</div>
-                        <div class="user-info">
-                            <div class="profile-icon">
-                                <?php
-                                    // Exemplo de como mostrar a inicial do nome do usuário
-                                    $inicial_usuario_rank = strtoupper(substr($usuario['nome'], 0, 1));
-                                    echo htmlspecialchars($inicial_usuario_rank);
-                                ?>
-                            </div>
-                            <div class="username"><?php echo htmlspecialchars($usuario['nome']); ?></div>
+    <div class="container">
+        <h1 class="main-title">Ranking de Usuários</h1>
+        <div class="ranking-list-wrapper">
+            <ul id="ranking-list">
+                <?php foreach ($users as $index => $user): ?>
+                    <li class="ranking-item">
+                        <div class="position-wrapper">
+                            <?php if ($index == 0): ?>
+                                <span class="material-icons" style="color: gold;">star</span>
+                            <?php elseif ($index == 1): ?>
+                                <span class="material-icons" style="color: silver;">star</span>
+                            <?php elseif ($index == 2): ?>
+                                <span class="material-icons" style="color: #cd7f32;">star</span>
+                            <?php else: ?>
+                                <span class="position-number"><?= $index + 1 ?>º</span>
+                            <?php endif; ?>
                         </div>
-                        <div class="experience">
-                            Pontos: <span><?php echo number_format($usuario['experiencia'], 0, ',', '.'); ?></span>
+                        <div class="user-info">
+                            <div class="avatar"></div>
+                            <span class="name"><?= $user["name"] ?></span>
+                        </div>
+                        <div class="experience-info">
+                            <span class="experience-value"><span class="star-icon"></span><?= $user["experience"] ?> XP</span>
                         </div>
                     </li>
                 <?php endforeach; ?>
             </ul>
         </div>
-    </main>
-
-    <script>
-        // Script para alternar a classe 'closed' na sidebar
-        const header = document.getElementById('myHeader');
-        const toggleButton = document.getElementById('toggleButton');
-        const body = document.body;
-        const mainContent = document.querySelector('.main-content');
-
-        toggleButton.addEventListener('click', () => {
-            header.classList.toggle('closed');
-            body.classList.toggle('shifted'); // Aplica a classe no body para ajustar margem
-            mainContent.classList.toggle('shifted'); // Aplica a classe no main-content para ajustar margem
-        });
-
-        // Adiciona ou remove classes de 'shifted' no load da página se o header já estiver fechado (exemplo)
-        // Se você tiver uma lógica de persistência, aplique aqui.
-        // if (header.classList.contains('closed')) {
-        //     body.classList.add('shifted');
-        //     mainContent.classList.add('shifted');
-        // }
-    </script>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
