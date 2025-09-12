@@ -1,0 +1,583 @@
+/* Paleta de Cores */
+:root {
+    --roxo-principal: #6a0dad;
+    --roxo-escuro: #4c087c;
+    --amarelo-detalhe: #ffd700;
+    --branco: #ffffff;
+    --preto-texto: #212529;
+    --cinza-claro: #f8f9fa;
+    --cinza-medio: #dee2e6;
+}
+
+
+/* Estilos Gerais do Corpo */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--cinza-claro);
+    color: var(--preto-texto);
+    animation: fadeIn 1s ease-in-out;
+    transition: margin-left 0.5s; /* Transição suave para o conteúdo principal */
+}
+
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+
+/* Barra de Navegação */
+.navbar {
+    background: var(--roxo-principal) !important;
+    border-bottom: 3px solid var(--amarelo-detalhe);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+
+.btn-outline-light {
+    color: var(--amarelo-detalhe);
+    border-color: var(--amarelo-detalhe);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+
+.btn-outline-light:hover {
+    background-color: var(--amarelo-detalhe);
+    color: var(--preto-texto);
+}
+
+
+/* Estilos de Cartões (Cards) */
+.card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+
+.card-header {
+    background-color: var(--roxo-principal);
+    color: var(--branco);
+    border-radius: 1rem 1rem 0 0 !important;
+    padding: 1.5rem;
+}
+
+
+.card-header h2 {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+
+/* Card de Unidade (unidade-card) */
+.unidade-card {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+
+.unidade-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    border-color: var(--amarelo-detalhe);
+}
+
+
+.unidade-card .progress {
+    height: 10px;
+    background-color: var(--cinza-medio);
+}
+
+
+.unidade-card .progress-bar {
+    background-color: var(--amarelo-detalhe);
+    animation: progressFill 1s ease-out forwards;
+}
+
+
+@keyframes progressFill {
+    from { width: 0; }
+}
+
+
+/* Card de Atividade (atividade-card) */
+.atividade-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 1px solid var(--cinza-medio);
+    border-radius: 0.75rem;
+    background: var(--branco);
+}
+
+
+.atividade-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    border-color: var(--roxo-principal);
+}
+
+
+.atividade-icon {
+    font-size: 3rem;
+    color: var(--amarelo-detalhe);
+    margin-bottom: 1rem;
+    transition: transform 0.3s ease;
+}
+
+
+.atividade-card:hover .atividade-icon {
+    transform: scale(1.1);
+}
+
+
+/* Estilos de Modal */
+.modal-overlay {
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+}
+
+
+.popup-modal {
+    max-width: 900px;
+    animation: modalSlideIn 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+
+.modal-content {
+    border-radius: 1.5rem;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+
+.modal-header {
+    border-bottom: none;
+    padding: 1.5rem 2rem;
+    background-color: var(--roxo-principal);
+    color: var(--branco);
+    border-radius: 1.5rem 1.5rem 0 0;
+}
+
+
+.modal-header h5 {
+    font-weight: 600;
+}
+
+
+.modal-body {
+    padding: 2rem;
+}
+
+
+.btn-close {
+    filter: invert(1);
+    background-size: 0.8rem;
+}
+
+
+/* Botões de Resposta do Quiz */
+.btn-resposta {
+    margin: 0.75rem 0;
+    padding: 1rem 1.5rem;
+    text-align: left;
+    border: 2px solid var(--cinza-medio);
+    background: var(--branco);
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+    width: 100%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+
+.btn-resposta:hover {
+    border-color: var(--amarelo-detalhe);
+    background: var(--cinza-claro);
+    transform: translateY(-2px);
+}
+
+
+.btn-resposta.selected {
+    border-color: var(--roxo-principal);
+    background: #e3d4ff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+
+.btn-resposta.correct {
+    border-color: #28a745;
+    background: #d4edda;
+    animation: correctAnim 0.5s ease;
+}
+
+
+.btn-resposta.incorrect {
+    border-color: #dc3545;
+    background: #f8d7da;
+    animation: incorrectAnim 0.5s ease;
+}
+
+
+@keyframes correctAnim {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+}
+
+
+@keyframes incorrectAnim {
+    0%, 100% { transform: translateX(0); }
+    25%, 75% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+}
+
+
+/* Estilos de Feedback */
+.feedback-container {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    font-weight: 500;
+    display: none;
+    animation: slideInUp 0.5s ease;
+}
+
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+.feedback-success {
+    background: #e6ffed;
+    border: 1px solid #28a745;
+    color: #155724;
+}
+
+
+.feedback-error {
+    background: #fff0f0;
+    border: 1px solid #dc3545;
+    color: #721c24;
+}
+
+
+.btn-proximo-custom {
+    background-color: var(--roxo-principal);
+    border-color: var(--roxo-principal);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+
+.btn-proximo-custom:hover {
+    background-color: var(--roxo-escuro);
+    border-color: var(--roxo-escuro);
+    transform: scale(1.05);
+}
+
+
+/* Animações e Efeitos */
+.fs-4 .badge {
+    background-color: var(--amarelo-detalhe) !important;
+    color: var(--preto-texto);
+    font-weight: 700;
+    padding: 0.5em 1em;
+    border-radius: 50px;
+    animation: pulse 2s infinite ease-in-out;
+}
+
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
+    70% { box-shadow: 0 0 0 15px rgba(255, 215, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+}
+
+
+.progress-bar-custom .progress-bar {
+    background-color: var(--amarelo-detalhe);
+    box-shadow: 0 0 10px var(--amarelo-detalhe);
+}
+
+
+
+
+:root {
+    --bg-color: #2c3e50; /* Cinza escuro */
+    --text-color: #ecf0f1; /* Branco/Cinza claro */
+    --hover-bg: #34495e; /* Cinza um pouco mais claro */
+    --accent-color: #3498db; /* Azul vibrante */
+    --sidebar-width: 280px;
+    --sidebar-width-closed: 80px;
+}
+
+#myHeader {
+    height: 100vh;
+    width: var(--sidebar-width);
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    background-color: var(--bg-color);
+    overflow-x: hidden;
+    transition: width 0.5s ease-in-out, background-color 0.5s ease-in-out;
+    padding: 30px 0;
+    box-shadow: 3px 0 10px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center; /* Centraliza o conteúdo horizontalmente */
+}
+
+.header-content {
+    width: 100%;
+    padding: 0 15px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centraliza os itens do conteúdo */
+}
+
+.user-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 30px;
+    text-align: center;
+    transition: margin-bottom 0.3s ease-in-out;
+}
+
+.user-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%; /* Torna a imagem um círculo */
+    object-fit: cover; /* Garante que a imagem cubra o círculo */
+    border: 3px solid var(--accent-color); /* Borda sutil */
+    margin-bottom: 10px;
+    transition: width 0.3s ease-in-out, height 0.3s ease-in-out, border-radius 0.3s ease-in-out, margin-bottom 0.3s ease-in-out;
+}
+
+.user-name {
+    color: var(--text-color);
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap; /* Evita que o nome quebre linha */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Adiciona '...' se o nome for muito longo */
+    transition: opacity 0.3s ease-in-out;
+}
+
+#myHeader nav ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    width: 100%; /* Garante que a navegação ocupe a largura disponível */
+}
+
+#myHeader nav li {
+    margin-bottom: 8px;
+    width: 100%; /* Cada item de lista ocupa 100% da largura */
+}
+
+.nav-link-item {
+    text-decoration: none;
+    font-size: 1.1rem;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    border-radius: 10px; /* Cantos arredondados */
+    transition: background-color 0.3s ease, color 0.3s ease, padding 0.3s ease, justify-content 0.3s ease;
+    opacity: 0.9;
+    width: 100%; /* Link ocupa toda a largura do li */
+    box-sizing: border-box; /* Inclui padding e border na largura total */
+}
+
+.nav-link-item:hover,
+.nav-link-item:focus {
+    background-color: var(--hover-bg);
+    opacity: 1;
+    outline: none;
+}
+
+.nav-link-item span.material-symbols-outlined {
+    margin-right: 15px;
+    font-size: 1.8rem; /* Ícones um pouco maiores */
+    transition: margin-right 0.3s ease, font-size 0.3s ease;
+}
+
+.nav-link-item span:last-child { /* O span com o texto do link */
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* ==================================== */
+/* === ESTADO DA SIDEBAR FECHADA === */
+/* ==================================== */
+
+#myHeader.closed {
+    width: var(--sidebar-width-closed);
+    align-items: center; /* Centraliza os ícones e o avatar */
+}
+
+#myHeader.closed .user-profile {
+    margin-bottom: 15px; /* Reduz o espaço quando fechado */
+}
+
+#myHeader.closed .user-avatar {
+    width: 45px;
+    height: 45px;
+    margin-bottom: 0; /* Remove margem inferior */
+}
+
+#myHeader.closed .user-name {
+    opacity: 0; /* Oculta o nome do usuário */
+    transform: translateX(-100%); /* Move para fora da tela */
+}
+
+#myHeader.closed nav ul li {
+    margin-bottom: 5px; /* Reduz margem entre os itens de navegação */
+}
+
+#myHeader.closed .nav-link-item {
+    padding: 12px; /* Apenas padding superior/inferior */
+    justify-content: center; /* Centraliza o ícone */
+}
+
+#myHeader.closed .nav-link-item span.material-symbols-outlined {
+    margin-right: 0; /* Remove margem direita */
+    font-size: 1.6rem; /* Mantém um tamanho bom para ícones */
+}
+
+#myHeader.closed .nav-link-item span:last-child { /* O texto do link */
+    opacity: 0; /* Oculta o texto do link */
+    transform: translateX(-100%); /* Move para fora da tela */
+}
+
+/* Botão de alternar */
+.toggle-button {
+    background: none;
+    border: none;
+    font-size: 1.8rem; /* Tamanho do ícone de menu */
+    cursor: pointer;
+    padding: 15px 10px;
+    color: rgba(255, 255, 255, 0.6);
+    transition: color 0.3s ease, transform 0.5s ease-in-out;
+    margin-top: auto; /* Empurra o botão para o final */
+    margin-bottom: 10px; /* Espaço adicional abaixo do botão */
+    width: 100%; /* Ocupa toda a largura para facilitar o clique */
+    text-align: center;
+}
+
+.toggle-button:hover {
+    color: var(--text-color);
+}
+
+.toggle-button .material-symbols-outlined {
+    transition: transform 0.3s ease-in-out;
+}
+
+#myHeader.closed .toggle-button .material-symbols-outlined {
+    transform: rotate(180deg); /* Rotaciona o ícone de menu quando fechado */
+}
+
+/* Estilos para o corpo e conteúdo principal */
+body.shifted {
+    margin-left: var(--sidebar-width);
+    transition: margin-left 0.5s ease-in-out;
+}
+
+.main-content {
+    margin-left: var(--sidebar-width);
+    padding: 20px;
+    transition: margin-left 0.5s ease-in-out;
+}
+
+.main-content.shifted {
+    margin-left: var(--sidebar-width-closed);
+}
+
+/* Ajustes para mobile */
+@media screen and (max-width: 768px) {
+    #myHeader {
+        width: 100%;
+        height: auto;
+        position: static;
+        flex-direction: row;
+        align-items: center;
+        padding: 10px 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        justify-content: space-between; /* Para o menu mobile */
+    }
+
+    .header-content {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0;
+    }
+
+    .user-profile {
+        flex-direction: row; /* Alinha perfil horizontalmente no mobile */
+        margin-bottom: 0;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        margin-bottom: 0;
+        margin-right: 10px;
+    }
+
+    .user-name {
+        font-size: 0.85rem;
+        white-space: nowrap;
+        overflow: visible; /* Permite que o nome apareça completo em mobile */
+        text-overflow: clip;
+    }
+
+    #myHeader nav {
+        display: none; /* Oculta a navegação principal no mobile */
+    }
+
+    .toggle-button {
+        margin-top: 0; /* Remove o margin-top auto */
+        padding: 10px;
+        font-size: 1.5rem;
+        color: #333; /* Cor mais escura para contraste em mobile */
+    }
+
+    #myHeader.closed .toggle-button {
+        transform: none; /* Remove a rotação no mobile quando fechado */
+    }
+
+    body.shifted,
+    .main-content {
+        margin-left: 0 !important;
+    }
+}
