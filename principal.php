@@ -7,10 +7,8 @@
     <title>SpeakNut - Plataforma de Aprendizado de Idiomas</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-    integrity="sha512-dNmfa3J9frbzzT0jzkPQ5RMx9kzdJzTln+E2qxXfyd1+J9+jUz7pXxzO8P+yv2Nf6rHpn1b10bR6+H0w5LepZg=="
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-  />
+        integrity="sha512-dNmfa3J9frbzzT0jzkPQ5RMx9kzdJzTln+E2qxXfyd1+J9+jUz7pXxzO8P+yv2Nf6rHpn1b10bR6+H0w5LepZg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
     * {
         margin: 0;
@@ -1021,6 +1019,7 @@
             justify-content: center;
         }
     }
+
     .subtitle-onde-estiver {
         display: block;
         font-size: 70px;
@@ -1037,7 +1036,6 @@
             padding-left: 50px;
         }
     }
-
     </style>
 </head>
 
@@ -1051,14 +1049,14 @@
 
     <!-- Logo fixa -->
     <div class="logo">
-        <img src="menorteste.png" alt="Logo SpeakNut">
+        <img src="imagens/menorteste.png" alt="Logo SpeakNut">
     </div>
 
     <!-- Seção 1: Boas-vindas -->
     <section class="section-welcome" id="welcome">
         <div class="metade-logo">
             <div class="logo-section">
-                <img src="logo-idiomas.png" alt="Logo SpeakNut">
+                <img src="imagens/logo-idiomas.png" alt="Logo SpeakNut">
                 <div class="welcome-text">Seja bem-vindo ao SpeakNut</div>
                 <div class="subtitle">
                     Sua nova plataforma
@@ -1117,7 +1115,7 @@
             </button>
         </div>
 
-        <img src="mascotee.png" alt="Mascote SpeakNut" class="mascote">
+        <img src="imagens/mascotee.png" alt="Mascote SpeakNut" class="mascote">
     </section>
 
     <!-- Nova Seção 3: Unidades de Aprendizado -->
@@ -1149,7 +1147,7 @@
                 <div class="content-carousel">
                     <div class="content-slide active">
                         <div class="content-image">
-                            <img src="persona.png" alt="Estrutura de Aprendizado">
+                            <img src="imagens/persona.png" alt="Estrutura de Aprendizado">
                         </div>
                         <div class="content-text">
                             <h3>Estrutura de Aprendizado Personalizada</h3>
@@ -1167,7 +1165,7 @@
 
                     <div class="content-slide">
                         <div class="content-image">
-                            <img src="jogo.png" alt="Minigames Interativos">
+                            <img src="imagens/jogo.png" alt="Minigames Interativos">
                         </div>
                         <div class="content-text">
                             <h3>Minigames Interativos</h3>
@@ -1184,7 +1182,7 @@
 
                     <div class="content-slide">
                         <div class="content-image">
-                            <img src="balao.png" alt="Perguntas e Respostas">
+                            <img src="imagens/balao.png" alt="Perguntas e Respostas">
                         </div>
                         <div class="content-text">
                             <h3>Perguntas e Respostas Interativas</h3>
@@ -1327,7 +1325,7 @@
             <div class="footer-column logo-column">
                 <div class="footer-logo">
                     <!-- Use o caminho correto para sua imagem de logo -->
-                    <img src="menorteste.png" alt="Logo SpeakNut">
+                    <img src="imagens/menorteste.png" alt="Logo SpeakNut">
                 </div>
                 <p>Sua jornada para a fluência começa aqui. Aprenda idiomas de forma divertida e eficaz, onde quer que
                     esteja.</p>
@@ -1367,5 +1365,3 @@
 </body>
 
 </html>
-
-    
