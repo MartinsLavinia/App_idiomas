@@ -38,9 +38,13 @@ $database->closeConnection();
     <title>Flash Cards - Site de Idiomas</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="painel.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- link direto dos icones -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=home" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=cards_star" />
     <style>
         /* Paleta de Cores */
         :root {
@@ -208,22 +212,40 @@ $database->closeConnection();
                 padding: 1rem;
             }
         }
+        
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="painel.php">
-                <i class="fas fa-arrow-left me-2"></i>Site de Idiomas
-            </a>
-            <div class="d-flex">
-                <span class="navbar-text text-white me-3">
-                    Bem-vindo, <?php echo htmlspecialchars($nome_usuario); ?>!
-                </span>
-                <a href="logout.php" class="btn btn-outline-light">Sair</a>
-            </div>
+    <header id="myHeader">
+    <div class="header-content">
+        <div class="user-profile">
+            <img src="..\..\imagens\avatar-placeholder.png" alt="Avatar Usuário" class="user-avatar">
+            <span class="user-name">Bem-vindo, <?php echo htmlspecialchars($nome_usuario); ?>!</span>
         </div>
-    </nav>
+        <nav>
+            <ul>
+                <li>
+                    <a href="painel.php" class="nav-link-item">
+                        <span class="material-symbols-outlined">home</span>
+                        <span>Início</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="flashcards.php" class="nav-link-item">
+                        <span class="material-symbols-outlined">cards_star</span>
+                        <span>Flash Cards</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="../../logout.php" class="nav-link-item">Sair</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    <button id="toggleButton" class="toggle-button">
+        <span class="material-symbols-outlined">menu</span>
+    </button>
+</header>
 
     <div class="container mt-4">
         <!-- Cabeçalho -->
