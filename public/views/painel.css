@@ -581,3 +581,44 @@ body.shifted {
         margin-left: 0 !important;
     }
 }
+
+
+/* CSS padrão (quando a sidebar está expandida ou em telas maiores) */
+.nav-link-item {
+    display: block;
+    padding: 10px;
+    text-align: left;
+}
+
+.nav-link-item span.material-symbols-outlined {
+    font-size: 36px;
+    margin-right: 10px;
+}
+
+.nav-link-item span {
+    font-size: 14px;
+}
+
+/* CSS aplicado quando a sidebar for reduzida (exemplo: quando a largura da tela for menor que 768px) */
+@media (max-width: 768px) {
+    .nav-link-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .nav-link-item span.material-symbols-outlined {
+        font-size: 36px;
+        margin-bottom: 5px;
+    }
+
+    .nav-link-item span {
+        font-size: 14px;
+    }
+
+    .toggle-button {
+        font-size: 36px;
+    }
+}
