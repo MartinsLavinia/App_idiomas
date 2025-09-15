@@ -108,9 +108,10 @@ $database->closeConnection();
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- link direto dos icones -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=home" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=cards_star" />
+   <head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" />
 </head>
+
 <body>
     <header id="myHeader">
     <div class="header-content">
@@ -133,7 +134,10 @@ $database->closeConnection();
                     </a>
                 </li>
                 <li>
-                    <a href="../../logout.php" class="nav-link-item">Sair</a>
+                    <a href="../../logout.php" class="nav-link-item">
+                        <span class="material-symbols-outlined">logout</span>
+                        <span>Sair</span>
+                    </a>
                 </li>
             </ul>
         </nav>
@@ -189,6 +193,7 @@ $database->closeConnection();
                     <div class="card mb-4">
                         <div class="card-body">
                             <div class="row align-items-center">
+                                <!-- Coluna de texto -->
                                 <div class="col-md-8">
                                     <h5 class="card-title mb-2">
                                         <i class="fas fa-layer-group me-2 text-warning"></i>
@@ -198,18 +203,23 @@ $database->closeConnection();
                                         Estude com flashcards personalizados e melhore sua memorização
                                     </p>
                                 </div>
+
+                                <!-- Coluna dos botões (um abaixo do outro) -->
                                 <div class="col-md-4 text-end">
-                                    <a href="flashcards.php" class="btn btn-warning me-2">
-                                        <i class="fas fa-layer-group me-2"></i>Meus Decks</a>
-                            </div>
-                            <div class="col-md-4 text-end">
-                                    <a href="flashcard_estudo.php" class="btn btn-outline-warning">
-                                        <i class="fas fa-play me-2"></i>Estudar
-                                    </a>
+                                    <div class="d-grid gap-2">
+                                        <a href="flashcards.php" class="btn btn-warning">
+                                            <i class="fas fa-layer-group me-2"></i>Meus Decks
+                                        </a>
+                                        <a href="flashcard_estudo.php" class="btn btn-outline-warning">
+                                            <i class="fas fa-play me-2"></i>Estudar
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+
 
 
                     <!-- Seção Gerenciamento de Palavras -->
