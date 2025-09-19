@@ -263,8 +263,29 @@ $database->closeConnection();
     }
 
     .modal-body {
-        padding: 2rem;
+    max-height: 70vh; /* altura máxima relativa à tela */
+    overflow-y: auto; /* ativa a barra de rolagem vertical */
+    padding-right: 10px; /* espaço para não colar no scrollbar */
     }
+
+    .modal-body::-webkit-scrollbar {
+    width: 8px;
+    }
+
+    .modal-body::-webkit-scrollbar-thumb {
+    background: #6a0dad; /* roxo do seu tema */
+    border-radius: 10px;
+    }
+
+    .modal-body::-webkit-scrollbar-thumb:hover {
+    background: #520b8a;
+    }
+
+    .modal-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+    }
+
 
     .btn-close {
         filter: invert(1);
@@ -992,6 +1013,7 @@ $database->closeConnection();
                 }
 
                 notificationModal.show();
+                
 
                 // Limpa a URL para evitar que o modal apareça novamente ao recarregar
                 window.history.replaceState({}, document.title, window.location.pathname);
@@ -999,5 +1021,4 @@ $database->closeConnection();
         });
         </script>
 </body>
-
 </html>
