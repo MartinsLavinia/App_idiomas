@@ -11,13 +11,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($adminManager->registerAdmin($nome_usuario, $senha)) {
         header("Location: gerenciar_caminho.php");
         exit();
-    } else {
-        echo "<script>
-            alert('Nome de usuário ou senha incorretos.');
-            window.location.href = 'login_admin.php';
-        </script>";
+     } else {
+        echo "Erro ao cadastrar administrador. Tente novamente.";
     }
 
+    
     $database->closeConnection();
 }
 ?>

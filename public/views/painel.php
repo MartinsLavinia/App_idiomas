@@ -142,15 +142,12 @@ $database->closeConnection();
             </ul>
         </nav>
     </div>
-    <button id="toggleButton" class="toggle-button">
-        <span class="material-symbols-outlined">menu</span>
-    </button>
 </header>
 
 
     <div class="container mt-5">
         <div class="row justify-content-center">
-            <div class="col-md-8">
+            <div class="col-md-11">
                 <?php if ($mostrar_selecao_idioma): ?>
                     <!-- Seleção de idioma para usuários sem progresso -->
                     <div class="card">
@@ -206,7 +203,7 @@ $database->closeConnection();
 
                                 <!-- Coluna dos botões (um abaixo do outro) -->
                                 <div class="col-md-4 text-end">
-                                    <div class="d-grid gap-2">
+                                    <div class="d-flex gap-2">
                                         <a href="flashcards.php" class="btn btn-warning">
                                             <i class="fas fa-layer-group me-2"></i>Meus Decks
                                         </a>
@@ -227,15 +224,13 @@ $database->closeConnection();
                         <div class="card-header">
                             <div class="row align-items-center">
                                 <div class="col-md-8">
-                                    <h5 class="mb-0">
-                                        <i class="fas fa-book me-2"></i>
-                                        Minhas Palavras
-                                    </h5>
+                                    <h5 class="mb-0"> <i class="fas fa-book me-2"></i> Minhas Palavras </h5>
                                 </div>
                                 <div class="col-md-4 text-end">
-                                    <button class="btn btn-light btn-sm" onclick="abrirModalAdicionarPalavra()">
+                                    <button class="btn btn-light btn-sm w-100" onclick="abrirModalAdicionarPalavra()">
                                         <i class="fas fa-plus me-2"></i>Adicionar Palavra
                                     </button>
+
                                 </div>
                             </div>
                         </div>
