@@ -8,7 +8,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $database = new Database();
     $adminManager = new AdminManager($database);
 
-    if ($adminManager->loginAdmin($nome_usuario, $senha)) {
+    if ($adminManager->registerAdmin($nome_usuario, $senha)) {
         header("Location: gerenciar_caminho.php");
         exit();
     } else {
