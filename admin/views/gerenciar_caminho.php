@@ -263,27 +263,31 @@ $database->closeConnection();
     }
 
     .modal-body {
-    max-height: 70vh; /* altura máxima relativa à tela */
-    overflow-y: auto; /* ativa a barra de rolagem vertical */
-    padding-right: 10px; /* espaço para não colar no scrollbar */
+        max-height: 70vh;
+        /* altura máxima relativa à tela */
+        overflow-y: auto;
+        /* ativa a barra de rolagem vertical */
+        padding-right: 10px;
+        /* espaço para não colar no scrollbar */
     }
 
     .modal-body::-webkit-scrollbar {
-    width: 8px;
+        width: 8px;
     }
 
     .modal-body::-webkit-scrollbar-thumb {
-    background: #6a0dad; /* roxo do seu tema */
-    border-radius: 10px;
+        background: #6a0dad;
+        /* roxo do seu tema */
+        border-radius: 10px;
     }
 
     .modal-body::-webkit-scrollbar-thumb:hover {
-    background: #520b8a;
+        background: #520b8a;
     }
 
     .modal-body::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
+        background: #f1f1f1;
+        border-radius: 10px;
     }
 
 
@@ -1013,7 +1017,7 @@ $database->closeConnection();
                 }
 
                 notificationModal.show();
-                
+
 
                 // Limpa a URL para evitar que o modal apareça novamente ao recarregar
                 window.history.replaceState({}, document.title, window.location.pathname);
@@ -1021,4 +1025,5 @@ $database->closeConnection();
         });
         </script>
 </body>
+
 </html>
