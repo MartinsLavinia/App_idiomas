@@ -1013,6 +1013,7 @@ $database->closeConnection();
                 }
 
                 notificationModal.show();
+                
 
                 // Limpa a URL para evitar que o modal apareça novamente ao recarregar
                 window.history.replaceState({}, document.title, window.location.pathname);
