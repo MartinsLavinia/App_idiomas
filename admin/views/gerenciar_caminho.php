@@ -1,6 +1,7 @@
 <?php
 session_start();
-include_once __DIR__ . '/../../conexao.php';
+include_once __DIR__ . 
+'/../../conexao.php'; // Ajustado para o caminho do usuário
 
 // Verificação de segurança
 if (!isset($_SESSION['id_admin'])) {
@@ -11,35 +12,48 @@ if (!isset($_SESSION['id_admin'])) {
 $database = new Database();
 $conn = $database->conn;
 
-// Lógica para buscar os idiomas únicos do banco de dados das tabelas caminhos_aprendizagem e quiz_nivelamento
-// Isso garante que idiomas com apenas um quiz, mas sem caminhos, também sejam exibidos
-$sql_idiomas = "(SELECT DISTINCT idioma FROM caminhos_aprendizagem) UNION (SELECT DISTINCT idioma FROM quiz_nivelamento) ORDER BY idioma";
-$stmt_idiomas = $conn->prepare($sql_idiomas);
-$stmt_idiomas->execute();
-$idiomas_db = $stmt_idiomas->get_result()->fetch_all(MYSQLI_ASSOC);
-$stmt_idiomas->close();
+// Lógica para buscar todos os idiomas disponíveis na tabela 'idiomas'
+$sql_idiomas_all = "SELECT id, nome_idioma FROM idiomas ORDER BY nome_idioma";
+$stmt_idiomas_all = $conn->prepare($sql_idiomas_all);
+$stmt_idiomas_all->execute();
+$idiomas_db_all = $stmt_idiomas_all->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt_idiomas_all->close();
 
 // Definição dos níveis de A1 a C2
 $niveis_db = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
 // Lógica para buscar os caminhos com base na pesquisa
-$sql_caminhos = "SELECT id, idioma, nome_caminho, nivel FROM caminhos_aprendizagem WHERE 1=1";
+$sql_caminhos = "SELECT c.id, c.nome_caminho, c.nivel, u.nome_unidade, i.nome_idioma 
+                 FROM caminhos_aprendizagem c
+                 JOIN unidades u ON c.id_unidade = u.id
+                 JOIN idiomas i ON u.id_idioma = i.id
+                 WHERE 1=1";
 $params = [];
 $types = '';
 
-if (isset($_GET['idioma']) && !empty($_GET['idioma'])) {
-    $sql_caminhos .= " AND idioma = ?";
-    $params[] = $_GET['idioma'];
+$selected_idioma_name = $_GET['idioma'] ?? '';
+$selected_unidade_id = $_GET['unidade'] ?? '';
+$selected_nivel = $_GET['nivel'] ?? '';
+
+if (!empty($selected_idioma_name)) {
+    $sql_caminhos .= " AND i.nome_idioma = ?";
+    $params[] = $selected_idioma_name;
     $types .= 's';
 }
 
-if (isset($_GET['nivel']) && !empty($_GET['nivel'])) {
-    $sql_caminhos .= " AND nivel = ?";
-    $params[] = $_GET['nivel'];
+if (!empty($selected_unidade_id)) {
+    $sql_caminhos .= " AND u.id = ?";
+    $params[] = $selected_unidade_id;
+    $types .= 'i';
+}
+
+if (!empty($selected_nivel)) {
+    $sql_caminhos .= " AND c.nivel = ?";
+    $params[] = $selected_nivel;
     $types .= 's';
 }
 
-$sql_caminhos .= " ORDER BY idioma, nivel, nome_caminho";
+$sql_caminhos .= " ORDER BY i.nome_idioma, c.nivel, c.nome_caminho";
 
 $stmt_caminhos = $conn->prepare($sql_caminhos);
 if (!empty($params)) {
@@ -49,6 +63,30 @@ if (!empty($params)) {
 $stmt_caminhos->execute();
 $caminhos = $stmt_caminhos->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt_caminhos->close();
+
+// Buscar unidades para o idioma selecionado (para preencher o filtro de unidade)
+$unidades_filtradas = [];
+if (!empty($selected_idioma_name)) {
+    $sql_get_idioma_id = "SELECT id FROM idiomas WHERE nome_idioma = ?";
+    $stmt_get_idioma_id = $conn->prepare($sql_get_idioma_id);
+    $stmt_get_idioma_id->bind_param("s", $selected_idioma_name);
+    $stmt_get_idioma_id->execute();
+    $result_idioma_id = $stmt_get_idioma_id->get_result();
+    $idioma_id_for_filter = $result_idioma_id->fetch_assoc()['id'] ?? null;
+    $stmt_get_idioma_id->close();
+
+    if ($idioma_id_for_filter) {
+        $sql_unidades_filter = "SELECT id, nome_unidade, nivel FROM unidades WHERE id_idioma = ? ORDER BY nivel, nome_unidade";
+        $stmt_unidades_filter = $conn->prepare($sql_unidades_filter);
+        $stmt_unidades_filter->bind_param("i", $idioma_id_for_filter);
+        $stmt_unidades_filter->execute();
+        $result_unidades_filter = $stmt_unidades_filter->get_result();
+        while ($row = $result_unidades_filter->fetch_assoc()) {
+            $unidades_filtradas[] = $row;
+        }
+        $stmt_unidades_filter->close();
+    }
+}
 
 $database->closeConnection();
 ?>
@@ -69,7 +107,7 @@ $database->closeConnection();
 
     <style>
     .list-group-item {
-        background-color: var(--branco);
+        background-color: var(--branco );
         color: var(--preto-texto);
         border: 1px solid var(--cinza-medio);
     }
@@ -551,7 +589,6 @@ $database->closeConnection();
     }
     </style>
 </head>
-
 <body>
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
@@ -644,11 +681,23 @@ $database->closeConnection();
                                 <label for="idioma_busca" class="col-form-label">Idioma:</label>
                                 <select id="idioma_busca" name="idioma" class="form-select">
                                     <option value="">Todos os Idiomas</option>
-                                    <?php foreach ($idiomas_db as $idioma): ?>
-                                    <option value="<?php echo htmlspecialchars($idioma['idioma']); ?>"
-                                        <?php echo (isset($_GET['idioma']) && $_GET['idioma'] === $idioma['idioma']) ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($idioma['idioma']); ?>
+                                    <?php foreach ($idiomas_db_all as $idioma): // Usar $idiomas_db_all ?>
+                                    <option value="<?php echo htmlspecialchars($idioma['nome_idioma']); ?>"
+                                        <?php echo (isset($_GET['idioma']) && $_GET['idioma'] === $idioma['nome_idioma']) ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($idioma['nome_idioma']); ?>
                                     </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-auto">
+                                <label for="unidade_busca" class="col-form-label">Unidade:</label>
+                                <select id="unidade_busca" name="unidade" class="form-select">
+                                    <option value="">Todas as Unidades</option>
+                                    <?php foreach ($unidades_filtradas as $unidade): ?>
+                                        <option value="<?= $unidade['id']; ?>" <?= (isset($_GET['unidade']) && $_GET['unidade'] == $unidade['id']) ? 'selected' : ''; ?>>
+                                            <?= htmlspecialchars($unidade['nome_unidade']); ?> (<?= htmlspecialchars($unidade['nivel']); ?>)
+                                        </option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -729,10 +778,18 @@ $database->closeConnection();
                                 <label for="idioma_novo" class="form-label">Idioma</label>
                                 <select id="idioma_novo" name="idioma" class="form-select" required>
                                     <option value="">Selecione o Idioma</option>
-                                    <?php foreach ($idiomas_db as $idioma): ?>
-                                    <option value="<?php echo htmlspecialchars($idioma['idioma']); ?>">
-                                        <?php echo htmlspecialchars($idioma['idioma']); ?></option>
+                                    <?php foreach ($idiomas_db_all as $idioma): // Usar $idiomas_db_all ?>
+                                    <option value="<?php echo htmlspecialchars($idioma['nome_idioma']); ?>"
+                                        data-idioma-id="<?php echo htmlspecialchars($idioma['id']); ?>">
+                                        <?php echo htmlspecialchars($idioma['nome_idioma']); ?></option>
                                     <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="unidade_nova" class="form-label">Unidade</label>
+                                <select id="unidade_nova" name="id_unidade" class="form-select" required>
+                                    <option value="">Selecione uma unidade</option>
+                                    <!-- Unidades serão carregadas via JavaScript -->
                                 </select>
                             </div>
                             <div class="mb-3">
@@ -778,49 +835,47 @@ $database->closeConnection();
 
                             <hr>
                             <h5>Perguntas do Quiz de Nivelamento (20 perguntas)</h5>
-                            <p class="text-muted">A resposta correta para cada pergunta deve ser "A", "B" ou "C".
-                            </p>
-
+                            <p class="text-muted">A resposta correta para cada pergunta deve ser "A", "B"
+                                , "C" ou "D".</p>
                             <?php for ($i = 1; $i <= 20; $i++): ?>
                             <div class="card mb-3">
-                                <div class="card-header">
-                                    Pergunta #<?php echo $i; ?>
-                                </div>
+                                <div class="card-header">Pergunta <?php echo $i; ?></div>
                                 <div class="card-body">
                                     <div class="mb-3">
                                         <label for="pergunta_<?php echo $i; ?>" class="form-label">Pergunta</label>
-                                        <textarea class="form-control" id="pergunta_<?php echo $i; ?>"
-                                            name="pergunta_<?php echo $i; ?>" rows="2" required></textarea>
+                                        <input type="text" class="form-control" id="pergunta_<?php echo $i; ?>"
+                                            name="perguntas[<?php echo $i; ?>][pergunta]" required>
                                     </div>
-                                    <div class="row">
-                                        <div class="col-md-4 mb-3">
-                                            <label for="opcao_a_<?php echo $i; ?>" class="form-label">Opção
-                                                A</label>
-                                            <input type="text" class="form-control" id="opcao_a_<?php echo $i; ?>"
-                                                name="opcao_a_<?php echo $i; ?>" required>
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label for="opcao_b_<?php echo $i; ?>" class="form-label">Opção
-                                                B</label>
-                                            <input type="text" class="form-control" id="opcao_b_<?php echo $i; ?>"
-                                                name="opcao_b_<?php echo $i; ?>" required>
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label for="opcao_c_<?php echo $i; ?>" class="form-label">Opção
-                                                C</label>
-                                            <input type="text" class="form-control" id="opcao_c_<?php echo $i; ?>"
-                                                name="opcao_c_<?php echo $i; ?>" required>
-                                        </div>
+                                    <div class="mb-3">
+                                        <label for="opcao_a_<?php echo $i; ?>" class="form-label">Opção A</label>
+                                        <input type="text" class="form-control" id="opcao_a_<?php echo $i; ?>"
+                                            name="perguntas[<?php echo $i; ?>][opcao_a]" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="opcao_b_<?php echo $i; ?>" class="form-label">Opção B</label>
+                                        <input type="text" class="form-control" id="opcao_b_<?php echo $i; ?>"
+                                            name="perguntas[<?php echo $i; ?>][opcao_b]" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="opcao_c_<?php echo $i; ?>" class="form-label">Opção C</label>
+                                        <input type="text" class="form-control" id="opcao_c_<?php echo $i; ?>"
+                                            name="perguntas[<?php echo $i; ?>][opcao_c]" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="opcao_d_<?php echo $i; ?>" class="form-label">Opção D</label>
+                                        <input type="text" class="form-control" id="opcao_d_<?php echo $i; ?>"
+                                            name="perguntas[<?php echo $i; ?>][opcao_d]" required>
                                     </div>
                                     <div class="mb-3">
                                         <label for="resposta_correta_<?php echo $i; ?>" class="form-label">Resposta
                                             Correta</label>
-                                        <select id="resposta_correta_<?php echo $i; ?>"
-                                            name="resposta_correta_<?php echo $i; ?>" class="form-select" required>
-                                            <option value="">Selecione a resposta correta</option>
-                                            <option value="A">Opção A</option>
-                                            <option value="B">Opção B</option>
-                                            <option value="C">Opção C</option>
+                                        <select class="form-select" id="resposta_correta_<?php echo $i; ?>"
+                                            name="perguntas[<?php echo $i; ?>][resposta_correta]" required>
+                                            <option value="">Selecione</option>
+                                            <option value="A">A</option>
+                                            <option value="B">B</option>
+                                            <option value="C">C</option>
+                                            <option value="D">D</option>
                                         </select>
                                     </div>
                                 </div>
@@ -829,72 +884,50 @@ $database->closeConnection();
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                            <button type="submit" class="btn btn-success">Salvar Idioma e Quiz</button>
+                            <button type="submit" class="btn btn-success">Adicionar Idioma e Quiz</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
 
-        <div class="modal fade" id="gerenciarIdiomasModal" tabindex="-1" aria-labelledby="gerenciarIdiomasModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog">
+        <div class="modal fade" id="gerenciarIdiomasModal" tabindex="-1"
+            aria-labelledby="gerenciarIdiomasModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="gerenciarIdiomasModalLabel">Gerenciar Idiomas</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <!-- Formulário para adicionar idioma simples -->
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <h6 class="mb-0">➕ Adicionar Novo Idioma (Simples)</h6>
-                            </div>
-                            <div class="card-body">
-                                <form action="adicionar_idioma_simples.php" method="POST">
-                                    <div class="row g-3">
-                                        <div class="col-md-8">
-                                            <input type="text" class="form-control" name="nome_idioma"
-                                                placeholder="Nome do idioma (ex: Alemão)" required>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <button type="submit" class="btn btn-success w-100">Adicionar</button>
-                                        </div>
-                                    </div>
-                                    <small class="text-muted">Adiciona apenas o idioma. Você pode criar o quiz
-                                        depois.</small>
-                                </form>
-                            </div>
-                        </div>
-
-                        <p class="text-muted">
-                            Use o botão "Adicionar Novo Idioma com Quiz" para criar um novo idioma completo com quiz
-                            de nivelamento.
-                        </p>
-
-                        <h5>Idiomas Existentes</h5>
-                        <ul class="list-group">
-                            <?php if (!empty($idiomas_db)): ?>
-                            <?php foreach ($idiomas_db as $idioma): ?>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span><?php echo htmlspecialchars($idioma['idioma']); ?></span>
-                                <div>
-                                    <a href="gerenciador_quiz_nivelamento.php?idioma=<?php echo urlencode($idioma['idioma']); ?>"
-                                        class="btn btn-info btn-sm me-2">Gerenciar Quiz</a>
-                                    <button type="button" class="btn btn-danger btn-sm delete-btn"
-                                        data-bs-toggle="modal" data-bs-target="#confirmDeleteModal"
-                                        data-id="<?php echo urlencode($idioma['idioma']); ?>"
-                                        data-nome="<?php echo htmlspecialchars($idioma['idioma']); ?>"
-                                        data-tipo="idioma" data-action="excluir_idioma.php">
-                                        Excluir
-                                    </button>
-                                </div>
-                            </li>
-                            <?php endforeach; ?>
-                            <?php else: ?>
-                            <li class="list-group-item text-center">Nenhum idioma encontrado.</li>
-                            <?php endif; ?>
-                        </ul>
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Idioma</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($idiomas_db_all as $idioma): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($idioma['id']); ?></td>
+                                    <td><?php echo htmlspecialchars($idioma['nome_idioma']); ?></td>
+                                    <td>
+                                        <a href="editar_idioma.php?id=<?php echo htmlspecialchars($idioma['id']); ?>"
+                                            class="btn btn-sm btn-primary">Editar</a>
+                                        <button type="button" class="btn btn-sm btn-danger delete-btn"
+                                            data-bs-toggle="modal" data-bs-target="#confirmDeleteModal"
+                                            data-id="<?php echo htmlspecialchars($idioma['id']); ?>"
+                                            data-nome="<?php echo htmlspecialchars($idioma['nome_idioma']); ?>"
+                                            data-tipo="idioma" data-action="eliminar_idioma.php">
+                                            Eliminar
+                                        </button>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
@@ -903,20 +936,22 @@ $database->closeConnection();
             </div>
         </div>
 
+        <!-- Modal de Confirmação de Exclusão -->
         <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel"
             aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmação de Exclusão</h5>
+                        <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Exclusão</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body" id="confirmDeleteModalBody">
+                        <!-- Mensagem de confirmação aqui -->
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <form id="deleteForm" method="POST" action="">
+                        <form id="deleteForm" method="POST">
                             <input type="hidden" name="id" id="deleteItemId">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                             <button type="submit" class="btn btn-danger">Excluir</button>
                         </form>
                     </div>
@@ -924,109 +959,157 @@ $database->closeConnection();
             </div>
         </div>
 
+        <!-- Modal de Notificação (Sucesso/Erro) -->
         <div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel"
             aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="notificationModalLabel">Notificação</h5>
+                        <h5 class="modal-title" id="notificationModalLabel"></h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body" id="notificationModalBody">
+                        <!-- Mensagem aqui -->
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="card text-center p-3">
-                    <h5>Total de Caminhos</h5>
-                    <span class="fs-3 fw-bold"><?= count($caminhos) ?></span>
-                </div>
-            </div>
 
-            <div class="col-md-3">
-                <div class="card text-center p-3">
-                    <h5>Total de Idiomas</h5>
-                    <span class="fs-3 fw-bold"><?= count($idiomas_db) ?></span>
-                </div>
-            </div>
-
-            <div class="col-md-3">
-                <div class="card text-center p-3">
-                    <h5>Quizzes Concluídos</h5>
-                    <span class="fs-3 fw-bold"><?= isset($quizzes_concluidos) ? $quizzes_concluidos : 0 ?></span>
-                </div>
-            </div>
-        </div>
+    </div>
 
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Lógica para o modal de confirmação de exclusão
+        const confirmDeleteModal = document.getElementById('confirmDeleteModal' );
+        if (confirmDeleteModal) {
+            confirmDeleteModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget; // Botão que acionou o modal
+                const itemId = button.getAttribute('data-id');
+                const itemName = button.getAttribute('data-nome');
+                const itemType = button.getAttribute('data-tipo');
+                const formAction = button.getAttribute('data-action');
 
+                const modalBody = confirmDeleteModal.querySelector('#confirmDeleteModalBody');
+                const modalForm = confirmDeleteModal.querySelector('#deleteForm');
+                const hiddenInput = confirmDeleteModal.querySelector('#deleteItemId');
 
-
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Lógica para o modal de confirmação de exclusão
-            const confirmDeleteModal = document.getElementById('confirmDeleteModal');
-            if (confirmDeleteModal) {
-                confirmDeleteModal.addEventListener('show.bs.modal', function(event) {
-                    const button = event.relatedTarget; // Botão que acionou o modal
-                    const itemId = button.getAttribute('data-id');
-                    const itemName = button.getAttribute('data-nome');
-                    const itemType = button.getAttribute('data-tipo');
-                    const formAction = button.getAttribute('data-action');
-
-                    const modalBody = confirmDeleteModal.querySelector('#confirmDeleteModalBody');
-                    const modalForm = confirmDeleteModal.querySelector('#deleteForm');
-                    const hiddenInput = confirmDeleteModal.querySelector('#deleteItemId');
-
-                    let message = '';
-                    if (itemType === 'idioma') {
-                        message =
-                            `Tem certeza que deseja excluir o idioma '<strong>${itemName}</strong>'? Isso excluirá todos os caminhos, exercícios e quizzes associados a ele.`;
-                    } else {
-                        message =
-                            `Tem certeza que deseja excluir o caminho '<strong>${itemName}</strong>'?`;
-                    }
-
-                    modalBody.innerHTML = `<p>${message}</p>`;
-                    modalForm.action = formAction;
-                    hiddenInput.value = itemId;
-                });
-            }
-
-            // Lógica para o modal de notificação
-            const urlParams = new URLSearchParams(window.location.search);
-            const status = urlParams.get('status');
-            const message = urlParams.get('message');
-
-            if (status && message) {
-                const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
-                const modalBody = document.getElementById('notificationModalBody');
-
-                modalBody.textContent = decodeURIComponent(message.replace(/\+/g, ' '));
-
-                const modalTitle = document.getElementById('notificationModalLabel');
-                if (status === 'success') {
-                    modalTitle.textContent = 'Sucesso';
-                } else if (status === 'error') {
-                    modalTitle.textContent = 'Erro';
+                let message = '';
+                if (itemType === 'idioma') {
+                    message =
+                        `Tem certeza que deseja excluir o idioma '<strong>${itemName}</strong>'? Isso excluirá todos os caminhos, exercícios e quizzes associados a ele.`;
+                } else {
+                    message =
+                        `Tem certeza que deseja excluir o caminho '<strong>${itemName}</strong>'?`;
                 }
 
-                notificationModal.show();
+                modalBody.innerHTML = `<p>${message}</p>`;
+                modalForm.action = formAction;
+                hiddenInput.value = itemId;
+            });
+        }
+
+        // Lógica para o modal de notificação
+        const urlParams = new URLSearchParams(window.location.search);
+        const status = urlParams.get('status');
+        const message = urlParams.get('message');
+
+        if (status && message) {
+            const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
+            const modalBody = document.getElementById('notificationModalBody');
+
+            modalBody.textContent = decodeURIComponent(message.replace(/\+/g, ' '));
+
+            const modalTitle = document.getElementById('notificationModalLabel');
+            if (status === 'success') {
+                modalTitle.textContent = 'Sucesso';
+            } else if (status === 'error') {
+                modalTitle.textContent = 'Erro';
+            }
+
+            notificationModal.show();
 
 
-                // Limpa a URL para evitar que o modal apareça novamente ao recarregar
-                window.history.replaceState({}, document.title, window.location.pathname);
+            // Limpa a URL para evitar que o modal apareça novamente ao recarregar
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        // Lógica para carregar unidades dinamicamente no modal de Adicionar Caminho
+        const idiomaNovoSelect = document.getElementById('idioma_novo');
+        const unidadeNovaSelect = document.getElementById('unidade_nova');
+
+        idiomaNovoSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const idiomaId = selectedOption.getAttribute('data-idioma-id');
+            unidadeNovaSelect.innerHTML = '<option value="">Selecione uma unidade</option>'; // Limpa e adiciona opção padrão
+
+            if (idiomaId) {
+                fetch(`get_unidades_por_idioma.php?idioma_id=${idiomaId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(unidade => {
+                            const option = document.createElement('option');
+                            option.value = unidade.id;
+                            option.textContent = `${unidade.nome_unidade} (Nível ${unidade.nivel})`;
+                            unidadeNovaSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Erro ao buscar unidades:', error));
             }
         });
-        </script>
+
+        // Disparar o evento change na carga do modal se um idioma já estiver selecionado (útil para reabrir o modal)
+        document.getElementById('addCaminhoModal').addEventListener('shown.bs.modal', function () {
+            if (idiomaNovoSelect.value) {
+                idiomaNovoSelect.dispatchEvent(new Event('change'));
+            }
+        });
+
+        // Lógica para o filtro de unidades na página principal
+        const idiomaBuscaSelect = document.getElementById('idioma_busca');
+        const unidadeBuscaSelect = document.getElementById('unidade_busca');
+
+        idiomaBuscaSelect.addEventListener('change', function() {
+            const selectedIdiomaName = this.value;
+            unidadeBuscaSelect.innerHTML = '<option value="">Todas as Unidades</option>'; // Limpa e adiciona opção padrão
+
+            if (selectedIdiomaName) {
+                const idiomas = <?php echo json_encode($idiomas_db_all); ?>;
+                const selectedIdioma = idiomas.find(idioma => idioma.nome_idioma === selectedIdiomaName);
+                
+                if (selectedIdioma) {
+                    const idiomaId = selectedIdioma.id;
+                    fetch(`get_unidades_por_idioma.php?idioma_id=${idiomaId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            data.forEach(unidade => {
+                                const option = document.createElement('option');
+                                option.value = unidade.id;
+                                option.textContent = `${unidade.nome_unidade} (Nível ${unidade.nivel})`;
+                                unidadeBuscaSelect.appendChild(option);
+                            });
+                            // Manter a unidade selecionada se ela ainda existir na nova lista
+                            const currentUnidadeId = '<?php echo $selected_unidade_id; ?>';
+                            if (currentUnidadeId && Array.from(unidadeBuscaSelect.options).some(opt => opt.value === currentUnidadeId)) {
+                                unidadeBuscaSelect.value = currentUnidadeId;
+                            }
+                        })
+                        .catch(error => console.error('Erro ao buscar unidades:', error));
+                }
+            }
+        });
+
+        // Disparar o evento change na carga da página para preencher as unidades se um idioma já estiver selecionado
+        document.addEventListener('DOMContentLoaded', function() {
+            if (idiomaBuscaSelect.value) {
+                idiomaBuscaSelect.dispatchEvent(new Event('change'));
+            }
+        });
+    </script>
 </body>
 
 </html>
