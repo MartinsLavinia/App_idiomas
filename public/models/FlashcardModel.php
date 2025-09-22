@@ -141,27 +141,28 @@ class FlashcardModel {
         return false;
     }
     
-    /**
-     * Atualiza um deck existente
-     */
-    public function atualizarDeck($id_deck, $dados, $id_usuario) {
-        $sql = "UPDATE flashcard_decks 
-                SET nome = ?, descricao = ?, idioma = ?, nivel = ?, publico = ?
-                WHERE id = ? AND id_usuario = ?";
-        
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("ssssiiii", 
-            $dados['nome'],
-            $dados['descricao'],
-            $dados['idioma'],
-            $dados['nivel'],
-            $dados['publico'] ? 1 : 0,
-            $id_deck,
-            $id_usuario
-        );
-        
-        return $stmt->execute();
-    }
+   /**
+ * Atualiza um deck existente
+ */
+public function atualizarDeck($id_deck, $dados, $id_usuario) {
+    $sql = "UPDATE flashcard_decks 
+            SET nome = ?, descricao = ?, idioma = ?, nivel = ?, publico = ?, data_atualizacao = NOW()
+            WHERE id = ? AND id_usuario = ?";
+    
+    $stmt = $this->conn->prepare($sql);
+    // CORREÇÃO: Remover um "i" extra - eram 7 parâmetros mas 8 "i"
+    $stmt->bind_param("ssssiii", 
+        $dados['nome'],
+        $dados['descricao'],
+        $dados['idioma'],
+        $dados['nivel'],
+        $dados['publico'] ? 1 : 0,
+        $id_deck,
+        $id_usuario
+    );
+    
+    return $stmt->execute();
+}
     
     /**
      * Exclui um deck e todos os seus flashcards
