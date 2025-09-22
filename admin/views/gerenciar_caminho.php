@@ -595,6 +595,9 @@ $database->closeConnection();
                 <a href="gerenciar_teorias.php" class="list-group-item">
                     <i class="fas fa-book-open"></i> Gerenciar Teorias
                 </a>
+                 <a href="gerenciar_unidades.php" class="list-group-item">
+                    <i class="fas fa-book-open"></i> Gerenciar Unidades
+                </a>
                 <a href="gerenciar_usuarios.php" class="list-group-item">
                     <i class="fas fa-users"></i> Gerenciar Usuários
                 </a>

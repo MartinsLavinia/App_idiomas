@@ -3,7 +3,7 @@ session_start();
 
 // Incluindo a conexão
 include_once __DIR__ . 
-'/../../conexao.php';
+'/../config/conexao.php';
 // Verificação de segurança
 if (!isset($_SESSION['id_admin'])) {
     header("Location: login_admin.html");

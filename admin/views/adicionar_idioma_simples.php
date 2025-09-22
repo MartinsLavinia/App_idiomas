@@ -1,6 +1,7 @@
 <?php
 session_start();
-include_once __DIR__ . '/../../conexao.php';
+include_once __DIR__ . 
+'/../config/conexao.php';
 
 // Verificação de segurança
 if (!isset($_SESSION['id_admin'])) {
@@ -13,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if (empty($nome_idioma)) {
         $_SESSION['error'] = "Nome do idioma é obrigatório.";
-        header("Location: gerenciar_caminho.php");
+        header("Location: gerenciar_idiomas.php");
         exit();
     }
     
@@ -22,14 +23,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     try {
         // Verificar se o idioma já existe
-        $sql_check = "SELECT COUNT(*) as count FROM (
-            SELECT idioma FROM caminhos_aprendizagem WHERE idioma = ?
-            UNION
-            SELECT idioma FROM quiz_nivelamento WHERE idioma = ?
-        ) as idiomas_existentes";
+        $sql_check = "SELECT COUNT(*) as count FROM idiomas WHERE nome_idioma = ?";
         
         $stmt_check = $conn->prepare($sql_check);
-        $stmt_check->bind_param("ss", $nome_idioma, $nome_idioma);
+        $stmt_check->bind_param("s", $nome_idioma);
         $stmt_check->execute();
         $result = $stmt_check->get_result();
         $count = $result->fetch_assoc()['count'];
@@ -37,20 +34,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if ($count > 0) {
             $_SESSION['error'] = "O idioma '$nome_idioma' já existe no sistema.";
-            header("Location: gerenciar_caminho.php");
+            header("Location: gerenciar_idiomas.php");
             exit();
         }
         
-        // Criar uma entrada básica na tabela quiz_nivelamento para o idioma
-        // Isso garante que o idioma apareça na lista de idiomas disponíveis
-        $sql_insert = "INSERT INTO quiz_nivelamento (idioma, pergunta, opcao_a, opcao_b, opcao_c, resposta_correta) 
-                       VALUES (?, 'Pergunta temporária - Configure o quiz', 'A', 'B', 'C', 'A')";
+        // Inserir o novo idioma na tabela 'idiomas'
+        $sql_insert = "INSERT INTO idiomas (nome_idioma) VALUES (?)";
         
         $stmt_insert = $conn->prepare($sql_insert);
         $stmt_insert->bind_param("s", $nome_idioma);
         
         if ($stmt_insert->execute()) {
-            $_SESSION['success'] = "Idioma '$nome_idioma' adicionado com sucesso! Configure o quiz de nivelamento.";
+            $_SESSION['success'] = "Idioma '$nome_idioma' adicionado com sucesso!";
         } else {
             $_SESSION['error'] = "Erro ao adicionar o idioma: " . $conn->error;
         }
@@ -64,6 +59,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $database->closeConnection();
 }
 
-header("Location: gerenciar_caminho.php");
+header("Location: gerenciar_idiomas.php");
 exit();
 ?>
