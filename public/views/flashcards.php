@@ -282,6 +282,19 @@ $database->closeConnection();
                         <option value="Japones" <?php echo $idioma_atual === 'Japones' ? 'selected' : ''; ?>>Japonês</option>
                     </select>
                 </div>
+        
+<div class="col-md-4">
+    <label for="filtroNivel" class="form-label">Nível</label>
+    <select class="form-select" id="filtroNivel" onchange="aplicarFiltros()">
+        <option value="">Todos os níveis</option>
+        <option value="A1" <?php echo $nivel_atual === 'A1' ? 'selected' : ''; ?>>A1</option>
+        <option value="A2" <?php echo $nivel_atual === 'A2' ? 'selected' : ''; ?>>A2</option>
+        <option value="B1" <?php echo $nivel_atual === 'B1' ? 'selected' : ''; ?>>B1</option>
+        <option value="B2" <?php echo $nivel_atual === 'B2' ? 'selected' : ''; ?>>B2</option>
+        <option value="C1" <?php echo $nivel_atual === 'C1' ? 'selected' : ''; ?>>C1</option>
+        <option value="C2" <?php echo $nivel_atual === 'C2' ? 'selected' : ''; ?>>C2</option>
+    </select>
+</div>
 
                 <div class="col-md-4">
                     <label for="tipoDecks" class="form-label">Tipo</label>

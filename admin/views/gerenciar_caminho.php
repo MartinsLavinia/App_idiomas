@@ -12,12 +12,18 @@ $database = new Database();
 $conn = $database->conn;
 
 // Lógica para buscar os idiomas únicos do banco de dados das tabelas caminhos_aprendizagem e quiz_nivelamento
-// Isso garante que idiomas com apenas um quiz, mas sem caminhos, também sejam exibidos
 $sql_idiomas = "(SELECT DISTINCT idioma FROM caminhos_aprendizagem) UNION (SELECT DISTINCT idioma FROM quiz_nivelamento) ORDER BY idioma";
 $stmt_idiomas = $conn->prepare($sql_idiomas);
 $stmt_idiomas->execute();
 $idiomas_db = $stmt_idiomas->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt_idiomas->close();
+
+// Buscar unidades do banco de dados
+$sql_unidades = "SELECT id, nome_unidade FROM unidades ORDER BY nome_unidade";
+$stmt_unidades = $conn->prepare($sql_unidades);
+$stmt_unidades->execute();
+$unidades_db = $stmt_unidades->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt_unidades->close();
 
 // Definição dos níveis de A1 a C2
 $niveis_db = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
@@ -117,7 +123,6 @@ $database->closeConnection();
         from {
             opacity: 0;
         }
-
         to {
             opacity: 1;
         }
@@ -237,7 +242,6 @@ $database->closeConnection();
             opacity: 0;
             transform: scale(0.9) translateY(-50px);
         }
-
         to {
             opacity: 1;
             transform: scale(1) translateY(0);
@@ -264,11 +268,8 @@ $database->closeConnection();
 
     .modal-body {
         max-height: 70vh;
-        /* altura máxima relativa à tela */
         overflow-y: auto;
-        /* ativa a barra de rolagem vertical */
         padding-right: 10px;
-        /* espaço para não colar no scrollbar */
     }
 
     .modal-body::-webkit-scrollbar {
@@ -277,7 +278,6 @@ $database->closeConnection();
 
     .modal-body::-webkit-scrollbar-thumb {
         background: #6a0dad;
-        /* roxo do seu tema */
         border-radius: 10px;
     }
 
@@ -289,7 +289,6 @@ $database->closeConnection();
         background: #f1f1f1;
         border-radius: 10px;
     }
-
 
     .btn-close {
         filter: invert(1);
@@ -334,32 +333,14 @@ $database->closeConnection();
     }
 
     @keyframes correctAnim {
-
-        0%,
-        100% {
-            transform: scale(1);
-        }
-
-        50% {
-            transform: scale(1.03);
-        }
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.03); }
     }
 
     @keyframes incorrectAnim {
-
-        0%,
-        100% {
-            transform: translateX(0);
-        }
-
-        25%,
-        75% {
-            transform: translateX(-5px);
-        }
-
-        50% {
-            transform: translateX(5px);
-        }
+        0%, 100% { transform: translateX(0); }
+        25%, 75% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
     }
 
     /* Estilos de Feedback */
@@ -377,7 +358,6 @@ $database->closeConnection();
             opacity: 0;
             transform: translateY(20px);
         }
-
         to {
             opacity: 1;
             transform: translateY(0);
@@ -420,17 +400,9 @@ $database->closeConnection();
     }
 
     @keyframes pulse {
-        0% {
-            box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4);
-        }
-
-        70% {
-            box-shadow: 0 0 0 15px rgba(255, 215, 0, 0);
-        }
-
-        100% {
-            box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
-        }
+        0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
+        70% { box-shadow: 0 0 0 15px rgba(255, 215, 0, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
     }
 
     .progress-bar-custom .progress-bar {
@@ -517,7 +489,6 @@ $database->closeConnection();
         .sidebar {
             width: 200px;
         }
-
         .main-content {
             margin-left: 200px;
         }
@@ -529,7 +500,6 @@ $database->closeConnection();
             width: 100%;
             height: auto;
         }
-
         .main-content {
             margin-left: 0;
         }
@@ -538,16 +508,19 @@ $database->closeConnection();
     /* Ajuste da logo no header */
     .navbar-brand .logo-header {
         height: 70px;
-        /* altura da logo */
         width: auto;
-        /* mantém proporção */
         display: block;
     }
 
-    /* Se quiser centralizar verticalmente em relação ao navbar */
     .navbar {
         display: flex;
         align-items: center;
+    }
+
+    /* Loading spinner */
+    .spinner-border-sm {
+        width: 1rem;
+        height: 1rem;
     }
     </style>
 </head>
@@ -560,7 +533,6 @@ $database->closeConnection();
                 <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
             </a>
 
-            <!-- Espaço flexível entre a logo e o ícone -->
             <div class="ms-auto">
                 <a href="editar_perfil.php" class="text-white settings-icon">
                     <i class="fas fa-cog fa-lg"></i>
@@ -569,9 +541,14 @@ $database->closeConnection();
         </div>
     </nav>
 
-
-
     <div class="container mt-5">
+        <?php
+        if (isset($_GET["message_type"]) && isset($_GET["message_content"])) {
+            $message_type = htmlspecialchars($_GET["message_type"]);
+            $message_content = htmlspecialchars(urldecode($_GET["message_content"]));
+            echo '<div class="alert alert-' . ($message_type == 'success' ? 'success' : 'danger') . ' mt-3">' . $message_content . '</div>';
+        }
+        ?>
         <h2 class="mb-4">Gerenciar Caminhos de Aprendizagem</h2>
 
         <div class="sidebar">
@@ -585,8 +562,7 @@ $database->closeConnection();
                 <a href="#" class="list-group-item" data-bs-toggle="modal" data-bs-target="#addCaminhoModal">
                     <i class="fas fa-plus-circle"></i> Adicionar Caminho
                 </a>
-                <a href="#" class="list-group-item" data-bs-toggle="modal"
-                    data-bs-target="#adicionarIdiomaCompletoModal">
+                <a href="#" class="list-group-item" data-bs-toggle="modal" data-bs-target="#adicionarIdiomaCompletoModal">
                     <i class="fas fa-language"></i> Adicionar Idioma com Quiz
                 </a>
                 <a href="#" class="list-group-item" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
@@ -607,15 +583,10 @@ $database->closeConnection();
                 <a href="logout.php" class="list-group-item mt-auto">
                     <i class="fas fa-sign-out-alt"></i> Sair
                 </a>
-
-
             </div>
         </div>
 
-
-
         <div class="col-md-9">
-
             <!-- Notificações -->
             <?php if (isset($_SESSION['success'])): ?>
             <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -634,9 +605,7 @@ $database->closeConnection();
             <?php endif; ?>
 
             <div class="card mb-4">
-                <div class="card-header">
-                    Pesquisar Caminhos
-                </div>
+                <div class="card-header">Pesquisar Caminhos</div>
                 <div class="card-body">
                     <form action="" method="GET">
                         <div class="row g-3 align-items-center">
@@ -665,8 +634,7 @@ $database->closeConnection();
                                 </select>
                             </div>
                             <div class="col-md-auto d-flex align-items-end">
-                                <button type="submit" class="btn btn-primary"
-                                    style="margin-top: 40px;">Pesquisar</button>
+                                <button type="submit" class="btn btn-primary" style="margin-top: 40px;">Pesquisar</button>
                             </div>
                         </div>
                     </form>
@@ -715,23 +683,25 @@ $database->closeConnection();
             </table>
         </div>
 
-        <div class="modal fade" id="addCaminhoModal" tabindex="-1" aria-labelledby="addCaminhoModalLabel"
-            aria-hidden="true">
+        <!-- Modal para Adicionar Caminho -->
+        <div class="modal fade" id="addCaminhoModal" tabindex="-1" aria-labelledby="addCaminhoModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <form action="adicionar_caminho.php" method="POST">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="addCaminhoModalLabel">Adicionar Novo Caminho</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addCaminhoModalLabel">Adicionar Novo Caminho</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="formAddCaminho">
                         <div class="modal-body">
+                            <div id="alertCaminho"></div>
                             <div class="mb-3">
                                 <label for="idioma_novo" class="form-label">Idioma</label>
                                 <select id="idioma_novo" name="idioma" class="form-select" required>
                                     <option value="">Selecione o Idioma</option>
                                     <?php foreach ($idiomas_db as $idioma): ?>
                                     <option value="<?php echo htmlspecialchars($idioma['idioma']); ?>">
-                                        <?php echo htmlspecialchars($idioma['idioma']); ?></option>
+                                        <?php echo htmlspecialchars($idioma['idioma']); ?>
+                                    </option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -741,7 +711,8 @@ $database->closeConnection();
                                     <option value="">Selecione o Nível</option>
                                     <?php foreach ($niveis_db as $nivel): ?>
                                     <option value="<?php echo htmlspecialchars($nivel); ?>">
-                                        <?php echo htmlspecialchars($nivel); ?></option>
+                                        <?php echo htmlspecialchars($nivel); ?>
+                                    </option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -749,74 +720,74 @@ $database->closeConnection();
                                 <label for="nome_caminho" class="form-label">Nome do Caminho</label>
                                 <input type="text" class="form-control" id="nome_caminho" name="nome_caminho" required>
                             </div>
+                            <div class="mb-3">
+                                <label for="unidade_id" class="form-label">Unidade</label>
+                                <select id="unidade_id" name="unidade_id" class="form-select" required>
+                                    <option value="">Selecione a Unidade</option>
+                                    <?php foreach ($unidades_db as $unidade): ?>
+                                    <option value="<?php echo htmlspecialchars($unidade['id']); ?>">
+                                        <?php echo htmlspecialchars($unidade['nome_unidade']); ?>
+                                    </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                            <button type="submit" class="btn btn-success">Adicionar</button>
+                            <button type="submit" class="btn btn-success" id="btnAddCaminho">
+                                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                Adicionar
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
 
-        <div class="modal fade" id="adicionarIdiomaCompletoModal" tabindex="-1"
-            aria-labelledby="adicionarIdiomaCompletoModalLabel" aria-hidden="true">
+        <!-- Modal para Adicionar Idioma Completo -->
+        <div class="modal fade" id="adicionarIdiomaCompletoModal" tabindex="-1" aria-labelledby="adicionarIdiomaCompletoModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-scrollable">
                 <div class="modal-content">
                     <form action="adicionar_idioma_completo.php" method="POST">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="adicionarIdiomaCompletoModalLabel">Adicionar Novo Idioma com
-                                Quiz</h5>
+                            <h5 class="modal-title" id="adicionarIdiomaCompletoModalLabel">Adicionar Novo Idioma com Quiz</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             <div class="mb-3">
                                 <label for="idioma_novo_completo" class="form-label">Nome do Idioma</label>
-                                <input type="text" class="form-control" id="idioma_novo_completo" name="idioma"
-                                    placeholder="Ex: Espanhol" required>
+                                <input type="text" class="form-control" id="idioma_novo_completo" name="idioma" placeholder="Ex: Espanhol" required>
                             </div>
 
                             <hr>
                             <h5>Perguntas do Quiz de Nivelamento (20 perguntas)</h5>
-                            <p class="text-muted">A resposta correta para cada pergunta deve ser "A", "B" ou "C".
-                            </p>
+                            <p class="text-muted">A resposta correta para cada pergunta deve ser "A", "B" ou "C".</p>
 
                             <?php for ($i = 1; $i <= 20; $i++): ?>
                             <div class="card mb-3">
-                                <div class="card-header">
-                                    Pergunta #<?php echo $i; ?>
-                                </div>
+                                <div class="card-header">Pergunta #<?php echo $i; ?></div>
                                 <div class="card-body">
                                     <div class="mb-3">
                                         <label for="pergunta_<?php echo $i; ?>" class="form-label">Pergunta</label>
-                                        <textarea class="form-control" id="pergunta_<?php echo $i; ?>"
-                                            name="pergunta_<?php echo $i; ?>" rows="2" required></textarea>
+                                        <textarea class="form-control" id="pergunta_<?php echo $i; ?>" name="pergunta_<?php echo $i; ?>" rows="2" required></textarea>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-4 mb-3">
-                                            <label for="opcao_a_<?php echo $i; ?>" class="form-label">Opção
-                                                A</label>
-                                            <input type="text" class="form-control" id="opcao_a_<?php echo $i; ?>"
-                                                name="opcao_a_<?php echo $i; ?>" required>
+                                            <label for="opcao_a_<?php echo $i; ?>" class="form-label">Opção A</label>
+                                            <input type="text" class="form-control" id="opcao_a_<?php echo $i; ?>" name="opcao_a_<?php echo $i; ?>" required>
                                         </div>
                                         <div class="col-md-4 mb-3">
-                                            <label for="opcao_b_<?php echo $i; ?>" class="form-label">Opção
-                                                B</label>
-                                            <input type="text" class="form-control" id="opcao_b_<?php echo $i; ?>"
-                                                name="opcao_b_<?php echo $i; ?>" required>
+                                            <label for="opcao_b_<?php echo $i; ?>" class="form-label">Opção B</label>
+                                            <input type="text" class="form-control" id="opcao_b_<?php echo $i; ?>" name="opcao_b_<?php echo $i; ?>" required>
                                         </div>
                                         <div class="col-md-4 mb-3">
-                                            <label for="opcao_c_<?php echo $i; ?>" class="form-label">Opção
-                                                C</label>
-                                            <input type="text" class="form-control" id="opcao_c_<?php echo $i; ?>"
-                                                name="opcao_c_<?php echo $i; ?>" required>
+                                            <label for="opcao_c_<?php echo $i; ?>" class="form-label">Opção C</label>
+                                            <input type="text" class="form-control" id="opcao_c_<?php echo $i; ?>" name="opcao_c_<?php echo $i; ?>" required>
                                         </div>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="resposta_correta_<?php echo $i; ?>" class="form-label">Resposta
-                                            Correta</label>
-                                        <select id="resposta_correta_<?php echo $i; ?>"
-                                            name="resposta_correta_<?php echo $i; ?>" class="form-select" required>
+                                        <label for="resposta_correta_<?php echo $i; ?>" class="form-label">Resposta Correta</label>
+                                        <select id="resposta_correta_<?php echo $i; ?>" name="resposta_correta_<?php echo $i; ?>" class="form-select" required>
                                             <option value="">Selecione a resposta correta</option>
                                             <option value="A">Opção A</option>
                                             <option value="B">Opção B</option>
@@ -836,8 +807,8 @@ $database->closeConnection();
             </div>
         </div>
 
-        <div class="modal fade" id="gerenciarIdiomasModal" tabindex="-1" aria-labelledby="gerenciarIdiomasModalLabel"
-            aria-hidden="true">
+        <!-- Modal para Gerenciar Idiomas -->
+        <div class="modal fade" id="gerenciarIdiomasModal" tabindex="-1" aria-labelledby="gerenciarIdiomasModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -854,23 +825,18 @@ $database->closeConnection();
                                 <form action="adicionar_idioma_simples.php" method="POST">
                                     <div class="row g-3">
                                         <div class="col-md-8">
-                                            <input type="text" class="form-control" name="nome_idioma"
-                                                placeholder="Nome do idioma (ex: Alemão)" required>
+                                            <input type="text" class="form-control" name="nome_idioma" placeholder="Nome do idioma (ex: Alemão)" required>
                                         </div>
                                         <div class="col-md-4">
                                             <button type="submit" class="btn btn-success w-100">Adicionar</button>
                                         </div>
                                     </div>
-                                    <small class="text-muted">Adiciona apenas o idioma. Você pode criar o quiz
-                                        depois.</small>
+                                    <small class="text-muted">Adiciona apenas o idioma. Você pode criar o quiz depois.</small>
                                 </form>
                             </div>
                         </div>
 
-                        <p class="text-muted">
-                            Use o botão "Adicionar Novo Idioma com Quiz" para criar um novo idioma completo com quiz
-                            de nivelamento.
-                        </p>
+                        <p class="text-muted">Use o botão "Adicionar Novo Idioma com Quiz" para criar um novo idioma completo com quiz de nivelamento.</p>
 
                         <h5>Idiomas Existentes</h5>
                         <ul class="list-group">
@@ -879,13 +845,9 @@ $database->closeConnection();
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <span><?php echo htmlspecialchars($idioma['idioma']); ?></span>
                                 <div>
-                                    <a href="gerenciador_quiz_nivelamento.php?idioma=<?php echo urlencode($idioma['idioma']); ?>"
-                                        class="btn btn-info btn-sm me-2">Gerenciar Quiz</a>
-                                    <button type="button" class="btn btn-danger btn-sm delete-btn"
-                                        data-bs-toggle="modal" data-bs-target="#confirmDeleteModal"
-                                        data-id="<?php echo urlencode($idioma['idioma']); ?>"
-                                        data-nome="<?php echo htmlspecialchars($idioma['idioma']); ?>"
-                                        data-tipo="idioma" data-action="excluir_idioma.php">
+                                    <a href="gerenciador_quiz_nivelamento.php?idioma=<?php echo urlencode($idioma['idioma']); ?>" class="btn btn-info btn-sm me-2">Gerenciar Quiz</a>
+                                    <button type="button" class="btn btn-danger btn-sm delete-btn" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal"
+                                        data-id="<?php echo urlencode($idioma['idioma']); ?>" data-nome="<?php echo htmlspecialchars($idioma['idioma']); ?>" data-tipo="idioma" data-action="excluir_idioma.php">
                                         Excluir
                                     </button>
                                 </div>
@@ -903,16 +865,15 @@ $database->closeConnection();
             </div>
         </div>
 
-        <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel"
-            aria-hidden="true">
+        <!-- Modal de Confirmação de Exclusão -->
+        <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmação de Exclusão</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body" id="confirmDeleteModalBody">
-                    </div>
+                    <div class="modal-body" id="confirmDeleteModalBody"></div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                         <form id="deleteForm" method="POST" action="">
@@ -924,16 +885,15 @@ $database->closeConnection();
             </div>
         </div>
 
-        <div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel"
-            aria-hidden="true">
+        <!-- Modal de Notificação -->
+        <div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="notificationModalLabel">Notificação</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body" id="notificationModalBody">
-                    </div>
+                    <div class="modal-body" id="notificationModalBody"></div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
                     </div>
@@ -941,6 +901,7 @@ $database->closeConnection();
             </div>
         </div>
 
+        <!-- Estatísticas -->
         <div class="row mb-4">
             <div class="col-md-3">
                 <div class="card text-center p-3">
@@ -964,11 +925,6 @@ $database->closeConnection();
             </div>
         </div>
 
-
-
-
-
-
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -976,7 +932,7 @@ $database->closeConnection();
             const confirmDeleteModal = document.getElementById('confirmDeleteModal');
             if (confirmDeleteModal) {
                 confirmDeleteModal.addEventListener('show.bs.modal', function(event) {
-                    const button = event.relatedTarget; // Botão que acionou o modal
+                    const button = event.relatedTarget;
                     const itemId = button.getAttribute('data-id');
                     const itemName = button.getAttribute('data-nome');
                     const itemType = button.getAttribute('data-tipo');
@@ -988,11 +944,9 @@ $database->closeConnection();
 
                     let message = '';
                     if (itemType === 'idioma') {
-                        message =
-                            `Tem certeza que deseja excluir o idioma '<strong>${itemName}</strong>'? Isso excluirá todos os caminhos, exercícios e quizzes associados a ele.`;
+                        message = `Tem certeza que deseja excluir o idioma '<strong>${itemName}</strong>'? Isso excluirá todos os caminhos, exercícios e quizzes associados a ele.`;
                     } else {
-                        message =
-                            `Tem certeza que deseja excluir o caminho '<strong>${itemName}</strong>'?`;
+                        message = `Tem certeza que deseja excluir o caminho '<strong>${itemName}</strong>'?`;
                     }
 
                     modalBody.innerHTML = `<p>${message}</p>`;
@@ -1020,13 +974,88 @@ $database->closeConnection();
                 }
 
                 notificationModal.show();
-
-
-                // Limpa a URL para evitar que o modal apareça novamente ao recarregar
                 window.history.replaceState({}, document.title, window.location.pathname);
+            }
+
+            // AJAX para adicionar caminho
+            const formAddCaminho = document.getElementById('formAddCaminho');
+            if (formAddCaminho) {
+                const btnAddCaminho = document.getElementById('btnAddCaminho');
+                const alertCaminho = document.getElementById('alertCaminho');
+                const spinner = btnAddCaminho.querySelector('.spinner-border');
+
+                formAddCaminho.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Mostrar loading
+                    btnAddCaminho.disabled = true;
+                    spinner.classList.remove('d-none');
+                    
+                    // Coletar dados do formulário
+                    const formData = new FormData(this);
+                    
+                    // Adicionar header para identificar como AJAX
+                    const headers = new Headers();
+                    headers.append('X-Requested-With', 'XMLHttpRequest');
+                    
+                    // Enviar via AJAX
+                    fetch('adicionar_caminho.php', {
+                        method: 'POST',
+                        headers: headers,
+                        body: formData
+                    })
+                    .then(response => {
+                        // Primeiro verificar se a resposta é JSON
+                        const contentType = response.headers.get('content-type');
+                        if (contentType && contentType.includes('application/json')) {
+                            return response.json();
+                        } else {
+                            // Se não for JSON, retornar o texto para debug
+                            return response.text().then(text => {
+                                throw new Error('Resposta não é JSON: ' + text.substring(0, 100));
+                            });
+                        }
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            // Sucesso
+                            alertCaminho.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+                            
+                            // Limpar formulário
+                            formAddCaminho.reset();
+                            
+                            // Recarregar a página após 1.5 segundos para mostrar o novo caminho
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1500);
+                        } else {
+                            // Erro
+                            alertCaminho.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro completo:', error);
+                        alertCaminho.innerHTML = `<div class="alert alert-danger">Erro ao adicionar caminho: ${error.message}</div>`;
+                    })
+                    .finally(() => {
+                        // Esconder loading
+                        btnAddCaminho.disabled = false;
+                        spinner.classList.add('d-none');
+                    });
+                });
+
+                // Limpar alerta quando o modal for fechado
+                const addCaminhoModal = document.getElementById('addCaminhoModal');
+                if (addCaminhoModal) {
+                    addCaminhoModal.addEventListener('hidden.bs.modal', function() {
+                        if (alertCaminho) {
+                            alertCaminho.innerHTML = '';
+                        }
+                        formAddCaminho.reset();
+                    });
+                }
             }
         });
         </script>
 </body>
-
 </html>
