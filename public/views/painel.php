@@ -272,13 +272,13 @@ $database->closeConnection();
                         <?php if (count($unidades) > 0): ?>
                             <?php foreach ($unidades as $unidade): ?>
                                 <div class="col-md-6 mb-3">
-                                    <div class="card unidade-card h-100" onclick="abrirAtividades(<?php echo $unidade["id"]; ?>, '<?php echo htmlspecialchars($unidade["titulo"]); ?>', <?php echo $unidade["numero_unidade"]; ?>)">
+                                    <div class="card unidade-card h-100" onclick="abrirAtividades(<?php echo $unidade["id"]; ?>, '<?php echo htmlspecialchars($unidade["nome_unidade"]); ?>', <?php echo $unidade["numero_unidade"]; ?>)">
                                         <div class="card-body">
                                             <h5 class="card-title">
                                                 <i class="fas fa-book-open me-2"></i>
                                                 Unidade <?php echo htmlspecialchars($unidade["numero_unidade"]); ?>
                                             </h5>
-                                            <h6 class="card-subtitle mb-2 text-muted"><?php echo htmlspecialchars($unidade["titulo"]); ?></h6>
+                                            <h6 class="card-subtitle mb-2 text-muted"><?php echo htmlspecialchars($unidade["nome_unidade"]); ?></h6>
                                             <p class="card-text"><?php echo htmlspecialchars($unidade["descricao"]); ?></p>
                                             <div class="progress progress-bar-custom">
                                                 <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
@@ -366,7 +366,7 @@ $database->closeConnection();
 
 
     <!-- Modal de Atividades -->
-    <div class="modal fade" id="modalAtividades" tabindex="-1" aria-hidden="true">
+   <div class="modal fade" id="modalAtividades" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg popup-modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -1101,4 +1101,3 @@ document.addEventListener('DOMContentLoaded', function() {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
