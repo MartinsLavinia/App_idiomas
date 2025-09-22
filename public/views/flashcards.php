@@ -263,10 +263,9 @@ $database->closeConnection();
                        <button class="btn btn-primary me-2" onclick="abrirModalCriarDeck()">
     <i class="fas fa-plus me-2"></i>Novo Deck
 </button>
-                        <div class="btn btn-warning" onclick="estudarFlashcards()">
-                            <a  href="flashcard_estudo.php" >
-                            <i class="fas fa-play me-2"></i>Estudar Agora</a>
-                        </div>
+                        <button class="btn btn-warning" onclick="estudarFlashcards()">
+                            <i class="fas fa-play me-2"></i>Estudar Agora
+                        </button>
                     </div>
                 </div>
             </div>
