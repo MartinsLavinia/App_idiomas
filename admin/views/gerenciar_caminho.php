@@ -19,6 +19,13 @@ $stmt_idiomas->execute();
 $idiomas_db = $stmt_idiomas->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt_idiomas->close();
 
+// Buscar unidades do banco de dados
+$sql_unidades = "SELECT id, nome_unidade FROM unidades ORDER BY nome_unidade";
+$stmt_unidades = $conn->prepare($sql_unidades);
+$stmt_unidades->execute();
+$unidades_db = $stmt_unidades->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt_unidades->close();
+
 // Definição dos níveis de A1 a C2
 $niveis_db = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
@@ -572,6 +579,14 @@ $database->closeConnection();
 
 
     <div class="container mt-5">
+        <?php
+        if (isset($_GET["message_type"]) && isset($_GET["message_content"])) {
+            $message_type = htmlspecialchars($_GET["message_type"]);
+            $message_content = htmlspecialchars(urldecode($_GET["message_content"]));
+            echo 
+'<div class="alert alert-' . ($message_type == 'success' ? 'success' : 'danger') . ' mt-3">' . $message_content . '</div>';
+        }
+        ?>
         <h2 class="mb-4">Gerenciar Caminhos de Aprendizagem</h2>
 
         <div class="sidebar">
@@ -748,6 +763,18 @@ $database->closeConnection();
                             <div class="mb-3">
                                 <label for="nome_caminho" class="form-label">Nome do Caminho</label>
                                 <input type="text" class="form-control" id="nome_caminho" name="nome_caminho" required>
+                            </div>
+                            <!-- NOVO CAMPO PARA SELECIONAR UNIDADE -->
+                            <div class="mb-3">
+                                <label for="unidade_id" class="form-label">Unidade</label>
+                                <select id="unidade_id" name="unidade_id" class="form-select" required>
+                                    <option value="">Selecione a Unidade</option>
+                                    <?php foreach ($unidades_db as $unidade): ?>
+                                    <option value="<?php echo htmlspecialchars($unidade['id']); ?>">
+                                        <?php echo htmlspecialchars($unidade['nome_unidade']); ?>
+                                    </option>
+                                    <?php endforeach; ?>
+                                </select>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -967,8 +994,6 @@ $database->closeConnection();
 
 
 
-
-
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -1030,3 +1055,11 @@ $database->closeConnection();
 </body>
 
 </html>
+
+<?php
+if (isset($_GET["message_type"]) && isset($_GET["message_content"])) {
+    $message_type = htmlspecialchars($_GET["message_type"]);
+    $message_content = htmlspecialchars(urldecode($_GET["message_content"]));
+    echo '<div class="alert alert-' . ($message_type == 'success' ? 'success' : 'danger') . ' mt-3">' . $message_content . '</div>';
+}
+?>
