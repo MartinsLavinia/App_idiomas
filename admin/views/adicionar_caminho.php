@@ -3,7 +3,7 @@ session_start();
 
 // Incluindo a conexão
 include_once __DIR__ . 
-'/../config/conexao.php';
+'/config/conexao.php';
 // Verificação de segurança
 if (!isset($_SESSION['id_admin'])) {
     header("Location: login_admin.html");
@@ -14,7 +14,7 @@ $database = new Database();
 $conn = $database->conn;
 
 $unidades = [];
-$sql_unidades = "SELECT u.id, u.nome_unidade, i.nome_idioma FROM unidades u JOIN idiomas i ON u.id_idioma = i.id ORDER BY i.nome_idioma, u.nome_unidade";
+$sql_unidades = "SELECT u.id, u.nome_unidade, i.nome_idioma, u.nivel FROM unidades u JOIN idiomas i ON u.id_idioma = i.id ORDER BY i.nome_idioma, u.nivel, u.nome_unidade";
 $result_unidades = $conn->query($sql_unidades);
 if ($result_unidades->num_rows > 0) {
     while ($row = $result_unidades->fetch_assoc()) {
@@ -39,7 +39,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt_get_idioma->bind_param("i", $id_unidade);
     $stmt_get_idioma->execute();
     $result_get_idioma = $stmt_get_idioma->get_result();
-    $idioma_unidade = $result_get_idioma->fetch_assoc()['nome_idioma'];
+    
+    if ($result_get_idioma->num_rows > 0) {
+        $idioma_unidade = $result_get_idioma->fetch_assoc()['nome_idioma'];
+    } else {
+        $_SESSION['error'] = "Erro: Unidade não encontrada.";
+        header("Location: gerenciar_caminho.php");
+        exit();
+    }
     $stmt_get_idioma->close();
 
     // Prepara a inserção
@@ -78,7 +85,7 @@ $niveis_db = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Adicionar Caminho</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div class="container">
@@ -94,7 +101,10 @@ $niveis_db = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
             <select id="id_unidade" name="id_unidade" required>
                 <option value="">Selecione uma unidade</option>
                 <?php foreach ($unidades as $unidade): ?>
-                    <option value="<?= $unidade['id']; ?>"><?= $unidade['nome_unidade']; ?> (<?= $unidade['nome_idioma']; ?>)</option>
+                    <option value="<?= $unidade['id']; ?>">
+                        <?= htmlspecialchars($unidade['nome_unidade']); ?> 
+                        (<?= htmlspecialchars($unidade['nome_idioma']); ?> - <?= htmlspecialchars($unidade['nivel'] ?? 'Sem nível'); ?>)
+                    </option>
                 <?php endforeach; ?>
             </select>
 

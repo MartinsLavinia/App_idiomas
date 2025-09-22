@@ -24,11 +24,12 @@ DROP TABLE IF EXISTS `unidades`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `unidades` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `idioma` varchar(20) NOT NULL,
+  `idioma` varchar(20) DEFAULT NULL,
   `nivel` varchar(10) NOT NULL,
   `numero_unidade` int NOT NULL,
-  `titulo` varchar(255) NOT NULL,
+  `nome_unidade` varchar(255) NOT NULL,
   `descricao` text NOT NULL,
+  `id_idioma` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -39,7 +40,7 @@ CREATE TABLE `unidades` (
 
 LOCK TABLES `unidades` WRITE;
 /*!40000 ALTER TABLE `unidades` DISABLE KEYS */;
-INSERT INTO `unidades` VALUES (1,'Ingles','A1',1,'Cumprimentos e Apresentações','Aprenda a se apresentar e cumprimentar as pessoas em inglês.'),(2,'Ingles','A1',2,'O Verbo To Be','Domine o verbo \"to be\" e sua aplicação em frases simples.'),(3,'Ingles','A2',1,'Vocabulário de Viagem','Descubra as palavras essenciais para viajar e pedir informações.'),(4,'Ingles','A2',2,'Rotina Diária','Fale sobre sua rotina e horários usando o presente simples.'),(5,'Ingles','B1',1,'Passado Simples','Conte histórias e descreva eventos passados em inglês.'),(6,'Ingles','B1',2,'Verbos Irregulares','Estude os principais verbos irregulares e suas formas.'),(7,'Japones','A1',1,'Hiragana e Cumprimentos','Aprenda o alfabeto Hiragana e as saudações básicas.'),(8,'Japones','A1',2,'Introdução ao Katakana','Conheça o Katakana para ler palavras estrangeiras.'),(9,'Japones','A2',1,'Kanji Básico (Sol, Lua)','Introdução aos primeiros Kanjis (日, 月) e sua leitura.'),(10,'Japones','A2',2,'Comidas e Restaurantes','Aprenda a pedir pratos e falar sobre comida em japonês.');
+INSERT INTO `unidades` VALUES (1,'Ingles','A1',1,'Cumprimentos e Apresentações','Aprenda a se apresentar e cumprimentar as pessoas em inglês.',1),(2,'Ingles','A1',2,'O Verbo To Be','Domine o verbo \"to be\" e sua aplicação em frases simples.',1),(3,'Ingles','A2',1,'Vocabulário de Viagem','Descubra as palavras essenciais para viajar e pedir informações.',1),(4,'Ingles','A2',2,'Rotina Diária','Fale sobre sua rotina e horários usando o presente simples.',1),(5,'Ingles','B1',1,'Passado Simples','Conte histórias e descreva eventos passados em inglês.',1),(6,'Ingles','B1',2,'Verbos Irregulares','Estude os principais verbos irregulares e suas formas.',1),(7,'Japones','A1',1,'Hiragana e Cumprimentos','Aprenda o alfabeto Hiragana e as saudações básicas.',1),(8,'Japones','A1',2,'Introdução ao Katakana','Conheça o Katakana para ler palavras estrangeiras.',1),(9,'Japones','A2',1,'Kanji Básico (Sol, Lua)','Introdução aos primeiros Kanjis (日, 月) e sua leitura.',1),(10,'Japones','A2',2,'Comidas e Restaurantes','Aprenda a pedir pratos e falar sobre comida em japonês.',1);
 /*!40000 ALTER TABLE `unidades` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -52,4 +53,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-09-08 10:01:39
+-- Dump completed on 2025-09-22 10:53:05

@@ -1,6 +1,6 @@
 <?php
 session_start();
-include_once __DIR__ . '/config/conexao.php';
+include_once __DIR__ . '/../../conexao.php';
 
 if (!isset($_SESSION['id_admin'])) {
     header("Location: login_admin.html");
@@ -32,56 +32,76 @@ $database->closeConnection();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciar Unidades</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-    <div class="container">
-        <h1>Gerenciar Unidades</h1>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2">📚 Gerenciar Unidades</h1>
+            <a href="gerenciar_caminho.php" class="btn btn-secondary">← Voltar</a>
+        </div>
+
         <?php if (isset($_SESSION['error'])): ?>
-            <p class="error-message"><?= $_SESSION['error']; unset($_SESSION['error']); ?></p>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <?= $_SESSION['error']; unset($_SESSION['error']); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
         <?php endif; ?>
         <?php if (isset($_SESSION['success'])): ?>
-            <p class="success-message"><?= $_SESSION['success']; unset($_SESSION['success']); ?></p>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <?= $_SESSION['success']; unset($_SESSION['success']); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
         <?php endif; ?>
 
-        <p><a href="adicionar_unidade.php" class="btn">Adicionar Nova Unidade</a></p>
+        <div class="mb-4">
+            <a href="adicionar_unidade.php" class="btn btn-primary">➕ Adicionar Nova Unidade</a>
+        </div>
 
-        <h2>Unidades Existentes</h2>
-        <?php if (count($unidades) > 0): ?>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nome da Unidade</th>
-                        <th>Idioma</th>
-                        <th>Nível</th>
-                        <th>Número</th>
-                        <th>Descrição</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($unidades as $unidade): ?>
-                        <tr>
-                            <td><?= $unidade['id']; ?></td>
-                            <td><?= htmlspecialchars($unidade['nome_unidade']); ?></td>
-                            <td><?= htmlspecialchars($unidade['nome_idioma']); ?></td>
-                            <td><?= htmlspecialchars($unidade['nivel'] ?? '-'); ?></td>
-                            <td><?= htmlspecialchars($unidade['numero_unidade'] ?? '-'); ?></td>
-                            <td><?= htmlspecialchars(substr($unidade['descricao'], 0, 50)) . (strlen($unidade['descricao']) > 50 ? '...' : ''); ?></td>
-                            <td>
-                                <a href="editar_unidade.php?id=<?= $unidade['id']; ?>">Editar</a> |
-                                <a href="eliminar_unidade.php?id=<?= $unidade['id']; ?>" onclick="return confirm('Tem certeza que deseja eliminar esta unidade?');">Eliminar</a>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php else: ?>
-            <p>Nenhuma unidade cadastrada ainda.</p>
-        <?php endif; ?>
-
-        <p><a href="admin_dashboard.php">Voltar para o Painel Administrativo</a></p>
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Unidades Existentes</h5>
+            </div>
+            <div class="card-body">
+                <?php if (count($unidades) > 0): ?>
+                    <div class="table-responsive">
+                        <table class="table table-striped align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nome da Unidade</th>
+                                    <th>Idioma</th>
+                                    <th>Nível</th>
+                                    <th>Número</th>
+                                    <th>Descrição</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($unidades as $unidade): ?>
+                                    <tr>
+                                        <td><?= $unidade['id']; ?></td>
+                                        <td><?= htmlspecialchars($unidade['nome_unidade']); ?></td>
+                                        <td><?= htmlspecialchars($unidade['nome_idioma']); ?></td>
+                                        <td><?= htmlspecialchars($unidade['nivel'] ?? '-'); ?></td>
+                                        <td><?= htmlspecialchars($unidade['numero_unidade'] ?? '-'); ?></td>
+                                        <td><?= htmlspecialchars(substr($unidade['descricao'], 0, 50)) . (strlen($unidade['descricao']) > 50 ? '...' : ''); ?></td>
+                                        <td>
+                                            <a href="editar_unidade.php?id=<?= $unidade['id']; ?>" class="btn btn-sm btn-warning">✏️ Editar</a>
+                                            <a href="eliminar_unidade.php?id=<?= $unidade['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja eliminar esta unidade?');">🗑️ Eliminar</a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php else: ?>
+                    <p class="text-muted">Nenhuma unidade cadastrada ainda.</p>
+                <?php endif; ?>
+            </div>
+        </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

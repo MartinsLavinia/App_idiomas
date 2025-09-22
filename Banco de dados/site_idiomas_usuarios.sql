@@ -30,6 +30,8 @@ CREATE TABLE `usuarios` (
   `data_registro` datetime DEFAULT CURRENT_TIMESTAMP,
   `ultimo_login` datetime DEFAULT NULL,
   `ativo` tinyint(1) DEFAULT '1',
+  `reset_token` varchar(64) DEFAULT NULL,
+  `reset_expiracao` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -41,7 +43,7 @@ CREATE TABLE `usuarios` (
 
 LOCK TABLES `usuarios` WRITE;
 /*!40000 ALTER TABLE `usuarios` DISABLE KEYS */;
-INSERT INTO `usuarios` VALUES (1,'Amanda Mesquita','mandafarias553@gmail.com','$2y$10$aQewWxvDeBnK.OQvxZ3yIuP0sBHN4H9qBRPaHfVLl4Jkj2SsQA3Oy','2025-09-01 15:40:17',NULL,1),(2,'Nicolas','nicolas@gmail.com','$2y$10$7Vpd4b7OIelL3/0uLrBMzu7rt/dI/y6fIGz6PX2FS9ozwl7LzvOxy','2025-09-01 15:40:17',NULL,1),(4,'Lavínia','lavinia@gmail.com','$2y$10$PKtgrcg6EQCaRhXNRYsE0OjmJ48tHGcDRrofBXXkQYofeXc56Yi6.','2025-09-01 15:40:17',NULL,1),(5,'Sofia Luiza','sofia@gmail.com','$2y$10$aT4j4C/3do7Vx.WZPEF7PurDfWy182M6OrrCKb.jOPr8nrB9z63ta','2025-09-01 15:40:17',NULL,1),(7,'Isabella','isa@gmail.com','$2y$10$t/bldGnWn3piI5bzkwUdGeqMOUlbin8TBnosrmbMg8hiruxTNvcwq','2025-09-01 15:40:17',NULL,1);
+INSERT INTO `usuarios` VALUES (1,'Amanda Mesquita','mandafarias553@gmail.com','$2y$10$aQewWxvDeBnK.OQvxZ3yIuP0sBHN4H9qBRPaHfVLl4Jkj2SsQA3Oy','2025-09-01 15:40:17',NULL,1,NULL,NULL),(2,'Nicolas','nicolas@gmail.com','$2y$10$7Vpd4b7OIelL3/0uLrBMzu7rt/dI/y6fIGz6PX2FS9ozwl7LzvOxy','2025-09-01 15:40:17',NULL,1,NULL,NULL),(4,'Lavínia','lavinia@gmail.com','$2y$10$PKtgrcg6EQCaRhXNRYsE0OjmJ48tHGcDRrofBXXkQYofeXc56Yi6.','2025-09-01 15:40:17',NULL,1,NULL,NULL),(5,'Sofia Luiza','sofia@gmail.com','$2y$10$aT4j4C/3do7Vx.WZPEF7PurDfWy182M6OrrCKb.jOPr8nrB9z63ta','2025-09-01 15:40:17',NULL,1,'17bfbb8e706da5a941fae4a74dcbd4020f3ccf6eb08884821bd804da568436f8','2025-09-08 19:18:08'),(7,'Isabella','isa@gmail.com','$2y$10$t/bldGnWn3piI5bzkwUdGeqMOUlbin8TBnosrmbMg8hiruxTNvcwq','2025-09-01 15:40:17',NULL,1,NULL,NULL);
 /*!40000 ALTER TABLE `usuarios` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -54,4 +56,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-09-08 10:01:39
+-- Dump completed on 2025-09-22 10:53:04

@@ -27,7 +27,10 @@ CREATE TABLE `caminhos_aprendizagem` (
   `idioma` varchar(50) NOT NULL,
   `nome_caminho` varchar(100) NOT NULL,
   `nivel` varchar(2) NOT NULL,
-  PRIMARY KEY (`id`)
+  `id_unidade` int NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_caminhos_unidade` (`id_unidade`),
+  CONSTRAINT `fk_caminhos_unidade` FOREIGN KEY (`id_unidade`) REFERENCES `unidades` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -37,7 +40,6 @@ CREATE TABLE `caminhos_aprendizagem` (
 
 LOCK TABLES `caminhos_aprendizagem` WRITE;
 /*!40000 ALTER TABLE `caminhos_aprendizagem` DISABLE KEYS */;
-INSERT INTO `caminhos_aprendizagem` VALUES (1,'Ingles','Comida','A1'),(2,'Ingles','Saudações e Apresentações','A1'),(3,'Ingles','Rotina Diária','A1');
 /*!40000 ALTER TABLE `caminhos_aprendizagem` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -50,4 +52,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-09-08 10:01:39
+-- Dump completed on 2025-09-22 10:53:05
