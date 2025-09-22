@@ -10,7 +10,35 @@ if (!isset($_SESSION['id_admin'])) {
 $database = new Database();
 $conn = $database->conn;
 
-// Buscar unidades existentes no banco
+// Se o formulário foi enviado
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $titulo = trim($_POST['titulo'] ?? '');
+    $descricao = trim($_POST['descricao'] ?? '');
+    $nivel = trim($_POST['nivel'] ?? '');
+    $idioma = trim($_POST['idioma'] ?? '');
+    $unidade_id = trim($_POST['unidade_id'] ?? '');
+
+    if ($titulo === '' || $descricao === '' || $nivel === '' || $idioma === '' || $unidade_id === '') {
+        $_SESSION['error'] = "⚠️ Todos os campos são obrigatórios!";
+    } else {
+        // Inserir no banco
+        $sql_insert = "INSERT INTO caminhos_aprendizagem (titulo, descricao, nivel, idioma, id_unidade) 
+                       VALUES (?, ?, ?, ?, ?)";
+        $stmt = $conn->prepare($sql_insert);
+        $stmt->bind_param("ssssi", $titulo, $descricao, $nivel, $idioma, $unidade_id);
+
+        if ($stmt->execute()) {
+            $_SESSION['success'] = "✅ Caminho adicionado com sucesso!";
+        } else {
+            $_SESSION['error'] = "❌ Erro ao adicionar caminho: " . $stmt->error;
+        }
+        $stmt->close();
+    }
+    header("Location: adicionar_caminho.php");
+    exit();
+}
+
+// Buscar unidades existentes no banco para exibir no formulário
 $sql_unidades = "SELECT u.id, u.nome_unidade, u.nivel, u.numero_unidade, i.nome_idioma
                  FROM unidades u
                  JOIN idiomas i ON u.id_idioma = i.id
@@ -22,36 +50,6 @@ if ($result_unidades && $result_unidades->num_rows > 0) {
     while ($row = $result_unidades->fetch_assoc()) {
         $unidades[] = $row;
     }
-}
-
-// Se o formulário foi enviado
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $titulo = trim($_POST['titulo'] ?? '');
-    $descricao = trim($_POST['descricao'] ?? '');
-    $nivel = trim($_POST['nivel'] ?? '');
-    $idioma = trim($_POST['idioma'] ?? '');
-    $unidade_id = trim($_POST['unidade_id'] ?? '');
-
-    if ($titulo === '' || $descricao === '' || $nivel === '' || $idioma === '' || $unidade_id === '') {
-        $_SESSION['error'] = "⚠️ Todos os campos são obrigatórios!";
-        header("Location: adicionar_caminho.php");
-        exit();
-    }
-
-    // Inserir no banco
-    $sql_insert = "INSERT INTO caminhos_aprendizagem (titulo, descricao, nivel, idioma, id_unidade) 
-                   VALUES (?, ?, ?, ?, ?)";
-    $stmt = $conn->prepare($sql_insert);
-    $stmt->bind_param("ssssi", $titulo, $descricao, $nivel, $idioma, $unidade_id);
-
-    if ($stmt->execute()) {
-        $_SESSION['success'] = "✅ Caminho adicionado com sucesso!";
-    } else {
-        $_SESSION['error'] = "❌ Erro ao adicionar caminho: " . $stmt->error;
-    }
-    $stmt->close();
-    header("Location: adicionar_caminho.php");
-    exit();
 }
 
 $database->closeConnection();
