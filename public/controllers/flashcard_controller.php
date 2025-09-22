@@ -5,6 +5,10 @@
 
 session_start();
 
+// DEBUG TEMPORÁRIO - Adicione no início do switch
+error_log("Action recebida: " . $action);
+error_log("Método: " . $_SERVER['REQUEST_METHOD']);
+error_log("Dados POST: " . print_r($_POST, true));
 // Inclui as dependências necessárias
 include_once __DIR__ . '/../../conexao.php';
 include_once __DIR__ . '/FlashcardModel.php';
