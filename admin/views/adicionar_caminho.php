@@ -1,48 +1,140 @@
 <?php
+// Configuração para evitar exibição de erros na tela
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+
 session_start();
 include_once __DIR__ . '/../../conexao.php';
 
+// Verificar se é uma requisição AJAX
+$isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
+
+// Para requisições AJAX, definir header JSON imediatamente
+if ($isAjax) {
+    header('Content-Type: application/json; charset=utf-8');
+}
+
 if (!isset($_SESSION['id_admin'])) {
-    header("Location: login_admin.html");
-    exit();
+    if ($isAjax) {
+        echo json_encode(['success' => false, 'message' => 'Não autorizado. Faça login novamente.']);
+        exit();
+    } else {
+        header("Location: login_admin.html");
+        exit();
+    }
 }
 
 $database = new Database();
 $conn = $database->conn;
 
-// Se o formulário foi enviado
+// Se o formulário foi enviado via POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $titulo = trim($_POST['titulo'] ?? '');
-    $descricao = trim($_POST['descricao'] ?? '');
-    $nivel = trim($_POST['nivel'] ?? '');
+    // Campos do modal: idioma, nivel, nome_caminho, unidade_id
     $idioma = trim($_POST['idioma'] ?? '');
-    $unidade_id = trim($_POST['unidade_id'] ?? '');
+    $nivel = trim($_POST['nivel'] ?? '');
+    $nome_caminho = trim($_POST['nome_caminho'] ?? '');
+    $unidade_id = intval($_POST['unidade_id'] ?? 0);
 
-    if ($titulo === '' || $descricao === '' || $nivel === '' || $idioma === '' || $unidade_id === '') {
-        $_SESSION['error'] = "⚠️ Todos os campos são obrigatórios!";
-    } else {
+    // Validação dos campos
+    if (empty($idioma) || empty($nivel) || empty($nome_caminho) || $unidade_id <= 0) {
+        $response = ['success' => false, 'message' => "⚠️ Todos os campos são obrigatórios!"];
+        
+        if ($isAjax) {
+            echo json_encode($response);
+            exit();
+        } else {
+            $_SESSION['error'] = $response['message'];
+            header("Location: adicionar_caminho.php");
+            exit();
+        }
+    }
+
+    try {
+        // Verificar se a unidade existe
+        $sql_check_unidade = "SELECT id FROM unidades WHERE id = ?";
+        $stmt_check_unidade = $conn->prepare($sql_check_unidade);
+        $stmt_check_unidade->bind_param("i", $unidade_id);
+        $stmt_check_unidade->execute();
+        $result_check_unidade = $stmt_check_unidade->get_result();
+        
+        if ($result_check_unidade->num_rows === 0) {
+            throw new Exception("Unidade selecionada não existe!");
+        }
+        $stmt_check_unidade->close();
+
+        // Verificar se já existe um caminho com o mesmo nome para o mesmo idioma e nível
+        $sql_check = "SELECT id FROM caminhos_aprendizagem WHERE idioma = ? AND nivel = ? AND nome_caminho = ?";
+        $stmt_check = $conn->prepare($sql_check);
+        $stmt_check->bind_param("sss", $idioma, $nivel, $nome_caminho);
+        $stmt_check->execute();
+        $result_check = $stmt_check->get_result();
+        
+        if ($result_check->num_rows > 0) {
+            $response = ['success' => false, 'message' => "❌ Já existe um caminho com este nome para o idioma e nível selecionados!"];
+            
+            if ($isAjax) {
+                echo json_encode($response);
+                exit();
+            } else {
+                $_SESSION['error'] = $response['message'];
+                header("Location: adicionar_caminho.php");
+                exit();
+            }
+        }
+        $stmt_check->close();
+
         // Inserir no banco
-        $sql_insert = "INSERT INTO caminhos_aprendizagem (titulo, descricao, nivel, idioma, id_unidade) 
-                       VALUES (?, ?, ?, ?, ?)";
+        $sql_insert = "INSERT INTO caminhos_aprendizagem (idioma, nivel, nome_caminho, id_unidade) 
+                       VALUES (?, ?, ?, ?)";
         $stmt = $conn->prepare($sql_insert);
-        $stmt->bind_param("ssssi", $titulo, $descricao, $nivel, $idioma, $unidade_id);
+        
+        if (!$stmt) {
+            throw new Exception("Erro ao preparar a query: " . $conn->error);
+        }
+        
+        $stmt->bind_param("sssi", $idioma, $nivel, $nome_caminho, $unidade_id);
 
         if ($stmt->execute()) {
-            $_SESSION['success'] = "✅ Caminho adicionado com sucesso!";
+            $response = ['success' => true, 'message' => "✅ Caminho '$nome_caminho' adicionado com sucesso!"];
+            
+            if ($isAjax) {
+                echo json_encode($response);
+                exit();
+            } else {
+                $_SESSION['success'] = $response['message'];
+            }
         } else {
-            $_SESSION['error'] = "❌ Erro ao adicionar caminho: " . $stmt->error;
+            throw new Exception("Erro ao executar a query: " . $stmt->error);
         }
         $stmt->close();
+        
+    } catch (Exception $e) {
+        $response = ['success' => false, 'message' => "❌ Erro ao adicionar caminho: " . $e->getMessage()];
+        
+        if ($isAjax) {
+            echo json_encode($response);
+            exit();
+        } else {
+            $_SESSION['error'] = $response['message'];
+        }
     }
-    header("Location: adicionar_caminho.php");
+
+    // Redirecionamento para requisições não-AJAX
+    if (!$isAjax) {
+        header("Location: adicionar_caminho.php");
+        exit();
+    }
+}
+
+// Se chegou até aqui em uma requisição AJAX POST, algo deu errado
+if ($isAjax && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    echo json_encode(['success' => false, 'message' => 'Erro: Nenhum dado processado']);
     exit();
 }
 
+// Código abaixo só é executado para requisições não-AJAX (acesso direto à página)
 // Buscar unidades existentes no banco para exibir no formulário
-$sql_unidades = "SELECT u.id, u.nome_unidade, u.nivel, u.numero_unidade, i.nome_idioma
-                 FROM unidades u
-                 JOIN idiomas i ON u.id_idioma = i.id
-                 ORDER BY i.nome_idioma, u.nivel, u.numero_unidade, u.nome_unidade";
+$sql_unidades = "SELECT id, nome_unidade FROM unidades ORDER BY nome_unidade";
 $result_unidades = $conn->query($sql_unidades);
 
 $unidades = [];
@@ -52,9 +144,24 @@ if ($result_unidades && $result_unidades->num_rows > 0) {
     }
 }
 
-$database->closeConnection();
-?>
+// Buscar idiomas existentes
+$sql_idiomas = "(SELECT DISTINCT idioma FROM caminhos_aprendizagem) UNION (SELECT DISTINCT idioma FROM quiz_nivelamento) ORDER BY idioma";
+$result_idiomas = $conn->query($sql_idiomas);
 
+$idiomas = [];
+if ($result_idiomas && $result_idiomas->num_rows > 0) {
+    while ($row = $result_idiomas->fetch_assoc()) {
+        $idiomas[] = $row['idioma'];
+    }
+}
+
+$database->closeConnection();
+
+// Se for AJAX, não exibe o HTML
+if ($isAjax) {
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -83,18 +190,23 @@ $database->closeConnection();
             </div>
         <?php endif; ?>
 
-        <!-- Formulário -->
+        <!-- Formulário para acesso direto (não-AJAX) -->
         <div class="card shadow">
             <div class="card-body">
                 <form method="post" action="adicionar_caminho.php">
                     <div class="mb-3">
-                        <label for="titulo" class="form-label">Título do Caminho</label>
-                        <input type="text" class="form-control" id="titulo" name="titulo" required>
+                        <label for="nome_caminho" class="form-label">Nome do Caminho</label>
+                        <input type="text" class="form-control" id="nome_caminho" name="nome_caminho" required>
                     </div>
 
                     <div class="mb-3">
-                        <label for="descricao" class="form-label">Descrição</label>
-                        <textarea class="form-control" id="descricao" name="descricao" rows="3" required></textarea>
+                        <label for="idioma" class="form-label">Idioma</label>
+                        <select class="form-select" id="idioma" name="idioma" required>
+                            <option value="">-- Selecione o idioma --</option>
+                            <?php foreach ($idiomas as $idioma): ?>
+                                <option value="<?= htmlspecialchars($idioma); ?>"><?= htmlspecialchars($idioma); ?></option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
 
                     <div class="mb-3">
@@ -111,17 +223,12 @@ $database->closeConnection();
                     </div>
 
                     <div class="mb-3">
-                        <label for="idioma" class="form-label">Idioma</label>
-                        <input type="text" class="form-control" id="idioma" name="idioma" required>
-                    </div>
-
-                    <div class="mb-3">
                         <label for="unidade_id" class="form-label">Unidade</label>
                         <select class="form-select" id="unidade_id" name="unidade_id" required>
                             <option value="">-- Selecione a unidade --</option>
                             <?php foreach ($unidades as $u): ?>
                                 <option value="<?= $u['id']; ?>">
-                                    <?= htmlspecialchars($u['nome_idioma'] . " - Nível " . $u['nivel'] . " - Unidade " . $u['numero_unidade'] . " - " . $u['nome_unidade']); ?>
+                                    <?= htmlspecialchars($u['nome_unidade']); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
