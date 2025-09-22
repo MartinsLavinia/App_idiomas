@@ -629,7 +629,7 @@ $database->closeConnection();
 
 
 
-        <div class="col-md-9">
+         <div class="col-md-9" style="width: 95%;">
 
             <!-- Notificações -->
             <?php if (isset($_SESSION['success'])): ?>

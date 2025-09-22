@@ -635,7 +635,7 @@ $database->closeConnection();
                             <i class="fas fa-user-graduate"></i>
                         </div>
                         <div class="profile-info">
-                            <h4><?= htmlspecialchars($admin['nome_usuario'] ?? 'Usuário') ?></h4>
+                           <h4><?= htmlspecialchars($_SESSION['nome_admin'] ?? $admin['nome_usuario'] ?? 'Usuário') ?></h4>
                             <span class="profile-role">
                                 <i class="fas fa-crown me-1"></i>Administrador
                             </span>

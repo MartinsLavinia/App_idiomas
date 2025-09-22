@@ -135,174 +135,621 @@ $database->closeConnection();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Estatísticas de Usuários - Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
+    /* Paleta de Cores */
+    :root {
+        --roxo-principal: #6a0dad;
+        --roxo-escuro: #4c087c;
+        --amarelo-detalhe: #ffd700;
+        --branco: #ffffff;
+        --preto-texto: #212529;
+        --cinza-claro: #f8f9fa;
+        --cinza-medio: #dee2e6;
+    }
+
+    /* Estilos Gerais do Corpo */
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: var(--cinza-claro);
+        color: var(--preto-texto);
+        animation: fadeIn 1s ease-in-out;
+        margin: 0;
+        padding: 0;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
         }
-        .stat-card h3 {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 5px;
+        to {
+            opacity: 1;
         }
-        .stat-card p {
-            margin-bottom: 0;
-            opacity: 0.9;
+    }
+
+    /* Barra de Navegação */
+    .navbar {
+        background: var(--roxo-principal) !important;
+        border-bottom: 3px solid var(--amarelo-detalhe);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar-brand {
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    .btn-outline-light {
+        color: var(--amarelo-detalhe);
+        border-color: var(--amarelo-detalhe);
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-light:hover {
+        background-color: var(--amarelo-detalhe);
+        color: var(--preto-texto);
+    }
+
+    /* Estilos de Cartões (Cards) - MODIFICADO */
+    .card {
+        background: rgba(255, 255, 255, 0.95) !important;
+        border: 2px solid rgba(106, 13, 173, 0.1);
+        border-radius: 1rem;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        animation: cardEntrance 0.6s ease-out;
+    }
+
+    @keyframes cardEntrance {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 15px 35px rgba(106, 13, 173, 0.2);
+        border-color: rgba(106, 13, 173, 0.3);
+    }
+
+    .card-header {
+        background-color: var(--roxo-principal);
+        color: var(--branco);
+        border-radius: 1rem 1rem 0 0 !important;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .card-header h2 {
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+
+    .card-header h5 {
+        color: var(--branco) !important;
+    }
+
+    /* Cartões de Estatísticas - MODIFICADO */
+    .stats-card {
+        background: rgba(255, 255, 255, 0.95) !important;
+        color: var(--preto-texto);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        border: 2px solid rgba(106, 13, 173, 0.1);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        animation: statsCardAnimation 0.8s ease-out;
+        position: relative;
+        overflow: hidden;
+    }
+
+    @keyframes statsCardAnimation {
+        from {
+            opacity: 0;
+            transform: translateY(30px) rotateX(-10deg);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) rotateX(0);
+        }
+    }
+
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(106, 13, 173, 0.1), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .stats-card:hover::before {
+        left: 100%;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-8px) scale(1.03);
+        box-shadow: 0 15px 30px rgba(106, 13, 173, 0.25);
+        border-color: rgba(106, 13, 173, 0.3);
+    }
+
+    .stats-card h3 {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: var(--roxo-principal);
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .stats-card p {
+        margin-bottom: 0;
+        opacity: 0.9;
+        font-size: 1.1rem;
+        color: var(--preto-texto);
+    }
+
+    /* Containers para gráficos e tabelas */
+    .chart-container {
+        position: relative;
+        height: 400px;
+        margin-bottom: 30px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        padding: 20px;
+        border: 2px solid rgba(106, 13, 173, 0.1);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+
+    .chart-container:hover {
+        box-shadow: 0 10px 25px rgba(106, 13, 173, 0.15);
+        border-color: rgba(106, 13, 173, 0.3);
+    }
+
+    .table-container {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+        transition: all 0.3s ease;
+        border: 2px solid rgba(106, 13, 173, 0.1);
+    }
+
+    .table-container:hover {
+        box-shadow: 0 10px 25px rgba(106, 13, 173, 0.15);
+        border-color: rgba(106, 13, 173, 0.3);
+    }
+
+    /* Barras de progresso personalizadas */
+    .progress {
+        height: 20px;
+        background-color: var(--cinza-medio);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        background-color: var(--amarelo-detalhe);
+        transition: width 0.5s ease;
+    }
+
+    /* Badges personalizadas */
+    .badge {
+        font-weight: 600;
+        padding: 0.5em 1em;
+        border-radius: 50px;
+    }
+
+    /* Títulos e cabeçalhos */
+    h1, h2, h3, h4, h5, h6 {
+        color: var(--roxo-principal);
+        font-weight: 600;
+    }
+
+    /* Botões personalizados */
+    .btn-primary {
+        background-color: var(--roxo-principal);
+        border-color: var(--roxo-principal);
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--roxo-escuro);
+        border-color: var(--roxo-escuro);
+        transform: scale(1.05);
+    }
+
+    .btn-secondary {
+        background-color: var(--cinza-medio);
+        border-color: var(--cinza-medio);
+        color: var(--preto-texto);
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+        background-color: #c8c9cb;
+        border-color: #c8c9cb;
+        transform: scale(1.05);
+    }
+
+    /* Tabelas personalizadas */
+    .table {
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+    }
+
+    .table thead th {
+        background-color: rgba(255, 255, 255, 1);
+        color: var(--roxo-principal);
+        border: none;
+        font-weight: 600;
+        padding: 15px;
+    }
+
+    .table tbody td {
+        padding: 12px 15px;
+        border-bottom: 1px solid var(--cinza-medio);
+    }
+
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(106, 13, 173, 0.1);
+    }
+
+    /* Menu Lateral */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 250px;
+        height: 100%;
+        background-color: var(--roxo-principal);
+        color: var(--branco);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding-top: 20px;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    }
+
+    .sidebar .profile {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .sidebar .profile i {
+        font-size: 4rem;
+        color: var(--amarelo-detalhe);
+        margin-bottom: 10px;
+    }
+
+    .sidebar .profile h5 {
+        font-weight: 600;
+        margin-bottom: 0;
+        color: var(--branco);
+    }
+
+    .sidebar .profile small {
+        color: var(--cinza-claro);
+    }
+
+    .sidebar .list-group {
+        width: 100%;
+    }
+
+    .sidebar .list-group-item {
+        background-color: transparent;
+        color: var(--branco);
+        border: none;
+        padding: 15px 25px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .sidebar .list-group-item:hover {
+        background-color: var(--roxo-escuro);
+        cursor: pointer;
+    }
+
+    .sidebar .list-group-item.active {
+        background-color: var(--roxo-escuro) !important;
+        color: var(--branco) !important;
+        font-weight: 600;
+        border-left: 4px solid var(--amarelo-detalhe);
+    }
+
+    .sidebar .list-group-item i {
+        color: var(--amarelo-detalhe);
+    }
+
+    /* Conteúdo principal */
+    .main-content {
+        margin-left: 250px;
+        padding: 20px;
+    }
+
+    /* Ajuste da logo no header */
+    .navbar-brand .logo-header {
+        height: 70px;
+        width: auto;
+        display: block;
+    }
+
+    /* Responsividade */
+    @media (max-width: 992px) {
+        .sidebar {
+            width: 200px;
+        }
+        .main-content {
+            margin-left: 200px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            position: relative;
+            width: 100%;
+            height: auto;
+        }
+        .main-content {
+            margin-left: 0;
+        }
+        .stats-card h3 {
+            font-size: 2rem;
         }
         .chart-container {
-            position: relative;
-            height: 400px;
-            margin-bottom: 30px;
+            height: 300px;
         }
-        .table-container {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
+    }
+
+    /* Animações adicionais */
+    .stats-card:nth-child(1) { animation-delay: 0.1s; }
+    .stats-card:nth-child(2) { animation-delay: 0.2s; }
+    .stats-card:nth-child(3) { animation-delay: 0.3s; }
+    .stats-card:nth-child(4) { animation-delay: 0.4s; }
+
+    /* Ícones nos títulos */
+    .chart-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .chart-title i {
+        color: var(--roxo-principal);
+        font-size: 1.5rem;
+    }
     </style>
 </head>
-<body class="bg-light">
-    <div class="container-fluid mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h2">📊 Estatísticas de Usuários</h1>
-            <a href="gerenciar_caminho.php" class="btn btn-secondary">← Voltar ao Gerenciamento</a>
-        </div>
+<body>
 
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="stat-card text-center">
-                    <h3><?php echo number_format($total_usuarios); ?></h3>
-                    <p>Total de Usuários</p>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-card text-center">
-                    <h3><?php echo number_format($usuarios_ativos); ?></h3>
-                    <p>Usuários Ativos (30 dias)</p>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-card text-center">
-                    <h3><?php echo count($idiomas_populares); ?></h3>
-                    <p>Idiomas Disponíveis</p>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-card text-center">
-                    <h3><?php echo number_format(($usuarios_ativos / max($total_usuarios, 1)) * 100, 1); ?>%</h3>
-                    <p>Taxa de Atividade</p>
-                </div>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
+            </a>
+
+            <!-- Espaço flexível entre a logo e o ícone -->
+            <div class="ms-auto">
+                <a href="editar_perfil.php" class="text-white settings-icon">
+                    <i class="fas fa-cog fa-lg"></i>
+                </a>
             </div>
         </div>
+    </nav>
 
-        <div class="row">
-            <div class="col-md-6">
-                <div class="table-container">
-                    <h4 class="mb-3">👥 Distribuição por Níveis</h4>
-                    <div class="chart-container">
-                        <canvas id="niveisChart"></canvas>
+    <div class="sidebar">
+        <div class="profile">
+            <i class="fas fa-user-circle"></i>
+            <h5 id="nome-admin"><?php echo isset($_SESSION['nome_admin']) ? htmlspecialchars($_SESSION['nome_admin']) : 'Administrador'; ?></h5>
+        </div>
+
+        <div class="list-group">
+            <a href="gerenciar_caminho.php" class="list-group-item">
+                <i class="fas fa-road"></i> Gerenciar Caminhos
+            </a>
+            <a href="#" class="list-group-item">
+                <i class="fas fa-language"></i> Adicionar Idioma com Quiz
+            </a>
+            <a href="#" class="list-group-item">
+                <i class="fas fa-globe"></i> Gerenciar Idiomas
+            </a>
+            <a href="gerenciar_teorias.php" class="list-group-item">
+                <i class="fas fa-book-open"></i> Gerenciar Teorias
+            </a>
+            <a href="gerenciar_unidades.php" class="list-group-item">
+                <i class="fas fa-book-open"></i> Gerenciar Unidades
+            </a>
+            <a href="gerenciar_usuarios.php" class="list-group-item">
+                <i class="fas fa-users"></i> Gerenciar Usuários
+            </a>
+            <a href="estatisticas_usuarios.php" class="list-group-item active">
+                <i class="fas fa-chart-bar"></i> Estatísticas
+            </a>
+            <a href="logout.php" class="list-group-item mt-auto">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="container-fluid mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2"><i class="fas fa-chart-bar"></i> Estatísticas de Usuários</h1>
+                <a href="gerenciar_caminho.php" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar ao Gerenciamento</a>
+            </div>
+
+            <!-- Estatísticas Rápidas -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="stats-card text-center">
+                        <h3><?php echo number_format($total_usuarios); ?></h3>
+                        <p><i class="fas fa-users"></i> Total de Usuários</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card text-center">
+                        <h3><?php echo number_format($usuarios_ativos); ?></h3>
+                        <p><i class="fas fa-user-check"></i> Usuários Ativos (30 dias)</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card text-center">
+                        <h3><?php echo count($idiomas_populares); ?></h3>
+                        <p><i class="fas fa-globe"></i> Idiomas Disponíveis</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card text-center">
+                        <h3><?php echo number_format(($usuarios_ativos / max($total_usuarios, 1)) * 100, 1); ?>%</h3>
+                        <p><i class="fas fa-chart-line"></i> Taxa de Atividade</p>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-6">
-                <div class="table-container">
-                    <h4 class="mb-3">🌍 Idiomas Mais Populares</h4>
-                    <div class="chart-container">
-                        <canvas id="idiomasChart"></canvas>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="table-container">
+                        <div class="chart-title">
+                            <i class="fas fa-users"></i>
+                            <h4 class="mb-0">Distribuição por Níveis</h4>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="niveisChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="table-container">
+                        <div class="chart-title">
+                            <i class="fas fa-globe-americas"></i>
+                            <h4 class="mb-0">Idiomas Mais Populares</h4>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="idiomasChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="row">
-            <div class="col-12">
-                <div class="table-container">
-                    <h4 class="mb-3">📈 Novos Registros (Últimos 12 Meses)</h4>
-                    <div class="chart-container">
-                        <canvas id="registrosChart"></canvas>
+            <div class="row">
+                <div class="col-12">
+                    <div class="table-container">
+                        <div class="chart-title">
+                            <i class="fas fa-chart-line"></i>
+                            <h4 class="mb-0">Novos Registros (Últimos 12 Meses)</h4>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="registrosChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="row">
-            <div class="col-md-6">
-                <div class="table-container">
-                    <h4 class="mb-3">🎯 Progresso nos Caminhos</h4>
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Idioma</th>
-                                    <th>Nível</th>
-                                    <th>Usuários</th>
-                                    <th>Progresso Médio</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($progresso_caminhos as $progresso): ?>
-                                <tr>
-                                    <td><?php echo htmlspecialchars($progresso['idioma']); ?></td>
-                                    <td><span class="badge bg-primary"><?php echo htmlspecialchars($progresso['nivel']); ?></span></td>
-                                    <td><?php echo number_format($progresso['usuarios_iniciaram']); ?></td>
-                                    <td>
-                                        <div class="progress" style="height: 20px;">
-                                            <div class="progress-bar" role="progressbar" 
-                                                style="width: <?php echo round($progresso['progresso_medio']); ?>%"
-                                                aria-valuenow="<?php echo round($progresso['progresso_medio']); ?>" 
-                                                aria-valuemin="0" aria-valuemax="100">
-                                                <?php echo round($progresso['progresso_medio']); ?>%
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="table-container">
+                        <div class="chart-title">
+                            <i class="fas fa-road"></i>
+                            <h4 class="mb-0">Progresso nos Caminhos</h4>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Idioma</th>
+                                        <th>Nível</th>
+                                        <th>Usuários</th>
+                                        <th>Progresso Médio</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($progresso_caminhos as $progresso): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($progresso['idioma']); ?></td>
+                                        <td><span class="badge bg-primary"><?php echo htmlspecialchars($progresso['nivel']); ?></span></td>
+                                        <td><?php echo number_format($progresso['usuarios_iniciaram']); ?></td>
+                                        <td>
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar" role="progressbar" 
+                                                    style="width: <?php echo round($progresso['progresso_medio']); ?>%"
+                                                    aria-valuenow="<?php echo round($progresso['progresso_medio']); ?>" 
+                                                    aria-valuemin="0" aria-valuemax="100">
+                                                    <?php echo round($progresso['progresso_medio']); ?>%
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="col-md-6">
-                <div class="table-container">
-                    <h4 class="mb-3">🏆 Exercícios Mais Realizados</h4>
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Exercício</th>
-                                    <th>Idioma/Nível</th>
-                                    <th>Realizações</th>
-                                    <th>Pontuação Média</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($exercicios_populares as $exercicio): ?>
-                                <tr>
-                                    <td><?php echo htmlspecialchars(substr($exercicio['titulo'], 0, 30)) . (strlen($exercicio['titulo']) > 30 ? '...' : ''); ?></td>
-                                    <td>
-                                        <small class="text-muted">
-                                            <?php echo htmlspecialchars($exercicio['idioma']); ?> - 
-                                            <span class="badge bg-secondary"><?php echo htmlspecialchars($exercicio['nivel']); ?></span>
-                                        </small>
-                                    </td>
-                                    <td><?php echo number_format($exercicio['total_realizacoes']); ?></td>
-                                    <td>
-                                        <span class="badge bg-<?php echo $exercicio['pontuacao_media'] >= 80 ? 'success' : ($exercicio['pontuacao_media'] >= 60 ? 'warning' : 'danger'); ?>">
-                                            <?php echo round($exercicio['pontuacao_media'], 1); ?>%
-                                        </span>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                <div class="col-md-6">
+                    <div class="table-container">
+                        <div class="chart-title">
+                            <i class="fas fa-trophy"></i>
+                            <h4 class="mb-0">Exercícios Mais Realizados</h4>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Exercício</th>
+                                        <th>Idioma/Nível</th>
+                                        <th>Realizações</th>
+                                        <th>Pontuação Média</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($exercicios_populares as $exercicio): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars(substr($exercicio['pergunta'], 0, 30)) . (strlen($exercicio['pergunta']) > 30 ? '...' : ''); ?></td>
+                                        <td>
+                                            <small class="text-muted">
+                                                <?php echo htmlspecialchars($exercicio['idioma']); ?> - 
+                                                <span class="badge bg-secondary"><?php echo htmlspecialchars($exercicio['nivel']); ?></span>
+                                            </small>
+                                        </td>
+                                        <td><?php echo number_format($exercicio['total_realizacoes']); ?></td>
+                                        <td>
+                                            <span class="badge bg-<?php echo $exercicio['pontuacao_media'] >= 80 ? 'success' : ($exercicio['pontuacao_media'] >= 60 ? 'warning' : 'danger'); ?>">
+                                                <?php echo round($exercicio['pontuacao_media'], 1); ?>%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
