@@ -1435,14 +1435,15 @@
 
     // Função para scroll suave para seções
     function scrollToSection(sectionId) {
-        const section = document.getElementById(sectionId);
-        if (section) {
-            section.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
     }
+  </script>
 
     // Inicializar carrossel principal
     function initializeCarousel() {
@@ -2081,7 +2082,7 @@
                 <button class="nav-btn" onclick="scrollToSection('main')">Sobre</button>
                 <button class="nav-btn" onclick="scrollToSection('units')">Unidades</button>
                 <button class="btn-primary" style="font-size: 1.0rem;">Entrar</button>
-                <a href="public/views/index.php" class="btn-outline"
+                <a href="public/views/login.php" class="btn-outline"
                     style="text-decoration: none; font-size: 14px; padding: 6px 12px;">Cadastre-se</a>
             </nav>
 
@@ -2242,7 +2243,7 @@
                         </div>
                     </div>
 
-                    <button class="btn-cta-yellow" onclick="window.location.href='public/views/index.php'">
+                    <button class="btn-cta-yellow" onclick="window.location.href='public/views/login.php'">
                         Comece agora gratuitamente 🚀
                     </button>
                 </div>

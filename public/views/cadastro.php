@@ -109,7 +109,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
         <?php endif; ?>
 
-        <form action="index.php" method="POST">
+        <form action="cadastro.php" method="POST">
             <div class="input-group">
                 <input type="text" id="nome" name="nome" placeholder="Nome Completo" required>
             </div>

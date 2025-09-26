@@ -5,7 +5,7 @@ include_once __DIR__ . "/../../conexao.php";
 
 // Redireciona se o usuário não estiver logado
 if (!isset($_SESSION["id_usuario"])) {
-    header("Location: index.php");
+    header("Location: /../../index.php");
     exit();
 }
 

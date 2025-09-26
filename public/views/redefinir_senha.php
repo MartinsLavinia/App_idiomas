@@ -275,7 +275,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $token_valido) {
                 
                 <div class="text-center">
                     <p>
-                        <a href="index.php" class="back-link">
+                        <a href="login.php" class="back-link">
                             ← Voltar para o Login
                         </a>
                     </p>
@@ -290,7 +290,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $token_valido) {
                     
                     <?php if ($tipo_mensagem === 'success'): ?>
                     <p class="mt-3">
-                        <a href="index.php" class="btn btn-success">
+                        <a href="login.php" class="btn btn-success">
                             Fazer Login
                         </a>
                     </p>

@@ -89,7 +89,7 @@ ob_end_flush();
     <div class="links-container">
         <a href="esqueci_senha.php" class="link-senha">Esqueci a senha?</a>
         <span style="color: rgba(255, 255, 255, 0.6);"> | </span>
-        <a href="index.php">Crie uma conta</a>
+        <a href="cadastro.php">Crie uma conta</a>
     </div>
     
     <div class="social-login">

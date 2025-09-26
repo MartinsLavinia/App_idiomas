@@ -13,7 +13,7 @@ $conn = $database->conn;
 if (!isset($_SESSION["id_usuario"])) {
     // Feche a conexão antes de redirecionar
     $database->closeConnection();
-    header("Location: index.php");
+    header("Location: /../../index.php");
     exit();
 }
 
