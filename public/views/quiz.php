@@ -46,18 +46,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     
     // Determina o nível final com base na pontuação total (agora com 6 níveis)
-    $nivel_final = 'A1';
-    if ($pontuacao_total >= 25) { 
-        $nivel_final = 'C2';
-    } elseif ($pontuacao_total >= 20) { 
-        $nivel_final = 'C1';
-    } elseif ($pontuacao_total >= 15) { 
-        $nivel_final = 'B2';
-    } elseif ($pontuacao_total >= 10) { 
-        $nivel_final = 'B1';
-    } elseif ($pontuacao_total >= 5) { 
-        $nivel_final = 'A2';
-    }
+  $percentual = $total_perguntas > 0 ? round(($pontuacao_total / $total_perguntas) * 100) : 0;
+$nivel_final = 'A1'; // Deixa como A1 ou usa uma classificação simplificada. Vamos usar a nova lógica para garantir que o nível salvo no banco seja o mesmo que o usuário vê.
+
+if ($percentual >= 95) { $nivel_final = 'C2'; } 
+elseif ($percentual >= 90) { $nivel_final = 'C1'; } 
+elseif ($percentual >= 80) { $nivel_final = 'B2'; } 
+elseif ($percentual >= 65) { $nivel_final = 'B1'; } 
+elseif ($percentual >= 45) { $nivel_final = 'A2'; } 
+else { $nivel_final = 'A1'; } 
     
     // Atualiza o nível do usuário no banco de dados
     $sql_update = "UPDATE progresso_usuario SET nivel = ? WHERE id_usuario = ? AND idioma = ?";

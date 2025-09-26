@@ -19,6 +19,24 @@ $percentual = $total_perguntas > 0 ? round(($acertos / $total_perguntas) * 100) 
 // Mapeamento dos níveis para uma ordem
 $niveis = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
+// **********************************************
+// *** NOVO TRECHO: LÓGICA DE CLASSIFICAÇÃO DE 6 NÍVEIS BASEADA EM PERCENTUAL ***
+// **********************************************
+// Se você quiser que o nível exibido ao usuário reflita a classificação por %:
+if ($percentual >= 95) {
+    $nivel_determinado = 'C2'; 
+} elseif ($percentual >= 90) {
+    $nivel_determinado = 'C1';
+} elseif ($percentual >= 80) {
+    $nivel_determinado = 'B2';
+} elseif ($percentual >= 65) {
+    $nivel_determinado = 'B1';
+} elseif ($percentual >= 45) {
+    $nivel_determinado = 'A2';
+} else {
+    $nivel_determinado = 'A1'; 
+}
+
 // Conteúdo detalhado para cada nível
 $conteudo_niveis = [
     'A1' => [

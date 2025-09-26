@@ -1435,15 +1435,14 @@
 
     // Função para scroll suave para seções
     function scrollToSection(sectionId) {
-      const section = document.getElementById(sectionId);
-      if (section) {
-        section.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
-      }
+        const section = document.getElementById(sectionId);
+        if (section) {
+            section.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
     }
-  </script>
 
     // Inicializar carrossel principal
     function initializeCarousel() {
