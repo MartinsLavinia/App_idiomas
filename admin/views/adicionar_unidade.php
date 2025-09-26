@@ -3,7 +3,7 @@ session_start();
 include_once __DIR__ . '/../config/conexao.php';
 
 if (!isset($_SESSION['id_admin'])) {
-    header("Location: login_admin.html");
+    header("Location: login_admin.php");
     exit();
 }
 

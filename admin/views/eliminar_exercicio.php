@@ -4,7 +4,7 @@ include_once __DIR__ . '/../../conexao.php';
 
 // Verificação de segurança: Apenas admin logado pode acessar
 if (!isset($_SESSION['id_admin'])) {
-    header("Location: login_admin.html");
+    header("Location: login_admin.php");
     exit();
 }
 

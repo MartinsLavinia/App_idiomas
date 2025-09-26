@@ -3,7 +3,7 @@ session_start();
 
 // segurança: só admin logado
 if (!isset($_SESSION['id_admin'])) {
-    header("Location: ../login_admin.html");
+    header("Location: ../login_admin.php");
     exit();
 }
 

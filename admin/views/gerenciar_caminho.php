@@ -4,7 +4,7 @@ include_once __DIR__ . '/../../conexao.php';
 
 // Verificação de segurança
 if (!isset($_SESSION['id_admin'])) {
-    header("Location: login_admin.html");
+    header("Location: login_admin.php");
     exit();
 }
 
@@ -907,6 +907,13 @@ $database->closeConnection();
                 <div class="card text-center p-3">
                     <h5>Total de Caminhos</h5>
                     <span class="fs-3 fw-bold"><?= count($caminhos) ?></span>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card text-center p-3">
+                    <h5>Total de Unidades</h5>
+                    <span class="fs-3 fw-bold"><?= count($unidades_db) ?></span>
                 </div>
             </div>
 

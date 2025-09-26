@@ -19,7 +19,7 @@ if (!isset($_SESSION['id_admin'])) {
         echo json_encode(['success' => false, 'message' => 'Não autorizado. Faça login novamente.']);
         exit();
     } else {
-        header("Location: login_admin.html");
+        header("Location: login_admin.php");
         exit();
     }
 }
