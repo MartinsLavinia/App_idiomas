@@ -16,9 +16,6 @@ $acertos = $_GET['acertos'] ?? 0;
 $total_perguntas = $_GET['total'] ?? 30;
 $percentual = $total_perguntas > 0 ? round(($acertos / $total_perguntas) * 100) : 0;
 
-// Mapeamento dos níveis para uma ordem
-$niveis = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
-
 // **********************************************
 // *** NOVO TRECHO: LÓGICA DE CLASSIFICAÇÃO DE 6 NÍVEIS BASEADA EM PERCENTUAL ***
 // **********************************************
@@ -36,6 +33,9 @@ if ($percentual >= 95) {
 } else {
     $nivel_determinado = 'A1'; 
 }
+// Mapeamento dos níveis para uma ordem
+$niveis = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+
 
 // Conteúdo detalhado para cada nível
 $conteudo_niveis = [
