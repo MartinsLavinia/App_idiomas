@@ -2084,8 +2084,7 @@
                     Entrar
                 </button>
                 <a href="public/views/login.php" class="btn-outline"
-                <a href="public/views/login.php" class="btn-primary" style="font-size: 1.0rem;">Entrar</a>
-                <a href="public/views/cadastro.php" class="btn-outline"
+              
                     style="text-decoration: none; font-size: 14px; padding: 6px 12px;">Cadastre-se</a>
             </nav>
 
