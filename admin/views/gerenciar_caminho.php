@@ -113,6 +113,8 @@ $database->closeConnection();
         --roxo-principal: #6a0dad;
         --roxo-escuro: #4c087c;
         --amarelo-detalhe: #ffd700;
+        --amarelo-botao: #ffd700;
+        --amarelo-hover: #e7c500;
         --branco: #ffffff;
         --preto-texto: #212529;
         --cinza-claro: #f8f9fa;
@@ -536,6 +538,37 @@ $database->closeConnection();
         width: 1rem;
         height: 1rem;
     }
+
+    /* Botão amarelo principal */
+.btn-warning {
+    background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
+    color: var(--cinza-texto);
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+    min-width: 180px;
+}
+
+.btn-warning:hover {
+    background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
+    color: var(--cinza-texto);
+}
+
+/* Botão outline amarelo */
+.btn-outline-warning {
+    background: transparent;
+    color: var(--cinza-texto);
+    border: 2px solid var(--amarelo-botao);
+    min-width: 150px;
+}
+
+.btn-outline-warning:hover {
+    background: transparent;
+    color: var(--cinza-texto);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
     </style>
 </head>
 
@@ -563,6 +596,10 @@ $database->closeConnection();
         ?>
         <h2 class="mb-4">Gerenciar Caminhos de Aprendizagem</h2>
 
+        <a href="#" class="btn btn-warning mb-4" data-bs-toggle="modal" data-bs-target="#addCaminhoModal">
+            <i class="fas fa-plus-circle me-2"></i>Adicionar Caminho
+        </a>
+
         <div class="sidebar">
             <div class="profile">
                 <i class="fas fa-user-circle"></i>
@@ -571,7 +608,7 @@ $database->closeConnection();
             </div>
 
             <div class="list-group">
-                <a href="#" class="list-group-item" data-bs-toggle="modal" data-bs-target="#addCaminhoModal">
+                <a href="gerenciar_caminho.php" class="list-group-item" data-bs-toggle="modal" data-bs-target="#addCaminhoModal">
                     <i class="fas fa-plus-circle"></i> Adicionar Caminho
                 </a>
                 <a href="#" class="list-group-item" data-bs-toggle="modal" data-bs-target="#adicionarIdiomaCompletoModal">
@@ -646,7 +683,7 @@ $database->closeConnection();
                                 </select>
                             </div>
                             <div class="col-md-auto d-flex align-items-end">
-                                <button type="submit" class="btn btn-primary" style="margin-top: 40px;">Pesquisar</button>
+                                <button type="submit" class="btn btn-outline-warning" style="margin-top: 40px;">Pesquisar</button>
                             </div>
                         </div>
                     </form>
