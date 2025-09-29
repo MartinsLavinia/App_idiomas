@@ -21,18 +21,29 @@ if (!isset($_GET['caminho_id']) || !is_numeric($_GET['caminho_id'])) {
 $caminho_id = $_GET['caminho_id'];
 $mensagem = '';
 
+// BUSCA OS BLOCOS DISPONÍVEIS PARA ESTE CAMINHO
+$database = new Database();
+$conn = $database->conn;
+$sql_blocos = "SELECT id, nome_bloco, ordem FROM blocos WHERE caminho_id = ? ORDER BY ordem ASC";
+$stmt_blocos = $conn->prepare($sql_blocos);
+$stmt_blocos->bind_param("i", $caminho_id);
+$stmt_blocos->execute();
+$blocos = $stmt_blocos->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt_blocos->close();
+
 // LÓGICA DE PROCESSAMENTO DO FORMULÁRIO (se o método for POST)
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $bloco_id = $_POST['bloco_id'];
     $ordem = $_POST['ordem'];
     $tipo = $_POST['tipo'];
     $pergunta = $_POST['pergunta'];
     $conteudo = null;
 
     // Log para debug
-    error_log("POST recebido - Ordem: $ordem, Tipo: $tipo, Pergunta: $pergunta");
+    error_log("POST recebido - Bloco ID: $bloco_id, Ordem: $ordem, Tipo: $tipo, Pergunta: $pergunta");
 
     // Validação simples (exemplo: não permitir campos vazios)
-    if (empty($ordem) || empty($pergunta)) {
+    if (empty($bloco_id) || empty($ordem) || empty($pergunta)) {
         $mensagem = '<div class="alert alert-danger">Por favor, preencha todos os campos obrigatórios.</div>';
     } else {
         // Constrói o conteúdo JSON com base no tipo de exercício
@@ -132,20 +143,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Se não houve erros, insere os dados no banco
         if (empty($mensagem)) {
-            $database = new Database();
-            $conn = $database->conn;
-            
             // Debug: Verifique os dados antes de inserir
-            error_log("Tentando inserir exercício: caminho_id=$caminho_id, ordem=$ordem, tipo=$tipo");
+            error_log("Tentando inserir exercício: caminho_id=$caminho_id, bloco_id=$bloco_id, ordem=$ordem, tipo=$tipo");
             error_log("Pergunta: $pergunta");
             error_log("Conteúdo: " . $conteudo);
             
             // Insere o novo exercício na tabela
-            $sql_insert = "INSERT INTO exercicios (caminho_id, ordem, tipo, pergunta, conteudo) VALUES (?, ?, ?, ?, ?)";
+            $sql_insert = "INSERT INTO exercicios (caminho_id, bloco_id, ordem, tipo, pergunta, conteudo) VALUES (?, ?, ?, ?, ?, ?)";
             $stmt_insert = $conn->prepare($sql_insert);
             
             if ($stmt_insert) {
-                $stmt_insert->bind_param("iisss", $caminho_id, $ordem, $tipo, $pergunta, $conteudo);
+                $stmt_insert->bind_param("iiisss", $caminho_id, $bloco_id, $ordem, $tipo, $pergunta, $conteudo);
                 
                 if ($stmt_insert->execute()) {
                     $mensagem = '<div class="alert alert-success">Exercício adicionado com sucesso!</div>';
@@ -162,8 +170,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $mensagem = '<div class="alert alert-danger">Erro na preparação da consulta: ' . $error_msg . '</div>';
                 error_log("Erro preparação: " . $error_msg);
             }
-
-            $database->closeConnection();
         } else {
             error_log("Mensagem de erro presente: " . strip_tags($mensagem));
         }
@@ -171,8 +177,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 // BUSCA AS INFORMAÇÕES DO CAMINHO PARA EXIBIÇÃO NO TÍTULO
-$database = new Database();
-$conn = $database->conn;
 $sql_caminho = "SELECT nome_caminho, nivel, id_unidade FROM caminhos_aprendizagem WHERE id = ?";
 $stmt_caminho = $conn->prepare($sql_caminho);
 $stmt_caminho->bind_param("i", $caminho_id);
@@ -212,7 +216,7 @@ $database->closeConnection();
             • <strong>ID da Unidade:</strong> <?php echo htmlspecialchars($caminho_info['id_unidade'] ?? 'Não especificada'); ?><br>
             • <strong>Caminho:</strong> <?php echo htmlspecialchars($caminho_info['nome_caminho']); ?> (<?php echo htmlspecialchars($caminho_info['nivel']); ?>)<br>
             • <strong>ID do Caminho:</strong> <?php echo htmlspecialchars($caminho_id); ?><br>
-            <small class="text-muted">Este exercício ficará disponível APENAS neste caminho específico e não em outras unidades.</small>
+            <small class="text-muted">Este exercício ficará disponível APENAS neste caminho específico e no bloco selecionado.</small>
         </div>
         
         <a href="gerenciar_exercicios.php?caminho_id=<?php echo htmlspecialchars($caminho_id); ?>" class="btn btn-secondary mb-3">← Voltar para Exercícios</a>
@@ -222,11 +226,27 @@ $database->closeConnection();
         <div class="card">
             <div class="card-body">
                 <form action="adicionar_atividades.php?caminho_id=<?php echo htmlspecialchars($caminho_id); ?>" method="POST">
+                    
+                    <!-- Campo Bloco -->
+                    <div class="mb-3">
+                        <label for="bloco_id" class="form-label">Selecionar Bloco *</label>
+                        <select class="form-select" id="bloco_id" name="bloco_id" required>
+                            <option value="">-- Selecione um bloco --</option>
+                            <?php foreach ($blocos as $bloco): ?>
+                                <option value="<?php echo $bloco['id']; ?>" 
+                                    <?php echo (isset($_POST['bloco_id']) && $_POST['bloco_id'] == $bloco['id']) ? 'selected' : ''; ?>>
+                                    Bloco <?php echo $bloco['ordem']; ?>: <?php echo htmlspecialchars($bloco['nome_bloco']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <div class="form-text">Escolha em qual bloco este exercício será adicionado</div>
+                    </div>
+
                     <!-- Campo Ordem -->
                     <div class="mb-3">
-                        <label for="ordem" class="form-label">Ordem do Exercício</label>
+                        <label for="ordem" class="form-label">Ordem do Exercício no Bloco</label>
                         <input type="number" class="form-control" id="ordem" name="ordem" value="<?php echo isset($_POST['ordem']) ? htmlspecialchars($_POST['ordem']) : ''; ?>" required>
-                        <div class="form-text">Define a sequência em que este exercício aparecerá no caminho</div>
+                        <div class="form-text">Define a sequência em que este exercício aparecerá dentro do bloco selecionado</div>
                     </div>
 
                     <!-- Campo Tipo -->
@@ -417,6 +437,36 @@ $database->closeConnection();
                 </form>
             </div>
         </div>
+
+        <!-- Informação sobre Blocos Disponíveis -->
+        <?php if (!empty($blocos)): ?>
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle"></i> Blocos Disponíveis neste Caminho
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <?php foreach ($blocos as $bloco): ?>
+                    <div class="col-md-6 mb-2">
+                        <div class="border rounded p-2">
+                            <strong>Bloco <?php echo $bloco['ordem']; ?>:</strong> <?php echo htmlspecialchars($bloco['nome_bloco']); ?>
+                            <br><small class="text-muted">ID: <?php echo $bloco['id']; ?></small>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+        <?php else: ?>
+        <div class="alert alert-warning mt-4">
+            <i class="fas fa-exclamation-triangle"></i> 
+            <strong>Nenhum bloco encontrado!</strong> 
+            Você precisa criar blocos antes de adicionar exercícios. 
+            <a href="gerenciar_blocos.php?caminho_id=<?php echo $caminho_id; ?>" class="alert-link">Criar Blocos</a>
+        </div>
+        <?php endif; ?>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
