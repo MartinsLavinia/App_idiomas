@@ -1,629 +1,533 @@
 <?php
-//Controlador para funcionalidades de Flash Cards//
-  //Gerencia todas as operações relacionadas aos flashcards//
- 
-
 session_start();
-
-// DEBUG TEMPORÁRIO - Adicione no início do switch
-error_log("Action recebida: " . $action);
-error_log("Método: " . $_SERVER['REQUEST_METHOD']);
-error_log("Dados POST: " . print_r($_POST, true));
-// Inclui as dependências necessárias
 include_once __DIR__ . '/../../conexao.php';
-include_once __DIR__ . '/FlashcardModel.php';
 
-// Verifica se o usuário está logado
-if (!isset($_SESSION['id_usuario'])) {
-    http_response_code(401);
+if (!isset($_SESSION["id_usuario"])) {
     echo json_encode(['success' => false, 'message' => 'Usuário não autenticado']);
     exit();
 }
 
-// Cria conexão com o banco de dados
+$id_usuario = $_SESSION["id_usuario"];
+$action = $_POST['action'] ?? $_GET['action'] ?? '';
+
 $database = new Database();
 $conn = $database->conn;
-$flashcardModel = new FlashcardModel($conn);
 
-$id_usuario = $_SESSION['id_usuario'];
-$action = $_GET['action'] ?? $_POST['action'] ?? '';
+header('Content-Type: application/json');
 
-// Roteamento das ações
-switch ($action) {
-    
-    // ==================== OPERAÇÕES COM DECKS ====================
-    
-    case 'listar_decks':
-        $idioma = $_GET['idioma'] ?? null;
-        $nivel = $_GET['nivel'] ?? null;
-        
-        $decks = $flashcardModel->listarDecks($id_usuario, $idioma, $nivel);
-        
-        echo json_encode([
-            'success' => true,
-            'decks' => $decks
-        ]);
-        break;
-    
-    case 'listar_decks_publicos':
-        $idioma = $_GET['idioma'] ?? null;
-        $nivel = $_GET['nivel'] ?? null;
-        $limite = intval($_GET['limite'] ?? 20);
-        
-        $decks = $flashcardModel->listarDecksPublicos($idioma, $nivel, $limite);
-        
-        echo json_encode([
-            'success' => true,
-            'decks' => $decks
-        ]);
-        break;
-    
-    case 'obter_deck':
-        $id_deck = intval($_GET['id_deck'] ?? 0);
-        
-        if (!$id_deck) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'ID do deck é obrigatório']);
+try {
+    switch ($action) {
+        // Ações para Decks
+        case 'criar_deck':
+            criarDeck($conn, $id_usuario);
             break;
-        }
-        
-        $deck = $flashcardModel->obterDeck($id_deck, $id_usuario);
-        
-        if (!$deck) {
-            http_response_code(404);
-            echo json_encode(['success' => false, 'message' => 'Deck não encontrado']);
-            break;
-        }
-        
-        echo json_encode([
-            'success' => true,
-            'deck' => $deck
-        ]);
-        break;
-    
-    case 'criar_deck':
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            echo json_encode(['success' => false, 'message' => 'Método não permitido']);
-            break;
-        }
-        
-        $dados = [
-            'id_usuario' => $id_usuario,
-            'nome' => trim($_POST['nome'] ?? ''),
-            'descricao' => trim($_POST['descricao'] ?? ''),
-            'idioma' => $_POST['idioma'] ?? '',
-            'nivel' => $_POST['nivel'] ?? '',
-            'publico' => isset($_POST['publico']) && $_POST['publico'] === '1'
-        ];
-        
-        // Validações
-        if (empty($dados['nome'])) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Nome do deck é obrigatório']);
-            break;
-        }
-        
-        if (empty($dados['idioma'])) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Idioma é obrigatório']);
-            break;
-        }
-        
-        if (empty($dados['nivel'])) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Nível é obrigatório']);
-            break;
-        }
-        
-        $id_deck = $flashcardModel->criarDeck($dados);
-        
-        if ($id_deck) {
-            echo json_encode([
-                'success' => true,
-                'message' => 'Deck criado com sucesso',
-                'id_deck' => $id_deck
-            ]);
-        } else {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Erro ao criar deck']);
-        }
-        break;
-    
-    case 'atualizar_deck':
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            echo json_encode(['success' => false, 'message' => 'Método não permitido']);
-            break;
-        }
-        
-        $id_deck = intval($_POST['id_deck'] ?? 0);
-        
-        if (!$id_deck) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'ID do deck é obrigatório']);
-            break;
-        }
-        
-        $dados = [
-            'nome' => trim($_POST['nome'] ?? ''),
-            'descricao' => trim($_POST['descricao'] ?? ''),
-            'idioma' => $_POST['idioma'] ?? '',
-            'nivel' => $_POST['nivel'] ?? '',
-            'publico' => isset($_POST['publico']) && $_POST['publico'] === '1'
-        ];
-        
-        // Validações
-        if (empty($dados['nome'])) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Nome do deck é obrigatório']);
-            break;
-        }
-        
-        $sucesso = $flashcardModel->atualizarDeck($id_deck, $dados, $id_usuario);
-        
-        if ($sucesso) {
-            echo json_encode([
-                'success' => true,
-                'message' => 'Deck atualizado com sucesso'
-            ]);
-        } else {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Erro ao atualizar deck']);
-        }
-        break;
-    
-    case 'excluir_deck':
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            echo json_encode(['success' => false, 'message' => 'Método não permitido']);
-            break;
-        }
-        
-        $id_deck = intval($_POST['id_deck'] ?? 0);
-        
-        if (!$id_deck) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'ID do deck é obrigatório']);
-            break;
-        }
-        
-        $sucesso = $flashcardModel->excluirDeck($id_deck, $id_usuario);
-        
-        if ($sucesso) {
-            echo json_encode([
-                'success' => true,
-                'message' => 'Deck excluído com sucesso'
-            ]);
-        } else {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Erro ao excluir deck']);
-        }
-        break;
-    
-    // ==================== OPERAÇÕES COM FLASHCARDS ====================
-    
-    case 'listar_flashcards':
-        $id_deck = intval($_GET['id_deck'] ?? 0);
-        
-        if (!$id_deck) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'ID do deck é obrigatório']);
-            break;
-        }
-        
-        $flashcards = $flashcardModel->listarFlashcards($id_deck, $id_usuario);
-        
-        echo json_encode([
-            'success' => true,
-            'flashcards' => $flashcards
-        ]);
-        break;
-    
-    case 'obter_flashcard':
-        $id_flashcard = intval($_GET['id_flashcard'] ?? 0);
-        
-        if (!$id_flashcard) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'ID do flashcard é obrigatório']);
-            break;
-        }
-        
-        $flashcard = $flashcardModel->obterFlashcard($id_flashcard, $id_usuario);
-        
-        if (!$flashcard) {
-            http_response_code(404);
-            echo json_encode(['success' => false, 'message' => 'Flashcard não encontrado']);
-            break;
-        }
-        
-        echo json_encode([
-            'success' => true,
-            'flashcard' => $flashcard
-        ]);
-        break;
-    
-    case 'criar_flashcard':
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            echo json_encode(['success' => false, 'message' => 'Método não permitido']);
-            break;
-        }
-        
-        $dados = [
-            'id_deck' => intval($_POST['id_deck'] ?? 0),
-            'frente' => trim($_POST['frente'] ?? ''),
-            'verso' => trim($_POST['verso'] ?? ''),
-            'dica' => trim($_POST['dica'] ?? '') ?: null,
-            'imagem_frente' => trim($_POST['imagem_frente'] ?? '') ?: null,
-            'imagem_verso' => trim($_POST['imagem_verso'] ?? '') ?: null,
-            'audio_frente' => trim($_POST['audio_frente'] ?? '') ?: null,
-            'audio_verso' => trim($_POST['audio_verso'] ?? '') ?: null,
-            'dificuldade' => $_POST['dificuldade'] ?? 'medio',
-            'ordem_no_deck' => intval($_POST['ordem_no_deck'] ?? 0)
-        ];
-        
-        // Validações
-        if (!$dados['id_deck']) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'ID do deck é obrigatório']);
-            break;
-        }
-        
-        if (empty($dados['frente'])) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Frente do flashcard é obrigatória']);
-            break;
-        }
-        
-        if (empty($dados['verso'])) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Verso do flashcard é obrigatório']);
-            break;
-        }
-        
-        $id_flashcard = $flashcardModel->criarFlashcard($dados);
-        
-        if ($id_flashcard) {
-            echo json_encode([
-                'success' => true,
-                'message' => 'Flashcard criado com sucesso',
-                'id_flashcard' => $id_flashcard
-            ]);
-        } else {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Erro ao criar flashcard']);
-        }
-        break;
-    
-    case 'atualizar_flashcard':
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            echo json_encode(['success' => false, 'message' => 'Método não permitido']);
-            break;
-        }
-        
-        $id_flashcard = intval($_POST['id_flashcard'] ?? 0);
-        
-        if (!$id_flashcard) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'ID do flashcard é obrigatório']);
-            break;
-        }
-        
-        $dados = [
-            'frente' => trim($_POST['frente'] ?? ''),
-            'verso' => trim($_POST['verso'] ?? ''),
-            'dica' => trim($_POST['dica'] ?? '') ?: null,
-            'imagem_frente' => trim($_POST['imagem_frente'] ?? '') ?: null,
-            'imagem_verso' => trim($_POST['imagem_verso'] ?? '') ?: null,
-            'audio_frente' => trim($_POST['audio_frente'] ?? '') ?: null,
-            'audio_verso' => trim($_POST['audio_verso'] ?? '') ?: null,
-            'dificuldade' => $_POST['dificuldade'] ?? 'medio',
-            'ordem_no_deck' => intval($_POST['ordem_no_deck'] ?? 0)
-        ];
-        
-        // Validações
-        if (empty($dados['frente'])) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Frente do flashcard é obrigatória']);
-            break;
-        }
-        
-        if (empty($dados['verso'])) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Verso do flashcard é obrigatório']);
-            break;
-        }
-        
-        $sucesso = $flashcardModel->atualizarFlashcard($id_flashcard, $dados);
-        
-        if ($sucesso) {
-            echo json_encode([
-                'success' => true,
-                'message' => 'Flashcard atualizado com sucesso'
-            ]);
-        } else {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Erro ao atualizar flashcard']);
-        }
-        break;
-    
-    case 'excluir_flashcard':
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            echo json_encode(['success' => false, 'message' => 'Método não permitido']);
-            break;
-        }
-        
-        $id_flashcard = intval($_POST['id_flashcard'] ?? 0);
-        
-        if (!$id_flashcard) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'ID do flashcard é obrigatório']);
-            break;
-        }
-        
-        $sucesso = $flashcardModel->excluirFlashcard($id_flashcard);
-        
-        if ($sucesso) {
-            echo json_encode([
-                'success' => true,
-                'message' => 'Flashcard excluído com sucesso'
-            ]);
-        } else {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Erro ao excluir flashcard']);
-        }
-        break;
-    
-    // ==================== SISTEMA DE ESTUDO ====================
-    
-    case 'obter_flashcards_para_revisar':
-        $id_deck = intval($_GET['id_deck'] ?? 0);
-        $limite = intval($_GET['limite'] ?? 20);
-        
-        $flashcards = $flashcardModel->obterFlashcardsParaRevisar($id_usuario, $id_deck ?: null, $limite);
-        
-        echo json_encode([
-            'success' => true,
-            'flashcards' => $flashcards,
-            'total' => count($flashcards)
-        ]);
-        break;
-    
-    case 'registrar_resposta':
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            echo json_encode(['success' => false, 'message' => 'Método não permitido']);
-            break;
-        }
-        
-        $id_flashcard = intval($_POST['id_flashcard'] ?? 0);
-        $acertou = isset($_POST['acertou']) && $_POST['acertou'] === '1';
-        $facilidade_resposta = intval($_POST['facilidade_resposta'] ?? 3);
-        
-        if (!$id_flashcard) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'ID do flashcard é obrigatório']);
-            break;
-        }
-        
-        // Valida facilidade_resposta (1-5)
-        if ($facilidade_resposta < 1 || $facilidade_resposta > 5) {
-            $facilidade_resposta = 3;
-        }
-        
-        $sucesso = $flashcardModel->registrarResposta($id_flashcard, $id_usuario, $acertou, $facilidade_resposta);
-        
-        if ($sucesso) {
-            echo json_encode([
-                'success' => true,
-                'message' => 'Resposta registrada com sucesso'
-            ]);
-        } else {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Erro ao registrar resposta']);
-        }
-        break;
-    
-    case 'obter_estatisticas':
-        $id_deck = intval($_GET['id_deck'] ?? 0);
-        
-        $estatisticas = $flashcardModel->obterEstatisticas($id_usuario, $id_deck ?: null);
-        
-        echo json_encode([
-            'success' => true,
-            'estatisticas' => $estatisticas
-        ]);
-        break;
-    
-    // ==================== NOVAS FUNCIONALIDADES PARA O PAINEL ====================
-    
-    case 'marcar_como_aprendido':
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            echo json_encode(['success' => false, 'message' => 'Método não permitido']);
-            break;
-        }
-        
-        $id_flashcard = intval($_POST['id_flashcard'] ?? 0);
-        
-        if (!$id_flashcard) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'ID do flashcard é obrigatório']);
-            break;
-        }
-        
-        $sucesso = $flashcardModel->marcarComoAprendido($id_flashcard, $id_usuario);
-        
-        if ($sucesso) {
-            echo json_encode([
-                'success' => true,
-                'message' => 'Palavra marcada como aprendida'
-            ]);
-        } else {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Erro ao marcar como aprendida']);
-        }
-        break;
-    
-    case 'desmarcar_como_aprendido':
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            echo json_encode(['success' => false, 'message' => 'Método não permitido']);
-            break;
-        }
-        
-        $id_flashcard = intval($_POST['id_flashcard'] ?? 0);
-        
-        if (!$id_flashcard) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'ID do flashcard é obrigatório']);
-            break;
-        }
-        
-        $sucesso = $flashcardModel->desmarcarComoAprendido($id_flashcard, $id_usuario);
-        
-        if ($sucesso) {
-            echo json_encode([
-                'success' => true,
-                'message' => 'Palavra desmarcada como aprendida'
-            ]);
-        } else {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Erro ao desmarcar como aprendida']);
-        }
-        break;
-    
-    case 'criar_flashcard_rapido':
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            echo json_encode(['success' => false, 'message' => 'Método não permitido']);
-            break;
-        }
-        
-        $palavra_frente = trim($_POST['palavra_frente'] ?? '');
-        $palavra_verso = trim($_POST['palavra_verso'] ?? '');
-        $idioma = $_POST['idioma'] ?? '';
-        $nivel = $_POST['nivel'] ?? '';
-        $id_deck = intval($_POST['id_deck'] ?? 0);
-        
-        // Validações
-        if (empty($palavra_frente)) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Palavra/frase é obrigatória']);
-            break;
-        }
-        
-        if (empty($palavra_verso)) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Tradução é obrigatória']);
-            break;
-        }
-        
-        // Se não especificou deck, busca ou cria o deck padrão
-        if (!$id_deck) {
-            if (empty($idioma) || empty($nivel)) {
-                http_response_code(400);
-                echo json_encode(['success' => false, 'message' => 'Idioma e nível são obrigatórios']);
-                break;
-            }
             
-            $deck_padrao = $flashcardModel->obterOuCriarDeckPadrao($id_usuario, $idioma, $nivel);
-            if (!$deck_padrao) {
-                http_response_code(500);
-                echo json_encode(['success' => false, 'message' => 'Erro ao criar deck padrão']);
-                break;
-            }
-            $id_deck = $deck_padrao['id'];
-        }
-        
-        $id_flashcard = $flashcardModel->criarFlashcardRapido($id_deck, $palavra_frente, $palavra_verso, $id_usuario);
-        
-        if ($id_flashcard) {
-            echo json_encode([
-                'success' => true,
-                'message' => 'Palavra adicionada com sucesso',
-                'id_flashcard' => $id_flashcard,
-                'id_deck' => $id_deck
-            ]);
-        } else {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Erro ao adicionar palavra']);
-        }
-        break;
-    
-    case 'listar_palavras_usuario':
-        $idioma = $_GET['idioma'] ?? null;
-        $nivel = $_GET['nivel'] ?? null;
-        $aprendidas = isset($_GET['aprendidas']) ? ($_GET['aprendidas'] === '1') : null;
-        $limite = intval($_GET['limite'] ?? 50);
-        
-        $palavras = $flashcardModel->listarPalavrasUsuario($id_usuario, $idioma, $nivel, $aprendidas, $limite);
-        
-        echo json_encode([
-            'success' => true,
-            'palavras' => $palavras,
-            'total' => count($palavras)
-        ]);
-        break;
-    
-    case 'obter_deck_padrao':
-        $idioma = $_GET['idioma'] ?? '';
-        $nivel = $_GET['nivel'] ?? '';
-        
-        if (empty($idioma) || empty($nivel)) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Idioma e nível são obrigatórios']);
+        case 'atualizar_deck':
+            atualizarDeck($conn, $id_usuario);
             break;
-        }
-        
-        $deck = $flashcardModel->obterOuCriarDeckPadrao($id_usuario, $idioma, $nivel);
-        
-        if ($deck) {
-            echo json_encode([
-                'success' => true,
-                'deck' => $deck
-            ]);
-        } else {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Erro ao obter deck padrão']);
-        }
-        break;
-    
-    // ==================== AÇÃO PADRÃO ====================
-    
-    default:
-        http_response_code(400);
-        echo json_encode([
-            'success' => false,
-            'message' => 'Ação não reconhecida',
-            'actions_available' => [
-                'listar_decks',
-                'listar_decks_publicos',
-                'obter_deck',
-                'criar_deck',
-                'atualizar_deck',
-                'excluir_deck',
-                'listar_flashcards',
-                'obter_flashcard',
-                'criar_flashcard',
-                'atualizar_flashcard',
-                'excluir_flashcard',
-                'obter_flashcards_para_revisar',
-                'registrar_resposta',
-                'obter_estatisticas',
-                'marcar_como_aprendido',
-                'desmarcar_como_aprendido',
-                'criar_flashcard_rapido',
-                'listar_palavras_usuario',
-                'obter_deck_padrao'
-            ]
-        ]);
-        break;
+            
+        case 'listar_decks':
+            listarDecks($conn, $id_usuario);
+            break;
+            
+        case 'listar_decks_publicos':
+            listarDecksPublicos($conn, $id_usuario);
+            break;
+            
+        case 'obter_deck':
+            obterDeck($conn, $id_usuario);
+            break;
+            
+        // Ações para Flashcards
+        case 'criar_flashcard':
+            criarFlashcard($conn, $id_usuario);
+            break;
+            
+        case 'atualizar_flashcard':
+            atualizarFlashcard($conn, $id_usuario);
+            break;
+            
+        case 'excluir_flashcard':
+            excluirFlashcard($conn, $id_usuario);
+            break;
+            
+        case 'listar_flashcards':
+            listarFlashcards($conn, $id_usuario);
+            break;
+            
+        case 'obter_flashcard':
+            obterFlashcard($conn, $id_usuario);
+            break;
+            
+        case 'obter_flashcards_para_revisar':
+            obterFlashcardsParaRevisar($conn, $id_usuario);
+            break;
+            
+        case 'registrar_resposta':
+            registrarResposta($conn, $id_usuario);
+            break;
+            
+        default:
+            echo json_encode(['success' => false, 'message' => 'Ação não reconhecida: ' . $action]);
+            break;
+    }
+} catch (Exception $e) {
+    echo json_encode(['success' => false, 'message' => 'Erro: ' . $e->getMessage()]);
 }
 
-// Fecha a conexão com o banco de dados
 $database->closeConnection();
+
+// ========== FUNÇÕES PARA DECKS ==========
+
+function criarDeck($conn, $id_usuario) {
+    $nome = trim($_POST['nome'] ?? '');
+    $descricao = trim($_POST['descricao'] ?? '');
+    $idioma = $_POST['idioma'] ?? '';
+    $nivel = $_POST['nivel'] ?? '';
+    $publico = isset($_POST['publico']) ? 1 : 0;
+
+    // Validação
+    if (empty($nome) || empty($idioma) || empty($nivel)) {
+        echo json_encode(['success' => false, 'message' => 'Nome, idioma e nível são obrigatórios']);
+        return;
+    }
+
+    $sql = "INSERT INTO decks (id_usuario, nome, descricao, idioma, nivel, publico, data_criacao) 
+            VALUES (?, ?, ?, ?, ?, ?, NOW())";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("issssi", $id_usuario, $nome, $descricao, $idioma, $nivel, $publico);
+    
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true, 'message' => 'Deck criado com sucesso', 'id' => $stmt->insert_id]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Erro ao criar deck: ' . $stmt->error]);
+    }
+    
+    $stmt->close();
+}
+
+function atualizarDeck($conn, $id_usuario) {
+    $id_deck = intval($_POST['id_deck'] ?? 0);
+    $nome = trim($_POST['nome'] ?? '');
+    $descricao = trim($_POST['descricao'] ?? '');
+    $idioma = $_POST['idioma'] ?? '';
+    $nivel = $_POST['nivel'] ?? '';
+    $publico = isset($_POST['publico']) ? 1 : 0;
+
+    // Verifica se o deck pertence ao usuário
+    if (!verificarDonoDeck($conn, $id_deck, $id_usuario)) {
+        echo json_encode(['success' => false, 'message' => 'Acesso negado ao deck']);
+        return;
+    }
+
+    // Validação
+    if (empty($nome) || empty($idioma) || empty($nivel)) {
+        echo json_encode(['success' => false, 'message' => 'Nome, idioma e nível são obrigatórios']);
+        return;
+    }
+
+    $sql = "UPDATE decks SET nome = ?, descricao = ?, idioma = ?, nivel = ?, publico = ? 
+            WHERE id = ? AND id_usuario = ?";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ssssiii", $nome, $descricao, $idioma, $nivel, $publico, $id_deck, $id_usuario);
+    
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true, 'message' => 'Deck atualizado com sucesso']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Erro ao atualizar deck: ' . $stmt->error]);
+    }
+    
+    $stmt->close();
+}
+
+function listarDecks($conn, $id_usuario) {
+    $filtroIdioma = $_GET['idioma'] ?? '';
+    $filtroNivel = $_GET['nivel'] ?? '';
+
+    $sql = "SELECT d.*, 
+                   (SELECT COUNT(*) FROM flashcards f WHERE f.id_deck = d.id) as total_flashcards,
+                   (SELECT COUNT(DISTINCT fr.id_flashcard) 
+                    FROM flashcard_respostas fr 
+                    JOIN flashcards f ON fr.id_flashcard = f.id 
+                    WHERE f.id_deck = d.id AND fr.id_usuario = ?) as flashcards_estudados
+            FROM decks d 
+            WHERE d.id_usuario = ?";
+    
+    $params = [$id_usuario, $id_usuario];
+    $types = "ii";
+
+    if (!empty($filtroIdioma)) {
+        $sql .= " AND d.idioma = ?";
+        $params[] = $filtroIdioma;
+        $types .= "s";
+    }
+
+    if (!empty($filtroNivel)) {
+        $sql .= " AND d.nivel = ?";
+        $params[] = $filtroNivel;
+        $types .= "s";
+    }
+
+    $sql .= " ORDER BY d.data_criacao DESC";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $decks = [];
+    while ($row = $result->fetch_assoc()) {
+        $decks[] = $row;
+    }
+
+    echo json_encode(['success' => true, 'decks' => $decks]);
+    $stmt->close();
+}
+
+function listarDecksPublicos($conn, $id_usuario) {
+    $filtroIdioma = $_GET['idioma'] ?? '';
+    $filtroNivel = $_GET['nivel'] ?? '';
+
+    $sql = "SELECT d.*, u.nome as nome_criador,
+                   (SELECT COUNT(*) FROM flashcards f WHERE f.id_deck = d.id) as total_flashcards,
+                   (SELECT COUNT(DISTINCT fr.id_flashcard) 
+                    FROM flashcard_respostas fr 
+                    JOIN flashcards f ON fr.id_flashcard = f.id 
+                    WHERE f.id_deck = d.id AND fr.id_usuario = ?) as flashcards_estudados
+            FROM decks d 
+            LEFT JOIN usuarios u ON d.id_usuario = u.id 
+            WHERE d.publico = 1 AND d.id_usuario != ?";
+    
+    $params = [$id_usuario, $id_usuario];
+    $types = "ii";
+
+    if (!empty($filtroIdioma)) {
+        $sql .= " AND d.idioma = ?";
+        $params[] = $filtroIdioma;
+        $types .= "s";
+    }
+
+    if (!empty($filtroNivel)) {
+        $sql .= " AND d.nivel = ?";
+        $params[] = $filtroNivel;
+        $types .= "s";
+    }
+
+    $sql .= " ORDER BY d.data_criacao DESC";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $decks = [];
+    while ($row = $result->fetch_assoc()) {
+        $decks[] = $row;
+    }
+
+    echo json_encode(['success' => true, 'decks' => $decks]);
+    $stmt->close();
+}
+
+// ========== FUNÇÕES PARA FLASHCARDS ==========
+
+function criarFlashcard($conn, $id_usuario) {
+    $id_deck = intval($_POST['id_deck']);
+    $frente = trim($_POST['frente']);
+    $verso = trim($_POST['verso']);
+    $dica = trim($_POST['dica'] ?? '');
+    $dificuldade = $_POST['dificuldade'] ?? 'medio';
+    $ordem_no_deck = intval($_POST['ordem_no_deck'] ?? 0);
+
+    // Verifica se o deck pertence ao usuário
+    if (!verificarDonoDeck($conn, $id_deck, $id_usuario)) {
+        echo json_encode(['success' => false, 'message' => 'Acesso negado ao deck']);
+        return;
+    }
+
+    // Validação
+    if (empty($frente) || empty($verso)) {
+        echo json_encode(['success' => false, 'message' => 'Frente e verso são obrigatórios']);
+        return;
+    }
+
+    $sql = "INSERT INTO flashcards (id_deck, frente, verso, dica, dificuldade, ordem_no_deck, data_criacao) 
+            VALUES (?, ?, ?, ?, ?, ?, NOW())";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("issssi", $id_deck, $frente, $verso, $dica, $dificuldade, $ordem_no_deck);
+    
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true, 'message' => 'Flashcard criado com sucesso']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Erro ao criar flashcard: ' . $stmt->error]);
+    }
+    
+    $stmt->close();
+}
+
+function atualizarFlashcard($conn, $id_usuario) {
+    $id_flashcard = intval($_POST['id_flashcard']);
+    $frente = trim($_POST['frente']);
+    $verso = trim($_POST['verso']);
+    $dica = trim($_POST['dica'] ?? '');
+    $dificuldade = $_POST['dificuldade'] ?? 'medio';
+    $ordem_no_deck = intval($_POST['ordem_no_deck'] ?? 0);
+
+    // Verifica se o flashcard pertence ao usuário
+    if (!verificarDonoFlashcard($conn, $id_flashcard, $id_usuario)) {
+        echo json_encode(['success' => false, 'message' => 'Acesso negado ao flashcard']);
+        return;
+    }
+
+    // Validação
+    if (empty($frente) || empty($verso)) {
+        echo json_encode(['success' => false, 'message' => 'Frente e verso são obrigatórios']);
+        return;
+    }
+
+    $sql = "UPDATE flashcards SET frente = ?, verso = ?, dica = ?, dificuldade = ?, ordem_no_deck = ? 
+            WHERE id = ?";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ssssii", $frente, $verso, $dica, $dificuldade, $ordem_no_deck, $id_flashcard);
+    
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true, 'message' => 'Flashcard atualizado com sucesso']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Erro ao atualizar flashcard: ' . $stmt->error]);
+    }
+    
+    $stmt->close();
+}
+
+function excluirFlashcard($conn, $id_usuario) {
+    $id_flashcard = intval($_POST['id_flashcard']);
+
+    // Verifica se o flashcard pertence ao usuário
+    if (!verificarDonoFlashcard($conn, $id_flashcard, $id_usuario)) {
+        echo json_encode(['success' => false, 'message' => 'Acesso negado ao flashcard']);
+        return;
+    }
+
+    $sql = "DELETE FROM flashcards WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $id_flashcard);
+    
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true, 'message' => 'Flashcard excluído com sucesso']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Erro ao excluir flashcard: ' . $stmt->error]);
+    }
+    
+    $stmt->close();
+}
+
+function listarFlashcards($conn, $id_usuario) {
+    $id_deck = intval($_GET['id_deck']);
+
+    // Verifica se o deck pertence ao usuário ou é público
+    if (!verificarAcessoDeck($conn, $id_deck, $id_usuario)) {
+        echo json_encode(['success' => false, 'message' => 'Acesso negado ao deck']);
+        return;
+    }
+
+    $sql = "SELECT f.*, 
+                   (SELECT COUNT(*) FROM flashcard_respostas fr WHERE fr.id_flashcard = f.id AND fr.acertou = 1) as acertos,
+                   (SELECT COUNT(*) FROM flashcard_respostas fr WHERE fr.id_flashcard = f.id AND fr.acertou = 0) as erros
+            FROM flashcards f 
+            WHERE f.id_deck = ? 
+            ORDER BY f.ordem_no_deck ASC, f.id ASC";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $id_deck);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $flashcards = [];
+    while ($row = $result->fetch_assoc()) {
+        $flashcards[] = $row;
+    }
+
+    echo json_encode(['success' => true, 'flashcards' => $flashcards]);
+    $stmt->close();
+}
+
+function obterFlashcard($conn, $id_usuario) {
+    $id_flashcard = intval($_GET['id_flashcard']);
+
+    // Verifica se o flashcard pertence ao usuário
+    if (!verificarDonoFlashcard($conn, $id_flashcard, $id_usuario)) {
+        echo json_encode(['success' => false, 'message' => 'Acesso negado ao flashcard']);
+        return;
+    }
+
+    $sql = "SELECT * FROM flashcards WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $id_flashcard);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $flashcard = $result->fetch_assoc();
+
+    if ($flashcard) {
+        echo json_encode(['success' => true, 'flashcard' => $flashcard]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Flashcard não encontrado']);
+    }
+    
+    $stmt->close();
+}
+
+function obterDeck($conn, $id_usuario) {
+    $id_deck = intval($_GET['id_deck']);
+
+    // Verifica se o deck pertence ao usuário ou é público
+    if (!verificarAcessoDeck($conn, $id_deck, $id_usuario)) {
+        echo json_encode(['success' => false, 'message' => 'Acesso negado ao deck']);
+        return;
+    }
+
+    $sql = "SELECT d.*, u.nome as nome_criador,
+                   (SELECT COUNT(*) FROM flashcards f WHERE f.id_deck = d.id) as total_flashcards,
+                   (SELECT COUNT(DISTINCT fr.id_flashcard) 
+                    FROM flashcard_respostas fr 
+                    JOIN flashcards f ON fr.id_flashcard = f.id 
+                    WHERE f.id_deck = d.id AND fr.id_usuario = ?) as flashcards_estudados
+            FROM decks d 
+            LEFT JOIN usuarios u ON d.id_usuario = u.id 
+            WHERE d.id = ?";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $id_usuario, $id_deck);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $deck = $result->fetch_assoc();
+
+    if ($deck) {
+        echo json_encode(['success' => true, 'deck' => $deck]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Deck não encontrado']);
+    }
+    
+    $stmt->close();
+}
+
+function obterFlashcardsParaRevisar($conn, $id_usuario) {
+    $id_deck = isset($_GET['id_deck']) ? intval($_GET['id_deck']) : null;
+    $limite = intval($_GET['limite'] ?? 50);
+
+    if ($id_deck) {
+        // Verifica acesso ao deck específico
+        if (!verificarAcessoDeck($conn, $id_deck, $id_usuario)) {
+            echo json_encode(['success' => false, 'message' => 'Acesso negado ao deck']);
+            return;
+        }
+        
+        $sql = "SELECT f.* FROM flashcards f WHERE f.id_deck = ? 
+                ORDER BY RAND() LIMIT ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("ii", $id_deck, $limite);
+    } else {
+        // Todos os decks do usuário
+        $sql = "SELECT f.* FROM flashcards f 
+                JOIN decks d ON f.id_deck = d.id 
+                WHERE d.id_usuario = ? OR d.publico = 1 
+                ORDER BY RAND() LIMIT ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("ii", $id_usuario, $limite);
+    }
+
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $flashcards = [];
+    while ($row = $result->fetch_assoc()) {
+        $flashcards[] = $row;
+    }
+
+    echo json_encode(['success' => true, 'flashcards' => $flashcards]);
+    $stmt->close();
+}
+
+function registrarResposta($conn, $id_usuario) {
+    $id_flashcard = intval($_POST['id_flashcard']);
+    $acertou = intval($_POST['acertou']);
+    $facilidade_resposta = intval($_POST['facilidade_resposta']);
+
+    // Verifica se o flashcard existe e usuário tem acesso
+    if (!verificarAcessoFlashcard($conn, $id_flashcard, $id_usuario)) {
+        echo json_encode(['success' => false, 'message' => 'Acesso negado ao flashcard']);
+        return;
+    }
+
+    $sql = "INSERT INTO flashcard_respostas (id_flashcard, id_usuario, acertou, facilidade_resposta, data_resposta) 
+            VALUES (?, ?, ?, ?, NOW()) 
+            ON DUPLICATE KEY UPDATE 
+            acertou = VALUES(acertou), 
+            facilidade_resposta = VALUES(facilidade_resposta), 
+            data_resposta = VALUES(data_resposta)";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("iiii", $id_flashcard, $id_usuario, $acertou, $facilidade_resposta);
+    
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true, 'message' => 'Resposta registrada']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Erro ao registrar resposta: ' . $stmt->error]);
+    }
+    
+    $stmt->close();
+}
+
+// ========== FUNÇÕES AUXILIARES ==========
+
+function verificarDonoDeck($conn, $id_deck, $id_usuario) {
+    $sql = "SELECT id FROM decks WHERE id = ? AND id_usuario = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $id_deck, $id_usuario);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $exists = $result->num_rows > 0;
+    $stmt->close();
+    return $exists;
+}
+
+function verificarDonoFlashcard($conn, $id_flashcard, $id_usuario) {
+    $sql = "SELECT f.id FROM flashcards f 
+            JOIN decks d ON f.id_deck = d.id 
+            WHERE f.id = ? AND d.id_usuario = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $id_flashcard, $id_usuario);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $exists = $result->num_rows > 0;
+    $stmt->close();
+    return $exists;
+}
+
+function verificarAcessoDeck($conn, $id_deck, $id_usuario) {
+    $sql = "SELECT id FROM decks WHERE id = ? AND (id_usuario = ? OR publico = 1)";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $id_deck, $id_usuario);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $exists = $result->num_rows > 0;
+    $stmt->close();
+    return $exists;
+}
+
+function verificarAcessoFlashcard($conn, $id_flashcard, $id_usuario) {
+    $sql = "SELECT f.id FROM flashcards f 
+            JOIN decks d ON f.id_deck = d.id 
+            WHERE f.id = ? AND (d.id_usuario = ? OR d.publico = 1)";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $id_flashcard, $id_usuario);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $exists = $result->num_rows > 0;
+    $stmt->close();
+    return $exists;
+}
 ?>
