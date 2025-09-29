@@ -16,35 +16,39 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `exercicios`
+-- Table structure for table `progresso_bloco`
 --
 
-DROP TABLE IF EXISTS `exercicios`;
+DROP TABLE IF EXISTS `progresso_bloco`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `exercicios` (
+CREATE TABLE `progresso_bloco` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `caminho_id` int NOT NULL,
-  `ordem` int NOT NULL,
-  `tipo` enum('normal','especial','quiz') NOT NULL,
-  `pergunta` text NOT NULL,
-  `conteudo` json DEFAULT NULL,
-  `categoria` enum('gramatica','fala','escrita','leitura','audicao') DEFAULT 'gramatica',
-  `dificuldade` enum('facil','medio','dificil') DEFAULT 'medio',
+  `id_usuario` int NOT NULL,
+  `id_bloco` int NOT NULL,
+  `total_atividades` int DEFAULT '0',
+  `atividades_concluidas` int DEFAULT '0',
+  `total_pontos` int DEFAULT '0',
+  `pontos_obtidos` int DEFAULT '0',
+  `progresso_percentual` decimal(5,2) DEFAULT '0.00',
+  `data_inicio` datetime DEFAULT CURRENT_TIMESTAMP,
+  `data_conclusao` datetime DEFAULT NULL,
+  `concluido` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
-  KEY `caminho_id` (`caminho_id`),
-  CONSTRAINT `exercicios_ibfk_1` FOREIGN KEY (`caminho_id`) REFERENCES `caminhos_aprendizagem` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `id_usuario` (`id_usuario`),
+  KEY `id_bloco` (`id_bloco`),
+  CONSTRAINT `progresso_bloco_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`),
+  CONSTRAINT `progresso_bloco_ibfk_2` FOREIGN KEY (`id_bloco`) REFERENCES `blocos_atividades` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `exercicios`
+-- Dumping data for table `progresso_bloco`
 --
 
-LOCK TABLES `exercicios` WRITE;
-/*!40000 ALTER TABLE `exercicios` DISABLE KEYS */;
-INSERT INTO `exercicios` VALUES (3,11,1,'normal','What do you need to travel to another country?','{\"explicacao\": \"A passport is an official document you need to enter another country. A bike, television, or book are not necessary for travel.\", \"alternativas\": [{\"id\": \"a\", \"texto\": \"A passport\", \"correta\": true}, {\"id\": \"b\", \"texto\": \"A bike\", \"correta\": false}, {\"id\": \"c\", \"texto\": \"A television\", \"correta\": false}, {\"id\": \"d\", \"texto\": \"A book\", \"correta\": false}]}','gramatica','medio');
-/*!40000 ALTER TABLE `exercicios` ENABLE KEYS */;
+LOCK TABLES `progresso_bloco` WRITE;
+/*!40000 ALTER TABLE `progresso_bloco` DISABLE KEYS */;
+/*!40000 ALTER TABLE `progresso_bloco` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -56,4 +60,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-09-29 15:10:04
+-- Dump completed on 2025-09-29 15:10:05

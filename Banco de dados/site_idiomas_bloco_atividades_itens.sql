@@ -16,35 +16,32 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `exercicios`
+-- Table structure for table `bloco_atividades_itens`
 --
 
-DROP TABLE IF EXISTS `exercicios`;
+DROP TABLE IF EXISTS `bloco_atividades_itens`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `exercicios` (
+CREATE TABLE `bloco_atividades_itens` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `caminho_id` int NOT NULL,
+  `id_bloco` int NOT NULL,
+  `id_exercicio` int NOT NULL,
   `ordem` int NOT NULL,
-  `tipo` enum('normal','especial','quiz') NOT NULL,
-  `pergunta` text NOT NULL,
-  `conteudo` json DEFAULT NULL,
-  `categoria` enum('gramatica','fala','escrita','leitura','audicao') DEFAULT 'gramatica',
-  `dificuldade` enum('facil','medio','dificil') DEFAULT 'medio',
   PRIMARY KEY (`id`),
-  KEY `caminho_id` (`caminho_id`),
-  CONSTRAINT `exercicios_ibfk_1` FOREIGN KEY (`caminho_id`) REFERENCES `caminhos_aprendizagem` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `id_bloco` (`id_bloco`),
+  KEY `id_exercicio` (`id_exercicio`),
+  CONSTRAINT `bloco_atividades_itens_ibfk_1` FOREIGN KEY (`id_bloco`) REFERENCES `blocos_atividades` (`id`),
+  CONSTRAINT `bloco_atividades_itens_ibfk_2` FOREIGN KEY (`id_exercicio`) REFERENCES `exercicios` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `exercicios`
+-- Dumping data for table `bloco_atividades_itens`
 --
 
-LOCK TABLES `exercicios` WRITE;
-/*!40000 ALTER TABLE `exercicios` DISABLE KEYS */;
-INSERT INTO `exercicios` VALUES (3,11,1,'normal','What do you need to travel to another country?','{\"explicacao\": \"A passport is an official document you need to enter another country. A bike, television, or book are not necessary for travel.\", \"alternativas\": [{\"id\": \"a\", \"texto\": \"A passport\", \"correta\": true}, {\"id\": \"b\", \"texto\": \"A bike\", \"correta\": false}, {\"id\": \"c\", \"texto\": \"A television\", \"correta\": false}, {\"id\": \"d\", \"texto\": \"A book\", \"correta\": false}]}','gramatica','medio');
-/*!40000 ALTER TABLE `exercicios` ENABLE KEYS */;
+LOCK TABLES `bloco_atividades_itens` WRITE;
+/*!40000 ALTER TABLE `bloco_atividades_itens` DISABLE KEYS */;
+/*!40000 ALTER TABLE `bloco_atividades_itens` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
