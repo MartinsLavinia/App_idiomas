@@ -611,8 +611,8 @@ $database->closeConnection();
                 <a href="gerenciar_caminho.php" class="list-group-item" data-bs-toggle="modal" data-bs-target="#addCaminhoModal">
                     <i class="fas fa-plus-circle"></i> Adicionar Caminho
                 </a>
-                <a href="#" class="list-group-item" data-bs-toggle="modal" data-bs-target="#adicionarIdiomaCompletoModal">
-                    <i class="fas fa-language"></i> Adicionar Idioma com Quiz
+                <a href="pagina_adicionar_idiomas.php" class="list-group-item">
+                    <i class="fas fa-language "></i> Adicionar Idioma com Quiz
                 </a>
                 <a href="#" class="list-group-item" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
                     <i class="fas fa-globe"></i> Gerenciar Idiomas
@@ -709,8 +709,8 @@ $database->closeConnection();
                         <td><?php echo htmlspecialchars($caminho['nome_caminho']); ?></td>
                         <td><?php echo htmlspecialchars($caminho['nivel']); ?></td>
                         <td>
-                            <a href="gerenciar_exercicios.php?caminho_id=<?php echo htmlspecialchars($caminho['id']); ?>"
-                                class="btn btn-sm btn-info">Ver Exercícios</a>
+                            <a href="gerenciar_blocos.php?caminho_id=<?php echo htmlspecialchars($caminho['id']); ?>"
+                                class="btn btn-sm btn-info">Ver Blocos</a>
                             <a href="editar_caminho.php?id=<?php echo htmlspecialchars($caminho['id']); ?>"
                                 class="btn btn-sm btn-primary">Editar</a>
                             <button type="button" class="btn btn-sm btn-danger delete-btn" data-bs-toggle="modal"
@@ -793,68 +793,6 @@ $database->closeConnection();
             </div>
         </div>
 
-        <!-- Modal para Adicionar Idioma Completo -->
-        <div class="modal fade" id="adicionarIdiomaCompletoModal" tabindex="-1" aria-labelledby="adicionarIdiomaCompletoModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-xl modal-dialog-scrollable">
-                <div class="modal-content">
-                    <form action="adicionar_idioma_completo.php" method="POST">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="adicionarIdiomaCompletoModalLabel">Adicionar Novo Idioma com Quiz</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label for="idioma_novo_completo" class="form-label">Nome do Idioma</label>
-                                <input type="text" class="form-control" id="idioma_novo_completo" name="idioma" placeholder="Ex: Espanhol" required>
-                            </div>
-
-                            <hr>
-                            <h5>Perguntas do Quiz de Nivelamento (20 perguntas)</h5>
-                            <p class="text-muted">A resposta correta para cada pergunta deve ser "A", "B" ou "C".</p>
-
-                            <?php for ($i = 1; $i <= 20; $i++): ?>
-                            <div class="card mb-3">
-                                <div class="card-header">Pergunta #<?php echo $i; ?></div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <label for="pergunta_<?php echo $i; ?>" class="form-label">Pergunta</label>
-                                        <textarea class="form-control" id="pergunta_<?php echo $i; ?>" name="pergunta_<?php echo $i; ?>" rows="2" required></textarea>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-4 mb-3">
-                                            <label for="opcao_a_<?php echo $i; ?>" class="form-label">Opção A</label>
-                                            <input type="text" class="form-control" id="opcao_a_<?php echo $i; ?>" name="opcao_a_<?php echo $i; ?>" required>
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label for="opcao_b_<?php echo $i; ?>" class="form-label">Opção B</label>
-                                            <input type="text" class="form-control" id="opcao_b_<?php echo $i; ?>" name="opcao_b_<?php echo $i; ?>" required>
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label for="opcao_c_<?php echo $i; ?>" class="form-label">Opção C</label>
-                                            <input type="text" class="form-control" id="opcao_c_<?php echo $i; ?>" name="opcao_c_<?php echo $i; ?>" required>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="resposta_correta_<?php echo $i; ?>" class="form-label">Resposta Correta</label>
-                                        <select id="resposta_correta_<?php echo $i; ?>" name="resposta_correta_<?php echo $i; ?>" class="form-select" required>
-                                            <option value="">Selecione a resposta correta</option>
-                                            <option value="A">Opção A</option>
-                                            <option value="B">Opção B</option>
-                                            <option value="C">Opção C</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <?php endfor; ?>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                            <button type="submit" class="btn btn-success">Salvar Idioma e Quiz</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
 
         <!-- Modal para Gerenciar Idiomas -->
         <div class="modal fade" id="gerenciarIdiomasModal" tabindex="-1" aria-labelledby="gerenciarIdiomasModalLabel" aria-hidden="true">
