@@ -57,7 +57,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Adicionar Teoria - Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <!-- Removido o TinyMCE com problema de API key -->
 </head>
 <body>
     <div class="container mt-5">
@@ -80,12 +80,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <label for="nivel" class="form-label">Nível *</label>
                         <select class="form-select" id="nivel" name="nivel" required>
                             <option value="">Selecione o nível</option>
-                            <option value="Iniciante" <?php echo (isset($nivel) && $nivel == 'Iniciante') ? 'selected' : ''; ?>>A1</option>
-                            <option value="Intermediário" <?php echo (isset($nivel) && $nivel == 'Básico') ? 'selected' : ''; ?>>A2</option>
-                            <option value="Avançado" <?php echo (isset($nivel) && $nivel == 'Intermediário') ? 'selected' : ''; ?>>B1</option>
-                            <option value="Iniciante" <?php echo (isset($nivel) && $nivel == 'Intermediário Avançado') ? 'selected' : ''; ?>>B2</option>
-                            <option value="Intermediário" <?php echo (isset($nivel) && $nivel == 'Avançado') ? 'selected' : ''; ?>>C1</option>
-                            <option value="Avançado" <?php echo (isset($nivel) && $nivel == 'Proficiente') ? 'selected' : ''; ?>>C2</option>
+                            <option value="A1" <?php echo (isset($nivel) && $nivel == 'A1') ? 'selected' : ''; ?>>A1 - Iniciante</option>
+                            <option value="A2" <?php echo (isset($nivel) && $nivel == 'A2') ? 'selected' : ''; ?>>A2 - Básico</option>
+                            <option value="B1" <?php echo (isset($nivel) && $nivel == 'B1') ? 'selected' : ''; ?>>B1 - Intermediário</option>
+                            <option value="B2" <?php echo (isset($nivel) && $nivel == 'B2') ? 'selected' : ''; ?>>B2 - Intermediário Avançado</option>
+                            <option value="C1" <?php echo (isset($nivel) && $nivel == 'C1') ? 'selected' : ''; ?>>C1 - Avançado</option>
+                            <option value="C2" <?php echo (isset($nivel) && $nivel == 'C2') ? 'selected' : ''; ?>>C2 - Proficiente</option>
                         </select>
                     </div>
 
@@ -125,23 +125,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Alternativa: Usar um editor mais simples ou instruções para configurar TinyMCE -->
     <script>
-        // Inicializar TinyMCE para o campo de conteúdo
-        tinymce.init({
-            selector: '#conteudo',
-            height: 400,
-            menubar: false,
-            plugins: [
-                'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-                'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                'insertdatetime', 'media', 'table', 'help', 'wordcount'
-            ],
-            toolbar: 'undo redo | blocks | ' +
-                'bold italic forecolor | alignleft aligncenter ' +
-                'alignright alignjustify | bullist numlist outdent indent | ' +
-                'removeformat | help',
-            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
-        });
+        // Alternativa 1: Usar um editor simples baseado em textarea
+        // Alternativa 2: Instruções para configurar TinyMCE corretamente
+        
+        console.log('Para usar TinyMCE, você precisa:');
+        console.log('1. Acessar https://www.tiny.cloud/ e criar uma conta');
+        console.log('2. Obter uma API key gratuita');
+        console.log('3. Substituir "no-api-key" pela sua chave no script do TinyMCE');
+        
+        // Exemplo de como ficaria com API key:
+        // <script src="https://cdn.tiny.cloud/1/SUA_API_KEY_AQUI/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
     </script>
 </body>
 </html>
