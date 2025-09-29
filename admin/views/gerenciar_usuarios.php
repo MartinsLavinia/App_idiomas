@@ -139,9 +139,9 @@ $database->closeConnection();
 
     /* Barra de Navegação */
     .navbar {
-        background: var(--roxo-principal) !important;
+        background: transparent !important;
         border-bottom: 3px solid var(--amarelo-detalhe);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 15px rgba(255, 238, 0, 0.38);
     }
 
     .navbar-brand {
@@ -411,7 +411,7 @@ $database->closeConnection();
         left: 0;
         width: 250px;
         height: 100%;
-        background-color: var(--roxo-principal);
+        background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
         color: var(--branco);
         display: flex;
         flex-direction: column;
@@ -481,6 +481,14 @@ $database->closeConnection();
     }
 
     /* Ajuste da logo no header */
+    .navbar-brand {
+        margin-left: auto;
+        margin-right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end; /* Move para o canto direito */
+        width: 100%;
+    }
     .navbar-brand .logo-header {
         height: 70px;
         width: auto;
@@ -548,14 +556,13 @@ $database->closeConnection();
 <body>
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="#">
-                <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
-            </a>
-
-            <!-- Espaço flexível entre a logo e o ícone -->
-            <div class="ms-auto">
-                <a href="editar_perfil.php" class="text-white settings-icon">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div></div>
+            <div class="d-flex align-items-center" style="gap: 24px;">
+                <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
+                    <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
+                </a>
+                <a href="editar_perfil.php" class="settings-icon" style="color: var(--roxo-principal) !important;">
                     <i class="fas fa-cog fa-lg"></i>
                 </a>
             </div>
