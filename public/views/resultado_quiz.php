@@ -529,6 +529,9 @@ if ($percentual >= 80) {
         const opcoesNiveisDinamicas = document.getElementById('opcoesNiveisDinamicas');
         const loadingOverlay = document.getElementById('loadingOverlay');
 
+        // Variável para controlar se o redirecionamento é permitido
+        let redirecionamentoPermitido = false;
+
         function mostrarSecao(secaoAtiva) {
             document.querySelectorAll('.secao').forEach(secao => {
                 secao.classList.add('hidden');
@@ -601,17 +604,19 @@ if ($percentual >= 80) {
         }
 
         function confirmarNivelFinal(nivel) {
+            // Marca que o redirecionamento é permitido
+            redirecionamentoPermitido = true;
+            
             loadingOverlay.classList.remove('d-none');
             loadingOverlay.classList.add('d-flex');
             
-            setTimeout(() => {
-                window.location.href = `painel.php?idioma=<?php echo htmlspecialchars($idioma_quiz); ?>&nivel_escolhido=${nivel}&acertos=<?php echo $acertos; ?>&total=<?php echo $total_perguntas; ?>&percentual=<?php echo $percentual; ?>`;
-            }, 2000);
+            // Redireciona imediatamente sem delay
+            window.location.href = `painel.php?idioma=<?php echo htmlspecialchars($idioma_quiz); ?>&nivel_escolhido=${nivel}&acertos=<?php echo $acertos; ?>&total=<?php echo $total_perguntas; ?>&percentual=<?php echo $percentual; ?>`;
         }
 
-        // Prevenir fechamento acidental da página
+        // Modifica o evento beforeunload para não bloquear quando o redirecionamento é permitido
         window.addEventListener('beforeunload', function(e) {
-            if (loadingOverlay.classList.contains('d-flex')) {
+            if (loadingOverlay.classList.contains('d-flex') && !redirecionamentoPermitido) {
                 e.preventDefault();
                 e.returnValue = '';
             }

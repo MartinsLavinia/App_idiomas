@@ -102,7 +102,7 @@ function salvarDeck() {
     })
     .catch(error => {
         console.error('Erro detalhado:', error);
-        alert('Erro ao salvar deck: ' + error.message);
+        mostrarMensagem('Erro ao salvar deck: ' + error.message, 'danger');
     })
     .finally(() => {
         // Restaurar botão
@@ -132,7 +132,7 @@ function mostrarMensagem(mensagem, tipo = 'success') {
     }, 5000);
 }
 
-// Restante do código permanece igual...
+// Exibe decks na lista
 function exibirDecks(decks) {
     const container = document.getElementById('listaDecks');
     container.innerHTML = '';
@@ -190,10 +190,8 @@ function exibirDecks(decks) {
 
 // NOVA FUNÇÃO: Abrir deck
 function abrirDeck(idDeck) {
-    window.location.href = `deck_detalhes.php?id=${idDeck}`;
+    window.location.href = `flashcard_deck.php?id=${idDeck}`;
 }
-
-// Restante do código permanece o mesmo...
 
 // Exibe erro ao carregar decks
 function exibirErroDecks(mensagem) {
@@ -217,8 +215,8 @@ function aplicarFiltros() {
 function limparFiltros() {
     document.getElementById('filtroIdioma').value = '';
     document.getElementById('tipoDecks').value = 'meus';
-    const deckNivel = document.getElementById('deckNivel');
-    if (deckNivel) deckNivel.value = '';
+    const filtroNivel = document.getElementById('filtroNivel');
+    if (filtroNivel) filtroNivel.value = '';
     carregarDecks();
 }
 
@@ -228,42 +226,114 @@ function abrirModalCriarDeck() {
     document.getElementById('tituloModalDeck').textContent = 'Novo Deck';
     document.getElementById('formDeck').reset();
     document.getElementById('deckId').value = '';
-    const filtroIdioma = document.getElementById('filtroIdioma').value || '';
-    document.getElementById('deckIdioma').value = filtroIdioma;
+    
+    // Preencher idioma e nível com valores padrão
+    const filtroIdioma = document.getElementById('filtroIdioma').value;
+    if (filtroIdioma) {
+        document.getElementById('deckIdioma').value = filtroIdioma;
+    }
+    
     document.getElementById('deckNivel').value = nivelAtual;
+    document.getElementById('deckPublico').checked = false;
+    
     modalDeck.show();
 }
 
-// Salva deck (criar ou editar)
-function salvarDeck() {
-    const form = document.getElementById('formDeck');
-    const formData = new FormData(form);
+// Abre modal para editar deck
+function abrirModalEditarDeck(idDeck) {
+    // Buscar dados do deck via AJAX
+    fetch(`flashcard_controller.php?action=obter_deck&id_deck=${idDeck}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const deck = data.deck;
+                deckAtual = deck;
+                
+                document.getElementById('tituloModalDeck').textContent = 'Editar Deck';
+                document.getElementById('deckId').value = deck.id;
+                document.getElementById('deckNome').value = deck.nome;
+                document.getElementById('deckDescricao').value = deck.descricao || '';
+                document.getElementById('deckIdioma').value = deck.idioma;
+                document.getElementById('deckNivel').value = deck.nivel;
+                document.getElementById('deckPublico').checked = deck.publico == 1;
+                
+                modalDeck.show();
+            } else {
+                mostrarMensagem('Erro ao carregar deck: ' + data.message, 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            mostrarMensagem('Erro de conexão ao carregar deck.', 'danger');
+        });
+}
 
-    const isEdicao = document.getElementById('deckId').value !== '';
-    const action = isEdicao ? 'atualizar_deck' : 'criar_deck';
+// Excluir deck
+function excluirDeck(idDeck, nomeDeck) {
+    if (!confirm(`Tem certeza que deseja excluir o deck "${nomeDeck}"? Esta ação não pode ser desfeita e todos os flashcards serão perdidos.`)) {
+        return;
+    }
 
-    formData.append('action', action);
+    const formData = new FormData();
+    formData.append('action', 'excluir_deck');
+    formData.append('id_deck', idDeck);
 
     fetch('flashcard_controller.php', {
         method: 'POST',
         body: formData
     })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                modalDeck.hide();
-                carregarDecks();
-            } else {
-                alert('Erro ao salvar deck: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Erro:', error);
-            alert('Erro de conexão ao salvar deck.');
-        });
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            mostrarMensagem('Deck excluído com sucesso!', 'success');
+            carregarDecks();
+        } else {
+            mostrarMensagem('Erro ao excluir deck: ' + data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        mostrarMensagem('Erro de conexão ao excluir deck.', 'danger');
+    });
 }
 
 // Estudar todos os flashcards
 function estudarFlashcards() {
     window.location.href = 'flashcard_estudo.php';
 }
+
+// Função para debug - testar conexão
+function testarConexao() {
+    console.log('Testando conexão com o controller...');
+    
+    fetch('flashcard_controller.php?action=listar_decks')
+        .then(response => {
+            console.log('Status da resposta:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Resposta do servidor:', data);
+        })
+        .catch(error => {
+            console.error('Erro na conexão:', error);
+        });
+}
+
+// Adicionar event listeners para melhor UX
+document.addEventListener('DOMContentLoaded', function() {
+    // Enter no modal salva o deck
+    const modal = document.getElementById('modalDeck');
+    if (modal) {
+        modal.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                salvarDeck();
+            }
+        });
+    }
+    
+    // Focar no primeiro campo do modal quando abrir
+    modal.addEventListener('shown.bs.modal', function() {
+        document.getElementById('deckNome').focus();
+    });
+});

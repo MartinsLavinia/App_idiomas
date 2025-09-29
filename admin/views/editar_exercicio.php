@@ -39,20 +39,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             $alternativas[] = [
                                 'id' => chr(97 + $index),
                                 'texto' => $texto,
-                                'correta' => ($index == $_POST['alt_correta'])
+                                'correta' => (isset($_POST['alt_correta']) && $_POST['alt_correta'] == $index)
                             ];
                         }
                     }
                     $conteudo = json_encode([
                         'alternativas' => $alternativas,
                         'explicacao' => $_POST['explicacao'] ?? ''
-                    ]);
-                } else {
-                    // Fallback para formato antigo
-                    $conteudo = json_encode([
-                        'alternativas' => explode(',', $_POST['alternativas']),
-                        'resposta_correta' => $_POST['resposta_correta']
-                    ]);
+                    ], JSON_UNESCAPED_UNICODE);
                 }
             } elseif ($tipo_exercicio === 'texto_livre') {
                 $alternativas_aceitas = !empty($_POST['alternativas_aceitas']) ? 
@@ -62,7 +56,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     'resposta_correta' => $_POST['resposta_esperada'],
                     'alternativas_aceitas' => $alternativas_aceitas,
                     'dica' => $_POST['dica_texto'] ?? ''
-                ]);
+                ], JSON_UNESCAPED_UNICODE);
+            } elseif ($tipo_exercicio === 'completar') {
+                $alternativas_aceitas = !empty($_POST['alternativas_completar']) ? 
+                    array_map('trim', explode(',', $_POST['alternativas_completar'])) : 
+                    [$_POST['resposta_completar']];
+                $conteudo = json_encode([
+                    'frase_completar' => $_POST['frase_completar'],
+                    'resposta_correta' => $_POST['resposta_completar'],
+                    'alternativas_aceitas' => $alternativas_aceitas,
+                    'dica' => $_POST['dica_completar'] ?? '',
+                    'placeholder' => $_POST['placeholder_completar'] ?? 'Digite sua resposta...'
+                ], JSON_UNESCAPED_UNICODE);
             } elseif ($tipo_exercicio === 'fala') {
                 $palavras_chave = !empty($_POST['palavras_chave']) ? 
                     array_map('trim', explode(',', $_POST['palavras_chave'])) : 
@@ -72,26 +77,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     'pronuncia_fonetica' => $_POST['pronuncia_fonetica'] ?? '',
                     'palavras_chave' => $palavras_chave,
                     'tolerancia_erro' => 0.8
-                ]);
+                ], JSON_UNESCAPED_UNICODE);
             } elseif ($tipo_exercicio === 'audicao') {
                 $conteudo = json_encode([
                     'audio_url' => $_POST['audio_url'],
                     'transcricao' => $_POST['transcricao'],
                     'pergunta_audio' => $_POST['pergunta_audio'],
                     'resposta_correta' => $_POST['resposta_audio_correta']
-                ]);
+                ], JSON_UNESCAPED_UNICODE);
             }
             break;
         case 'especial':
             $conteudo = json_encode([
                 'link_video' => $_POST['link_video'],
                 'pergunta_extra' => $_POST['pergunta_extra']
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             break;
         case 'quiz':
             $conteudo = json_encode([
                 'quiz_id' => $_POST['quiz_id']
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             break;
     }
 
@@ -125,8 +130,28 @@ if (!$exercicio) {
 $conteudo_array = json_decode($exercicio['conteudo'], true);
 $caminho_id = $exercicio['caminho_id'];
 
+// DEBUG: Mostrar o conteúdo para verificar a estrutura
+error_log("Conteúdo do exercício: " . print_r($conteudo_array, true));
+
+// Determinar o tipo de exercício baseado no conteúdo
+$tipo_exercicio_detectado = 'multipla_escolha'; // padrão
+
+if ($exercicio['tipo'] === 'normal' && $conteudo_array) {
+    if (isset($conteudo_array['frase_completar'])) {
+        $tipo_exercicio_detectado = 'completar';
+    } elseif (isset($conteudo_array['frase_esperada'])) {
+        $tipo_exercicio_detectado = 'fala';
+    } elseif (isset($conteudo_array['audio_url'])) {
+        $tipo_exercicio_detectado = 'audicao';
+    } elseif (isset($conteudo_array['resposta_correta']) && !isset($conteudo_array['alternativas'])) {
+        $tipo_exercicio_detectado = 'texto_livre';
+    } elseif (isset($conteudo_array['alternativas'])) {
+        $tipo_exercicio_detectado = 'multipla_escolha';
+    }
+}
+
 // BUSCA AS INFORMAÇÕES DO CAMINHO PARA EXIBIÇÃO NO TÍTULO
-$sql_caminho = "SELECT nome_caminho, nivel FROM caminhos_aprendizagem WHERE id = ?";
+$sql_caminho = "SELECT nome_caminho, nivel, id_unidade FROM caminhos_aprendizagem WHERE id = ?";
 $stmt_caminho = $conn->prepare($sql_caminho);
 $stmt_caminho->bind_param("i", $caminho_id);
 $stmt_caminho->execute();
@@ -134,6 +159,14 @@ $caminho_info = $stmt_caminho->get_result()->fetch_assoc();
 $stmt_caminho->close();
 
 $database->closeConnection();
+
+// Função auxiliar para converter arrays em string para exibição
+function arrayToString($array) {
+    if (is_array($array)) {
+        return implode(', ', $array);
+    }
+    return $array;
+}
 ?>
 
 <!DOCTYPE html>
@@ -143,13 +176,37 @@ $database->closeConnection();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Exercício - Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .subtipo-campos {
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background-color: #f8f9fa;
+        }
+        .input-group-text {
+            min-width: 40px;
+            justify-content: center;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h2 class="mb-4">Editar Exercício do Caminho: <?php echo htmlspecialchars($caminho_info['nome_caminho']) . ' (' . htmlspecialchars($caminho_info['nivel']) . ')'; ?></h2>
+     <div class="container mt-5">
+        <h2 class="mb-4">Editar Exercício - Vinculado ao Caminho: <?php echo htmlspecialchars($caminho_info['nome_caminho']) . ' (' . htmlspecialchars($caminho_info['nivel']) . ')'; ?></h2>
+        
+        <div class="alert alert-info">
+            <strong>📌 Localização do Exercício:</strong><br>
+            • <strong>Unidade:</strong> <?php echo htmlspecialchars($caminho_info['id_unidade'] ?? 'Não especificada'); ?><br>
+            • <strong>Caminho:</strong> <?php echo htmlspecialchars($caminho_info['nome_caminho']); ?> (<?php echo htmlspecialchars($caminho_info['nivel']); ?>)<br>
+            • <strong>ID do Caminho:</strong> <?php echo htmlspecialchars($caminho_id); ?><br>
+            <small class="text-muted">Este exercício está vinculado exclusivamente a este caminho e não aparecerá em outras unidades.</small>
+        </div>
+        
+
         <a href="gerenciar_exercicios.php?caminho_id=<?php echo htmlspecialchars($caminho_id); ?>" class="btn btn-secondary mb-3">← Voltar para Exercícios</a>
         
         <?php echo $mensagem; ?>
+        
 
         <div class="card">
             <div class="card-body">
@@ -161,19 +218,20 @@ $database->closeConnection();
                     <div class="mb-3">
                         <label for="tipo" class="form-label">Tipo de Exercício</label>
                         <select class="form-select" id="tipo" name="tipo" required>
-                            <option value="normal" <?php if ($exercicio['tipo'] == 'normal') echo 'selected'; ?>>Normal (Múltipla Escolha)</option>
+                            <option value="normal" <?php if ($exercicio['tipo'] == 'normal') echo 'selected'; ?>>Normal</option>
                             <option value="especial" <?php if ($exercicio['tipo'] == 'especial') echo 'selected'; ?>>Especial (Vídeo/Áudio)</option>
-                            <option value="quiz" <?php if ($exercicio['tipo'] == 'quiz') echo 'selected'; ?>>Quiz (ID de um quiz)</option>
+                            <option value="quiz" <?php if ($exercicio['tipo'] == 'quiz') echo 'selected'; ?>>Quiz</option>
                         </select>
                     </div>
                     
                     <div class="mb-3">
                         <label for="tipo_exercicio" class="form-label">Subtipo do Exercício</label>
                         <select class="form-select" id="tipo_exercicio" name="tipo_exercicio" required>
-                            <option value="multipla_escolha">Múltipla Escolha</option>
-                            <option value="texto_livre">Texto Livre (Completar)</option>
-                            <option value="fala">Exercício de Fala</option>
-                            <option value="audicao" <?php echo (isset($exercicio['tipo_exercicio']) && $exercicio['tipo_exercicio'] == 'audicao') ? 'selected' : ''; ?>>Exercício de Audição</option>
+                            <option value="multipla_escolha" <?php echo ($tipo_exercicio_detectado == 'multipla_escolha') ? 'selected' : ''; ?>>Múltipla Escolha</option>
+                            <option value="texto_livre" <?php echo ($tipo_exercicio_detectado == 'texto_livre') ? 'selected' : ''; ?>>Texto Livre</option>
+                            <option value="completar" <?php echo ($tipo_exercicio_detectado == 'completar') ? 'selected' : ''; ?>>Completar Frase</option>
+                            <option value="fala" <?php echo ($tipo_exercicio_detectado == 'fala') ? 'selected' : ''; ?>>Exercício de Fala</option>
+                            <option value="audicao" <?php echo ($tipo_exercicio_detectado == 'audicao') ? 'selected' : ''; ?>>Exercício de Audição</option>
                         </select>
                     </div>
                     <div class="mb-3">
@@ -182,30 +240,78 @@ $database->closeConnection();
                     </div>
                     
                     <div id="conteudo-campos">
-                        <div id="campos-normal" style="display: none;">
+                        <div id="campos-normal">
                             <!-- Campos para Múltipla Escolha -->
                             <div id="campos-multipla" class="subtipo-campos">
-                                <h5>Múltipla Escolha</h5>
+                                <h5>Configuração - Múltipla Escolha</h5>
                                 <div class="mb-3">
-                                    <label for="alternativas" class="form-label">Alternativas (formato antigo)</label>
-                                    <input type="text" class="form-control" id="alternativas" name="alternativas" value="<?php echo isset($conteudo_array['alternativas']) && is_array($conteudo_array['alternativas']) ? htmlspecialchars(implode(',', $conteudo_array['alternativas'])) : ''; ?>">
+                                    <label class="form-label">Alternativas</label>
+                                    <div id="alternativas-container">
+                                        <?php
+                                        if (isset($conteudo_array['alternativas']) && is_array($conteudo_array['alternativas'])) {
+                                            foreach ($conteudo_array['alternativas'] as $index => $alt) {
+                                                $letra = chr(65 + $index);
+                                                $texto = is_array($alt) ? ($alt['texto'] ?? '') : $alt;
+                                                $checked = (is_array($alt) && isset($alt['correta']) && $alt['correta']) ? 'checked' : '';
+                                                echo '<div class="input-group mb-2">';
+                                                echo '<span class="input-group-text">' . $letra . '</span>';
+                                                echo '<input type="text" class="form-control" name="alt_texto[]" placeholder="Texto da alternativa" value="' . htmlspecialchars($texto) . '">';
+                                                echo '<div class="input-group-text">';
+                                                echo '<input type="radio" name="alt_correta" value="' . $index . '" ' . $checked . ' title="Marcar como correta">';
+                                                echo '</div>';
+                                                echo '<button type="button" class="btn btn-outline-danger" onclick="this.parentElement.remove()">×</button>';
+                                                echo '</div>';
+                                            }
+                                        } else {
+                                            // Alternativas padrão
+                                            echo '<div class="input-group mb-2">';
+                                            echo '<span class="input-group-text">A</span>';
+                                            echo '<input type="text" class="form-control" name="alt_texto[]" placeholder="Texto da alternativa">';
+                                            echo '<div class="input-group-text">';
+                                            echo '<input type="radio" name="alt_correta" value="0" title="Marcar como correta">';
+                                            echo '</div>';
+                                            echo '</div>';
+                                            echo '<div class="input-group mb-2">';
+                                            echo '<span class="input-group-text">B</span>';
+                                            echo '<input type="text" class="form-control" name="alt_texto[]" placeholder="Texto da alternativa">';
+                                            echo '<div class="input-group-text">';
+                                            echo '<input type="radio" name="alt_correta" value="1" title="Marcar como correta">';
+                                            echo '</div>';
+                                            echo '</div>';
+                                        }
+                                        ?>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-secondary" onclick="adicionarAlternativa()">+ Adicionar Alternativa</button>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="resposta_correta" class="form-label">Resposta Correta</label>
-                                    <input type="text" class="form-control" id="resposta_correta" name="resposta_correta" value="<?php echo isset($conteudo_array['resposta_correta']) ? htmlspecialchars($conteudo_array['resposta_correta']) : ''; ?>">
+                                    <label for="explicacao" class="form-label">Explicação</label>
+                                    <textarea class="form-control" id="explicacao" name="explicacao" placeholder="Explicação da resposta correta"><?php 
+                                    // CORREÇÃO: Buscar a explicação no local correto
+                                    if (isset($conteudo_array['explicacao'])) {
+                                        echo htmlspecialchars($conteudo_array['explicacao']);
+                                    } elseif (isset($conteudo_array['dica'])) {
+                                        echo htmlspecialchars($conteudo_array['dica']);
+                                    }
+                                    ?></textarea>
                                 </div>
                             </div>
                             
                             <!-- Campos para Texto Livre -->
                             <div id="campos-texto" class="subtipo-campos" style="display: none;">
-                                <h5>Texto Livre</h5>
+                                <h5>Configuração - Texto Livre</h5>
                                 <div class="mb-3">
                                     <label for="resposta_esperada" class="form-label">Resposta Esperada</label>
                                     <input type="text" class="form-control" id="resposta_esperada" name="resposta_esperada" value="<?php echo isset($conteudo_array['resposta_correta']) ? htmlspecialchars($conteudo_array['resposta_correta']) : ''; ?>">
                                 </div>
                                 <div class="mb-3">
-                                    <label for="alternativas_aceitas" class="form-label">Alternativas Aceitas</label>
-                                    <input type="text" class="form-control" id="alternativas_aceitas" name="alternativas_aceitas" value="<?php echo isset($conteudo_array['alternativas_aceitas']) ? htmlspecialchars(implode(',', $conteudo_array['alternativas_aceitas'])) : ''; ?>">
+                                    <label for="alternativas_aceitas" class="form-label">Alternativas Aceitas (separadas por vírgula)</label>
+                                    <input type="text" class="form-control" id="alternativas_aceitas" name="alternativas_aceitas" value="<?php 
+                                    if (isset($conteudo_array['alternativas_aceitas']) && is_array($conteudo_array['alternativas_aceitas'])) {
+                                        echo htmlspecialchars(implode(', ', $conteudo_array['alternativas_aceitas']));
+                                    } elseif (isset($conteudo_array['alternativas_aceitas'])) {
+                                        echo htmlspecialchars($conteudo_array['alternativas_aceitas']);
+                                    }
+                                    ?>">
                                 </div>
                                 <div class="mb-3">
                                     <label for="dica_texto" class="form-label">Dica</label>
@@ -213,9 +319,40 @@ $database->closeConnection();
                                 </div>
                             </div>
                             
+                            <!-- Campos para Completar -->
+                            <div id="campos-completar" class="subtipo-campos" style="display: none;">
+                                <h5>Configuração - Completar Frase</h5>
+                                <div class="mb-3">
+                                    <label for="frase_completar" class="form-label">Frase para Completar</label>
+                                    <input type="text" class="form-control" id="frase_completar" name="frase_completar" value="<?php echo isset($conteudo_array['frase_completar']) ? htmlspecialchars($conteudo_array['frase_completar']) : ''; ?>">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="resposta_completar" class="form-label">Resposta Correta</label>
+                                    <input type="text" class="form-control" id="resposta_completar" name="resposta_completar" value="<?php echo isset($conteudo_array['resposta_correta']) ? htmlspecialchars($conteudo_array['resposta_correta']) : ''; ?>">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="alternativas_completar" class="form-label">Alternativas Aceitas (separadas por vírgula)</label>
+                                    <input type="text" class="form-control" id="alternativas_completar" name="alternativas_completar" value="<?php 
+                                    if (isset($conteudo_array['alternativas_aceitas']) && is_array($conteudo_array['alternativas_aceitas'])) {
+                                        echo htmlspecialchars(implode(', ', $conteudo_array['alternativas_aceitas']));
+                                    } elseif (isset($conteudo_array['alternativas_aceitas'])) {
+                                        echo htmlspecialchars($conteudo_array['alternativas_aceitas']);
+                                    }
+                                    ?>">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="placeholder_completar" class="form-label">Placeholder</label>
+                                    <input type="text" class="form-control" id="placeholder_completar" name="placeholder_completar" value="<?php echo isset($conteudo_array['placeholder']) ? htmlspecialchars($conteudo_array['placeholder']) : 'Digite sua resposta...'; ?>">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dica_completar" class="form-label">Dica</label>
+                                    <textarea class="form-control" id="dica_completar" name="dica_completar"><?php echo isset($conteudo_array['dica']) ? htmlspecialchars($conteudo_array['dica']) : ''; ?></textarea>
+                                </div>
+                            </div>
+                            
                             <!-- Campos para Fala -->
                             <div id="campos-fala" class="subtipo-campos" style="display: none;">
-                                <h5>Exercício de Fala</h5>
+                                <h5>Configuração - Exercício de Fala</h5>
                                 <div class="mb-3">
                                     <label for="frase_esperada" class="form-label">Frase para Pronunciar</label>
                                     <input type="text" class="form-control" id="frase_esperada" name="frase_esperada" value="<?php echo isset($conteudo_array['frase_esperada']) ? htmlspecialchars($conteudo_array['frase_esperada']) : ''; ?>">
@@ -225,25 +362,31 @@ $database->closeConnection();
                                     <input type="text" class="form-control" id="pronuncia_fonetica" name="pronuncia_fonetica" value="<?php echo isset($conteudo_array['pronuncia_fonetica']) ? htmlspecialchars($conteudo_array['pronuncia_fonetica']) : ''; ?>">
                                 </div>
                                 <div class="mb-3">
-                                    <label for="palavras_chave" class="form-label">Palavras-chave</label>
-                                    <input type="text" class="form-control" id="palavras_chave" name="palavras_chave" value="<?php echo isset($conteudo_array['palavras_chave']) ? htmlspecialchars(implode(',', $conteudo_array['palavras_chave'])) : ''; ?>">
+                                    <label for="palavras_chave" class="form-label">Palavras-chave (separadas por vírgula)</label>
+                                    <input type="text" class="form-control" id="palavras_chave" name="palavras_chave" value="<?php 
+                                    if (isset($conteudo_array['palavras_chave']) && is_array($conteudo_array['palavras_chave'])) {
+                                        echo htmlspecialchars(implode(', ', $conteudo_array['palavras_chave']));
+                                    } elseif (isset($conteudo_array['palavras_chave'])) {
+                                        echo htmlspecialchars($conteudo_array['palavras_chave']);
+                                    }
+                                    ?>">
                                 </div>
                             </div>
                             
-                            <!-- Campos para Áudio -->
+                            <!-- Campos para Audição -->
                             <div id="campos-audicao" class="subtipo-campos" style="display: none;">
-                                <h5>Exercício de Audição</h5>
+                                <h5>Configuração - Exercício de Audição</h5>
                                 <div class="mb-3">
                                     <label for="audio_url" class="form-label">URL do Áudio</label>
-                                    <input type="url" class="form-control" id="audio_url" name="audio_url" value="<?php echo isset($conteudo_array['audio_url']) ? htmlspecialchars($conteudo_array['audio_url']) : ''; ?>" placeholder="https://exemplo.com/audio.mp3">
+                                    <input type="url" class="form-control" id="audio_url" name="audio_url" value="<?php echo isset($conteudo_array['audio_url']) ? htmlspecialchars($conteudo_array['audio_url']) : ''; ?>">
                                 </div>
                                 <div class="mb-3">
                                     <label for="transcricao" class="form-label">Transcrição do Áudio</label>
-                                    <textarea class="form-control" id="transcricao" name="transcricao" placeholder="Texto que é falado no áudio"><?php echo isset($conteudo_array['transcricao']) ? htmlspecialchars($conteudo_array['transcricao']) : ''; ?></textarea>
+                                    <textarea class="form-control" id="transcricao" name="transcricao"><?php echo isset($conteudo_array['transcricao']) ? htmlspecialchars($conteudo_array['transcricao']) : ''; ?></textarea>
                                 </div>
                                 <div class="mb-3">
                                     <label for="pergunta_audio" class="form-label">Pergunta sobre o Áudio</label>
-                                    <input type="text" class="form-control" id="pergunta_audio" name="pergunta_audio" value="<?php echo isset($conteudo_array['pergunta_audio']) ? htmlspecialchars($conteudo_array['pergunta_audio']) : ''; ?>" placeholder="O que a pessoa disse?">
+                                    <input type="text" class="form-control" id="pergunta_audio" name="pergunta_audio" value="<?php echo isset($conteudo_array['pergunta_audio']) ? htmlspecialchars($conteudo_array['pergunta_audio']) : ''; ?>">
                                 </div>
                                 <div class="mb-3">
                                     <label for="resposta_audio_correta" class="form-label">Resposta Correta</label>
@@ -276,6 +419,7 @@ $database->closeConnection();
             </div>
         </div>
     </div>
+     <a href="gerenciar_exercicios.php?caminho_id=<?php echo htmlspecialchars($caminho_id); ?>" class="btn btn-secondary mb-3">← Voltar para Exercícios</a>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -287,12 +431,10 @@ $database->closeConnection();
         
         const camposMultipla = document.getElementById('campos-multipla');
         const camposTexto = document.getElementById('campos-texto');
+        const camposCompletar = document.getElementById('campos-completar');
         const camposFala = document.getElementById('campos-fala');
         const camposAudicao = document.getElementById('campos-audicao');
-        
-        // Definir tipo_exercicio baseado no conteúdo existente
-        tipoExercicioSelect.value = 'multipla_escolha';
-        
+
         function mostrarCampos() {
             // Esconder todos os campos principais
             camposNormal.style.display = 'none';
@@ -302,6 +444,7 @@ $database->closeConnection();
             // Esconder todos os subcampos
             camposMultipla.style.display = 'none';
             camposTexto.style.display = 'none';
+            camposCompletar.style.display = 'none';
             camposFala.style.display = 'none';
             camposAudicao.style.display = 'none';
 
@@ -315,6 +458,9 @@ $database->closeConnection();
                         break;
                     case 'texto_livre':
                         camposTexto.style.display = 'block';
+                        break;
+                    case 'completar':
+                        camposCompletar.style.display = 'block';
                         break;
                     case 'fala':
                         camposFala.style.display = 'block';
@@ -337,6 +483,23 @@ $database->closeConnection();
         tipoSelect.addEventListener('change', mostrarCampos);
         tipoExercicioSelect.addEventListener('change', mostrarCampos);
     });
+
+    function adicionarAlternativa() {
+        const container = document.getElementById("alternativas-container");
+        const index = container.children.length;
+        const novaAlternativa = document.createElement("div");
+        novaAlternativa.className = "input-group mb-2";
+        const letra = String.fromCharCode(65 + index);
+        novaAlternativa.innerHTML = `
+            <span class="input-group-text">${letra}</span>
+            <input type="text" class="form-control" name="alt_texto[]" placeholder="Texto da alternativa">
+            <div class="input-group-text">
+                <input type="radio" name="alt_correta" value="${index}" title="Marcar como correta">
+            </div>
+            <button type="button" class="btn btn-outline-danger" onclick="this.parentElement.remove()">×</button>
+        `;
+        container.appendChild(novaAlternativa);
+    }
     </script>
 </body>
 </html>

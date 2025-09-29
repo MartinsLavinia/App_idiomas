@@ -108,7 +108,6 @@ $database->closeConnection();
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- link direto dos icones -->
-   <head>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" />
 </head>
 
@@ -327,9 +326,6 @@ $database->closeConnection();
                                 <div class="mb-3">
                                     <label for="palavraIdioma" class="form-label">Idioma</label>
                                     <select class="form-select" id="palavraIdioma" name="idioma">
-                                        <option value="<?php echo htmlspecialchars($idioma_escolhido); ?>" selected>
-                                            <?php echo htmlspecialchars($idioma_escolhido); ?>
-                                        </option>
                                         <option value="Ingles">Inglês</option>
                                         <option value="Japones">Japonês</option>
                                     </select>
@@ -339,9 +335,6 @@ $database->closeConnection();
                                 <div class="mb-3">
                                     <label for="palavraNivel" class="form-label">Nível</label>
                                     <select class="form-select" id="palavraNivel" name="nivel">
-                                        <option value="<?php echo htmlspecialchars($nivel_usuario); ?>" selected>
-                                            <?php echo htmlspecialchars($nivel_usuario); ?>
-                                        </option>
                                         <option value="A1">A1</option>
                                         <option value="A2">A2</option>
                                         <option value="B1">B1</option>
@@ -352,185 +345,144 @@ $database->closeConnection();
                                 </div>
                             </div>
                         </div>
+                        <div class="mb-3">
+                            <label for="palavraCategoria" class="form-label">Categoria (opcional)</label>
+                            <input type="text" class="form-control" id="palavraCategoria" name="categoria" placeholder="Ex: Verbos, Substantivos, Cumprimentos">
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="adicionarPalavra()">
-                        <i class="fas fa-plus me-2"></i>Adicionar
+                    <button type="button" class="btn btn-primary" onclick="salvarPalavra()">
+                        <i class="fas fa-save me-2"></i>Salvar Palavra
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-
-    <!-- Modal de Atividades -->
-   <div class="modal fade" id="modalAtividades" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg popup-modal">
+    <!-- Modal Atividades -->
+    <div class="modal fade" id="modalAtividades" tabindex="-1" aria-labelledby="modalAtividadesLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="tituloAtividades">Atividades da Unidade</h5>
+                    <h5 class="modal-title" id="modalAtividadesLabel">
+                        <i class="fas fa-tasks me-2"></i>
+                        <span id="tituloAtividades">Atividades da Unidade</span>
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div id="listaAtividades" class="row">
-                        <!-- Atividades serão carregadas aqui via AJAX -->
+                        <div class="col-12 text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Carregando...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Carregando atividades...</p>
+                        </div>
                     </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
                 </div>
             </div>
         </div>
     </div>
 
-
-    <!-- Modal de Exercícios -->
-    <div class="modal fade" id="modalExercicios" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg popup-modal">
+    <!-- Modal Exercícios -->
+    <div class="modal fade" id="modalExercicios" tabindex="-1" aria-labelledby="modalExerciciosLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="tituloExercicios">Exercícios</h5>
-                    <div class="d-flex align-items-center">
-                        <span id="contadorExercicios" class="badge bg-primary me-3">1/12</span>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
+                    <h5 class="modal-title" id="modalExerciciosLabel">
+                        <i class="fas fa-pencil-alt me-2"></i>
+                        <span id="tituloExercicios">Exercícios</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body exercicio-container">
-                    <div class="progress progress-bar-custom mb-4">
-                        <div id="progressoExercicios" class="progress-bar" role="progressbar" style="width: 8.33%" aria-valuenow="8.33" aria-valuemin="0" aria-valuemax="100"></div>
+                <div class="modal-body">
+                    <!-- Barra de progresso dos exercícios -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Progresso:</span>
+                            <span id="contadorExercicios" class="badge bg-primary">1/5</span>
+                        </div>
+                        <div class="progress">
+                            <div id="progressoExercicios" class="progress-bar" role="progressbar" style="width: 20%" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
                     </div>
+                    
+                    <!-- Conteúdo do exercício -->
                     <div id="conteudoExercicio">
-                        <!-- Conteúdo do exercício será carregado aqui via AJAX -->
+                        <div class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Carregando...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Carregando exercício...</p>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick="voltarParaAtividades()">
                         <i class="fas fa-arrow-left me-2"></i>Voltar
                     </button>
-                    <button type="button" id="btnEnviarResposta" class="btn btn-primary" onclick="enviarResposta()">
-                        Enviar Resposta
+                    <button type="button" class="btn btn-primary" id="btnEnviarResposta" onclick="enviarResposta()">
+                        <i class="fas fa-check me-2"></i>Enviar Resposta
                     </button>
-                    <button type="button" id="btnProximoExercicio" class="btn btn-success" onclick="proximoExercicio()" style="display: none;">
-                        Próximo <i class="fas fa-arrow-right ms-2"></i>
+                    <button type="button" class="btn btn-success" id="btnProximoExercicio" onclick="proximoExercicio()" style="display: none;">
+                        <i class="fas fa-arrow-right me-2"></i>Próximo
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-
-
-const header = document.getElementById('myHeader');
-        const toggleButton = document.getElementById('toggleButton');
-        const body = document.body;
-
-        toggleButton.addEventListener('click', () => {
-            header.classList.toggle('closed');
-            body.classList.toggle('shifted');
-            // Para a versão mobile, o conteúdo principal também precisa ter seu margin-left ajustado.
-            // Vamos fazer isso com uma classe adicional no body.
-            const mainContent = document.querySelector('.main-content');
-            if (mainContent) {
-                if (window.innerWidth <= 768) {
-                    // Em telas pequenas, quando o header está fechado (width: 0), o main-content não precisa de margem.
-                    // Quando o header está aberto, ele ocupa a tela inteira, então o main-content também não precisa de margem.
-                    // A transição de margin-left no .main-content cuida disso.
-                } else {
-                    mainContent.classList.toggle('shifted');
-                }
-            }
-        });
-
-        // Opcional: Se você quiser que o header se feche automaticamente em telas muito pequenas
-        // quando a página carrega ou redimensiona:
-        window.addEventListener('resize', () => {
-            if (window.innerWidth <= 768) {
-                if (!header.classList.contains('closed')) {
-                    header.classList.add('closed');
-                    body.classList.add('shifted'); // Adiciona a classe shifted ao body para ajustar o margin-left
-                    const mainContent = document.querySelector('.main-content');
-                    if (mainContent) {
-                        mainContent.classList.add('shifted');
-                    }
-                }
-            } else {
-                // Em telas maiores, remove as classes se o header estava fechado
-                if (header.classList.contains('closed')) {
-                    header.classList.remove('closed');
-                    body.classList.remove('shifted');
-                    const mainContent = document.querySelector('.main-content');
-                    if (mainContent) {
-                        mainContent.classList.remove('shifted');
-                    }
-                }
-            }
-        });
-
-        // Executa a verificação no carregamento da página também
-        window.dispatchEvent(new Event('resize'));
-
-
-        // Garante que o script só execute após o DOM estar completamente carregado
-document.addEventListener('DOMContentLoaded', function() {
-
-
-    // --- Variáveis Globais ---
+    // ==================== VARIÁVEIS GLOBAIS ====================
+    let modalAtividades = null;
+    let modalExercicios = null;
+    let modalAdicionarPalavra = null;
     let unidadeAtual = null;
     let atividadeAtual = null;
     let exercicioAtual = null;
     let exerciciosLista = [];
     let exercicioIndex = 0;
     let respostaSelecionada = null;
+    let palavrasCarregadas = [];
 
+    // ==================== INICIALIZAÇÃO ====================
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicialização dos modais
+        modalAtividades = new bootstrap.Modal(document.getElementById('modalAtividades'));
+        modalExercicios = new bootstrap.Modal(document.getElementById('modalExercicios'));
+        modalAdicionarPalavra = new bootstrap.Modal(document.getElementById('modalAdicionarPalavra'));
 
-    // Inicializa os Modais do Bootstrap
-    const modalAtividades = new bootstrap.Modal(document.getElementById('modalAtividades'));
-    const modalExercicios = new bootstrap.Modal(document.getElementById('modalExercicios'));
+        // Carrega palavras do usuário ao inicializar
+        if (typeof carregarPalavras === 'function') {
+            carregarPalavras();
+        }
 
+        // Event listeners para cards de unidades
+        const unidadeCards = document.querySelectorAll('.unidade-card');
+        unidadeCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const unidadeId = this.getAttribute('onclick').match(/abrirAtividades\((\d+),/)[1];
+                const titulo = this.getAttribute('onclick').match(/'([^']+)'/)[1];
+                const numero = this.getAttribute('onclick').match(/,\s*(\d+)\)/)[1];
 
-    // --- Manipulação de Eventos e UI ---
-
-
-    // Adiciona evento de clique para os cards de unidade (se existirem no seu HTML)
-    const unidadeCards = document.querySelectorAll('.unidade-card');
-    unidadeCards.forEach(card => {
-        card.addEventListener('click', () => {
-            // Assume que o card tem atributos data-id, data-titulo e data-numero para obter as informações
-            const unidadeId = card.dataset.id;
-            const titulo = card.dataset.titulo;
-            const numero = card.dataset.numero;
-
-
-            if (unidadeId && titulo && numero) {
-                abrirAtividades(unidadeId, titulo, numero);
-            }
-            // Adiciona uma classe para animação, se desejado (animação já deve estar no CSS)
-            card.classList.add('animate__pulse');
-            // Remove a classe após a animação para permitir que ela seja repetida
-            card.addEventListener('animationend', () => card.classList.remove('animate__pulse'), { once: true });
+                if (unidadeId && titulo && numero) {
+                    abrirAtividades(parseInt(unidadeId), titulo, parseInt(numero));
+                }
+            });
         });
     });
 
-
-    // Animação para os botões de resposta dos exercícios (seleção)
-    const btnResposta = document.querySelectorAll('.btn-resposta');
-    btnResposta.forEach(btn => {
-        btn.addEventListener('click', () => {
-            // Remove a classe 'selected' de todos os botões e adiciona ao clicado
-            btnResposta.forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-            respostaSelecionada = btn.dataset.id; // Armazena o ID da resposta selecionada
-        });
-    });
-
-
-    // --- Funções Principais de Navegação e Lógica ---
-
+    // ==================== FUNÇÕES PRINCIPAIS DE NAVEGAÇÃO E LÓGICA ====================
 
     // Função para abrir modal de atividades
     window.abrirAtividades = function(unidadeId, tituloUnidade, numeroUnidade) {
+        console.log('Abrindo atividades para unidade:', unidadeId, tituloUnidade, numeroUnidade);
+        
         // Fecha o modal de exercícios se estiver aberto
         if (modalExercicios && modalExercicios._isShown) {
             modalExercicios.hide();
@@ -541,45 +493,66 @@ document.addEventListener('DOMContentLoaded', function() {
        
         // Carregar atividades via AJAX
         fetch(`../../admin/controller/get_atividades.php?unidade_id=${unidadeId}`)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('Dados recebidos:', data);
                 if (data.success) {
                     exibirAtividades(data.atividades);
                     modalAtividades.show();
                 } else {
-                    alert("Erro ao carregar atividades: " + data.message);
+                    alert("Erro ao carregar atividades: " + (data.message || 'Erro desconhecido'));
                 }
             })
             .catch(error => {
                 console.error("Erro ao carregar atividades:", error);
-                alert("Erro de rede ao carregar atividades.");
+                alert("Erro de rede ao carregar atividades: " + error.message);
             });
     };
-
 
     // Função para exibir atividades no modal
     function exibirAtividades(atividades) {
         const container = document.getElementById("listaAtividades");
         container.innerHTML = ""; // Limpa o container antes de adicionar novas atividades
 
+        if (!atividades || atividades.length === 0) {
+            container.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Nenhuma atividade encontrada para esta unidade.
+                    </div>
+                </div>
+            `;
+            return;
+        }
 
         atividades.forEach(atividade => {
             const col = document.createElement("div");
             col.className = "col-md-6 mb-3";
            
+            const icone = atividade.icone || 'fa-book';
+            const progresso = atividade.progresso || 0;
+           
             col.innerHTML = `
-                <div class="card atividade-card h-100" onclick="abrirExercicios(${atividade.id}, '${atividade.nome}')">
+                <div class="card atividade-card h-100" onclick="abrirExercicios(${atividade.id}, '${atividade.nome.replace(/'/g, "\\'")}')">
                     <div class="card-body text-center">
-                        <i class="fas ${atividade.icone} atividade-icon"></i>
+                        <i class="fas ${icone} atividade-icon mb-3" style="font-size: 2rem; color: #007bff;"></i>
                         <h5 class="card-title">${atividade.nome}</h5>
-                        <p class="card-text text-muted">${atividade.descricao}</p>
+                        <p class="card-text text-muted">${atividade.descricao || 'Descrição não disponível'}</p>
                         <div class="progress progress-bar-custom mb-2">
-                            <div class="progress-bar" role="progressbar" style="width: ${atividade.progresso}%" aria-valuenow="${atividade.progresso}" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="progress-bar" role="progressbar" style="width: ${progresso}%" aria-valuenow="${progresso}" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
-                        <small class="text-muted">${atividade.progresso}% concluído</small>
-                        <button type="button" class="btn btn-sm btn-outline-info mt-2" onclick="event.stopPropagation(); abrirTeoriaAtividade(${atividade.id}, '${atividade.nome}')">
-                            <i class="fas fa-info-circle me-1"></i>Teoria
-                        </button>
+                        <small class="text-muted">${progresso}% concluído</small>
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-sm btn-outline-info" onclick="event.stopPropagation(); abrirTeoriaAtividade(${atividade.id}, '${atividade.nome.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-info-circle me-1"></i>Teoria
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -587,16 +560,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-
     // Função para abrir modal de exercícios
     window.abrirExercicios = function(atividadeId, tituloAtividade) {
+        console.log('Abrindo exercícios para atividade:', atividadeId, tituloAtividade);
+        
         atividadeAtual = atividadeId;
         document.getElementById("tituloExercicios").textContent = `Exercícios: ${tituloAtividade}`;
        
         // Carregar exercícios via AJAX
         fetch(`../../admin/controller/get_exercicio.php?atividade_id=${atividadeId}`)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('Exercícios recebidos:', data);
                 if (data.success) {
                     exerciciosLista = data.exercicios;
                     exercicioIndex = 0;
@@ -604,31 +584,27 @@ document.addEventListener('DOMContentLoaded', function() {
                         carregarExercicio(exercicioIndex);
                         modalAtividades.hide(); // Fecha modal de atividades
                         modalExercicios.show(); // Abre modal de exercícios
-                        bootstrap.Modal(document.getElementById("modalAtividades")).show();
                     } else {
-                        showCustomAlert("Nenhum exercício encontrado para esta atividade." + data.message, "error");
+                        alert("Nenhum exercício encontrado para esta atividade.");
                     }
                 } else {
-                    showCustomAlert("Erro ao carregar", "Erro ao carregar atividades: " + data.message, "error");
+                    alert("Erro ao carregar exercícios: " + (data.message || 'Erro desconhecido'));
                 }
             })
             .catch(error => {
                 console.error("Erro ao carregar exercícios:", error);
-                alert("Erro de rede ao carregar exercícios.");
+                alert("Erro de rede ao carregar exercícios: " + error.message);
             });
     };
-
 
     // Função para carregar um exercício específico no modal de Exercícios
     function carregarExercicio(index) {
         if (!exerciciosLista || exerciciosLista.length === 0) return;
 
-
         exercicioAtual = exerciciosLista[index];
         const conteudoExercicioDiv = document.getElementById("conteudoExercicio");
         conteudoExercicioDiv.innerHTML = ""; // Limpa conteúdo anterior
         respostaSelecionada = null; // Reseta a resposta selecionada
-
 
         // Atualiza contador de progresso do exercício
         document.getElementById("contadorExercicios").textContent = `${index + 1}/${exerciciosLista.length}`;
@@ -639,11 +615,12 @@ document.addEventListener('DOMContentLoaded', function() {
             progressoBar.setAttribute("aria-valuenow", progresso);
         }
 
-
         let htmlConteudo = `
-            <p class="fs-5 mb-4">${exercicioAtual.pergunta}</p>
+            <div class="mb-4">
+                <h6 class="text-muted">Pergunta ${index + 1}:</h6>
+                <p class="fs-5 mb-4">${exercicioAtual.pergunta}</p>
+            </div>
         `;
-
 
         // Parse do conteúdo JSON do exercício
         let conteudo = {};
@@ -654,22 +631,24 @@ document.addEventListener('DOMContentLoaded', function() {
             conteudo = {};
         }
 
-
         // Renderiza o conteúdo com base no tipo de exercício
         if (exercicioAtual.tipo_exercicio === "multipla_escolha") {
             if (conteudo.alternativas) {
+                htmlConteudo += '<div class="d-grid gap-2">';
                 conteudo.alternativas.forEach(alt => {
                     htmlConteudo += `
-                        <button type="button" class="btn btn-light btn-resposta w-100 mb-2" data-id="${alt.id}" onclick="selecionarResposta(this)">
+                        <button type="button" class="btn btn-outline-primary btn-resposta text-start" data-id="${alt.id}" onclick="selecionarResposta(this)">
                             ${alt.texto}
                         </button>
                     `;
                 });
+                htmlConteudo += '</div>';
             }
         } else if (exercicioAtual.tipo_exercicio === "texto_livre") {
             htmlConteudo += `
                 <div class="mb-3">
-                    <textarea id="respostaTextoLivre" class="form-control" rows="4" placeholder="Digite sua resposta aqui..." style="width: 100%; min-height: 100px;"></textarea>
+                    <label for="respostaTextoLivre" class="form-label">Sua resposta:</label>
+                    <textarea id="respostaTextoLivre" class="form-control" rows="4" placeholder="Digite sua resposta aqui..."></textarea>
                 </div>
             `;
         } else if (exercicioAtual.tipo_exercicio === "fala") {
@@ -677,22 +656,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="text-center p-4">
                     <i class="fas fa-microphone fa-5x text-primary mb-3" id="microfoneIcon" style="cursor: pointer;" onclick="iniciarGravacao()"></i>
                     <p id="statusGravacao" class="text-muted fs-5">Clique no microfone para falar</p>
-                    <p id="fraseParaFalar" class="fs-4 fw-bold text-secondary">"${conteudo.frase_esperada || 'Nenhuma frase definida'}"</p>
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <p class="mb-1 text-muted">Frase para repetir:</p>
+                        <p id="fraseParaFalar" class="fs-4 fw-bold text-dark">"${conteudo.frase_esperada || 'Nenhuma frase definida'}"</p>
+                    </div>
                 </div>
             `;
-        } else if (exercicioAtual.tipo_exercicio === "especial") {
-            htmlConteudo += `
-                <div id="conteudoEspecial">
-                    <p class="alert alert-info">Carregando exercício especial...</p>
-                </div>
-            `;
-            // Chama a função específica para carregar o conteúdo especial (assumindo que ela existe em outro script ou é definida aqui)
-            carregarConteudoEspecial(conteudo);
         }
 
-
         conteudoExercicioDiv.innerHTML = htmlConteudo;
-
 
         // Atualiza botões de ação
         document.getElementById("btnEnviarResposta").style.display = "block";
@@ -703,18 +675,18 @@ document.addEventListener('DOMContentLoaded', function() {
         if (feedbackDiv) feedbackDiv.remove();
     }
 
-
     // Função para selecionar resposta (botão de múltipla escolha)
     window.selecionarResposta = function(button) {
         // Remove a seleção de todos os botões de resposta
         document.querySelectorAll(".btn-resposta").forEach(btn => {
-            btn.classList.remove("selected");
+            btn.classList.remove("selected", "btn-primary");
+            btn.classList.add("btn-outline-primary");
         });
         // Adiciona a seleção ao botão clicado
-        button.classList.add("selected");
+        button.classList.remove("btn-outline-primary");
+        button.classList.add("selected", "btn-primary");
         respostaSelecionada = button.dataset.id; // Armazena o ID da resposta selecionada
     };
-
 
     // Função para enviar a resposta do usuário
     window.enviarResposta = function() {
@@ -724,7 +696,6 @@ document.addEventListener('DOMContentLoaded', function() {
             alert("Erro: Nenhum exercício está ativo.");
             return;
         }
-
 
         // Captura a resposta com base no tipo de exercício
         if (exercicioAtual.tipo_exercicio === "multipla_escolha") {
@@ -737,22 +708,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             respostaUsuario = textarea.value.trim();
         } else if (exercicioAtual.tipo_exercicio === "fala") {
-            // A resposta da fala é gerada pela função iniciarGravacao() e processada no feedback
-            // Para este ponto, apenas simulamos que a resposta seria enviada
             respostaUsuario = "aguardando_processamento_fala";
-        } else if (exercicioAtual.tipo_exercicio === "especial") {
-            // Lógica de envio para exercícios especiais (pode requerer um endpoint diferente ou lógica mais complexa)
-            alert("A funcionalidade de envio para exercícios especiais ainda está em desenvolvimento.");
-            return;
         }
-
 
         // Validação básica da resposta
         if (!respostaUsuario) {
             alert("Por favor, selecione uma opção ou digite sua resposta.");
             return;
         }
-
 
         // Envia a resposta para o backend
         fetch(`../../admin/controller/processar_exercicio.php`, {
@@ -781,7 +744,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
-
     // Função para exibir feedback (correto/incorreto)
     window.exibirFeedback = function(data) {
         const conteudoExercicioDiv = document.getElementById("conteudoExercicio");
@@ -789,11 +751,16 @@ document.addEventListener('DOMContentLoaded', function() {
         // Cria o elemento de feedback dinamicamente
         const feedbackDiv = document.createElement('div');
         feedbackDiv.id = "feedbackExercicio";
-        feedbackDiv.className = `feedback-container ${data.correto ? 'feedback-success' : 'feedback-error'} mt-3 p-3 rounded`;
-        feedbackDiv.innerHTML = `<p class="mb-0"><strong>${data.correto ? 'Correto!' : 'Incorreto!'}</strong> ${data.explicacao}</p>`;
+        feedbackDiv.className = `alert ${data.correto ? 'alert-success' : 'alert-danger'} mt-3`;
+        feedbackDiv.innerHTML = `
+            <h6 class="alert-heading">
+                <i class="fas ${data.correto ? 'fa-check-circle' : 'fa-times-circle'} me-2"></i>
+                ${data.correto ? 'Correto!' : 'Incorreto!'}
+            </h6>
+            <p class="mb-0">${data.explicacao || 'Sem explicação disponível.'}</p>
+        `;
        
         conteudoExercicioDiv.appendChild(feedbackDiv);
-
 
         // Atualiza a aparência dos botões de múltipla escolha após a resposta
         if (exercicioAtual.tipo_exercicio === "multipla_escolha") {
@@ -805,20 +772,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 let conteudo = {};
                 try {
                     conteudo = JSON.parse(exercicioAtual.conteudo);
-                } catch (e) { console.error("Erro ao parsear conteúdo:", e); }
+                } catch (e) { 
+                    console.error("Erro ao parsear conteúdo:", e); 
+                }
                
                 if (conteudo.alternativas) {
                     const alternativaCorreta = conteudo.alternativas.find(alt => alt.correta);
                     if (alternativaCorreta && altId === alternativaCorreta.id) {
-                        btn.classList.add("correct"); // Marca a correta
+                        btn.classList.remove("btn-primary", "btn-outline-primary");
+                        btn.classList.add("btn-success"); // Marca a correta
                     } else if (btn.classList.contains("selected")) {
-                        btn.classList.add("incorrect"); // Marca a incorreta se foi a selecionada
+                        btn.classList.remove("btn-primary", "btn-outline-primary");
+                        btn.classList.add("btn-danger"); // Marca a incorreta se foi a selecionada
                     }
                 }
             });
         }
     };
-
 
     // Função para avançar para o próximo exercício
     window.proximoExercicio = function() {
@@ -833,46 +803,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-
     // Função para voltar para atividades
     window.voltarParaAtividades = function() {
         modalExercicios.hide();
         modalAtividades.show();
     };
 
-
     // Função para abrir teoria da atividade (placeholder)
     window.abrirTeoriaAtividade = function(atividadeId, nomeAtividade) {
         alert(`Teoria da atividade "${nomeAtividade}" será implementada em breve.`);
     };
-
-
-    // Função para carregar conteúdo especial (placeholder)
-    function carregarConteudoEspecial(conteudo) {
-        // Implementar lógica específica para exercícios especiais
-        console.log("Carregando conteúdo especial:", conteudo);
-    }
-
 
     // Função para iniciar gravação (placeholder para exercícios de fala)
     window.iniciarGravacao = function() {
         alert("Funcionalidade de gravação de fala será implementada em breve.");
     };
 
-
     // ==================== FUNCIONALIDADES DE FLASHCARDS ====================
-   
-    // Variáveis globais para flashcards
-    let modalAdicionarPalavra = null;
-    let palavrasCarregadas = [];
-   
-    // Inicialização dos modais de flashcards
-    modalAdicionarPalavra = new bootstrap.Modal(document.getElementById('modalAdicionarPalavra'));
-   
-    // Carrega palavras do usuário ao inicializar
-    if (typeof carregarPalavras === 'function') {
-        carregarPalavras();
-    }
    
     // Função para abrir modal de adicionar palavra
     window.abrirModalAdicionarPalavra = function() {
@@ -883,25 +830,15 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('palavraIdioma').value = '<?php echo htmlspecialchars($idioma_escolhido ?? "Ingles"); ?>';
         document.getElementById('palavraNivel').value = '<?php echo htmlspecialchars($nivel_usuario ?? "A1"); ?>';
        
+        // Abre o modal
         modalAdicionarPalavra.show();
     };
    
-    // Função para adicionar nova palavra
-    window.adicionarPalavra = function() {
+    // Função para salvar palavra
+    window.salvarPalavra = function() {
         const form = document.getElementById('formAdicionarPalavra');
         const formData = new FormData(form);
-       
-        // Validação básica
-        const palavraFrente = formData.get('palavra_frente').trim();
-        const palavraVerso = formData.get('palavra_verso').trim();
-       
-        if (!palavraFrente || !palavraVerso) {
-            alert('Por favor, preencha a palavra e sua tradução.');
-            return;
-        }
-       
-        // Adiciona dados do usuário atual
-        formData.append('action', 'criar_flashcard_rapido');
+        formData.append('action', 'adicionar_flashcard');
        
         fetch('flashcard_controller.php', {
             method: 'POST',
@@ -910,9 +847,9 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert(data.message);
                 modalAdicionarPalavra.hide();
                 carregarPalavras(); // Recarrega a lista
+                alert('Palavra adicionada com sucesso!');
             } else {
                 alert('Erro: ' + data.message);
             }
@@ -926,27 +863,39 @@ document.addEventListener('DOMContentLoaded', function() {
     // Função para carregar palavras do usuário
     window.carregarPalavras = function() {
         const status = document.getElementById('filtroPalavrasStatus').value;
-        const idioma = '<?php echo htmlspecialchars($idioma_escolhido ?? ""); ?>';
-        const nivel = '<?php echo htmlspecialchars($nivel_usuario ?? ""); ?>';
+        const container = document.getElementById('listaPalavras');
        
-        let url = `flashcard_controller.php?action=listar_palavras_usuario`;
-        if (idioma) url += `&idioma=${encodeURIComponent(idioma)}`;
-        if (nivel) url += `&nivel=${encodeURIComponent(nivel)}`;
-        if (status !== '') url += `&aprendidas=${status}`;
+        // Mostra loading
+        container.innerHTML = `
+            <div class="col-12 text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Carregando...</span>
+                </div>
+                <p class="mt-2 text-muted">Carregando suas palavras...</p>
+            </div>
+        `;
        
-        fetch(url)
+        const formData = new FormData();
+        formData.append('action', 'listar_flashcards');
+        if (status !== '') {
+            formData.append('status', status);
+        }
+       
+        fetch('flashcard_controller.php', {
+            method: 'POST',
+            body: formData
+        })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                palavrasCarregadas = data.palavras;
-                exibirPalavras(data.palavras);
+                palavrasCarregadas = data.flashcards;
+                exibirPalavras(data.flashcards);
             } else {
-                console.error('Erro ao carregar palavras:', data.message);
-                exibirErroPalavras('Erro ao carregar palavras: ' + data.message);
+                exibirErroPalavras(data.message);
             }
         })
         .catch(error => {
-            console.error('Erro de rede:', error);
+            console.error('Erro:', error);
             exibirErroPalavras('Erro de conexão. Tente novamente.');
         });
     };
@@ -955,13 +904,12 @@ document.addEventListener('DOMContentLoaded', function() {
     window.exibirPalavras = function(palavras) {
         const container = document.getElementById('listaPalavras');
        
-        if (palavras.length === 0) {
+        if (!palavras || palavras.length === 0) {
             container.innerHTML = `
-                <div class="col-12 text-center">
-                    <div class="text-muted">
-                        <i class="fas fa-book fa-3x mb-3"></i>
-                        <h5>Nenhuma palavra encontrada</h5>
-                        <p>Adicione suas primeiras palavras para começar a estudar!</p>
+                <div class="col-12">
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Nenhuma palavra encontrada. Adicione suas primeiras palavras!
                     </div>
                 </div>
             `;
@@ -970,37 +918,39 @@ document.addEventListener('DOMContentLoaded', function() {
        
         let html = '';
         palavras.forEach(palavra => {
-            const aprendida = palavra.aprendido == 1;
-            const statusClass = aprendida ? 'success' : 'secondary';
-            const statusIcon = aprendida ? 'check-circle' : 'clock';
-            const statusText = aprendida ? 'Aprendida' : 'Estudando';
+            const statusClass = palavra.aprendido == 1 ? 'success' : 'warning';
+            const statusText = palavra.aprendido == 1 ? 'Aprendida' : 'Estudando';
+            const statusIcon = palavra.aprendido == 1 ? 'fa-check-circle' : 'fa-clock';
            
             html += `
-                <div class="col-md-6 col-lg-4 mb-3 palavra-item" data-palavra="${palavra.frente.toLowerCase()}" data-traducao="${palavra.verso.toLowerCase()}">
+                <div class="col-md-6 mb-3 palavra-item" data-palavra="${palavra.palavra_frente.toLowerCase()}" data-traducao="${palavra.palavra_verso.toLowerCase()}">
                     <div class="card h-100">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h6 class="card-title mb-0">${palavra.frente}</h6>
+                                <h6 class="card-title mb-0">${palavra.palavra_frente}</h6>
                                 <span class="badge bg-${statusClass}">
-                                    <i class="fas fa-${statusIcon} me-1"></i>${statusText}
+                                    <i class="fas ${statusIcon} me-1"></i>${statusText}
                                 </span>
                             </div>
-                            <p class="card-text text-muted mb-2">${palavra.verso}</p>
-                            <small class="text-muted">
-                                <i class="fas fa-layer-group me-1"></i>${palavra.nome_deck}
-                            </small>
-                            <div class="mt-2">
-                                ${aprendida ?
-                                    `<button class="btn btn-outline-secondary btn-sm" onclick="alterarStatusPalavra(${palavra.id}, false)">
-                                        <i class="fas fa-undo me-1"></i>Estudar Novamente
-                                    </button>` :
-                                    `<button class="btn btn-outline-success btn-sm" onclick="alterarStatusPalavra(${palavra.id}, true)">
-                                        <i class="fas fa-check me-1"></i>Marcar como Aprendida
-                                    </button>`
-                                }
-                                <button class="btn btn-outline-danger btn-sm ms-1" onclick="excluirPalavra(${palavra.id})">
-                                    <i class="fas fa-trash me-1"></i>Excluir
-                                </button>
+                            <p class="card-text text-muted mb-2">${palavra.palavra_verso}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    ${palavra.idioma} • ${palavra.nivel}
+                                    ${palavra.categoria ? ' • ' + palavra.categoria : ''}
+                                </small>
+                                <div class="btn-group" role="group">
+                                    ${palavra.aprendido == 1 ? 
+                                        `<button class="btn btn-outline-warning btn-sm" onclick="alterarStatusPalavra(${palavra.id}, false)">
+                                            <i class="fas fa-undo me-1"></i>Estudar
+                                        </button>` :
+                                        `<button class="btn btn-outline-success btn-sm" onclick="alterarStatusPalavra(${palavra.id}, true)">
+                                            <i class="fas fa-check me-1"></i>Aprendi
+                                        </button>`
+                                    }
+                                    <button class="btn btn-outline-danger btn-sm" onclick="excluirPalavra(${palavra.id})">
+                                        <i class="fas fa-trash me-1"></i>Excluir
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1095,8 +1045,6 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     };
 
-
-});
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

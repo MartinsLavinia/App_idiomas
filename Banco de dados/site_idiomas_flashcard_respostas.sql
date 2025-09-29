@@ -16,39 +16,34 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `flashcard_progresso`
+-- Table structure for table `flashcard_respostas`
 --
 
-DROP TABLE IF EXISTS `flashcard_progresso`;
+DROP TABLE IF EXISTS `flashcard_respostas`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `flashcard_progresso` (
+CREATE TABLE `flashcard_respostas` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `id_usuario` int NOT NULL,
   `id_flashcard` int NOT NULL,
-  `acertos` int DEFAULT '0',
-  `erros` int DEFAULT '0',
-  `ultima_revisao` timestamp NULL DEFAULT NULL,
-  `proxima_revisao` timestamp NULL DEFAULT NULL,
-  `intervalo_dias` int DEFAULT '1',
-  `facilidade` decimal(3,2) DEFAULT '2.50',
-  `data_criacao` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `id_usuario` int NOT NULL,
+  `acertou` tinyint NOT NULL,
+  `facilidade_resposta` int NOT NULL,
+  `data_resposta` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_user_flashcard` (`id_usuario`,`id_flashcard`),
-  KEY `id_flashcard` (`id_flashcard`),
-  KEY `idx_usuario_revisao` (`id_usuario`,`proxima_revisao`),
-  CONSTRAINT `flashcard_progresso_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `flashcard_progresso_ibfk_2` FOREIGN KEY (`id_flashcard`) REFERENCES `flashcards` (`id`) ON DELETE CASCADE
+  UNIQUE KEY `unique_resposta` (`id_flashcard`,`id_usuario`),
+  KEY `id_usuario` (`id_usuario`),
+  CONSTRAINT `flashcard_respostas_ibfk_1` FOREIGN KEY (`id_flashcard`) REFERENCES `flashcards` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `flashcard_respostas_ibfk_2` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `flashcard_progresso`
+-- Dumping data for table `flashcard_respostas`
 --
 
-LOCK TABLES `flashcard_progresso` WRITE;
-/*!40000 ALTER TABLE `flashcard_progresso` DISABLE KEYS */;
-/*!40000 ALTER TABLE `flashcard_progresso` ENABLE KEYS */;
+LOCK TABLES `flashcard_respostas` WRITE;
+/*!40000 ALTER TABLE `flashcard_respostas` DISABLE KEYS */;
+/*!40000 ALTER TABLE `flashcard_respostas` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

@@ -74,6 +74,14 @@ $database->closeConnection();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
+        /* Modal para Adicionar Caminho - Header com gradiente */
+#addCaminhoModal .modal-header {
+    border-bottom: none;
+    padding: 1.5rem 2rem;
+    background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3) !important;
+    color: var(--branco);
+    border-radius: 1.5rem 1.5rem 0 0;
+}
     .list-group-item {
         background-color: var(--branco);
         color: var(--preto-texto);
@@ -129,17 +137,21 @@ $database->closeConnection();
             opacity: 1;
         }
     }
-
-    /* Barra de Navegação */
+    /* Barra de Navegação - MODIFICADA PARA TRANSPARENTE */
     .navbar {
-        background: var(--roxo-principal) !important;
+        background-color: transparent !important;
         border-bottom: 3px solid var(--amarelo-detalhe);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+         box-shadow: 0 4px 15px rgba(255, 238, 0, 0.38);
     }
 
+    /* Ajuste da logo no header */
     .navbar-brand {
-        font-weight: 700;
-        letter-spacing: 1px;
+        margin-left: auto;
+        margin-right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end; /* Move para o canto direito */
+        width: 100%;
     }
 
     .btn-outline-light {
@@ -162,7 +174,7 @@ $database->closeConnection();
     }
 
     .card-header {
-        background-color: var(--roxo-principal);
+       background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3) !important;
         color: var(--branco);
         border-radius: 1rem 1rem 0 0 !important;
         padding: 1.5rem;
@@ -412,14 +424,14 @@ $database->closeConnection();
         box-shadow: 0 0 10px var(--amarelo-detalhe);
     }
 
-    /* Menu Lateral Lateral Esquerda */
+    /* Menu Lateral */
     .sidebar {
         position: fixed;
         top: 0;
         left: 0;
         width: 250px;
         height: 100%;
-        background-color: var(--roxo-principal);
+        background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
         color: var(--branco);
         display: flex;
         flex-direction: column;
@@ -443,6 +455,7 @@ $database->closeConnection();
     .sidebar .profile h5 {
         font-weight: 600;
         margin-bottom: 0;
+        color: var(--branco);
     }
 
     .sidebar .profile small {
@@ -471,9 +484,10 @@ $database->closeConnection();
     }
 
     .sidebar .list-group-item.active {
-        background-color: var(--amarelo-detalhe);
-        color: var(--roxo-principal);
+        background-color: var(--roxo-escuro) !important; /* MODIFICADO: Roxo escuro */
+        color: var(--branco) !important;
         font-weight: 600;
+        border-left: 4px solid var(--amarelo-detalhe);
     }
 
     .sidebar .list-group-item i {
@@ -507,12 +521,12 @@ $database->closeConnection();
         }
     }
 
-    /* Ajuste da logo no header */
-    .navbar-brand .logo-header {
+   .navbar-brand .logo-header {
         height: 70px;
         width: auto;
         display: block;
     }
+
 
     .navbar {
         display: flex;
@@ -559,21 +573,19 @@ $database->closeConnection();
 </head>
 
 <body>
-
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="#">
-                <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
-            </a>
-
-            <div class="ms-auto">
-                <a href="editar_perfil.php" class="text-white settings-icon">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div></div>
+            <div class="d-flex align-items-center" style="gap: 24px;">
+                <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
+                    <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
+                </a>
+                <a href="editar_perfil.php" class="settings-icon" style="color: var(--roxo-principal) !important;">
                     <i class="fas fa-cog fa-lg"></i>
                 </a>
             </div>
         </div>
     </nav>
-
     <div class="container mt-5">
         <?php
         if (isset($_GET["message_type"]) && isset($_GET["message_content"])) {
