@@ -117,6 +117,38 @@ $database->closeConnection();
         --cinza-claro: #f8f9fa;
         --cinza-medio: #dee2e6;
     }
+    /* Animação do efeito vidro apenas no cabeçalho roxo - CONTÍNUA */
+.table-container .card-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    animation: glassEffect 3s infinite;
+    border-radius: 10px 10px 0 0;
+    z-index: 1;
+}
+
+@keyframes glassEffect {
+    0% {
+        left: -100%;
+    }
+    50% {
+        left: 100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+/* Ajuste para a parte roxa ficar nas bordas */
+.table-container .card-header {
+    border-radius: 10px 10px 0 0 !important;
+    position: relative;
+    overflow: hidden;
+}
 
     /* Estilos Gerais do Corpo */
     body {
@@ -267,20 +299,48 @@ $database->closeConnection();
         color: var(--preto-texto);
     }
 
-    /* Containers para tabelas */
+    /* Containers para tabelas - CORRIGIDO */
     .table-container {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 10px;
-        padding: 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        background: transparent !important;
+        border: 2px solid rgba(106, 13, 173, 0.2) !important;
+        border-top: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        border-radius: 10px !important;
         margin-bottom: 30px;
         transition: all 0.3s ease;
-        border: 2px solid rgba(106, 13, 173, 0.1);
     }
 
-    .table-container:hover {
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        border-color: rgba(106, 13, 173, 0.2);
+    .table-container .card-header {
+        border-radius: 10px 10px 0 0 !important;
+        position: relative;
+        overflow: hidden;
+        border: 2px solid var(--roxo-principal) !important;
+        border-bottom: none !important;
+    }
+
+    /* Adicione esta nova regra para aplicar a borda apenas no card-body */
+    .table-container .card-body {
+       
+        border-radius: 0 0 10px 10px !important;
+        background: rgba(255, 255, 255, 0.95) !important;
+        padding: 20px !important; /* Adicionado padding para não ficar colado */
+    }
+
+    .table-container:hover .card-body {
+        border-color: rgba(106, 13, 173, 0.3) !important;
+    }
+
+    /* Mantém apenas o card com cabeçalho roxo */
+    .table-container .card {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Remove o fundo branco do card-body */
+    .table-container .card-body {
+        background: transparent !important;
     }
 
     /* Barras de progresso personalizadas */
@@ -689,7 +749,7 @@ $database->closeConnection();
             </div>
 
             <!-- Lista de Usuários -->
-            <div class="table-container">
+            <div class="table-container" style="margin-top: 30px;">
                 <div class="card-header">
                     <h5 class="mb-0 text-white">Lista de Usuários (<?php echo count($usuarios); ?> encontrados)</h5>
                 </div>
