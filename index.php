@@ -7,7 +7,7 @@
     <title>SpeakNut - Plataforma de Aprendizado de Idiomas</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-         <link rel="icon" type="image/png" href="imagens/mini-esquilo.png">
+    <link rel="icon" type="image/png" href="imagens/mini-esquilo.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -1403,7 +1403,7 @@
         }
     ];
 
-    // Dados do conteúdo
+    // Dados do conteúdo - MODIFICADO: "Minigames" alterado para "Flashcards" e emojis ajustados
     const contentSlides = [{
             title: "Estrutura de Aprendizado Personalizada",
             description: "Cada unidade foi cuidadosamente desenvolvida para proporcionar uma experiência de aprendizado completa e eficaz. Nossa metodologia garante que você absorva o conhecimento de forma gradual e consistente.",
@@ -1411,10 +1411,10 @@
             emoji: "📚"
         },
         {
-            title: "Minigames Interativos",
-            description: "Transforme seu aprendizado em diversão com nossos minigames educativos! Pratique vocabulário, gramática e pronúncia de forma lúdica. Cada minigame é projetado para reforçar conceitos específicos.",
-            subtitle: "Minigames para praticar e testar seus conhecimentos",
-            emoji: "🎮"
+            title: "Flashcards Interativos",
+            description: "Transforme seu aprendizado em diversão com nossos flashcards educativos! Pratique vocabulário, gramática e pronúncia de forma lúdica. Cada flashcard é projetado para reforçar conceitos específicos.",
+            subtitle: "Flashcards para praticar e testar seus conhecimentos",
+            emoji: "🔖"
         },
         {
             title: "Perguntas e Respostas Interativas",
@@ -1558,7 +1558,7 @@
         slides.forEach(slide => slide.classList.remove('active'));
         dots.forEach(dot => dot.classList.remove('active'));
 
-        // Adicionar classe active ao slide и dot atual
+        // Adicionar classe active ao slide e dot atual
         if (slides[currentContentSlide]) {
             slides[currentContentSlide].classList.add('active');
         }
@@ -2080,7 +2080,9 @@
                 <button class="nav-btn" onclick="scrollToSection('welcome')">Início</button>
                 <button class="nav-btn" onclick="scrollToSection('main')">Sobre</button>
                 <button class="nav-btn" onclick="scrollToSection('units')">Unidades</button>
-                <button class="btn-primary" style="font-size: 1.0rem;">Entrar</button>
+                <button class="btn-primary" style="font-size: 1.0rem;" onclick="window.location.href='public/views/login.php'">
+                    Entrar
+                </button>
                 <a href="public/views/login.php" class="btn-outline"
                     style="text-decoration: none; font-size: 14px; padding: 6px 12px;">Cadastre-se</a>
             </nav>
@@ -2233,8 +2235,8 @@
                             <span class="benefit-text">Professores nativos disponíveis</span>
                         </div>
                         <div class="benefit-item animate-slide-in-left">
-                            <span class="benefit-icon">🎮</span>
-                            <span class="benefit-text">Exercícios interativos e gamificação</span>
+                            <span class="benefit-icon">🔖</span>
+                            <span class="benefit-text">Flashcards interativos</span>
                         </div>
                         <div class="benefit-item animate-slide-in-left">
                             <span class="benefit-icon">🌐</span>
@@ -2321,21 +2323,21 @@
                         <div class="content-grid">
                             <div class="content-icon">
                                 <div class="icon-wrapper">
-                                    <span class="content-emoji">🎮</span>
+                                    <span class="content-emoji">🔖</span>
                                 </div>
                             </div>
                             <div class="content-text">
-                                <h3>Minigames Interativos</h3>
+                                <h3>Flashcards Interativos</h3>
                                 <p>
-                                    Transforme seu aprendizado em diversão com nossos minigames educativos!
+                                    Transforme seu aprendizado em diversão com nossos flashcards educativos!
                                     Pratique vocabulário, gramática e pronúncia de forma lúdica.
-                                    Cada minigame é projetado para reforçar conceitos específicos.
+                                    Cada flashcard é projetado para reforçar conceitos específicos.
                                 </p>
                             </div>
                         </div>
                         <div class="content-visual">
                             <div class="visual-placeholder">
-                                <span class="visual-emoji">🎮</span>
+                                <span class="visual-emoji">🔖</span>
                             </div>
                         </div>
                     </div>
@@ -2374,7 +2376,6 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
