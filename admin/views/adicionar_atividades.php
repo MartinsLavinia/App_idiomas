@@ -173,7 +173,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 // BUSCA AS INFORMAÇÕES DO CAMINHO PARA EXIBIÇÃO NO TÍTULO
 $database = new Database();
 $conn = $database->conn;
-$sql_caminho = "SELECT nome_caminho, nivel FROM caminhos_aprendizagem WHERE id = ?";
+$sql_caminho = "SELECT nome_caminho, nivel, id_unidade FROM caminhos_aprendizagem WHERE id = ?";
 $stmt_caminho = $conn->prepare($sql_caminho);
 $stmt_caminho->bind_param("i", $caminho_id);
 $stmt_caminho->execute();
@@ -189,10 +189,32 @@ $database->closeConnection();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Adicionar Exercício - Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .subtipo-campos {
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background-color: #f8f9fa;
+        }
+        .input-group-text {
+            min-width: 40px;
+            justify-content: center;
+        }
+    </style>
 </head>
 <body>
     <div class="container mt-5">
-        <h2 class="mb-4">Adicionar Exercício ao Caminho: <?php echo htmlspecialchars($caminho_info['nome_caminho']) . ' (' . htmlspecialchars($caminho_info['nivel']) . ')'; ?></h2>
+        <h2 class="mb-4">Adicionar Exercício - Vinculado ao Caminho: <?php echo htmlspecialchars($caminho_info['nome_caminho']) . ' (' . htmlspecialchars($caminho_info['nivel']) . ')'; ?></h2>
+        
+        <div class="alert alert-info">
+            <strong>📍 Adicionando Exercício para:</strong><br>
+            • <strong>ID da Unidade:</strong> <?php echo htmlspecialchars($caminho_info['id_unidade'] ?? 'Não especificada'); ?><br>
+            • <strong>Caminho:</strong> <?php echo htmlspecialchars($caminho_info['nome_caminho']); ?> (<?php echo htmlspecialchars($caminho_info['nivel']); ?>)<br>
+            • <strong>ID do Caminho:</strong> <?php echo htmlspecialchars($caminho_id); ?><br>
+            <small class="text-muted">Este exercício ficará disponível APENAS neste caminho específico e não em outras unidades.</small>
+        </div>
+        
         <a href="gerenciar_exercicios.php?caminho_id=<?php echo htmlspecialchars($caminho_id); ?>" class="btn btn-secondary mb-3">← Voltar para Exercícios</a>
 
         <?php echo $mensagem; ?>
@@ -204,15 +226,16 @@ $database->closeConnection();
                     <div class="mb-3">
                         <label for="ordem" class="form-label">Ordem do Exercício</label>
                         <input type="number" class="form-control" id="ordem" name="ordem" value="<?php echo isset($_POST['ordem']) ? htmlspecialchars($_POST['ordem']) : ''; ?>" required>
+                        <div class="form-text">Define a sequência em que este exercício aparecerá no caminho</div>
                     </div>
 
                     <!-- Campo Tipo -->
                     <div class="mb-3">
                         <label for="tipo" class="form-label">Tipo de Exercício</label>
                         <select class="form-select" id="tipo" name="tipo" required>
-                            <option value="normal" <?php echo (isset($_POST['tipo']) && $_POST['tipo'] == 'normal') ? 'selected' : ''; ?>>Normal (Múltipla Escolha)</option>
+                            <option value="normal" <?php echo (isset($_POST['tipo']) && $_POST['tipo'] == 'normal') ? 'selected' : ''; ?>>Normal</option>
                             <option value="especial" <?php echo (isset($_POST['tipo']) && $_POST['tipo'] == 'especial') ? 'selected' : ''; ?>>Especial (Vídeo/Áudio)</option>
-                            <option value="quiz" <?php echo (isset($_POST['tipo']) && $_POST['tipo'] == 'quiz') ? 'selected' : ''; ?>>Quiz (ID de um quiz)</option>
+                            <option value="quiz" <?php echo (isset($_POST['tipo']) && $_POST['tipo'] == 'quiz') ? 'selected' : ''; ?>>Quiz</option>
                         </select>
                     </div>
                     
@@ -282,6 +305,7 @@ $database->closeConnection();
                                 <div class="mb-3">
                                     <label for="explicacao" class="form-label">Explicação</label>
                                     <textarea class="form-control" id="explicacao" name="explicacao" placeholder="Explicação da resposta correta"><?php echo isset($_POST['explicacao']) ? htmlspecialchars($_POST['explicacao']) : ''; ?></textarea>
+                                    <div class="form-text">Esta explicação aparecerá para o usuário após ele responder o exercício</div>
                                 </div>
                             </div>
                             
@@ -463,7 +487,7 @@ $database->closeConnection();
         const index = container.children.length;
         const novaAlternativa = document.createElement("div");
         novaAlternativa.className = "input-group mb-2";
-        const letra = String.fromCharCode(65 + index); // 65 é o código ASCII para 'A'
+        const letra = String.fromCharCode(65 + index);
         novaAlternativa.innerHTML = `
             <span class="input-group-text">${letra}</span>
             <input type="text" class="form-control" name="alt_texto[]" placeholder="Texto da alternativa">

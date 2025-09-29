@@ -31,7 +31,9 @@ try {
     $conn = $database->conn;
 
     // Buscar informações da unidade
-    $sql_unidade = "SELECT idioma, nivel FROM unidades WHERE id = ?";
+    $sql_unidade = "SELECT u.id, u.nome_unidade, u.idioma, u.nivel, u.descricao 
+                   FROM unidades u 
+                   WHERE u.id = ?";
     $stmt_unidade = $conn->prepare($sql_unidade);
     $stmt_unidade->bind_param("i", $unidade_id);
     $stmt_unidade->execute();
@@ -46,16 +48,18 @@ try {
         exit();
     }
 
-    // Buscar caminhos de aprendizagem para esta unidade
+    // Buscar caminhos de aprendizagem APENAS para esta unidade específica
     $sql_caminhos = "
         SELECT 
             c.id,
             c.nome_caminho as nome,
             CONCAT('Atividade de ', c.nome_caminho) as descricao,
             CASE 
-                WHEN c.nome_caminho LIKE '%Comida%' THEN 'fa-utensils'
-                WHEN c.nome_caminho LIKE '%Sauda%' THEN 'fa-hand-wave'
-                WHEN c.nome_caminho LIKE '%Rotina%' THEN 'fa-clock'
+                WHEN c.nome_caminho LIKE '%Comida%' OR c.nome_caminho LIKE '%food%' THEN 'fa-utensils'
+                WHEN c.nome_caminho LIKE '%Sauda%' OR c.nome_caminho LIKE '%greet%' THEN 'fa-hand-wave'
+                WHEN c.nome_caminho LIKE '%Rotina%' OR c.nome_caminho LIKE '%routine%' THEN 'fa-clock'
+                WHEN c.nome_caminho LIKE '%Viagem%' OR c.nome_caminho LIKE '%travel%' THEN 'fa-plane'
+                WHEN c.nome_caminho LIKE '%Apresenta%' OR c.nome_caminho LIKE '%introduc%' THEN 'fa-user'
                 ELSE 'fa-graduation-cap'
             END as icone,
             'geral' as tipo,
@@ -66,13 +70,13 @@ try {
             0 as progresso
         FROM caminhos_aprendizagem c
         LEFT JOIN exercicios e ON c.id = e.caminho_id
-        WHERE c.idioma = ? AND c.nivel = ?
+        WHERE c.id_unidade = ?
         GROUP BY c.id, c.nome_caminho
         ORDER BY c.id
     ";
 
     $stmt_caminhos = $conn->prepare($sql_caminhos);
-    $stmt_caminhos->bind_param("ss", $unidade_info['idioma'], $unidade_info['nivel']);
+    $stmt_caminhos->bind_param("i", $unidade_id);
     $stmt_caminhos->execute();
     $result_caminhos = $stmt_caminhos->get_result();
     
@@ -83,52 +87,22 @@ try {
     
     $stmt_caminhos->close();
     
-    // Se não encontrou atividades, criar atividades padrão
-    if (empty($atividades)) {
-        $atividades = [
-            [
-                'id' => 1,
-                'nome' => 'Vocabulário Básico',
-                'descricao' => 'Aprenda palavras essenciais',
-                'icone' => 'fa-book',
-                'tipo' => 'vocabulario',
-                'ordem' => 1,
-                'explicacao_teorica' => '',
-                'total_exercicios' => 5,
-                'exercicios_concluidos' => 0,
-                'progresso' => 0
-            ],
-            [
-                'id' => 2,
-                'nome' => 'Conversação',
-                'descricao' => 'Pratique diálogos básicos',
-                'icone' => 'fa-comments',
-                'tipo' => 'conversacao',
-                'ordem' => 2,
-                'explicacao_teorica' => '',
-                'total_exercicios' => 3,
-                'exercicios_concluidos' => 0,
-                'progresso' => 0
-            ],
-            [
-                'id' => 3,
-                'nome' => 'Gramática',
-                'descricao' => 'Estude regras básicas',
-                'icone' => 'fa-graduation-cap',
-                'tipo' => 'gramatica',
-                'ordem' => 3,
-                'explicacao_teorica' => '',
-                'total_exercicios' => 4,
-                'exercicios_concluidos' => 0,
-                'progresso' => 0
-            ]
-        ];
-    }
+    // REMOVIDO: O bloco que criava atividades padrão foi completamente removido
+    // Agora só retorna atividades que estão realmente no banco de dados
+
     $database->closeConnection();
 
     echo json_encode([
         'success' => true,
-        'atividades' => $atividades
+        'unidade' => [
+            'id' => $unidade_info['id'],
+            'nome' => $unidade_info['nome_unidade'],
+            'idioma' => $unidade_info['idioma'],
+            'nivel' => $unidade_info['nivel'],
+            'descricao' => $unidade_info['descricao']
+        ],
+        'atividades' => $atividades,
+        'total_atividades' => count($atividades)
     ]);
 
 } catch (Exception $e) {

@@ -130,6 +130,9 @@ if (!$exercicio) {
 $conteudo_array = json_decode($exercicio['conteudo'], true);
 $caminho_id = $exercicio['caminho_id'];
 
+// DEBUG: Mostrar o conteúdo para verificar a estrutura
+error_log("Conteúdo do exercício: " . print_r($conteudo_array, true));
+
 // Determinar o tipo de exercício baseado no conteúdo
 $tipo_exercicio_detectado = 'multipla_escolha'; // padrão
 
@@ -142,11 +145,13 @@ if ($exercicio['tipo'] === 'normal' && $conteudo_array) {
         $tipo_exercicio_detectado = 'audicao';
     } elseif (isset($conteudo_array['resposta_correta']) && !isset($conteudo_array['alternativas'])) {
         $tipo_exercicio_detectado = 'texto_livre';
+    } elseif (isset($conteudo_array['alternativas'])) {
+        $tipo_exercicio_detectado = 'multipla_escolha';
     }
 }
 
 // BUSCA AS INFORMAÇÕES DO CAMINHO PARA EXIBIÇÃO NO TÍTULO
-$sql_caminho = "SELECT nome_caminho, nivel FROM caminhos_aprendizagem WHERE id = ?";
+$sql_caminho = "SELECT nome_caminho, nivel, id_unidade FROM caminhos_aprendizagem WHERE id = ?";
 $stmt_caminho = $conn->prepare($sql_caminho);
 $stmt_caminho->bind_param("i", $caminho_id);
 $stmt_caminho->execute();
@@ -154,6 +159,14 @@ $caminho_info = $stmt_caminho->get_result()->fetch_assoc();
 $stmt_caminho->close();
 
 $database->closeConnection();
+
+// Função auxiliar para converter arrays em string para exibição
+function arrayToString($array) {
+    if (is_array($array)) {
+        return implode(', ', $array);
+    }
+    return $array;
+}
 ?>
 
 <!DOCTYPE html>
@@ -163,13 +176,37 @@ $database->closeConnection();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Exercício - Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .subtipo-campos {
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background-color: #f8f9fa;
+        }
+        .input-group-text {
+            min-width: 40px;
+            justify-content: center;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h2 class="mb-4">Editar Exercício do Caminho: <?php echo htmlspecialchars($caminho_info['nome_caminho']) . ' (' . htmlspecialchars($caminho_info['nivel']) . ')'; ?></h2>
+     <div class="container mt-5">
+        <h2 class="mb-4">Editar Exercício - Vinculado ao Caminho: <?php echo htmlspecialchars($caminho_info['nome_caminho']) . ' (' . htmlspecialchars($caminho_info['nivel']) . ')'; ?></h2>
+        
+        <div class="alert alert-info">
+            <strong>📌 Localização do Exercício:</strong><br>
+            • <strong>Unidade:</strong> <?php echo htmlspecialchars($caminho_info['id_unidade'] ?? 'Não especificada'); ?><br>
+            • <strong>Caminho:</strong> <?php echo htmlspecialchars($caminho_info['nome_caminho']); ?> (<?php echo htmlspecialchars($caminho_info['nivel']); ?>)<br>
+            • <strong>ID do Caminho:</strong> <?php echo htmlspecialchars($caminho_id); ?><br>
+            <small class="text-muted">Este exercício está vinculado exclusivamente a este caminho e não aparecerá em outras unidades.</small>
+        </div>
+        
+
         <a href="gerenciar_exercicios.php?caminho_id=<?php echo htmlspecialchars($caminho_id); ?>" class="btn btn-secondary mb-3">← Voltar para Exercícios</a>
         
         <?php echo $mensagem; ?>
+        
 
         <div class="card">
             <div class="card-body">
@@ -214,7 +251,7 @@ $database->closeConnection();
                                         if (isset($conteudo_array['alternativas']) && is_array($conteudo_array['alternativas'])) {
                                             foreach ($conteudo_array['alternativas'] as $index => $alt) {
                                                 $letra = chr(65 + $index);
-                                                $texto = is_array($alt) ? $alt['texto'] : $alt;
+                                                $texto = is_array($alt) ? ($alt['texto'] ?? '') : $alt;
                                                 $checked = (is_array($alt) && isset($alt['correta']) && $alt['correta']) ? 'checked' : '';
                                                 echo '<div class="input-group mb-2">';
                                                 echo '<span class="input-group-text">' . $letra . '</span>';
@@ -248,7 +285,14 @@ $database->closeConnection();
                                 </div>
                                 <div class="mb-3">
                                     <label for="explicacao" class="form-label">Explicação</label>
-                                    <textarea class="form-control" id="explicacao" name="explicacao" placeholder="Explicação da resposta correta"><?php echo isset($conteudo_array['explicacao']) ? htmlspecialchars($conteudo_array['explicacao']) : ''; ?></textarea>
+                                    <textarea class="form-control" id="explicacao" name="explicacao" placeholder="Explicação da resposta correta"><?php 
+                                    // CORREÇÃO: Buscar a explicação no local correto
+                                    if (isset($conteudo_array['explicacao'])) {
+                                        echo htmlspecialchars($conteudo_array['explicacao']);
+                                    } elseif (isset($conteudo_array['dica'])) {
+                                        echo htmlspecialchars($conteudo_array['dica']);
+                                    }
+                                    ?></textarea>
                                 </div>
                             </div>
                             
@@ -261,7 +305,13 @@ $database->closeConnection();
                                 </div>
                                 <div class="mb-3">
                                     <label for="alternativas_aceitas" class="form-label">Alternativas Aceitas (separadas por vírgula)</label>
-                                    <input type="text" class="form-control" id="alternativas_aceitas" name="alternativas_aceitas" value="<?php echo isset($conteudo_array['alternativas_aceitas']) ? htmlspecialchars(implode(', ', $conteudo_array['alternativas_aceitas'])) : ''; ?>">
+                                    <input type="text" class="form-control" id="alternativas_aceitas" name="alternativas_aceitas" value="<?php 
+                                    if (isset($conteudo_array['alternativas_aceitas']) && is_array($conteudo_array['alternativas_aceitas'])) {
+                                        echo htmlspecialchars(implode(', ', $conteudo_array['alternativas_aceitas']));
+                                    } elseif (isset($conteudo_array['alternativas_aceitas'])) {
+                                        echo htmlspecialchars($conteudo_array['alternativas_aceitas']);
+                                    }
+                                    ?>">
                                 </div>
                                 <div class="mb-3">
                                     <label for="dica_texto" class="form-label">Dica</label>
@@ -282,7 +332,13 @@ $database->closeConnection();
                                 </div>
                                 <div class="mb-3">
                                     <label for="alternativas_completar" class="form-label">Alternativas Aceitas (separadas por vírgula)</label>
-                                    <input type="text" class="form-control" id="alternativas_completar" name="alternativas_completar" value="<?php echo isset($conteudo_array['alternativas_aceitas']) ? htmlspecialchars(implode(', ', $conteudo_array['alternativas_aceitas'])) : ''; ?>">
+                                    <input type="text" class="form-control" id="alternativas_completar" name="alternativas_completar" value="<?php 
+                                    if (isset($conteudo_array['alternativas_aceitas']) && is_array($conteudo_array['alternativas_aceitas'])) {
+                                        echo htmlspecialchars(implode(', ', $conteudo_array['alternativas_aceitas']));
+                                    } elseif (isset($conteudo_array['alternativas_aceitas'])) {
+                                        echo htmlspecialchars($conteudo_array['alternativas_aceitas']);
+                                    }
+                                    ?>">
                                 </div>
                                 <div class="mb-3">
                                     <label for="placeholder_completar" class="form-label">Placeholder</label>
@@ -307,7 +363,13 @@ $database->closeConnection();
                                 </div>
                                 <div class="mb-3">
                                     <label for="palavras_chave" class="form-label">Palavras-chave (separadas por vírgula)</label>
-                                    <input type="text" class="form-control" id="palavras_chave" name="palavras_chave" value="<?php echo isset($conteudo_array['palavras_chave']) ? htmlspecialchars(implode(', ', $conteudo_array['palavras_chave'])) : ''; ?>">
+                                    <input type="text" class="form-control" id="palavras_chave" name="palavras_chave" value="<?php 
+                                    if (isset($conteudo_array['palavras_chave']) && is_array($conteudo_array['palavras_chave'])) {
+                                        echo htmlspecialchars(implode(', ', $conteudo_array['palavras_chave']));
+                                    } elseif (isset($conteudo_array['palavras_chave'])) {
+                                        echo htmlspecialchars($conteudo_array['palavras_chave']);
+                                    }
+                                    ?>">
                                 </div>
                             </div>
                             
@@ -357,6 +419,7 @@ $database->closeConnection();
             </div>
         </div>
     </div>
+     <a href="gerenciar_exercicios.php?caminho_id=<?php echo htmlspecialchars($caminho_id); ?>" class="btn btn-secondary mb-3">← Voltar para Exercícios</a>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
