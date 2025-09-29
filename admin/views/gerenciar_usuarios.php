@@ -633,6 +633,7 @@ $database->closeConnection();
         <div class="profile">
             <i class="fas fa-user-circle"></i>
             <h5 id="nome-admin"><?php echo isset($_SESSION['nome_admin']) ? htmlspecialchars($_SESSION['nome_admin']) : 'Administrador'; ?></h5>
+             <small>Administrador(a)</small>
            
         </div>
 

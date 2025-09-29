@@ -604,7 +604,7 @@ $database->closeConnection();
             <div class="profile">
                 <i class="fas fa-user-circle"></i>
                 <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
-                <small>Administrador</small>
+                <small>Administrador(a)</small>
             </div>
 
             <div class="list-group">

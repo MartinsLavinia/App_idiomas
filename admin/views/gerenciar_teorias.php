@@ -290,7 +290,7 @@ $database->closeConnection();
         transform: scale(1.05);
     }
 
-    /* Tabelas personalizadas */
+    /* Tabelas personalizadas - CORRIGIDO */
     .table {
         border-collapse: separate;
         border-spacing: 0;
@@ -299,6 +299,7 @@ $database->closeConnection();
         border-radius: 10px;
         overflow: hidden;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        margin-bottom: 0; /* Remove margem inferior */
     }
 
     .table thead th {
@@ -315,6 +316,10 @@ $database->closeConnection();
         border-bottom: 1px solid var(--cinza-medio);
         text-align: center;
         vertical-align: middle;
+    }
+
+    .table tbody tr:last-child td {
+        border-bottom: none; /* Remove borda da última linha */
     }
 
     .table-striped tbody tr:nth-of-type(odd) {
@@ -395,9 +400,13 @@ $database->closeConnection();
         flex-wrap: wrap;
     }
 
-    /* Estilo para a tabela de teorias */
+    /* Estilo para a tabela de teorias - CORRIGIDO */
     .teorias-table {
-        margin-top: 20px;
+        margin-top: 30px;
+        padding-bottom: 0; /* Remove padding inferior */
+        border: 2px solid rgba(106, 13, 173, 0.2) !important;
+        border-radius: 10px;
+        overflow: hidden; /* Garante que a borda fique perfeita */
     }
 
     /* Container da navbar */
@@ -422,12 +431,12 @@ $database->closeConnection();
     .empty-state {
         max-width: 400px;
         margin: 0 auto;
-        padding: 40px 20px;
+        padding: 20px;
     }
 
     .empty-state i {
         font-size: 2.5rem;
-        margin-bottom: 15px;
+       
     }
     </style>
 </head>
@@ -451,6 +460,8 @@ $database->closeConnection();
         <div class="profile">
             <i class="fas fa-user-circle"></i>
             <h5 id="nome-admin"><?php echo isset($_SESSION['nome_admin']) ? htmlspecialchars($_SESSION['nome_admin']) : 'Administrador'; ?></h5>
+             <small>Administrador(a)</small>
+             
         </div>
 
         <div class="list-group">
