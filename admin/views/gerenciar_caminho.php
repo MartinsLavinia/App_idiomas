@@ -569,6 +569,7 @@ $database->closeConnection();
     box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
 }
 
+
     </style>
 </head>
 

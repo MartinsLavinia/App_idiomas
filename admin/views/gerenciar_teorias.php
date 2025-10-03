@@ -491,6 +491,7 @@ $database->closeConnection();
         70% { box-shadow: 0 0 0 15px rgba(255, 215, 0, 0); }
         100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
     }
+    
     </style>
 </head>
 <body>
