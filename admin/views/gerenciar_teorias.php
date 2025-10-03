@@ -27,7 +27,6 @@ $stmt_teorias->close();
 
 $database->closeConnection();
 ?>
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -45,6 +44,8 @@ $database->closeConnection();
         --roxo-principal: #6a0dad;
         --roxo-escuro: #4c087c;
         --amarelo-detalhe: #ffd700;
+        --amarelo-botao: #ffd700;
+        --amarelo-hover: #e7c500;
         --branco: #ffffff;
         --preto-texto: #212529;
         --cinza-claro: #f8f9fa;
@@ -57,8 +58,6 @@ $database->closeConnection();
         background-color: var(--cinza-claro);
         color: var(--preto-texto);
         animation: fadeIn 1s ease-in-out;
-        margin: 0;
-        padding: 0;
     }
 
     @keyframes fadeIn {
@@ -83,7 +82,7 @@ $database->closeConnection();
         margin-right: 0;
         display: flex;
         align-items: center;
-        justify-content: flex-end; /* Move para o canto direito */
+        justify-content: flex-end;
         width: 100%;
     }
 
@@ -112,46 +111,21 @@ $database->closeConnection();
 
     /* Estilos de Cartões (Cards) */
     .card {
-        background: rgba(255, 255, 255, 0.95) !important;
-        border: 2px solid rgba(106, 13, 173, 0.1);
+        border: none;
         border-radius: 1rem;
         box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s ease;
-        animation: cardEntrance 0.6s ease-out;
-    }
-
-    @keyframes cardEntrance {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .card:hover {
-        transform: translateY(-5px) scale(1.02);
-        box-shadow: 0 15px 35px rgba(106, 13, 173, 0.2);
-        border-color: rgba(106, 13, 173, 0.3);
     }
 
     .card-header {
-        background-color: var(--roxo-principal);
+        background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3) !important;
         color: var(--branco);
         border-radius: 1rem 1rem 0 0 !important;
         padding: 1.5rem;
-        margin-bottom: 1rem;
     }
 
     .card-header h2 {
         font-weight: 700;
         letter-spacing: 0.5px;
-    }
-
-    .card-header h5 {
-        color: var(--branco) !important;
     }
 
     /* Menu Lateral */
@@ -224,16 +198,41 @@ $database->closeConnection();
         color: var(--amarelo-detalhe);
     }
 
-    /* Conteúdo principal */
+    /* Ajuste do conteúdo principal para não ficar por baixo do sidebar */
     .main-content {
         margin-left: 250px;
         padding: 20px;
     }
 
-    /* Títulos e cabeçalhos */
-    h1, h2, h3, h4, h5, h6 {
-        color: var(--roxo-principal);
-        font-weight: 600;
+    /* Botão amarelo principal */
+    .btn-warning {
+        background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
+        color: var(--preto-texto);
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        min-width: 180px;
+        border: none;
+    }
+
+    .btn-warning:hover {
+        background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
+        color: var(--preto-texto);
+    }
+
+    /* Botão outline amarelo */
+    .btn-outline-warning {
+        background: transparent;
+        color: var(--preto-texto);
+        border: 2px solid var(--amarelo-botao);
+        min-width: 150px;
+    }
+
+    .btn-outline-warning:hover {
+        background: transparent;
+        color: var(--preto-texto);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
     }
 
     /* Botões personalizados */
@@ -290,7 +289,7 @@ $database->closeConnection();
         transform: scale(1.05);
     }
 
-    /* Tabelas personalizadas - CORRIGIDO */
+    /* Tabelas personalizadas */
     .table {
         border-collapse: separate;
         border-spacing: 0;
@@ -299,7 +298,7 @@ $database->closeConnection();
         border-radius: 10px;
         overflow: hidden;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-        margin-bottom: 0; /* Remove margem inferior */
+        margin-bottom: 0;
     }
 
     .table thead th {
@@ -319,11 +318,11 @@ $database->closeConnection();
     }
 
     .table tbody tr:last-child td {
-        border-bottom: none; /* Remove borda da última linha */
+        border-bottom: none;
     }
 
     .table-striped tbody tr:nth-of-type(odd) {
-        background-color: rgba(255, 255, 255, 0.05);
+        background-color: rgba(0, 0, 0, 0.02);
     }
 
     .table-hover tbody tr:hover {
@@ -349,6 +348,10 @@ $database->closeConnection();
         font-weight: 600;
         padding: 0.5em 1em;
         border-radius: 50px;
+    }
+
+    .badge.bg-primary {
+        background-color: var(--roxo-principal) !important;
     }
 
     /* Responsividade */
@@ -379,10 +382,6 @@ $database->closeConnection();
         100% { transform: scale(1); }
     }
 
-    .fas.fa-search {
-        color: var(--branco);
-    }
-
     /* Estilo para o cabeçalho da página */
     .page-header {
         display: flex;
@@ -400,13 +399,12 @@ $database->closeConnection();
         flex-wrap: wrap;
     }
 
-    /* Estilo para a tabela de teorias - CORRIGIDO */
+    /* Estilo para a tabela de teorias */
     .teorias-table {
         margin-top: 30px;
-        padding-bottom: 0; /* Remove padding inferior */
-        border: 2px solid rgba(106, 13, 173, 0.2) !important;
+        padding-bottom: 0;
         border-radius: 10px;
-        overflow: hidden; /* Garante que a borda fique perfeita */
+        overflow: hidden;
     }
 
     /* Container da navbar */
@@ -436,7 +434,62 @@ $database->closeConnection();
 
     .empty-state i {
         font-size: 2.5rem;
-       
+        color: var(--cinza-medio);
+    }
+
+    /* Loading spinner */
+    .spinner-border-sm {
+        width: 1rem;
+        height: 1rem;
+    }
+
+    /* Estilos de Feedback */
+    .feedback-container {
+        margin-top: 1.5rem;
+        padding: 1.5rem;
+        border-radius: 1rem;
+        font-weight: 500;
+        display: none;
+        animation: slideInUp 0.5s ease;
+    }
+
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .feedback-success {
+        background: #e6ffed;
+        border: 1px solid #28a745;
+        color: #155724;
+    }
+
+    .feedback-error {
+        background: #fff0f0;
+        border: 1px solid #dc3545;
+        color: #721c24;
+    }
+
+    /* Animações e Efeitos */
+    .fs-4 .badge {
+        background-color: var(--amarelo-detalhe) !important;
+        color: var(--preto-texto);
+        font-weight: 700;
+        padding: 0.5em 1em;
+        border-radius: 50px;
+        animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
+        70% { box-shadow: 0 0 0 15px rgba(255, 215, 0, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
     }
     </style>
 </head>
@@ -459,26 +512,25 @@ $database->closeConnection();
     <div class="sidebar">
         <div class="profile">
             <i class="fas fa-user-circle"></i>
-            <h5 id="nome-admin"><?php echo isset($_SESSION['nome_admin']) ? htmlspecialchars($_SESSION['nome_admin']) : 'Administrador'; ?></h5>
-             <small>Administrador(a)</small>
-             
+            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+            <small>Administrador(a)</small>
         </div>
 
         <div class="list-group">
-            <a href="gerenciar_caminho.php" class="list-group-item">
-                <i class="fas fa-road"></i> Gerenciar Caminhos
+            <a href="gerenciar_caminho.php" class="list-group-item" data-bs-toggle="modal" data-bs-target="#addCaminhoModal">
+                <i class="fas fa-plus-circle"></i> Adicionar Caminho
             </a>
-            <a href="#" class="list-group-item">
+            <a href="pagina_adicionar_idiomas.php" class="list-group-item">
                 <i class="fas fa-language"></i> Adicionar Idioma com Quiz
             </a>
-            <a href="#" class="list-group-item">
+            <a href="#" class="list-group-item" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
                 <i class="fas fa-globe"></i> Gerenciar Idiomas
             </a>
             <a href="gerenciar_teorias.php" class="list-group-item active">
                 <i class="fas fa-book-open"></i> Gerenciar Teorias
             </a>
             <a href="gerenciar_unidades.php" class="list-group-item">
-                <i class="fas fa-book-open"></i> Gerenciar Unidades
+                <i class="fas fa-cubes"></i> Gerenciar Unidades
             </a>
             <a href="gerenciar_usuarios.php" class="list-group-item">
                 <i class="fas fa-users"></i> Gerenciar Usuários

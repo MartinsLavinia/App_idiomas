@@ -146,6 +146,8 @@ $database->closeConnection();
         --roxo-principal: #6a0dad;
         --roxo-escuro: #4c087c;
         --amarelo-detalhe: #ffd700;
+        --amarelo-botao: #ffd700;
+        --amarelo-hover: #e7c500;
         --branco: #ffffff;
         --preto-texto: #212529;
         --cinza-claro: #f8f9fa;
@@ -158,8 +160,6 @@ $database->closeConnection();
         background-color: var(--cinza-claro);
         color: var(--preto-texto);
         animation: fadeIn 1s ease-in-out;
-        margin: 0;
-        padding: 0;
     }
 
     @keyframes fadeIn {
@@ -171,16 +171,32 @@ $database->closeConnection();
         }
     }
 
-    /* Barra de Navegação */
+    /* Barra de Navegação - MODIFICADA PARA TRANSPARENTE */
     .navbar {
-        background: var(--roxo-principal) !important;
+        background-color: transparent !important;
         border-bottom: 3px solid var(--amarelo-detalhe);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 15px rgba(255, 238, 0, 0.38);
     }
 
+    /* Ajuste da logo no header */
     .navbar-brand {
-        font-weight: 700;
-        letter-spacing: 1px;
+        margin-left: auto;
+        margin-right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        width: 100%;
+    }
+
+    .navbar-brand .logo-header {
+        height: 70px;
+        width: auto;
+        display: block;
+    }
+
+    .navbar {
+        display: flex;
+        align-items: center;
     }
 
     .btn-outline-light {
@@ -195,39 +211,18 @@ $database->closeConnection();
         color: var(--preto-texto);
     }
 
-    /* Estilos de Cartões (Cards) - MODIFICADO */
+    /* Estilos de Cartões (Cards) */
     .card {
-        background: rgba(255, 255, 255, 0.95) !important;
-        border: 2px solid rgba(106, 13, 173, 0.1);
+        border: none;
         border-radius: 1rem;
         box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s ease;
-        animation: cardEntrance 0.6s ease-out;
-    }
-
-    @keyframes cardEntrance {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .card:hover {
-        transform: translateY(-5px) scale(1.02);
-        box-shadow: 0 15px 35px rgba(106, 13, 173, 0.2);
-        border-color: rgba(106, 13, 173, 0.3);
     }
 
     .card-header {
-        background-color: var(--roxo-principal);
+        background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3) !important;
         color: var(--branco);
         border-radius: 1rem 1rem 0 0 !important;
         padding: 1.5rem;
-        margin-bottom: 1rem;
     }
 
     .card-header h2 {
@@ -235,11 +230,7 @@ $database->closeConnection();
         letter-spacing: 0.5px;
     }
 
-    .card-header h5 {
-        color: var(--branco) !important;
-    }
-
-    /* Cartões de Estatísticas - MODIFICADO */
+    /* Cartões de Estatísticas - ATUALIZADO */
     .stats-card {
         background: rgba(255, 255, 255, 0.95) !important;
         color: var(--preto-texto);
@@ -252,6 +243,7 @@ $database->closeConnection();
         animation: statsCardAnimation 0.8s ease-out;
         position: relative;
         overflow: hidden;
+        text-align: center;
     }
 
     @keyframes statsCardAnimation {
@@ -301,120 +293,17 @@ $database->closeConnection();
         color: var(--preto-texto);
     }
 
-    /* Containers para gráficos e tabelas */
-    .chart-container {
-        position: relative;
-        height: 400px;
-        margin-bottom: 30px;
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 15px;
-        padding: 20px;
-        border: 2px solid rgba(106, 13, 173, 0.1);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        transition: all 0.3s ease;
+    .stats-card i {
+        font-size: 2rem;
+        color: var(--amarelo-detalhe);
+        margin-bottom: 1rem;
     }
 
-    .chart-container:hover {
-        box-shadow: 0 10px 25px rgba(106, 13, 173, 0.15);
-        border-color: rgba(106, 13, 173, 0.3);
-    }
-
-    .table-container {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 15px;
-        padding: 20px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        margin-bottom: 30px;
-        transition: all 0.3s ease;
-        border: 2px solid rgba(106, 13, 173, 0.1);
-    }
-
-    .table-container:hover {
-        box-shadow: 0 10px 25px rgba(106, 13, 173, 0.15);
-        border-color: rgba(106, 13, 173, 0.3);
-    }
-
-    /* Barras de progresso personalizadas */
-    .progress {
-        height: 20px;
-        background-color: var(--cinza-medio);
-        border-radius: 10px;
-        overflow: hidden;
-    }
-
-    .progress-bar {
-        background-color: var(--amarelo-detalhe);
-        transition: width 0.5s ease;
-    }
-
-    /* Badges personalizadas */
-    .badge {
-        font-weight: 600;
-        padding: 0.5em 1em;
-        border-radius: 50px;
-    }
-
-    /* Títulos e cabeçalhos */
-    h1, h2, h3, h4, h5, h6 {
-        color: var(--roxo-principal);
-        font-weight: 600;
-    }
-
-    /* Botões personalizados */
-    .btn-primary {
-        background-color: var(--roxo-principal);
-        border-color: var(--roxo-principal);
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .btn-primary:hover {
-        background-color: var(--roxo-escuro);
-        border-color: var(--roxo-escuro);
-        transform: scale(1.05);
-    }
-
-    .btn-secondary {
-        background-color: var(--cinza-medio);
-        border-color: var(--cinza-medio);
-        color: var(--preto-texto);
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .btn-secondary:hover {
-        background-color: #c8c9cb;
-        border-color: #c8c9cb;
-        transform: scale(1.05);
-    }
-
-    /* Tabelas personalizadas */
-    .table {
-        border-collapse: separate;
-        border-spacing: 0;
-        width: 100%;
-    }
-
-    .table thead th {
-        background-color: rgba(255, 255, 255, 1);
-        color: var(--roxo-principal);
-        border: none;
-        font-weight: 600;
-        padding: 15px;
-    }
-
-    .table tbody td {
-        padding: 12px 15px;
-        border-bottom: 1px solid var(--cinza-medio);
-    }
-
-    .table-striped tbody tr:nth-of-type(odd) {
-        background-color: rgba(255, 255, 255, 0.05);
-    }
-
-    .table-hover tbody tr:hover {
-        background-color: rgba(106, 13, 173, 0.1);
-    }
+    /* Animações adicionais para stats-card */
+    .stats-card:nth-child(1) { animation-delay: 0.1s; }
+    .stats-card:nth-child(2) { animation-delay: 0.2s; }
+    .stats-card:nth-child(3) { animation-delay: 0.3s; }
+    .stats-card:nth-child(4) { animation-delay: 0.4s; }
 
     /* Menu Lateral */
     .sidebar {
@@ -423,7 +312,7 @@ $database->closeConnection();
         left: 0;
         width: 250px;
         height: 100%;
-        background-color: var(--roxo-principal);
+        background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
         color: var(--branco);
         display: flex;
         flex-direction: column;
@@ -486,17 +375,158 @@ $database->closeConnection();
         color: var(--amarelo-detalhe);
     }
 
-    /* Conteúdo principal */
+    /* Ajuste do conteúdo principal para não ficar por baixo do sidebar */
     .main-content {
         margin-left: 250px;
         padding: 20px;
     }
 
-    /* Ajuste da logo no header */
-    .navbar-brand .logo-header {
-        height: 70px;
-        width: auto;
-        display: block;
+    /* Botão amarelo principal */
+    .btn-warning {
+        background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
+        color: var(--preto-texto);
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        min-width: 180px;
+        border: none;
+    }
+
+    .btn-warning:hover {
+        background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
+        color: var(--preto-texto);
+    }
+
+    /* Botões personalizados */
+    .btn-primary {
+        background-color: var(--roxo-principal);
+        border-color: var(--roxo-principal);
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--roxo-escuro);
+        border-color: var(--roxo-escuro);
+        transform: scale(1.05);
+    }
+
+    .btn-secondary {
+        background-color: var(--cinza-medio);
+        border-color: var(--cinza-medio);
+        color: var(--preto-texto);
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+        background-color: #c8c9cb;
+        border-color: #c8c9cb;
+        transform: scale(1.05);
+    }
+
+    /* Containers para gráficos */
+    .chart-container {
+        background: var(--branco);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        border: none;
+        height: 400px;
+    }
+
+    .table-container {
+        background: var(--branco);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 5px 20px #ab4aef63;
+        border: none;
+    }
+
+    /* Tabelas personalizadas */
+    .table {
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+        background-color: var(--branco);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        margin-bottom: 0;
+    }
+
+    .table thead th {
+        background-color: var(--roxo-principal);
+        color: var(--branco);
+        border: none;
+        font-weight: 600;
+        padding: 15px;
+        text-align: center;
+    }
+
+    .table tbody td {
+        padding: 12px 15px;
+        border-bottom: 1px solid var(--cinza-medio);
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(106, 13, 173, 0.1);
+    }
+
+    /* Badges personalizadas */
+    .badge {
+        font-weight: 600;
+        padding: 0.5em 1em;
+        border-radius: 50px;
+    }
+
+    .badge.bg-primary {
+        background-color: var(--roxo-principal) !important;
+    }
+
+    .badge.bg-success {
+        background-color: #28a745 !important;
+    }
+
+    .badge.bg-warning {
+        background-color: var(--amarelo-detalhe) !important;
+        color: var(--preto-texto);
+    }
+
+    .badge.bg-danger {
+        background-color: #dc3545 !important;
+    }
+
+    .badge.bg-secondary {
+        background-color: var(--cinza-medio) !important;
+        color: var(--preto-texto);
+    }
+
+    /* Barras de progresso */
+    .progress {
+        height: 20px;
+        background-color: var(--cinza-medio);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        background-color: var(--amarelo-detalhe);
+        transition: width 0.5s ease;
+        color: var(--preto-texto);
+        font-weight: 600;
     }
 
     /* Responsividade */
@@ -526,13 +556,27 @@ $database->closeConnection();
         }
     }
 
-    /* Animações adicionais */
-    .stats-card:nth-child(1) { animation-delay: 0.1s; }
-    .stats-card:nth-child(2) { animation-delay: 0.2s; }
-    .stats-card:nth-child(3) { animation-delay: 0.3s; }
-    .stats-card:nth-child(4) { animation-delay: 0.4s; }
+    /* Estilo para o ícone de configurações */
+    .settings-icon {
+        color: var(--roxo-principal) !important;
+        transition: all 0.3s ease;
+    }
 
-    /* Ícones nos títulos */
+    .settings-icon:hover {
+        transform: scale(1.1);
+        color: var(--roxo-escuro) !important;
+    }
+
+    /* Títulos */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid rgba(106, 13, 173, 0.2);
+    }
+
     .chart-title {
         display: flex;
         align-items: center;
@@ -549,14 +593,13 @@ $database->closeConnection();
 <body>
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="#">
-                <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
-            </a>
-
-            <!-- Espaço flexível entre a logo e o ícone -->
-            <div class="ms-auto">
-                <a href="editar_perfil.php" class="text-white settings-icon">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div></div>
+            <div class="d-flex align-items-center" style="gap: 24px;">
+                <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
+                    <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
+                </a>
+                <a href="editar_perfil.php" class="settings-icon" style="color: var(--roxo-principal) !important;">
                     <i class="fas fa-cog fa-lg"></i>
                 </a>
             </div>
@@ -566,24 +609,25 @@ $database->closeConnection();
     <div class="sidebar">
         <div class="profile">
             <i class="fas fa-user-circle"></i>
-            <h5 id="nome-admin"><?php echo isset($_SESSION['nome_admin']) ? htmlspecialchars($_SESSION['nome_admin']) : 'Administrador'; ?></h5>
+            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+            <small>Administrador(a)</small>
         </div>
 
         <div class="list-group">
-            <a href="gerenciar_caminho.php" class="list-group-item">
-                <i class="fas fa-road"></i> Gerenciar Caminhos
+            <a href="gerenciar_caminho.php" class="list-group-item" data-bs-toggle="modal" data-bs-target="#addCaminhoModal">
+                <i class="fas fa-plus-circle"></i> Adicionar Caminho
             </a>
-            <a href="#" class="list-group-item">
+            <a href="pagina_adicionar_idiomas.php" class="list-group-item">
                 <i class="fas fa-language"></i> Adicionar Idioma com Quiz
             </a>
-            <a href="#" class="list-group-item">
+            <a href="#" class="list-group-item" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
                 <i class="fas fa-globe"></i> Gerenciar Idiomas
             </a>
             <a href="gerenciar_teorias.php" class="list-group-item">
                 <i class="fas fa-book-open"></i> Gerenciar Teorias
             </a>
             <a href="gerenciar_unidades.php" class="list-group-item">
-                <i class="fas fa-book-open"></i> Gerenciar Unidades
+                <i class="fas fa-cubes"></i> Gerenciar Unidades
             </a>
             <a href="gerenciar_usuarios.php" class="list-group-item">
                 <i class="fas fa-users"></i> Gerenciar Usuários
@@ -599,35 +643,39 @@ $database->closeConnection();
 
     <div class="main-content">
         <div class="container-fluid mt-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h2"><i class="fas fa-chart-bar"></i> Estatísticas de Usuários</h1>
+            <div class="page-header">
+                <h2 class="mb-0"><i class="fas fa-chart-bar"></i> Estatísticas de Usuários</h2>
                 <a href="gerenciar_caminho.php" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar ao Gerenciamento</a>
             </div>
 
             <!-- Estatísticas Rápidas -->
             <div class="row mb-4">
                 <div class="col-md-3">
-                    <div class="stats-card text-center">
+                    <div class="stats-card">
+                        <i class="fas fa-users"></i>
                         <h3><?php echo number_format($total_usuarios); ?></h3>
-                        <p><i class="fas fa-users"></i> Total de Usuários</p>
+                        <p>Total de Usuários</p>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="stats-card text-center">
+                    <div class="stats-card">
+                        <i class="fas fa-user-check"></i>
                         <h3><?php echo number_format($usuarios_ativos); ?></h3>
-                        <p><i class="fas fa-user-check"></i> Usuários Ativos (30 dias)</p>
+                        <p>Usuários Ativos (30 dias)</p>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="stats-card text-center">
+                    <div class="stats-card">
+                        <i class="fas fa-globe"></i>
                         <h3><?php echo count($idiomas_populares); ?></h3>
-                        <p><i class="fas fa-globe"></i> Idiomas Disponíveis</p>
+                        <p>Idiomas Disponíveis</p>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="stats-card text-center">
+                    <div class="stats-card">
+                        <i class="fas fa-chart-line"></i>
                         <h3><?php echo number_format(($usuarios_ativos / max($total_usuarios, 1)) * 100, 1); ?>%</h3>
-                        <p><i class="fas fa-chart-line"></i> Taxa de Atividade</p>
+                        <p>Taxa de Atividade</p>
                     </div>
                 </div>
             </div>
@@ -681,7 +729,7 @@ $database->closeConnection();
                         </div>
                         <div class="table-responsive">
                             <table class="table table-striped table-hover">
-                                <thead class="table-light">
+                                <thead>
                                     <tr>
                                         <th>Idioma</th>
                                         <th>Nível</th>
@@ -696,7 +744,7 @@ $database->closeConnection();
                                         <td><span class="badge bg-primary"><?php echo htmlspecialchars($progresso['nivel']); ?></span></td>
                                         <td><?php echo number_format($progresso['usuarios_iniciaram']); ?></td>
                                         <td>
-                                            <div class="progress" style="height: 20px;">
+                                            <div class="progress">
                                                 <div class="progress-bar" role="progressbar" 
                                                     style="width: <?php echo round($progresso['progresso_medio']); ?>%"
                                                     aria-valuenow="<?php echo round($progresso['progresso_medio']); ?>" 
@@ -721,7 +769,7 @@ $database->closeConnection();
                         </div>
                         <div class="table-responsive">
                             <table class="table table-striped table-hover">
-                                <thead class="table-light">
+                                <thead>
                                     <tr>
                                         <th>Exercício</th>
                                         <th>Idioma/Nível</th>
