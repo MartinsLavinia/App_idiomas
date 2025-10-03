@@ -2,7 +2,6 @@
 session_start();
 include_once __DIR__ . '/../../conexao.php';
 
-// Verificação de segurança: Garante que apenas administradores logados possam acessar
 if (!isset($_SESSION['id_admin'])) {
     header("Location: login_admin.php");
     exit();
@@ -10,7 +9,6 @@ if (!isset($_SESSION['id_admin'])) {
 
 $mensagem = '';
 
-// Lógica para exibir mensagem de sucesso após uma exclusão
 if (isset($_GET['status']) && $_GET['status'] == 'sucesso_exclusao') {
     $mensagem = '<div class="alert alert-success">Teoria excluída com sucesso!</div>';
 }
@@ -18,7 +16,6 @@ if (isset($_GET['status']) && $_GET['status'] == 'sucesso_exclusao') {
 $database = new Database();
 $conn = $database->conn;
 
-// Busca todas as teorias
 $sql_teorias = "SELECT id, titulo, nivel, ordem, data_criacao FROM teorias ORDER BY nivel, ordem";
 $stmt_teorias = $conn->prepare($sql_teorias);
 $stmt_teorias->execute();
@@ -39,7 +36,6 @@ $database->closeConnection();
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-    /* Paleta de Cores */
     :root {
         --roxo-principal: #6a0dad;
         --roxo-escuro: #4c087c;
@@ -52,7 +48,6 @@ $database->closeConnection();
         --cinza-medio: #dee2e6;
     }
 
-    /* Estilos Gerais do Corpo */
     body {
         font-family: 'Poppins', sans-serif;
         background-color: var(--cinza-claro);
@@ -61,22 +56,15 @@ $database->closeConnection();
     }
 
     @keyframes fadeIn {
-        from {
-            opacity: 0;
-        }
-        to {
-            opacity: 1;
-        }
+        from { opacity: 0; } to { opacity: 1; }
     }
 
-    /* Barra de Navegação - MODIFICADA PARA TRANSPARENTE */
     .navbar {
         background-color: transparent !important;
         border-bottom: 3px solid var(--amarelo-detalhe);
         box-shadow: 0 4px 15px rgba(255, 238, 0, 0.38);
     }
 
-    /* Ajuste da logo no header */
     .navbar-brand {
         margin-left: auto;
         margin-right: 0;
@@ -109,7 +97,6 @@ $database->closeConnection();
         color: var(--preto-texto);
     }
 
-    /* Estilos de Cartões (Cards) */
     .card {
         border: none;
         border-radius: 1rem;
@@ -128,7 +115,7 @@ $database->closeConnection();
         letter-spacing: 0.5px;
     }
 
-    /* Menu Lateral */
+    /* SIDEBAR FIXO - CORREÇÃO APLICADA */
     .sidebar {
         position: fixed;
         top: 0;
@@ -142,7 +129,7 @@ $database->closeConnection();
         justify-content: flex-start;
         padding-top: 20px;
         box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-        z-index: 1000;
+        z-index: 1100 !important; /* CORREÇÃO: z-index aumentado */
     }
 
     .sidebar .profile {
@@ -198,13 +185,25 @@ $database->closeConnection();
         color: var(--amarelo-detalhe);
     }
 
-    /* Ajuste do conteúdo principal para não ficar por baixo do sidebar */
+    /* CORREÇÃO PARA O BACKDROP DO MODAL */
+    .modal-backdrop {
+        z-index: 1050; /* Backdrop abaixo do sidebar */
+    }
+
+    .modal {
+        z-index: 1060; /* Modal acima do backdrop */
+    }
+
+    body.modal-open .sidebar {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
     .main-content {
         margin-left: 250px;
         padding: 20px;
     }
 
-    /* Botão amarelo principal */
     .btn-warning {
         background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
         color: var(--preto-texto);
@@ -220,7 +219,6 @@ $database->closeConnection();
         color: var(--preto-texto);
     }
 
-    /* Botão outline amarelo */
     .btn-outline-warning {
         background: transparent;
         color: var(--preto-texto);
@@ -235,7 +233,6 @@ $database->closeConnection();
         box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
     }
 
-    /* Botões personalizados */
     .btn-primary {
         background-color: var(--roxo-principal);
         border-color: var(--roxo-principal);
@@ -289,7 +286,6 @@ $database->closeConnection();
         transform: scale(1.05);
     }
 
-    /* Tabelas personalizadas */
     .table {
         border-collapse: separate;
         border-spacing: 0;
@@ -329,7 +325,6 @@ $database->closeConnection();
         background-color: rgba(106, 13, 173, 0.1);
     }
 
-    /* Alertas personalizados */
     .alert {
         border-radius: 10px;
         border: none;
@@ -343,7 +338,6 @@ $database->closeConnection();
         border-left: 4px solid #28a745;
     }
 
-    /* Badges personalizadas */
     .badge {
         font-weight: 600;
         padding: 0.5em 1em;
@@ -354,7 +348,6 @@ $database->closeConnection();
         background-color: var(--roxo-principal) !important;
     }
 
-    /* Responsividade */
     @media (max-width: 992px) {
         .sidebar {
             width: 200px;
@@ -375,14 +368,6 @@ $database->closeConnection();
         }
     }
 
-    /* Animações adicionais */
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-        100% { transform: scale(1); }
-    }
-
-    /* Estilo para o cabeçalho da página */
     .page-header {
         display: flex;
         justify-content: space-between;
@@ -392,14 +377,12 @@ $database->closeConnection();
         border-bottom: 2px solid rgba(106, 13, 173, 0.2);
     }
 
-    /* Estilo para os botões de ação */
     .action-buttons {
         display: flex;
         gap: 10px;
         flex-wrap: wrap;
     }
 
-    /* Estilo para a tabela de teorias */
     .teorias-table {
         margin-top: 30px;
         padding-bottom: 0;
@@ -407,14 +390,12 @@ $database->closeConnection();
         overflow: hidden;
     }
 
-    /* Container da navbar */
     .navbar .container {
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
 
-    /* Estilo para o ícone de configurações */
     .settings-icon {
         color: var(--roxo-principal) !important;
         transition: all 0.3s ease;
@@ -425,7 +406,6 @@ $database->closeConnection();
         color: var(--roxo-escuro) !important;
     }
 
-    /* Estilo para a mensagem "Nenhuma teoria encontrada" */
     .empty-state {
         max-width: 400px;
         margin: 0 auto;
@@ -437,61 +417,28 @@ $database->closeConnection();
         color: var(--cinza-medio);
     }
 
-    /* Loading spinner */
     .spinner-border-sm {
         width: 1rem;
         height: 1rem;
     }
+    /* REMOVER TODAS AS ANIMAÇÕES DO SIDEBAR */
+.sidebar,
+.sidebar *,
+.sidebar .list-group-item,
+.sidebar .list-group-item i {
+    transition: none !important;
+    animation: none !important;
+}
 
-    /* Estilos de Feedback */
-    .feedback-container {
-        margin-top: 1.5rem;
-        padding: 1.5rem;
-        border-radius: 1rem;
-        font-weight: 500;
-        display: none;
-        animation: slideInUp 0.5s ease;
-    }
+/* Links normais - comportamento padrão sem animação */
+.sidebar .list-group-item:not([data-bs-toggle]) {
+    transition: none !important;
+}
 
-    @keyframes slideInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .feedback-success {
-        background: #e6ffed;
-        border: 1px solid #28a745;
-        color: #155724;
-    }
-
-    .feedback-error {
-        background: #fff0f0;
-        border: 1px solid #dc3545;
-        color: #721c24;
-    }
-
-    /* Animações e Efeitos */
-    .fs-4 .badge {
-        background-color: var(--amarelo-detalhe) !important;
-        color: var(--preto-texto);
-        font-weight: 700;
-        padding: 0.5em 1em;
-        border-radius: 50px;
-        animation: pulse 2s infinite ease-in-out;
-    }
-
-    @keyframes pulse {
-        0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
-        70% { box-shadow: 0 0 0 15px rgba(255, 215, 0, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
-    }
-    
+/* Links de modal - manter funcionalidade mas sem animação */
+.sidebar .list-group-item[data-bs-toggle] {
+    cursor: pointer;
+}
     </style>
 </head>
 <body>
@@ -509,41 +456,40 @@ $database->closeConnection();
             </div>
         </div>
     </nav>
-
-    <div class="sidebar">
-        <div class="profile">
-            <i class="fas fa-user-circle"></i>
-            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
-            <small>Administrador(a)</small>
-        </div>
-
-        <div class="list-group">
-            <a href="gerenciar_caminho.php" class="list-group-item" data-bs-toggle="modal" data-bs-target="#addCaminhoModal">
-                <i class="fas fa-plus-circle"></i> Adicionar Caminho
-            </a>
-            <a href="pagina_adicionar_idiomas.php" class="list-group-item">
-                <i class="fas fa-language"></i> Adicionar Idioma com Quiz
-            </a>
-            <a href="#" class="list-group-item" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
-                <i class="fas fa-globe"></i> Gerenciar Idiomas
-            </a>
-            <a href="gerenciar_teorias.php" class="list-group-item active">
-                <i class="fas fa-book-open"></i> Gerenciar Teorias
-            </a>
-            <a href="gerenciar_unidades.php" class="list-group-item">
-                <i class="fas fa-cubes"></i> Gerenciar Unidades
-            </a>
-            <a href="gerenciar_usuarios.php" class="list-group-item">
-                <i class="fas fa-users"></i> Gerenciar Usuários
-            </a>
-            <a href="estatisticas_usuarios.php" class="list-group-item">
-                <i class="fas fa-chart-bar"></i> Estatísticas
-            </a>
-            <a href="logout.php" class="list-group-item mt-auto">
-                <i class="fas fa-sign-out-alt"></i> Sair
-            </a>
-        </div>
+<div class="sidebar">
+    <div class="profile">
+        <i class="fas fa-user-circle"></i>
+        <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+        <small>Administrador(a)</small>
     </div>
+
+    <div class="list-group">
+        <a href="gerenciar_caminho.php" class="list-group-item">
+            <i class="fas fa-plus-circle"></i> Adicionar Caminho
+        </a>
+        <a href="pagina_adicionar_idiomas.php" class="list-group-item">
+            <i class="fas fa-language"></i> Adicionar Idioma com Quiz
+        </a>
+        <a href="#" class="list-group-item" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
+            <i class="fas fa-globe"></i> Gerenciar Idiomas
+        </a>
+        <a href="gerenciar_teorias.php" class="list-group-item active">
+            <i class="fas fa-book-open"></i> Gerenciar Teorias
+        </a>
+        <a href="gerenciar_unidades.php" class="list-group-item">
+            <i class="fas fa-cubes"></i> Gerenciar Unidades
+        </a>
+        <a href="gerenciar_usuarios.php" class="list-group-item">
+            <i class="fas fa-users"></i> Gerenciar Usuários
+        </a>
+        <a href="estatisticas_usuarios.php" class="list-group-item">
+            <i class="fas fa-chart-bar"></i> Estatísticas
+        </a>
+        <a href="logout.php" class="list-group-item mt-auto">
+            <i class="fas fa-sign-out-alt"></i> Sair
+        </a>
+    </div>
+</div>
 
     <div class="main-content">
         <div class="container-fluid mt-4">
