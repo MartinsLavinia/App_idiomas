@@ -14,7 +14,7 @@ if (!isset($_SESSION['id_admin'])) {
 
 // Verifica se o ID do caminho foi passado via URL
 if (!isset($_GET['caminho_id']) || !is_numeric($_GET['caminho_id'])) {
-    header("Location: gerenciar_caminhos.php");
+    header("Location: gerenciar_caminho.php");
     exit();
 }
 
@@ -56,6 +56,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['adicionar_bloco'])) {
                     $mensagem = '<div class="alert alert-danger">Erro ao adicionar bloco: ' . $stmt_insert->error . '</div>';
                 }
                 $stmt_insert->close();
+            } else {
+                $mensagem = '<div class="alert alert-danger">Erro na preparação da consulta: ' . $conn->error . '</div>';
             }
         }
         $stmt_verifica->close();
@@ -99,6 +101,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['editar_bloco'])) {
                     $mensagem = '<div class="alert alert-danger">Erro ao atualizar bloco: ' . $stmt_update->error . '</div>';
                 }
                 $stmt_update->close();
+            } else {
+                $mensagem = '<div class="alert alert-danger">Erro na preparação da consulta: ' . $conn->error . '</div>';
             }
         }
         $stmt_verifica->close();
@@ -114,30 +118,67 @@ if (isset($_GET['excluir_bloco'])) {
     $conn = $database->conn;
     
     // Verifica se existem atividades neste bloco
-    $sql_verifica_atividades = "SELECT COUNT(*) as total FROM exercicios WHERE bloco_id = ?";
-    $stmt_verifica = $conn->prepare($sql_verifica_atividades);
-    $stmt_verifica->bind_param("i", $bloco_id);
-    $stmt_verifica->execute();
-    $result_verifica = $stmt_verifica->get_result();
-    $row_verifica = $result_verifica->fetch_assoc();
-    
-    if ($row_verifica['total'] > 0) {
-        $mensagem = '<div class="alert alert-danger">Não é possível excluir este bloco pois existem atividades vinculadas a ele.</div>';
-    } else {
-        // Exclui o bloco
-        $sql_delete = "DELETE FROM blocos WHERE id = ?";
-        $stmt_delete = $conn->prepare($sql_delete);
-        $stmt_delete->bind_param("i", $bloco_id);
-        
-        if ($stmt_delete->execute()) {
-            $mensagem = '<div class="alert alert-success">Bloco excluído com sucesso!</div>';
-        } else {
-            $mensagem = '<div class="alert alert-danger">Erro ao excluir bloco: ' . $stmt_delete->error . '</div>';
-        }
-        $stmt_delete->close();
+    // PRIMEIRO VERIFICA SE A COLUNA EXISTE
+    $coluna_existe = false;
+    $sql_verifica_coluna = "SHOW COLUMNS FROM exercicios LIKE 'bloco_id'";
+    $result_coluna = $conn->query($sql_verifica_coluna);
+    if ($result_coluna && $result_coluna->num_rows > 0) {
+        $coluna_existe = true;
     }
     
-    $stmt_verifica->close();
+    if ($coluna_existe) {
+        $sql_verifica_atividades = "SELECT COUNT(*) as total FROM exercicios WHERE bloco_id = ?";
+        $stmt_verifica = $conn->prepare($sql_verifica_atividades);
+        
+        if ($stmt_verifica) {
+            $stmt_verifica->bind_param("i", $bloco_id);
+            $stmt_verifica->execute();
+            $result_verifica = $stmt_verifica->get_result();
+            $row_verifica = $result_verifica->fetch_assoc();
+            
+            if ($row_verifica['total'] > 0) {
+                $mensagem = '<div class="alert alert-danger">Não é possível excluir este bloco pois existem atividades vinculadas a ele.</div>';
+            } else {
+                // Exclui o bloco
+                $sql_delete = "DELETE FROM blocos WHERE id = ?";
+                $stmt_delete = $conn->prepare($sql_delete);
+                
+                if ($stmt_delete) {
+                    $stmt_delete->bind_param("i", $bloco_id);
+                    
+                    if ($stmt_delete->execute()) {
+                        $mensagem = '<div class="alert alert-success">Bloco excluído com sucesso!</div>';
+                    } else {
+                        $mensagem = '<div class="alert alert-danger">Erro ao excluir bloco: ' . $stmt_delete->error . '</div>';
+                    }
+                    $stmt_delete->close();
+                } else {
+                    $mensagem = '<div class="alert alert-danger">Erro na preparação da consulta: ' . $conn->error . '</div>';
+                }
+            }
+            $stmt_verifica->close();
+        } else {
+            $mensagem = '<div class="alert alert-danger">Erro na verificação de atividades: ' . $conn->error . '</div>';
+        }
+    } else {
+        // Se a coluna não existe, pode excluir o bloco sem verificar atividades
+        $sql_delete = "DELETE FROM blocos WHERE id = ?";
+        $stmt_delete = $conn->prepare($sql_delete);
+        
+        if ($stmt_delete) {
+            $stmt_delete->bind_param("i", $bloco_id);
+            
+            if ($stmt_delete->execute()) {
+                $mensagem = '<div class="alert alert-success">Bloco excluído com sucesso!</div>';
+            } else {
+                $mensagem = '<div class="alert alert-danger">Erro ao excluir bloco: ' . $stmt_delete->error . '</div>';
+            }
+            $stmt_delete->close();
+        } else {
+            $mensagem = '<div class="alert alert-danger">Erro na preparação da consulta: ' . $conn->error . '</div>';
+        }
+    }
+    
     $database->closeConnection();
 }
 
@@ -148,22 +189,58 @@ $conn = $database->conn;
 // Informações do caminho
 $sql_caminho = "SELECT nome_caminho, nivel, id_unidade FROM caminhos_aprendizagem WHERE id = ?";
 $stmt_caminho = $conn->prepare($sql_caminho);
-$stmt_caminho->bind_param("i", $caminho_id);
-$stmt_caminho->execute();
-$caminho_info = $stmt_caminho->get_result()->fetch_assoc();
-$stmt_caminho->close();
 
-// Lista de blocos do caminho
-$sql_blocos = "SELECT b.*, 
-               (SELECT COUNT(*) FROM exercicios e WHERE e.bloco_id = b.id) as total_atividades
-               FROM blocos b 
-               WHERE b.caminho_id = ? 
-               ORDER BY b.ordem ASC";
+if ($stmt_caminho) {
+    $stmt_caminho->bind_param("i", $caminho_id);
+    $stmt_caminho->execute();
+    $caminho_info = $stmt_caminho->get_result()->fetch_assoc();
+    $stmt_caminho->close();
+} else {
+    $mensagem = '<div class="alert alert-danger">Erro ao buscar informações do caminho: ' . $conn->error . '</div>';
+    $caminho_info = ['nome_caminho' => 'Erro', 'nivel' => 'Erro', 'id_unidade' => 'Erro'];
+}
+
+// Lista de blocos do caminho - COM VERIFICAÇÃO DA COLUNA bloco_id
+$blocos = [];
+
+// Primeiro verifica se a coluna bloco_id existe na tabela exercicios
+$coluna_bloco_id_existe = false;
+$sql_verifica_coluna = "SHOW COLUMNS FROM exercicios LIKE 'bloco_id'";
+$result_coluna = $conn->query($sql_verifica_coluna);
+if ($result_coluna && $result_coluna->num_rows > 0) {
+    $coluna_bloco_id_existe = true;
+}
+
+// Query diferente baseada na existência da coluna
+if ($coluna_bloco_id_existe) {
+    $sql_blocos = "SELECT b.*, 
+                   (SELECT COUNT(*) FROM exercicios e WHERE e.bloco_id = b.id) as total_atividades
+                   FROM blocos b 
+                   WHERE b.caminho_id = ? 
+                   ORDER BY b.ordem ASC";
+} else {
+    $sql_blocos = "SELECT b.*, 0 as total_atividades
+                   FROM blocos b 
+                   WHERE b.caminho_id = ? 
+                   ORDER BY b.ordem ASC";
+}
+
 $stmt_blocos = $conn->prepare($sql_blocos);
-$stmt_blocos->bind_param("i", $caminho_id);
-$stmt_blocos->execute();
-$blocos = $stmt_blocos->get_result()->fetch_all(MYSQLI_ASSOC);
-$stmt_blocos->close();
+
+if ($stmt_blocos) {
+    $stmt_blocos->bind_param("i", $caminho_id);
+    $stmt_blocos->execute();
+    $result_blocos = $stmt_blocos->get_result();
+    
+    if ($result_blocos) {
+        $blocos = $result_blocos->fetch_all(MYSQLI_ASSOC);
+    } else {
+        $mensagem = '<div class="alert alert-danger">Erro ao buscar blocos: ' . $conn->error . '</div>';
+    }
+    $stmt_blocos->close();
+} else {
+    $mensagem = '<div class="alert alert-danger">Erro na preparação da consulta de blocos: ' . $conn->error . '</div>';
+}
 
 $database->closeConnection();
 ?>
@@ -210,13 +287,26 @@ $database->closeConnection();
                 </p>
             </div>
             <div>
-                <a href="gerenciar_caminhos.php" class="btn btn-outline-secondary">
+                <a href="gerenciar_caminho.php" class="btn btn-outline-secondary">
                     <i class="fas fa-arrow-left me-1"></i>Voltar para Caminhos
                 </a>
             </div>
         </div>
 
         <?php echo $mensagem; ?>
+
+        <!-- Alerta se a coluna bloco_id não existir -->
+        <?php if (!$coluna_bloco_id_existe): ?>
+        <div class="alert alert-warning">
+            <h5><i class="fas fa-exclamation-triangle me-2"></i>Atenção: Coluna bloco_id não encontrada</h5>
+            <p>A coluna <strong>bloco_id</strong> não existe na tabela <strong>exercicios</strong>.</p>
+            <p class="mb-2">Execute este comando SQL para adicionar a coluna:</p>
+            <pre class="bg-dark text-light p-3 rounded small">ALTER TABLE exercicios ADD COLUMN bloco_id INT;
+ALTER TABLE exercicios ADD CONSTRAINT fk_exercicios_bloco 
+FOREIGN KEY (bloco_id) REFERENCES blocos(id) ON DELETE SET NULL;</pre>
+            <p class="mt-2 mb-0"><small>Enquanto a coluna não for criada, as atividades não serão vinculadas aos blocos.</small></p>
+        </div>
+        <?php endif; ?>
 
         <div class="row">
             <!-- Formulário para Adicionar/Editar Bloco -->
@@ -358,10 +448,12 @@ $database->closeConnection();
                                                     
                                                     <div class="bloco-actions">
                                                         <div class="btn-group btn-group-sm">
+                                                            <?php if ($coluna_bloco_id_existe): ?>
                                                             <a href="gerenciar_exercicios.php?bloco_id=<?php echo $bloco['id']; ?>" 
                                                                class="btn btn-outline-primary" title="Gerenciar Atividades">
                                                                 <i class="fas fa-tasks"></i>
                                                             </a>
+                                                            <?php endif; ?>
                                                             <a href="gerenciar_blocos.php?caminho_id=<?php echo $caminho_id; ?>&editar=<?php echo $bloco['id']; ?>" 
                                                                class="btn btn-outline-warning" title="Editar Bloco">
                                                                 <i class="fas fa-edit"></i>
@@ -396,7 +488,7 @@ $database->closeConnection();
                             <div class="col-md-6 mb-2">
                                 <a href="adicionar_atividades.php?caminho_id=<?php echo $caminho_id; ?>" 
                                    class="btn btn-outline-success w-100">
-                                    <i class="fas fa-plus me-1"></i>Adicionar Atividade Direta
+                                    <i class="fas fa-plus me-1"></i>Adicionar Atividade
                                 </a>
                             </div>
                             <div class="col-md-6 mb-2">
