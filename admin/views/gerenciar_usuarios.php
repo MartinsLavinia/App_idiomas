@@ -112,6 +112,8 @@ $database->closeConnection();
         --roxo-principal: #6a0dad;
         --roxo-escuro: #4c087c;
         --amarelo-detalhe: #ffd700;
+        --amarelo-botao: #ffd700;
+        --amarelo-hover: #e7c500;
         --branco: #ffffff;
         --preto-texto: #212529;
         --cinza-claro: #f8f9fa;
@@ -191,6 +193,21 @@ $database->closeConnection();
     .btn-outline-light:hover {
         background-color: var(--amarelo-detalhe);
         color: var(--preto-texto);
+    }
+
+    /* Botão amarelo principal */
+    .btn-warning {
+        background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
+        color: var(--cinza-texto);
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        min-width: 180px;
+    }
+
+    .btn-warning:hover {
+        background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
+        color: var(--cinza-texto);
     }
 
     /* Estilos de Cartões (Cards) - MODIFICADO */
@@ -751,7 +768,7 @@ $database->closeConnection();
                                 </select>
                             </div>
                             <div class="col-md-2 d-flex align-items-end">
-                                <button type="submit" class="btn btn-warning w-100 pesquisar-btn">
+                                <button type="submit" class="btn btn-warning w-100 pesquisar-btn ">
                                     <i class="fas fa-search me-2"></i>Pesquisar
                                 </button>
                             </div>

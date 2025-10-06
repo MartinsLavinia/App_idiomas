@@ -191,7 +191,7 @@ $database->closeConnection();
                 </div>
             </div>
 
-            <table class="table table-bordered table-striped">
+            <table class="table table-container table-bordered table-striped">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -209,17 +209,23 @@ $database->closeConnection();
                         <td><?php echo htmlspecialchars($caminho['idioma']); ?></td>
                         <td><?php echo htmlspecialchars($caminho['nome_caminho']); ?></td>
                         <td><?php echo htmlspecialchars($caminho['nivel']); ?></td>
-                        <td>
+                        <td class="btn-acoes">
                             <a href="gerenciar_blocos.php?caminho_id=<?php echo htmlspecialchars($caminho['id']); ?>"
-                                class="btn btn-sm btn-info">Ver Blocos</a>
+                                class="btn btn-sm btn-info btn-blocos">
+                                <i class="fas fa-eye"></i> Ver Blocos
+                            </a>
+                            
                             <a href="editar_caminho.php?id=<?php echo htmlspecialchars($caminho['id']); ?>"
-                                class="btn btn-sm btn-primary">Editar</a>
-                            <button type="button" class="btn btn-sm btn-danger delete-btn" data-bs-toggle="modal"
+                                class="btn btn-sm btn-primary btn-editar">
+                                <i class="fas fa-pen"></i> Editar
+                            </a>
+                            
+                            <button type="button" class="btn btn-sm btn-danger delete-btn btn-eliminar" data-bs-toggle="modal"
                                 data-bs-target="#confirmDeleteModal"
                                 data-id="<?php echo htmlspecialchars($caminho['id']); ?>"
                                 data-nome="<?php echo htmlspecialchars($caminho['nome_caminho']); ?>"
                                 data-tipo="caminho" data-action="eliminar_caminho.php">
-                                Eliminar
+                                <i class="fas fa-trash"></i> Eliminar
                             </button>
                         </td>
                     </tr>

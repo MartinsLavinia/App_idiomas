@@ -89,6 +89,70 @@
         background-color: var(--amarelo-detalhe);
         color: var(--preto-texto);
     }
+    
+    /* Estilo base comum para todos os botões personalizados */
+.btn-blocos,
+.btn-editar,
+.btn-eliminar {
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    background-color: transparent !important;
+    border-width: 2px;
+    border-style: solid;
+    color: inherit !important; 
+}
+
+.btn-blocos {
+    border-color: #1e3a8a;
+    color: #1e3a8a !important;
+}
+
+.btn-editar {
+    border-color: #3b82f6;
+    color: #3b82f6 !important;
+}
+
+.btn-eliminar {
+    border-color: #dc2626;
+    color: #dc2626 !important;
+}
+
+.btn-blocos:hover,
+.btn-blocos:focus {
+    background-color: #1d4ed8 !important; 
+    color: #fff !important; 
+    border-color: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
+}
+
+.btn-editar:hover,
+.btn-editar:focus {
+    background-color: #60a5fa !important;
+    color: #fff !important;
+    border-color: #60a5fa;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
+}
+
+.btn-eliminar:hover,
+.btn-eliminar:focus {
+    background-color: #ef4444 !important;
+    color: #fff !important;
+    border-color: #ef4444;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-blocos:active,
+.btn-editar:active,
+.btn-eliminar:active {
+    transform: scale(0.97);
+    box-shadow: none;
+}
+
 
     /* Estilos de Cartões (Cards) */
     .card {
@@ -492,3 +556,88 @@
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
 }
+
+.table thead th {
+        background-color: rgba(255, 255, 255, 1);
+        color: var(--roxo-principal);
+        border: none;
+        font-weight: 600;
+        padding: 15px;
+    }
+
+    .table tbody td {
+        padding: 12px 15px;
+        border-bottom: 1px solid var(--cinza-medio);
+    }
+
+    /* Tabelas personalizadas */
+    .table {
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+    }
+
+    .table thead th {
+        background-color: rgba(255, 255, 255, 1);
+        color: var(--roxo-principal);
+        border: none;
+        font-weight: 600;
+        padding: 15px;
+    }
+
+    .table tbody td {
+        padding: 12px 15px;
+        border-bottom: 1px solid var(--cinza-medio);
+    }
+
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(106, 13, 173, 0.1);
+    }
+
+    /* Containers para tabelas - CORRIGIDO */
+    .table-container {
+        background: transparent !important;
+        border: 2px solid rgba(106, 13, 173, 0.2) !important;
+        border-top: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        border-radius: 10px !important;
+        margin-bottom: 30px;
+        transition: all 0.3s ease;
+    }
+
+    .table-container .card-header {
+        border-radius: 10px 10px 0 0 !important;
+        position: relative;
+        overflow: hidden;
+        border: 2px solid var(--roxo-principal) !important;
+        border-bottom: none !important;
+    }
+
+    /* Adicione esta nova regra para aplicar a borda apenas no card-body */
+    .table-container .card-body {
+       
+        border-radius: 0 0 10px 10px !important;
+        background: rgba(255, 255, 255, 0.95) !important;
+        padding: 20px !important; /* Adicionado padding para não ficar colado */
+    }
+
+    .table-container:hover .card-body {
+        border-color: rgba(106, 13, 173, 0.3) !important;
+    }
+
+    /* Mantém apenas o card com cabeçalho roxo */
+    .table-container .card {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Remove o fundo branco do card-body */
+    .table-container .card-body {
+        background: transparent !important;
+    }
