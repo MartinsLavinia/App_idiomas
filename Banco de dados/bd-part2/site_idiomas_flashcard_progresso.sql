@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.42, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.41, for Win64 (x86_64)
 --
 -- Host: localhost    Database: site_idiomas
 -- ------------------------------------------------------
--- Server version	8.0.42
+-- Server version	8.0.41
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,38 +16,39 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `flashcards`
+-- Table structure for table `flashcard_progresso`
 --
 
-DROP TABLE IF EXISTS `flashcards`;
+DROP TABLE IF EXISTS `flashcard_progresso`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `flashcards` (
+CREATE TABLE `flashcard_progresso` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `id_deck` int NOT NULL,
-  `frente` text NOT NULL,
-  `verso` text NOT NULL,
-  `dica` text,
-  `imagem_frente` varchar(255) DEFAULT NULL,
-  `imagem_verso` varchar(255) DEFAULT NULL,
-  `audio_frente` varchar(255) DEFAULT NULL,
-  `audio_verso` varchar(255) DEFAULT NULL,
-  `dificuldade` enum('facil','medio','dificil') DEFAULT 'medio',
-  `ordem_no_deck` int DEFAULT '0',
+  `id_usuario` int NOT NULL,
+  `id_flashcard` int NOT NULL,
+  `acertos` int DEFAULT '0',
+  `erros` int DEFAULT '0',
+  `ultima_revisao` timestamp NULL DEFAULT NULL,
+  `proxima_revisao` timestamp NULL DEFAULT NULL,
+  `intervalo_dias` int DEFAULT '1',
+  `facilidade` decimal(3,2) DEFAULT '2.50',
   `data_criacao` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `idx_deck_ordem` (`id_deck`,`ordem_no_deck`),
-  CONSTRAINT `flashcards_ibfk_1` FOREIGN KEY (`id_deck`) REFERENCES `flashcard_decks` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  UNIQUE KEY `unique_user_flashcard` (`id_usuario`,`id_flashcard`),
+  KEY `id_flashcard` (`id_flashcard`),
+  KEY `idx_usuario_revisao` (`id_usuario`,`proxima_revisao`),
+  CONSTRAINT `flashcard_progresso_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `flashcard_progresso_ibfk_2` FOREIGN KEY (`id_flashcard`) REFERENCES `flashcards` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `flashcards`
+-- Dumping data for table `flashcard_progresso`
 --
 
-LOCK TABLES `flashcards` WRITE;
-/*!40000 ALTER TABLE `flashcards` DISABLE KEYS */;
-/*!40000 ALTER TABLE `flashcards` ENABLE KEYS */;
+LOCK TABLES `flashcard_progresso` WRITE;
+/*!40000 ALTER TABLE `flashcard_progresso` DISABLE KEYS */;
+/*!40000 ALTER TABLE `flashcard_progresso` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -59,4 +60,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-06 15:35:54
+-- Dump completed on 2025-10-06 16:12:31

@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.42, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.41, for Win64 (x86_64)
 --
 -- Host: localhost    Database: site_idiomas
 -- ------------------------------------------------------
--- Server version	8.0.42
+-- Server version	8.0.41
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,38 +16,36 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `flashcards`
+-- Table structure for table `questao_prova`
 --
 
-DROP TABLE IF EXISTS `flashcards`;
+DROP TABLE IF EXISTS `questao_prova`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `flashcards` (
+CREATE TABLE `questao_prova` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `id_deck` int NOT NULL,
-  `frente` text NOT NULL,
-  `verso` text NOT NULL,
-  `dica` text,
-  `imagem_frente` varchar(255) DEFAULT NULL,
-  `imagem_verso` varchar(255) DEFAULT NULL,
-  `audio_frente` varchar(255) DEFAULT NULL,
-  `audio_verso` varchar(255) DEFAULT NULL,
-  `dificuldade` enum('facil','medio','dificil') DEFAULT 'medio',
-  `ordem_no_deck` int DEFAULT '0',
+  `id_prova` int NOT NULL,
+  `pergunta` text NOT NULL,
+  `tipo` enum('multipla_escolha','preencher_lacunas','arrastar_soltar','ordenar','audio') DEFAULT 'multipla_escolha',
+  `opcoes_resposta` json DEFAULT NULL,
+  `resposta_correta` json DEFAULT NULL,
+  `explicacao` text,
+  `pontos` int DEFAULT '5',
+  `ordem` int NOT NULL,
   `data_criacao` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `idx_deck_ordem` (`id_deck`,`ordem_no_deck`),
-  CONSTRAINT `flashcards_ibfk_1` FOREIGN KEY (`id_deck`) REFERENCES `flashcard_decks` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `id_prova` (`id_prova`),
+  CONSTRAINT `questao_prova_ibfk_1` FOREIGN KEY (`id_prova`) REFERENCES `provas_finais` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `flashcards`
+-- Dumping data for table `questao_prova`
 --
 
-LOCK TABLES `flashcards` WRITE;
-/*!40000 ALTER TABLE `flashcards` DISABLE KEYS */;
-/*!40000 ALTER TABLE `flashcards` ENABLE KEYS */;
+LOCK TABLES `questao_prova` WRITE;
+/*!40000 ALTER TABLE `questao_prova` DISABLE KEYS */;
+/*!40000 ALTER TABLE `questao_prova` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -59,4 +57,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-06 15:35:54
+-- Dump completed on 2025-10-06 16:12:32

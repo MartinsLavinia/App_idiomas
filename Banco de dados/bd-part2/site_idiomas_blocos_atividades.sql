@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.42, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.41, for Win64 (x86_64)
 --
 -- Host: localhost    Database: site_idiomas
 -- ------------------------------------------------------
--- Server version	8.0.42
+-- Server version	8.0.41
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,38 +16,33 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `flashcards`
+-- Table structure for table `blocos_atividades`
 --
 
-DROP TABLE IF EXISTS `flashcards`;
+DROP TABLE IF EXISTS `blocos_atividades`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `flashcards` (
+CREATE TABLE `blocos_atividades` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `id_deck` int NOT NULL,
-  `frente` text NOT NULL,
-  `verso` text NOT NULL,
-  `dica` text,
-  `imagem_frente` varchar(255) DEFAULT NULL,
-  `imagem_verso` varchar(255) DEFAULT NULL,
-  `audio_frente` varchar(255) DEFAULT NULL,
-  `audio_verso` varchar(255) DEFAULT NULL,
-  `dificuldade` enum('facil','medio','dificil') DEFAULT 'medio',
-  `ordem_no_deck` int DEFAULT '0',
-  `data_criacao` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `id_unidade` int NOT NULL,
+  `numero_bloco` int NOT NULL,
+  `total_atividades` int DEFAULT '12',
+  `atividades_gramatica` int DEFAULT '6',
+  `atividades_fala` int DEFAULT '3',
+  `atividades_dificeis` int DEFAULT '3',
   PRIMARY KEY (`id`),
-  KEY `idx_deck_ordem` (`id_deck`,`ordem_no_deck`),
-  CONSTRAINT `flashcards_ibfk_1` FOREIGN KEY (`id_deck`) REFERENCES `flashcard_decks` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `id_unidade` (`id_unidade`),
+  CONSTRAINT `blocos_atividades_ibfk_1` FOREIGN KEY (`id_unidade`) REFERENCES `unidades` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `flashcards`
+-- Dumping data for table `blocos_atividades`
 --
 
-LOCK TABLES `flashcards` WRITE;
-/*!40000 ALTER TABLE `flashcards` DISABLE KEYS */;
-/*!40000 ALTER TABLE `flashcards` ENABLE KEYS */;
+LOCK TABLES `blocos_atividades` WRITE;
+/*!40000 ALTER TABLE `blocos_atividades` DISABLE KEYS */;
+/*!40000 ALTER TABLE `blocos_atividades` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -59,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-06 15:35:54
+-- Dump completed on 2025-10-06 16:12:32

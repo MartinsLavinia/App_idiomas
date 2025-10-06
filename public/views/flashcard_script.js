@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
     carregarDecks();
 });
 
-// Carrega decks do backend - CORREÇÃO: usar filtroNivel se existir, senão usar nivelAtual
+// Carrega decks do backend
 function carregarDecks() {
     const filtroIdioma = document.getElementById('filtroIdioma').value;
     const filtroNivel = document.getElementById('filtroNivel') ? document.getElementById('filtroNivel').value : nivelAtual;
@@ -54,7 +54,7 @@ function carregarDecks() {
         });
 }
 
-// CORREÇÃO: Melhorar a função salvarDeck com tratamento de erro detalhado
+// Salvar deck
 function salvarDeck() {
     const form = document.getElementById('formDeck');
     const formData = new FormData(form);
@@ -93,7 +93,6 @@ function salvarDeck() {
     .then(data => {
         if (data.success) {
             modalDeck.hide();
-            // Mostrar mensagem de sucesso
             mostrarMensagem('Deck salvo com sucesso!', 'success');
             carregarDecks();
         } else {
@@ -111,7 +110,7 @@ function salvarDeck() {
     });
 }
 
-// NOVA FUNÇÃO: Mostrar mensagens toast
+// Mostrar mensagens toast
 function mostrarMensagem(mensagem, tipo = 'success') {
     // Criar elemento de mensagem
     const toast = document.createElement('div');
@@ -132,7 +131,7 @@ function mostrarMensagem(mensagem, tipo = 'success') {
     }, 5000);
 }
 
-// Exibe decks na lista
+// Exibe decks na lista com opções de editar/excluir
 function exibirDecks(decks) {
     const container = document.getElementById('listaDecks');
     container.innerHTML = '';
@@ -157,9 +156,28 @@ function exibirDecks(decks) {
     decks.forEach(deck => {
         html += `
             <div class="col-md-4 mb-4">
-                <div class="card deck-card" onclick="abrirDeck(${deck.id})">
+                <div class="card deck-card">
                     <div class="card-body">
-                        <h5 class="card-title">${deck.nome}</h5>
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title" style="cursor: pointer;" onclick="abrirDeck(${deck.id})">${deck.nome}</h5>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" onclick="event.stopPropagation()">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="#" onclick="abrirModalEditarDeck(${deck.id}, event)">
+                                            <i class="fas fa-edit me-2"></i>Editar
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="#" onclick="excluirDeck(${deck.id}, '${deck.nome.replace(/'/g, "\\'")}', event)">
+                                            <i class="fas fa-trash me-2"></i>Excluir
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
                         <p class="card-text text-muted">${deck.descricao || 'Sem descrição'}</p>
                         <div class="d-flex justify-content-between align-items-center mt-3">
                             <span class="badge bg-primary">${deck.idioma}</span>
@@ -180,6 +198,11 @@ function exibirDecks(decks) {
                                 </div>
                             </div>
                         </div>
+                        <div class="mt-3">
+                            <button class="btn btn-primary btn-sm w-100" onclick="abrirDeck(${deck.id})">
+                                <i class="fas fa-folder-open me-2"></i>Abrir Deck
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -188,7 +211,7 @@ function exibirDecks(decks) {
     container.innerHTML = html;
 }
 
-// NOVA FUNÇÃO: Abrir deck
+// Abrir deck
 function abrirDeck(idDeck) {
     window.location.href = `flashcard_deck.php?id=${idDeck}`;
 }
@@ -240,7 +263,12 @@ function abrirModalCriarDeck() {
 }
 
 // Abre modal para editar deck
-function abrirModalEditarDeck(idDeck) {
+function abrirModalEditarDeck(idDeck, event) {
+    // Prevenir que o evento de clique propague para o card
+    if (event) {
+        event.stopPropagation();
+    }
+    
     // Buscar dados do deck via AJAX
     fetch(`flashcard_controller.php?action=obter_deck&id_deck=${idDeck}`)
         .then(response => response.json())
@@ -269,7 +297,12 @@ function abrirModalEditarDeck(idDeck) {
 }
 
 // Excluir deck
-function excluirDeck(idDeck, nomeDeck) {
+function excluirDeck(idDeck, nomeDeck, event) {
+    // Prevenir que o evento de clique propague para o card
+    if (event) {
+        event.stopPropagation();
+    }
+    
     if (!confirm(`Tem certeza que deseja excluir o deck "${nomeDeck}"? Esta ação não pode ser desfeita e todos os flashcards serão perdidos.`)) {
         return;
     }

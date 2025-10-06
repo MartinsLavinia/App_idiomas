@@ -1,4 +1,5 @@
 <?php
+// get_blocos.php - Coloque na pasta controller
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
@@ -41,29 +42,77 @@ try {
         exit();
     }
 
-    // Buscar ou criar blocos para esta unidade
-    $blocos = criarOuBuscarBlocos($conn, $unidade_id, $unidade_info);
+    // Buscar caminhos relacionados a esta unidade
+    $sql_caminhos = "SELECT id, nome_caminho FROM caminhos_aprendizagem WHERE id_unidade = ?";
+    $stmt_caminhos = $conn->prepare($sql_caminhos);
+    $stmt_caminhos->bind_param("i", $unidade_id);
+    $stmt_caminhos->execute();
+    $caminhos = $stmt_caminhos->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt_caminhos->close();
 
-    // Buscar progresso do usuário nos blocos
     $blocos_com_progresso = [];
-    foreach ($blocos as $bloco) {
-        $sql_progresso = "SELECT * FROM progresso_bloco WHERE id_usuario = ? AND id_bloco = ?";
-        $stmt_progresso = $conn->prepare($sql_progresso);
-        $stmt_progresso->bind_param("ii", $id_usuario, $bloco['id']);
-        $stmt_progresso->execute();
-        $progresso = $stmt_progresso->get_result()->fetch_assoc();
-        $stmt_progresso->close();
 
-        $bloco['progresso'] = $progresso ?: [
-            'atividades_concluidas' => 0,
-            'total_atividades' => $bloco['total_atividades'],
-            'progresso_percentual' => 0,
-            'concluido' => false,
-            'pontos_obtidos' => 0,
-            'total_pontos' => $bloco['total_atividades'] * 10
-        ];
+    // Para cada caminho, buscar os blocos
+    foreach ($caminhos as $caminho) {
+        // Buscar blocos do caminho
+        $sql_blocos = "SELECT id, nome_bloco, ordem FROM blocos WHERE caminho_id = ? ORDER BY ordem ASC";
+        $stmt_blocos = $conn->prepare($sql_blocos);
+        $stmt_blocos->bind_param("i", $caminho['id']);
+        $stmt_blocos->execute();
+        $blocos = $stmt_blocos->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt_blocos->close();
 
-        $blocos_com_progresso[] = $bloco;
+        // Processar cada bloco
+        foreach ($blocos as $bloco) {
+            // Buscar exercícios do bloco
+            $sql_exercicios = "SELECT COUNT(*) as total FROM exercicios WHERE bloco_id = ?";
+            $stmt_exercicios = $conn->prepare($sql_exercicios);
+            $stmt_exercicios->bind_param("i", $bloco['id']);
+            $stmt_exercicios->execute();
+            $result_exercicios = $stmt_exercicios->get_result()->fetch_assoc();
+            $stmt_exercicios->close();
+
+            $total_exercicios = $result_exercicios['total'] ?? 0;
+
+            // Buscar progresso do usuário na tabela progresso_bloco
+            $sql_progresso = "SELECT * FROM progresso_bloco WHERE id_usuario = ? AND id_bloco = ?";
+            $stmt_progresso = $conn->prepare($sql_progresso);
+            $stmt_progresso->bind_param("ii", $id_usuario, $bloco['id']);
+            $stmt_progresso->execute();
+            $progresso = $stmt_progresso->get_result()->fetch_assoc();
+            $stmt_progresso->close();
+
+            // Se não existe registro de progresso, criar um padrão
+            if (!$progresso) {
+                $progresso = [
+                    'atividades_concluidas' => 0,
+                    'total_atividades' => $total_exercicios,
+                    'progresso_percentual' => 0,
+                    'concluido' => false,
+                    'pontos_obtidos' => 0,
+                    'total_pontos' => $total_exercicios * 10
+                ];
+            } else {
+                // Usar dados existentes da tabela progresso_bloco
+                $progresso_percentual = $progresso['total_atividades'] > 0 ? 
+                    round(($progresso['atividades_concluidas'] / $progresso['total_atividades']) * 100) : 0;
+                
+                $progresso['progresso_percentual'] = $progresso_percentual;
+                $progresso['concluido'] = ($progresso['atividades_concluidas'] >= $progresso['total_atividades']) && ($progresso['total_atividades'] > 0);
+            }
+
+            // Adicionar informações adicionais ao bloco
+            $bloco_completo = [
+                'id' => $bloco['id'],
+                'nome_bloco' => $bloco['nome_bloco'],
+                'ordem' => $bloco['ordem'],
+                'caminho_nome' => $caminho['nome_caminho'],
+                'descricao' => "Bloco " . $bloco['ordem'] . " - " . $caminho['nome_caminho'],
+                'progresso' => $progresso
+            ];
+
+            $blocos_com_progresso[] = $bloco_completo;
+        }
     }
 
     $database->closeConnection();
@@ -79,63 +128,5 @@ try {
         'success' => false,
         'message' => 'Erro: ' . $e->getMessage()
     ]);
-}
-
-function criarOuBuscarBlocos($conn, $unidade_id, $unidade_info) {
-    // Verificar se já existem blocos para esta unidade
-    $sql = "SELECT * FROM blocos_atividades WHERE id_unidade = ? ORDER BY ordem";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $unidade_id);
-    $stmt->execute();
-    $blocos_existentes = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-    $stmt->close();
-
-    // Se já existem blocos, retorná-los
-    if (!empty($blocos_existentes)) {
-        return $blocos_existentes;
-    }
-
-    // Criar 10 blocos padrão
-    $nomes_blocos = [
-        "Fundamentos Básicos",
-        "Construindo Frases", 
-        "Conversação Inicial",
-        "Gramática Essencial",
-        "Pronúncia e Fala",
-        "Compreensão Auditiva",
-        "Vocabulário Expandido",
-        "Estruturas Complexas",
-        "Fluência e Velocidade",
-        "Domínio Completo"
-    ];
-
-    $blocos = [];
-    for ($i = 1; $i <= 10; $i++) {
-        $nome = $nomes_blocos[$i-1] ?? "Bloco " . $i;
-        $descricao = "Bloco de atividades " . $i . " - " . $unidade_info['nome_unidade'];
-        
-        $sql_inserir = "INSERT INTO blocos_atividades (id_unidade, numero_bloco, nome_bloco, descricao, ordem) VALUES (?, ?, ?, ?, ?)";
-        $stmt_inserir = $conn->prepare($sql_inserir);
-        $stmt_inserir->bind_param("iissi", $unidade_id, $i, $nome, $descricao, $i);
-        $stmt_inserir->execute();
-        
-        $bloco_id = $stmt_inserir->insert_id;
-        $stmt_inserir->close();
-
-        $blocos[] = [
-            'id' => $bloco_id,
-            'id_unidade' => $unidade_id,
-            'numero_bloco' => $i,
-            'nome_bloco' => $nome,
-            'descricao' => $descricao,
-            'total_atividades' => 12,
-            'atividades_gramatica' => 6,
-            'atividades_fala' => 3,
-            'atividades_dificeis' => 3,
-            'ordem' => $i
-        ];
-    }
-
-    return $blocos;
 }
 ?>
