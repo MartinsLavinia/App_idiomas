@@ -548,10 +548,17 @@ $database->closeConnection();
         opacity: 0.5;
     }
 
-    .settings-icon {
-        color: var(--roxo-principal) !important;
-    }
+     .settings-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
 
+        .settings-icon:hover {
+            color: var(--roxo-escuro) !important;
+            transform: rotate(90deg);
+        }
    /* Efeito de brilho para o botão Amarelo com degrade */
 .pesquisar-btn {
     background: linear-gradient(135deg, #e6b800 0%, #ffd700 100%);
@@ -610,7 +617,7 @@ $database->closeConnection();
                 <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
                     <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
                 </a>
-                <a href="editar_perfil.php" class="settings-icon">
+               <a href="editar_perfil.php" class="settings-icon">
                     <i class="fas fa-cog fa-lg"></i>
                 </a>
             </div>
@@ -628,9 +635,7 @@ $database->closeConnection();
             <a href="gerenciar_caminho.php" class="list-group-item">
                 <i class="fas fa-road"></i> Gerenciar Caminhos
             </a>
-            <a href="#" class="list-group-item">
-                <i class="fas fa-language"></i> Adicionar Idioma com Quiz
-            </a>
+            
             <a href="#" class="list-group-item">
                 <i class="fas fa-globe"></i> Gerenciar Idiomas
             </a>

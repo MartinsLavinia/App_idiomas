@@ -556,17 +556,18 @@ $database->closeConnection();
         }
     }
 
-    /* Estilo para o ícone de configurações */
-    .settings-icon {
-        color: var(--roxo-principal) !important;
-        transition: all 0.3s ease;
-    }
+     .settings-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
 
-    .settings-icon:hover {
-        transform: scale(1.1);
-        color: var(--roxo-escuro) !important;
-    }
-
+        .settings-icon:hover {
+            color: var(--roxo-escuro) !important;
+            transform: rotate(90deg);
+        }
+    
     /* Títulos */
     .page-header {
         display: flex;
@@ -599,7 +600,7 @@ $database->closeConnection();
                 <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
                     <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
                 </a>
-                <a href="editar_perfil.php" class="settings-icon" style="color: var(--roxo-principal) !important;">
+                <a href="editar_perfil.php" class="settings-icon">
                     <i class="fas fa-cog fa-lg"></i>
                 </a>
             </div>
@@ -614,12 +615,10 @@ $database->closeConnection();
         </div>
 
         <div class="list-group">
-            <a href="gerenciar_caminho.php" class="list-group-item" data-bs-toggle="modal" data-bs-target="#addCaminhoModal">
-                <i class="fas fa-plus-circle"></i> Adicionar Caminho
-            </a>
-            <a href="pagina_adicionar_idiomas.php" class="list-group-item">
-                <i class="fas fa-language"></i> Adicionar Idioma com Quiz
-            </a>
+            <a href="gerenciar_caminho.php" class="list-group-item">
+    <i class="fas fa-plus-circle"></i> Adicionar Caminho
+</a>
+           
             <a href="#" class="list-group-item" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
                 <i class="fas fa-globe"></i> Gerenciar Idiomas
             </a>

@@ -669,9 +669,7 @@ $database->closeConnection();
             <a href="gerenciar_caminho.php" class="list-group-item">
                 <i class="fas fa-road"></i> Gerenciar Caminhos
             </a>
-            <a href="#" class="list-group-item">
-                <i class="fas fa-language"></i> Adicionar Idioma com Quiz
-            </a>
+        
             <a href="#" class="list-group-item">
                 <i class="fas fa-globe"></i> Gerenciar Idiomas
             </a>

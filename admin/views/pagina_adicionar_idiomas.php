@@ -233,6 +233,17 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
             cursor: not-allowed;
             opacity: 0.7;
         }
+        .settings-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .settings-icon:hover {
+            color: var(--roxo-escuro) !important;
+            transform: rotate(90deg);
+        }
     </style>
 </head>
 <body>
@@ -244,7 +255,7 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
                 <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
                     <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
                 </a>
-                <a href="editar_perfil.php" class="settings-icon" style="color: var(--roxo-principal) !important;">
+                <a href="editar_perfil.php" class="settings-icon">
                     <i class="fas fa-cog fa-lg"></i>
                 </a>
             </div>
@@ -262,6 +273,7 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
                 <a href="gerenciar_caminho.php" class="list-group-item">
                     <i class="fas fa-plus-circle"></i> Adicionar Caminho
                 </a>
+             
                 <a href="pagina_adicionar_idiomas.php" class="list-group-item">
                     <i class="fas fa-language "></i> Gerenciar Idiomas
                 </a>

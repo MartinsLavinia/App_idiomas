@@ -64,6 +64,67 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
+        /* Estilos para validação - ADICIONAR NO FINAL DO <style> EXISTENTE */
+.is-invalid {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.15) !important;
+}
+
+.is-valid {
+    border-color: #198754 !important;
+    box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.15) !important;
+}
+
+/* Loading submit - ADICIONAR NO FINAL DO <style> EXISTENTE */
+.btn-loading {
+    position: relative;
+    color: transparent !important;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    margin-left: -10px;
+    margin-top: -10px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-right-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Melhorias para o modal de preview - ADICIONAR NO FINAL DO <style> EXISTENTE */
+.modal-content {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+    color: var(--branco);
+    border-bottom: 3px solid var(--amarelo-detalhe);
+}
+
+.btn-info {
+    background-color: #0dcaf0;
+    border-color: #0dcaf0;
+    color: var(--branco);
+}
+
+.btn-info:hover {
+    background-color: #31d2f2;
+    border-color: #31d2f2;
+    transform: translateY(-2px);
+}
         /* Paleta de Cores - MESMAS DO SITE */
         :root {
             --roxo-principal: #6a0dad;
@@ -130,6 +191,114 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .settings-icon:hover {
             color: var(--roxo-escuro) !important;
             transform: rotate(90deg);
+        }
+
+        /* SIDEBAR FIXO - CORREÇÃO APLICADA */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100%;
+            background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+            color: var(--branco);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1100 !important; /* CORREÇÃO: z-index aumentado */
+        }
+
+        .sidebar .profile {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .sidebar .profile i {
+            font-size: 4rem;
+            color: var(--amarelo-detalhe);
+            margin-bottom: 10px;
+        }
+
+        .sidebar .profile h5 {
+            font-weight: 600;
+            margin-bottom: 0;
+            color: var(--branco);
+        }
+
+        .sidebar .profile small {
+            color: var(--cinza-claro);
+        }
+
+        .sidebar .list-group {
+            width: 100%;
+        }
+
+        .sidebar .list-group-item {
+            background-color: transparent;
+            color: var(--branco);
+            border: none;
+            padding: 15px 25px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .list-group-item:hover {
+            background-color: var(--roxo-escuro);
+            cursor: pointer;
+        }
+
+        .sidebar .list-group-item.active {
+            background-color: var(--roxo-escuro) !important;
+            color: var(--branco) !important;
+            font-weight: 600;
+            border-left: 4px solid var(--amarelo-detalhe);
+        }
+
+        .sidebar .list-group-item i {
+            color: var(--amarelo-detalhe);
+        }
+
+        /* CORREÇÃO PARA O BACKDROP DO MODAL */
+        .modal-backdrop {
+            z-index: 1050; /* Backdrop abaixo do sidebar */
+        }
+
+        .modal {
+            z-index: 1060; /* Modal acima do backdrop */
+        }
+
+        body.modal-open .sidebar {
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        /* REMOVER TODAS AS ANIMAÇÕES DO SIDEBAR */
+        .sidebar,
+        .sidebar *,
+        .sidebar .list-group-item,
+        .sidebar .list-group-item i {
+            transition: none !important;
+            animation: none !important;
+        }
+
+        /* Links normais - comportamento padrão sem animação */
+        .sidebar .list-group-item:not([data-bs-toggle]) {
+            transition: none !important;
+        }
+
+        /* Links de modal - manter funcionalidade mas sem animação */
+        .sidebar .list-group-item[data-bs-toggle] {
+            cursor: pointer;
         }
 
         /* Container Principal */
@@ -400,7 +569,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         /* Responsividade */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 200px;
+            }
+            .main-content {
+                margin-left: 200px;
+            }
+        }
+
         @media (max-width: 768px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+
             .main-container {
                 padding: 1rem;
             }
@@ -427,9 +614,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         }
     </style>
+
+    
 </head>
 <body>
-    <!-- Navbar Transparente -->
+
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container d-flex justify-content-between align-items-center">
             <div></div>
@@ -444,117 +633,152 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
     </nav>
 
-    <div class="main-container">
-        <!-- Cabeçalho com Efeito Vidro -->
-        <div class="page-header">
-            <div class="page-header-content">
-                <h1>
-                    <span class="icon-wrapper">
-                        <i class="fas fa-book-medical"></i>
-                    </span>
-                    Adicionar Nova Teoria
-                </h1>
-                <a href="gerenciar_teorias.php" class="btn-back">
-                    <i class="fas fa-arrow-left"></i>Voltar
-                </a>
-            </div>
+    <!-- SIDEBAR ADICIONADO AQUI -->
+    <div class="sidebar">
+        <div class="profile">
+            <i class="fas fa-user-circle"></i>
+            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+            <small>Administrador(a)</small>
         </div>
 
-        <!-- Mensagens -->
-        <?php echo $mensagem; ?>
+        <div class="list-group">
+            <a href="gerenciar_caminho.php" class="list-group-item">
+                <i class="fas fa-plus-circle"></i> Adicionar Caminho
+            </a>
+            <a href="pagina_adicionar_idiomas.php" class="list-group-item" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
+                <i class="fas fa-globe"></i> Gerenciar Idiomas
+            </a>
+            <a href="gerenciar_teorias.php" class="list-group-item active">
+                <i class="fas fa-book-open"></i> Gerenciar Teorias
+            </a>
+            <a href="gerenciar_unidades.php" class="list-group-item">
+                <i class="fas fa-cubes"></i> Gerenciar Unidades
+            </a>
+            <a href="gerenciar_usuarios.php" class="list-group-item">
+                <i class="fas fa-users"></i> Gerenciar Usuários
+            </a>
+            <a href="estatisticas_usuarios.php" class="list-group-item">
+                <i class="fas fa-chart-bar"></i> Estatísticas
+            </a>
+            <a href="logout.php" class="list-group-item mt-auto">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </a>
+        </div>
+    </div>
 
-        <!-- Card Principal -->
-        <div class="main-card">
-            <div class="card-header-custom">
-                <h2><i class="fas fa-edit me-2"></i>Formulário de Teoria</h2>
+    <div class="main-content">
+        <div class="main-container">
+            <!-- Cabeçalho com Efeito Vidro -->
+            <div class="page-header">
+                <div class="page-header-content">
+                    <h1>
+                        <span class="icon-wrapper">
+                            <i class="fas fa-book-medical"></i>
+                        </span>
+                        Adicionar Nova Teoria
+                    </h1>
+                    <a href="gerenciar_teorias.php" class="btn-back">
+                        <i class="fas fa-arrow-left"></i>Voltar
+                    </a>
+                </div>
             </div>
-            <div class="card-body-custom">
-                <form action="adicionar_teoria.php" method="POST">
-                    
-                    <!-- Seção: Informações Básicas -->
-                    <div class="form-section">
-                        <div class="form-section-title">
-                            <i class="fas fa-info-circle"></i>
-                            Informações Básicas
-                        </div>
 
-                        <!-- Campo Título -->
-                        <div class="mb-3">
-                            <label for="titulo" class="form-label required-field">Título da Teoria</label>
-                            <input type="text" class="form-control" id="titulo" name="titulo" value="<?php echo htmlspecialchars($titulo ?? ''); ?>" placeholder="Ex: Presente Simples em Inglês" required>
-                        </div>
+            <!-- Mensagens -->
+            <?php echo $mensagem; ?>
 
-                        <div class="row">
-                            <!-- Campo Nível -->
-                            <div class="col-md-6 mb-3">
-                                <label for="nivel" class="form-label required-field">Nível</label>
-                                <select class="form-select" id="nivel" name="nivel" required>
-                                    <option value="">Selecione o nível</option>
-                                    <option value="A1" <?php echo (isset($nivel) && $nivel == 'A1') ? 'selected' : ''; ?>>A1 - Iniciante</option>
-                                    <option value="A2" <?php echo (isset($nivel) && $nivel == 'A2') ? 'selected' : ''; ?>>A2 - Básico</option>
-                                    <option value="B1" <?php echo (isset($nivel) && $nivel == 'B1') ? 'selected' : ''; ?>>B1 - Intermediário</option>
-                                    <option value="B2" <?php echo (isset($nivel) && $nivel == 'B2') ? 'selected' : ''; ?>>B2 - Intermediário Avançado</option>
-                                    <option value="C1" <?php echo (isset($nivel) && $nivel == 'C1') ? 'selected' : ''; ?>>C1 - Avançado</option>
-                                    <option value="C2" <?php echo (isset($nivel) && $nivel == 'C2') ? 'selected' : ''; ?>>C2 - Proficiente</option>
-                                </select>
+            <!-- Card Principal -->
+            <div class="main-card">
+                <div class="card-header-custom">
+                    <h2><i class="fas fa-edit me-2"></i>Formulário de Teoria</h2>
+                </div>
+                <div class="card-body-custom">
+                    <form action="adicionar_teoria.php" method="POST">
+                        
+                        <!-- Seção: Informações Básicas -->
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <i class="fas fa-info-circle"></i>
+                                Informações Básicas
                             </div>
 
-                            <!-- Campo Ordem -->
-                            <div class="col-md-6 mb-3">
-                                <label for="ordem" class="form-label required-field">Ordem de Exibição</label>
-                                <input type="number" class="form-control" id="ordem" name="ordem" value="<?php echo htmlspecialchars($ordem ?? ''); ?>" min="1" placeholder="1" required>
-                                <div class="form-text">Ordem em que a teoria aparecerá na lista</div>
+                            <!-- Campo Título -->
+                            <div class="mb-3">
+                                <label for="titulo" class="form-label required-field">Título da Teoria</label>
+                                <input type="text" class="form-control" id="titulo" name="titulo" value="<?php echo htmlspecialchars($titulo ?? ''); ?>" placeholder="Ex: Presente Simples em Inglês" required>
+                            </div>
+
+                            <div class="row">
+                                <!-- Campo Nível -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="nivel" class="form-label required-field">Nível</label>
+                                    <select class="form-select" id="nivel" name="nivel" required>
+                                        <option value="">Selecione o nível</option>
+                                        <option value="A1" <?php echo (isset($nivel) && $nivel == 'A1') ? 'selected' : ''; ?>>A1 - Iniciante</option>
+                                        <option value="A2" <?php echo (isset($nivel) && $nivel == 'A2') ? 'selected' : ''; ?>>A2 - Básico</option>
+                                        <option value="B1" <?php echo (isset($nivel) && $nivel == 'B1') ? 'selected' : ''; ?>>B1 - Intermediário</option>
+                                        <option value="B2" <?php echo (isset($nivel) && $nivel == 'B2') ? 'selected' : ''; ?>>B2 - Intermediário Avançado</option>
+                                        <option value="C1" <?php echo (isset($nivel) && $nivel == 'C1') ? 'selected' : ''; ?>>C1 - Avançado</option>
+                                        <option value="C2" <?php echo (isset($nivel) && $nivel == 'C2') ? 'selected' : ''; ?>>C2 - Proficiente</option>
+                                    </select>
+                                </div>
+
+                                <!-- Campo Ordem -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="ordem" class="form-label required-field">Ordem de Exibição</label>
+                                    <input type="number" class="form-control" id="ordem" name="ordem" value="<?php echo htmlspecialchars($ordem ?? ''); ?>" min="1" placeholder="1" required>
+                                    <div class="form-text">Ordem em que a teoria aparecerá na lista</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Seção: Detalhes Adicionais -->
-                    <div class="form-section">
-                        <div class="form-section-title">
-                            <i class="fas fa-tags"></i>
-                            Detalhes Adicionais
+                        <!-- Seção: Detalhes Adicionais -->
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <i class="fas fa-tags"></i>
+                                Detalhes Adicionais
+                            </div>
+
+                            <!-- Campo Resumo -->
+                            <div class="mb-3">
+                                <label for="resumo" class="form-label">Resumo</label>
+                                <textarea class="form-control" id="resumo" name="resumo" rows="3" placeholder="Breve resumo da teoria para exibição na lista"><?php echo htmlspecialchars($resumo ?? ''); ?></textarea>
+                                <div class="form-text">Resumo que aparecerá na lista de teorias</div>
+                            </div>
+
+                            <!-- Campo Palavras-chave -->
+                            <div class="mb-3">
+                                <label for="palavras_chave" class="form-label">Palavras-chave</label>
+                                <input type="text" class="form-control" id="palavras_chave" name="palavras_chave" value="<?php echo htmlspecialchars($palavras_chave ?? ''); ?>" placeholder="gramática, verbos, presente simples">
+                                <div class="form-text">Palavras-chave separadas por vírgula para facilitar a busca</div>
+                            </div>
                         </div>
 
-                        <!-- Campo Resumo -->
-                        <div class="mb-3">
-                            <label for="resumo" class="form-label">Resumo</label>
-                            <textarea class="form-control" id="resumo" name="resumo" rows="3" placeholder="Breve resumo da teoria para exibição na lista"><?php echo htmlspecialchars($resumo ?? ''); ?></textarea>
-                            <div class="form-text">Resumo que aparecerá na lista de teorias</div>
+                        <!-- Seção: Conteúdo -->
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <i class="fas fa-file-alt"></i>
+                                Conteúdo da Teoria
+                            </div>
+
+                            <!-- Campo Conteúdo -->
+                            <div class="mb-3">
+                                <label for="conteudo" class="form-label required-field">Conteúdo Completo</label>
+                                <textarea class="form-control" id="conteudo" name="conteudo" rows="15" required><?php echo htmlspecialchars($conteudo ?? ''); ?></textarea>
+                                <div class="form-text">Conteúdo completo da teoria. Você pode usar HTML para formatação.</div>
+                            </div>
                         </div>
 
-                        <!-- Campo Palavras-chave -->
-                        <div class="mb-3">
-                            <label for="palavras_chave" class="form-label">Palavras-chave</label>
-                            <input type="text" class="form-control" id="palavras_chave" name="palavras_chave" value="<?php echo htmlspecialchars($palavras_chave ?? ''); ?>" placeholder="gramática, verbos, presente simples">
-                            <div class="form-text">Palavras-chave separadas por vírgula para facilitar a busca</div>
+                        <!-- Botões de Ação -->
+                        <div class="btn-group-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Adicionar Teoria
+                            </button>
+                            <a href="gerenciar_teorias.php" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </a>
                         </div>
-                    </div>
-
-                    <!-- Seção: Conteúdo -->
-                    <div class="form-section">
-                        <div class="form-section-title">
-                            <i class="fas fa-file-alt"></i>
-                            Conteúdo da Teoria
-                        </div>
-
-                        <!-- Campo Conteúdo -->
-                        <div class="mb-3">
-                            <label for="conteudo" class="form-label required-field">Conteúdo Completo</label>
-                            <textarea class="form-control" id="conteudo" name="conteudo" rows="15" required><?php echo htmlspecialchars($conteudo ?? ''); ?></textarea>
-                            <div class="form-text">Conteúdo completo da teoria. Você pode usar HTML para formatação.</div>
-                        </div>
-                    </div>
-
-                    <!-- Botões de Ação -->
-                    <div class="btn-group-actions">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-2"></i>Adicionar Teoria
-                        </button>
-                        <a href="gerenciar_teorias.php" class="btn btn-secondary">
-                            <i class="fas fa-times me-2"></i>Cancelar
-                        </a>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -571,6 +795,57 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         console.log('1. Acessar https://www.tiny.cloud/ e criar uma conta');
         console.log('2. Obter uma API key gratuita');
         console.log('3. Substituir "no-api-key" pela sua chave no script do TinyMCE');
+
+        // Preview do conteúdo - ADICIONAR NO FINAL DO <script> EXISTENTE
+function adicionarBotaoPreview() {
+    const grupoBotoes = document.querySelector('.btn-group-actions');
+    const botaoPreview = document.createElement('button');
+    botaoPreview.type = 'button';
+    botaoPreview.className = 'btn btn-info';
+    botaoPreview.innerHTML = '<i class="fas fa-eye me-2"></i>Visualizar';
+    botaoPreview.onclick = mostrarPreview;
+    
+    grupoBotoes.insertBefore(botaoPreview, grupoBotoes.firstChild);
+}
+
+function mostrarPreview() {
+    const titulo = document.getElementById('titulo').value || 'Sem título';
+    const conteudo = tinymce.get('conteudo') ? tinymce.get('conteudo').getContent() : document.getElementById('conteudo').value;
+    
+    const previewHTML = `
+        <div class="modal fade" id="previewModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Preview: ${titulo}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        ${conteudo || '<p class="text-muted">Nenhum conteúdo para visualizar.</p>'}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remover modal existente
+    const modalExistente = document.getElementById('previewModal');
+    if (modalExistente) {
+        modalExistente.remove();
+    }
+    
+    // Adicionar novo modal
+    document.body.insertAdjacentHTML('beforeend', previewHTML);
+    const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+    previewModal.show();
+}
+
+document.addEventListener('DOMContentLoaded', adicionarBotaoPreview);
+
+
     </script>
 </body>
 </html>

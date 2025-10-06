@@ -74,6 +74,20 @@ $database->closeConnection();
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <style>
+         .settings-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .settings-icon:hover {
+            color: var(--roxo-escuro) !important;
+            transform: rotate(90deg);
+        }
+    </style>
+
 </head>
 
 <body>
@@ -84,7 +98,7 @@ $database->closeConnection();
                 <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
                     <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
                 </a>
-                <a href="editar_perfil.php" class="settings-icon" style="color: var(--roxo-principal) !important;">
+               <a href="editar_perfil.php" class="settings-icon">
                     <i class="fas fa-cog fa-lg"></i>
                 </a>
             </div>

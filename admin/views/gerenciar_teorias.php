@@ -439,6 +439,18 @@ $database->closeConnection();
 .sidebar .list-group-item[data-bs-toggle] {
     cursor: pointer;
 }
+
+ .settings-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .settings-icon:hover {
+            color: var(--roxo-escuro) !important;
+            transform: rotate(90deg);
+        }
     </style>
 </head>
 <body>
@@ -450,7 +462,7 @@ $database->closeConnection();
                 <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
                     <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
                 </a>
-                <a href="editar_perfil.php" class="settings-icon" style="color: var(--roxo-principal) !important;">
+                <a href="editar_perfil.php" class="settings-icon">
                     <i class="fas fa-cog fa-lg"></i>
                 </a>
             </div>
@@ -467,12 +479,10 @@ $database->closeConnection();
         <a href="gerenciar_caminho.php" class="list-group-item">
             <i class="fas fa-plus-circle"></i> Adicionar Caminho
         </a>
+    
         <a href="pagina_adicionar_idiomas.php" class="list-group-item">
-            <i class="fas fa-language"></i> Adicionar Idioma com Quiz
-        </a>
-        <a href="pagina_adicionar_idiomas.php" class="list-group-item" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
-            <i class="fas fa-globe"></i> Gerenciar Idiomas
-        </a>
+    <i class="fas fa-globe"></i> Gerenciar Idiomas
+</a>
         <a href="gerenciar_teorias.php" class="list-group-item active">
             <i class="fas fa-book-open"></i> Gerenciar Teorias
         </a>
@@ -496,8 +506,7 @@ $database->closeConnection();
             <div class="page-header">
                 <h2 class="mb-0"><i class="fas fa-book-open"></i> Gerenciar Teorias</h2>
                 <div class="action-buttons">
-                    <a href="gerenciar_caminho.php" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar para Caminhos</a>
-                    <a href="adicionar_teoria.php" class="btn btn-success"><i class="fas fa-plus"></i> Adicionar Nova Teoria</a>
+                   <a href="adicionar_teoria.php" class="btn btn-warning"><i class="fas fa-plus-circle"></i> Adicionar Nova Teoria</a>
                 </div>
             </div>
             
