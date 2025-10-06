@@ -116,7 +116,6 @@ $database->closeConnection();
 
         /* Deck Cards */
         .deck-card {
-            cursor: pointer;
             border: 2px solid transparent;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
@@ -168,6 +167,40 @@ $database->closeConnection();
             border-color: var(--amarelo-detalhe);
             color: var(--preto-texto);
             font-weight: 600;
+        }
+
+        /* Dropdown Menu */
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 0.5rem;
+        }
+
+        .dropdown-item {
+            padding: 0.5rem 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--roxo-principal);
+            color: white;
+        }
+
+        .dropdown-item.text-danger:hover {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        /* Botão de opções */
+        .btn-outline-secondary {
+            border: 1px solid var(--cinza-medio);
+            color: var(--preto-texto);
+            padding: 0.25rem 0.5rem;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: var(--cinza-medio);
+            border-color: var(--cinza-medio);
         }
 
         /* Filtros */
@@ -237,7 +270,7 @@ $database->closeConnection();
                     </a>
                 </li>
                 <li>
-                    <a href="../../logout.php" class="nav-link-item">Sair</a>
+                    <a href="//logout.php" class="nav-link-item">Sair</a>
                 </li>
             </ul>
         </nav>

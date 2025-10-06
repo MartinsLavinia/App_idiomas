@@ -26,6 +26,10 @@ try {
             atualizarDeck($conn, $id_usuario);
             break;
             
+        case 'excluir_deck':
+            excluirDeck($conn, $id_usuario);
+            break;
+            
         case 'listar_decks':
             listarDecks($conn, $id_usuario);
             break;
@@ -140,6 +144,46 @@ function atualizarDeck($conn, $id_usuario) {
     }
     
     $stmt->close();
+}
+
+function excluirDeck($conn, $id_usuario) {
+    $id_deck = intval($_POST['id_deck'] ?? 0);
+
+    // Verifica se o deck pertence ao usuário
+    if (!verificarDonoDeck($conn, $id_deck, $id_usuario)) {
+        echo json_encode(['success' => false, 'message' => 'Acesso negado ao deck']);
+        return;
+    }
+
+    // Iniciar transação para garantir consistência
+    $conn->begin_transaction();
+
+    try {
+        // Primeiro excluir os flashcards do deck
+        $sql_flashcards = "DELETE FROM flashcards WHERE id_deck = ?";
+        $stmt_flashcards = $conn->prepare($sql_flashcards);
+        $stmt_flashcards->bind_param("i", $id_deck);
+        $stmt_flashcards->execute();
+        $stmt_flashcards->close();
+
+        // Depois excluir o deck
+        $sql_deck = "DELETE FROM decks WHERE id = ? AND id_usuario = ?";
+        $stmt_deck = $conn->prepare($sql_deck);
+        $stmt_deck->bind_param("ii", $id_deck, $id_usuario);
+        
+        if ($stmt_deck->execute()) {
+            $conn->commit();
+            echo json_encode(['success' => true, 'message' => 'Deck excluído com sucesso']);
+        } else {
+            throw new Exception('Erro ao excluir deck: ' . $stmt_deck->error);
+        }
+        
+        $stmt_deck->close();
+        
+    } catch (Exception $e) {
+        $conn->rollback();
+        echo json_encode(['success' => false, 'message' => 'Erro ao excluir deck: ' . $e->getMessage()]);
+    }
 }
 
 function listarDecks($conn, $id_usuario) {

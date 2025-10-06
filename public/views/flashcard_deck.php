@@ -164,6 +164,17 @@ if (!$id_deck) {
             font-weight: 600;
         }
 
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            font-weight: 600;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+        }
+
         /* Loading */
         .loading {
             text-align: center;
@@ -223,8 +234,11 @@ if (!$id_deck) {
                         <button class="btn btn-primary me-2" onclick="abrirModalFlashcard()">
                             <i class="fas fa-plus me-2"></i>Novo Flashcard
                         </button>
-                        <button class="btn btn-warning" onclick="estudarDeck()">
+                        <button class="btn btn-warning me-2" onclick="estudarDeck()">
                             <i class="fas fa-play me-2"></i>Estudar Deck
+                        </button>
+                        <button class="btn btn-danger" onclick="excluirDeckAtual()">
+                            <i class="fas fa-trash me-2"></i>Excluir Deck
                         </button>
                     </div>
                 </div>
@@ -415,6 +429,37 @@ if (!$id_deck) {
                     </div>
                 </div>
             `;
+        }
+
+        // Excluir deck atual
+        function excluirDeckAtual() {
+            if (!deckAtual) return;
+            
+            if (!confirm(`Tem certeza que deseja excluir o deck "${deckAtual.nome}"? Esta ação não pode ser desfeita e todos os flashcards serão perdidos.`)) {
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('action', 'excluir_deck');
+            formData.append('id_deck', idDeck);
+
+            fetch('flashcard_controller.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Deck excluído com sucesso!');
+                    window.location.href = 'flashcards.php';
+                } else {
+                    alert('Erro ao excluir deck: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro de conexão ao excluir deck.');
+            });
         }
 
         // Carrega flashcards do deck
