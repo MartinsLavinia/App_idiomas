@@ -85,6 +85,7 @@ if (!$mostrar_selecao_idioma) {
 
 // Feche a conexão usando o método da classe
 $database->closeConnection();
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -284,66 +285,133 @@ $database->closeConnection();
         </div>
     </div>
 
-    <!-- Modal Adicionar Palavra -->
-    <div class="modal fade" id="modalAdicionarPalavra" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="fas fa-plus me-2"></i>Adicionar Nova Palavra
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="formAdicionarPalavra">
-                        <div class="mb-3">
-                            <label for="palavraFrente" class="form-label">Palavra/Frase *</label>
-                            <input type="text" class="form-control" id="palavraFrente" name="palavra_frente" required placeholder="Ex: Hello">
-                        </div>
-                        <div class="mb-3">
-                            <label for="palavraVerso" class="form-label">Tradução *</label>
-                            <input type="text" class="form-control" id="palavraVerso" name="palavra_verso" required placeholder="Ex: Olá">
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="palavraIdioma" class="form-label">Idioma</label>
-                                    <select class="form-select" id="palavraIdioma" name="idioma">
-                                        <option value="Ingles">Inglês</option>
-                                        <option value="Japones">Japonês</option>
-                                    </select>
+   <!-- Modal Adicionar Palavra ATUALIZADO -->
+<div class="modal fade" id="modalAdicionarPalavra" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>Adicionar Nova Palavra/Flashcard
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <form id="formAdicionarPalavra">
+                            <input type="hidden" id="palavraId" name="id_flashcard">
+                            
+                            <div class="mb-3">
+                                <label for="palavraFrente" class="form-label">Frente do Card *</label>
+                                <textarea class="form-control" id="palavraFrente" name="palavra_frente" rows="3" required placeholder="Digite a palavra/frase na língua estrangeira"><?php echo htmlspecialchars($palavra_frente ?? ''); ?></textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="palavraVerso" class="form-label">Verso do Card *</label>
+                                <textarea class="form-control" id="palavraVerso" name="palavra_verso" rows="3" required placeholder="Digite a tradução ou significado"><?php echo htmlspecialchars($palavra_verso ?? ''); ?></textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="palavraDica" class="form-label">Dica (opcional)</label>
+                                <textarea class="form-control" id="palavraDica" name="dica" rows="2" placeholder="Digite uma dica para ajudar na memorização"><?php echo htmlspecialchars($dica ?? ''); ?></textarea>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="palavraDificuldade" class="form-label">Dificuldade</label>
+                                        <select class="form-select" id="palavraDificuldade" name="dificuldade">
+                                            <option value="facil">Fácil</option>
+                                            <option value="medio" selected>Médio</option>
+                                            <option value="dificil">Difícil</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="palavraOrdem" class="form-label">Ordem</label>
+                                        <input type="number" class="form-control" id="palavraOrdem" name="ordem_no_deck" min="0" value="0">
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="palavraNivel" class="form-label">Nível</label>
-                                    <select class="form-select" id="palavraNivel" name="nivel">
-                                        <option value="A1">A1</option>
-                                        <option value="A2">A2</option>
-                                        <option value="B1">B1</option>
-                                        <option value="B2">B2</option>
-                                        <option value="C1">C1</option>
-                                        <option value="C2">C2</option>
-                                    </select>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="palavraIdioma" class="form-label">Idioma</label>
+                                        <select class="form-select" id="palavraIdioma" name="idioma">
+                                            <option value="Ingles">Inglês</option>
+                                            <option value="Japones">Japonês</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="palavraNivel" class="form-label">Nível</label>
+                                        <select class="form-select" id="palavraNivel" name="nivel">
+                                            <option value="A1">A1</option>
+                                            <option value="A2">A2</option>
+                                            <option value="B1">B1</option>
+                                            <option value="B2">B2</option>
+                                            <option value="C1">C1</option>
+                                            <option value="C2">C2</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="palavraCategoria" class="form-label">Categoria (opcional)</label>
+                                <input type="text" class="form-control" id="palavraCategoria" name="categoria" placeholder="Ex: Verbos, Substantivos, Cumprimentos">
+                            </div>
+                            
+                            <!-- Campos para imagens e áudios (futuro) -->
+                            <div class="mb-3">
+                                <label class="form-label">Mídia (em desenvolvimento)</label>
+                                <div class="text-muted small">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Suporte para imagens e áudios será adicionado em breve.
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Preview do Flashcard</label>
+                        <div class="flashcard-preview" id="palavraPreview" onclick="virarPreviewPalavra()">
+                            <div class="flashcard-inner">
+                                <div class="flashcard-front">
+                                    <div id="previewPalavraFrente">Digite o conteúdo da frente</div>
+                                </div>
+                                <div class="flashcard-back">
+                                    <div id="previewPalavraVerso">Digite o conteúdo do verso</div>
                                 </div>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="palavraCategoria" class="form-label">Categoria (opcional)</label>
-                            <input type="text" class="form-control" id="palavraCategoria" name="categoria" placeholder="Ex: Verbos, Substantivos, Cumprimentos">
+                        <div class="text-center">
+                            <small class="text-muted">Clique no card para virar</small>
                         </div>
-                    </form>
+                        
+                        <!-- Dica preview -->
+                        <div class="mt-3" id="previewDicaContainer" style="display: none;">
+                            <div class="alert alert-info py-2">
+                                <small>
+                                    <i class="fas fa-lightbulb me-1"></i>
+                                    <span id="previewPalavraDica">Dica aparecerá aqui</span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="salvarPalavra()">
-                        <i class="fas fa-save me-2"></i>Salvar Palavra
-                    </button>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="salvarPalavra()">
+                    <i class="fas fa-save me-2"></i>Salvar Palavra
+                </button>
             </div>
         </div>
     </div>
-
+</div>
     <!-- Modal Blocos da Unidade -->
     <div class="modal fade" id="modalBlocos" tabindex="-1" aria-labelledby="modalBlocosLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -889,45 +957,61 @@ $database->closeConnection();
         });
     };
        
-    // Função para carregar palavras do usuário
-    window.carregarPalavras = function() {
-        const status = document.getElementById('filtroPalavrasStatus').value;
-        const container = document.getElementById('listaPalavras');
-       
-        container.innerHTML = `
-            <div class="col-12 text-center">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Carregando...</span>
-                </div>
-                <p class="mt-2 text-muted">Carregando suas palavras...</p>
+    // Função para carregar palavras do usuário - ADICIONE DEBUG AQUI
+window.carregarPalavras = function() {
+    const status = document.getElementById('filtroPalavrasStatus').value;
+    const container = document.getElementById('listaPalavras');
+    
+    console.log('=== CARREGAR PALAVRAS INICIADO ===');
+    console.log('Status:', status);
+    console.log('URL do controller:', 'flashcard_controller.php');
+    
+    // Mostra loading
+    container.innerHTML = `
+        <div class="col-12 text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Carregando...</span>
             </div>
-        `;
-       
-        const formData = new FormData();
-        formData.append('action', 'listar_flashcards');
-        if (status !== '') {
-            formData.append('status', status);
+            <p class="mt-2 text-muted">Carregando suas palavras...</p>
+        </div>
+    `;
+    
+    const formData = new FormData();
+    formData.append('action', 'listar_flashcards_painel'); // CORRIGIDO: estava 'listar_flashcards'
+    if (status !== '') {
+        formData.append('status', status);
+    }
+    
+    console.log('Enviando requisição para flashcard_controller.php');
+    
+    fetch('flashcard_controller.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        console.log('Resposta recebida - Status:', response.status);
+        console.log('Resposta OK:', response.ok);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-       
-        fetch('flashcard_controller.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                palavrasCarregadas = data.flashcards;
-                exibirPalavras(data.flashcards);
-            } else {
-                exibirErroPalavras(data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Erro:', error);
-            exibirErroPalavras('Erro de conexão. Tente novamente.');
-        });
-    };
-       
+        return response.json();
+    })
+    .then(data => {
+        console.log('Dados recebidos:', data);
+        if (data.success) {
+            palavrasCarregadas = data.flashcards;
+            exibirPalavras(data.flashcards);
+        } else {
+            console.error('Erro do servidor:', data.message);
+            exibirErroPalavras(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Erro na requisição:', error);
+        console.error('Detalhes do erro:', error.message);
+        exibirErroPalavras('Erro de conexão. Tente novamente. Detalhes: ' + error.message);
+    });
+};
     // Função para exibir palavras na interface
     window.exibirPalavras = function(palavras) {
         const container = document.getElementById('listaPalavras');
