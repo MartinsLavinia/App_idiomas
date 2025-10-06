@@ -479,10 +479,10 @@ $database->closeConnection();
         <a href="gerenciar_caminho.php" class="list-group-item">
             <i class="fas fa-plus-circle"></i> Adicionar Caminho
         </a>
-    
-        <a href="pagina_adicionar_idiomas.php" class="list-group-item">
-    <i class="fas fa-globe"></i> Gerenciar Idiomas
-</a>
+        
+        <a href="pagina_adicionar_idiomas.php" class="list-group-item" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
+            <i class="fas fa-globe"></i> Gerenciar Idiomas
+        </a>
         <a href="gerenciar_teorias.php" class="list-group-item active">
             <i class="fas fa-book-open"></i> Gerenciar Teorias
         </a>
@@ -490,7 +490,7 @@ $database->closeConnection();
             <i class="fas fa-cubes"></i> Gerenciar Unidades
         </a>
         <a href="gerenciar_usuarios.php" class="list-group-item">
-            <i class="fas fa-users"></i> Gerenciar Usuárioss
+            <i class="fas fa-users"></i> Gerenciar Usuários
         </a>
         <a href="estatisticas_usuarios.php" class="list-group-item">
             <i class="fas fa-chart-bar"></i> Estatísticas

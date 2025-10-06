@@ -401,17 +401,32 @@ $database->closeConnection();
     }
 
     .btn-secondary {
-        background-color: var(--cinza-medio);
-        border-color: var(--cinza-medio);
-        color: var(--preto-texto);
+         background: linear-gradient(135deg, #9ca3a8ff, #8e9caaff);
+        border: none;
+        color: var(--branco);
         font-weight: 600;
+        padding: 10px 20px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
         transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
     }
 
     .btn-secondary:hover {
-        background-color: #c8c9cb;
-        border-color: #c8c9cb;
-        transform: scale(1.05);
+      background: linear-gradient(135deg, #495057, #343a40);
+        color: var(--branco);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+    }
+    .btn-secundary i {
+        font-size: 0.9em;
+        transition: transform 0.3s ease;
+    }
+
+    .btn-secundary:hover i {
+        transform: translateX(-4px);
     }
 
     /* Efeito de brilho para o botão Pesquisar */

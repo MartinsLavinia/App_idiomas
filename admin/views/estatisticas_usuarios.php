@@ -589,6 +589,35 @@ $database->closeConnection();
         color: var(--roxo-principal);
         font-size: 1.5rem;
     }
+    .btn-secundary {
+        background: linear-gradient(135deg, #6c757d, #495057);
+        border: none;
+        color: var(--branco);
+        font-weight: 600;
+        padding: 10px 20px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+    }
+
+    .btn-secundary:hover {
+        background: linear-gradient(135deg, #495057, #343a40);
+        color: var(--branco);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+    }
+
+    .btn-secundary i {
+        font-size: 0.9em;
+        transition: transform 0.3s ease;
+    }
+
+    .btn-secundary:hover i {
+        transform: translateX(-4px);
+    }
     </style>
 </head>
 <body>
@@ -618,9 +647,9 @@ $database->closeConnection();
             <a href="gerenciar_caminho.php" class="list-group-item">
                 <i class="fas fa-plus-circle"></i> Adicionar Caminho
             </a>
-            <a href="pagina_adicionar_idiomas.php" class="list-group-item" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
-                <i class="fas fa-globe"></i> Gerenciar Idiomas
-            </a>
+           <a href="pagina_adicionar_idiomas.php" class="list-group-item">
+    <i class="fas fa-globe"></i> Gerenciar Idiomas
+</a>
             <a href="gerenciar_teorias.php" class="list-group-item">
                 <i class="fas fa-book-open"></i> Gerenciar Teorias
             </a>
@@ -643,7 +672,9 @@ $database->closeConnection();
         <div class="container-fluid mt-4">
             <div class="page-header">
                 <h2 class="mb-0"><i class="fas fa-chart-bar"></i> Estatísticas de Usuários</h2>
-                <a href="gerenciar_caminho.php" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar ao Gerenciamento</a>
+                <a href="gerenciar_caminho.php" class="btn btn-secundary">
+                    <i class="fas fa-arrow-left"></i>  Voltar ao Gerenciamento
+                </a>
             </div>
 
             <!-- Estatísticas Rápidas -->
