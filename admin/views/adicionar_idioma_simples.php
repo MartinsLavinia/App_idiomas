@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if ($count > 0) {
             $_SESSION['error'] = "O idioma '$nome_idioma' já existe no sistema.";
-            header("Location: gerenciar_idiomas.php");
+            header("Location: pagina_adicionar_idiomas.php");
             exit();
         }
         

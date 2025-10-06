@@ -611,6 +611,17 @@ $database->closeConnection();
     .fas.fa-search {
         color: var(--branco);
     }
+    .settings-icon {
+    color: var(--roxo-principal) !important;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    font-size: 1.2rem;
+}
+
+.settings-icon:hover {
+    color: var(--roxo-principal) !important;
+    transform: rotate(90deg);
+}
     </style>
 </head>
 <body>
@@ -622,9 +633,9 @@ $database->closeConnection();
                 <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
                     <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
                 </a>
-                <a href="editar_perfil.php" class="settings-icon" style="color: var(--roxo-principal) !important;">
-                    <i class="fas fa-cog fa-lg"></i>
-                </a>
+                <a href="editar_perfil.php" class="settings-icon">
+    <i class="fas fa-cog fa-lg"></i>
+</a>
             </div>
         </div>
     </nav>

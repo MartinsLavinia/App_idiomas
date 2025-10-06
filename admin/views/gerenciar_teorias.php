@@ -470,7 +470,7 @@ $database->closeConnection();
         <a href="pagina_adicionar_idiomas.php" class="list-group-item">
             <i class="fas fa-language"></i> Adicionar Idioma com Quiz
         </a>
-        <a href="#" class="list-group-item" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
+        <a href="pagina_adicionar_idiomas.php" class="list-group-item" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
             <i class="fas fa-globe"></i> Gerenciar Idiomas
         </a>
         <a href="gerenciar_teorias.php" class="list-group-item active">
@@ -480,7 +480,7 @@ $database->closeConnection();
             <i class="fas fa-cubes"></i> Gerenciar Unidades
         </a>
         <a href="gerenciar_usuarios.php" class="list-group-item">
-            <i class="fas fa-users"></i> Gerenciar Usuários
+            <i class="fas fa-users"></i> Gerenciar Usuárioss
         </a>
         <a href="estatisticas_usuarios.php" class="list-group-item">
             <i class="fas fa-chart-bar"></i> Estatísticas
