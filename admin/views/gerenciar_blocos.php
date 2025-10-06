@@ -23,12 +23,13 @@ $mensagem = '';
 
 // LÓGICA PARA ADICIONAR NOVO BLOCO
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['adicionar_bloco'])) {
-    $nome_bloco = trim($_POST['nome_bloco']);
-    $ordem_bloco = intval($_POST['ordem_bloco']);
+    $titulo = trim($_POST['titulo'] ?? '');
+    $nome_bloco = trim($_POST['nome_bloco'] ?? '');
+    $ordem_bloco = intval($_POST['ordem_bloco'] ?? 0);
     $descricao = trim($_POST['descricao'] ?? '');
 
-    if (empty($nome_bloco) || $ordem_bloco <= 0) {
-        $mensagem = '<div class="alert alert-danger">Nome do bloco e ordem são obrigatórios.</div>';
+    if (empty($titulo) || empty($nome_bloco) || $ordem_bloco <= 0) {
+        $mensagem = '<div class="alert alert-danger">Título, nome do bloco e ordem são obrigatórios.</div>';
     } else {
         $database = new Database();
         $conn = $database->conn;
@@ -44,11 +45,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['adicionar_bloco'])) {
             $mensagem = '<div class="alert alert-danger">Já existe um bloco com esta ordem neste caminho.</div>';
         } else {
             // Insere o novo bloco
-            $sql_insert = "INSERT INTO blocos (caminho_id, nome_bloco, ordem, descricao, data_criacao) VALUES (?, ?, ?, ?, NOW())";
+            $sql_insert = "INSERT INTO blocos (caminho_id, titulo, nome_bloco, ordem, descricao, data_criacao) VALUES (?, ?, ?, ?, ?, NOW())";
             $stmt_insert = $conn->prepare($sql_insert);
             
             if ($stmt_insert) {
-                $stmt_insert->bind_param("isis", $caminho_id, $nome_bloco, $ordem_bloco, $descricao);
+                $stmt_insert->bind_param("issis", $caminho_id, $titulo, $nome_bloco, $ordem_bloco, $descricao);
                 
                 if ($stmt_insert->execute()) {
                     $mensagem = '<div class="alert alert-success">Bloco adicionado com sucesso!</div>';
@@ -67,13 +68,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['adicionar_bloco'])) {
 
 // LÓGICA PARA EDITAR BLOCO
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['editar_bloco'])) {
-    $bloco_id = intval($_POST['bloco_id']);
-    $nome_bloco = trim($_POST['nome_bloco']);
-    $ordem_bloco = intval($_POST['ordem_bloco']);
+    $bloco_id = intval($_POST['bloco_id'] ?? 0);
+    $titulo = trim($_POST['titulo'] ?? '');
+    $nome_bloco = trim($_POST['nome_bloco'] ?? '');
+    $ordem_bloco = intval($_POST['ordem_bloco'] ?? 0);
     $descricao = trim($_POST['descricao'] ?? '');
 
-    if (empty($nome_bloco) || $ordem_bloco <= 0) {
-        $mensagem = '<div class="alert alert-danger">Nome do bloco e ordem são obrigatórios.</div>';
+    if (empty($titulo) || empty($nome_bloco) || $ordem_bloco <= 0) {
+        $mensagem = '<div class="alert alert-danger">Título, nome do bloco e ordem são obrigatórios.</div>';
     } else {
         $database = new Database();
         $conn = $database->conn;
@@ -89,11 +91,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['editar_bloco'])) {
             $mensagem = '<div class="alert alert-danger">Já existe outro bloco com esta ordem neste caminho.</div>';
         } else {
             // Atualiza o bloco
-            $sql_update = "UPDATE blocos SET nome_bloco = ?, ordem = ?, descricao = ? WHERE id = ?";
+            $sql_update = "UPDATE blocos SET titulo = ?, nome_bloco = ?, ordem = ?, descricao = ? WHERE id = ?";
             $stmt_update = $conn->prepare($sql_update);
             
             if ($stmt_update) {
-                $stmt_update->bind_param("sisi", $nome_bloco, $ordem_bloco, $descricao, $bloco_id);
+                $stmt_update->bind_param("ssisi", $titulo, $nome_bloco, $ordem_bloco, $descricao, $bloco_id);
                 
                 if ($stmt_update->execute()) {
                     $mensagem = '<div class="alert alert-success">Bloco atualizado com sucesso!</div>';
@@ -336,6 +338,13 @@ FOREIGN KEY (bloco_id) REFERENCES blocos(id) ON DELETE SET NULL;</pre>
                         
                         <form method="POST">
                             <div class="mb-3">
+                                <label for="titulo" class="form-label">Título do Bloco *</label>
+                                <input type="text" class="form-control" id="titulo" name="titulo" 
+                                       value="<?php echo $bloco_edit ? htmlspecialchars($bloco_edit['titulo']) : ''; ?>" 
+                                       required>
+                            </div>
+
+                            <div class="mb-3">
                                 <label for="nome_bloco" class="form-label">Nome do Bloco *</label>
                                 <input type="text" class="form-control" id="nome_bloco" name="nome_bloco" 
                                        value="<?php echo $bloco_edit ? htmlspecialchars($bloco_edit['nome_bloco']) : ''; ?>" 
@@ -429,12 +438,16 @@ FOREIGN KEY (bloco_id) REFERENCES blocos(id) ON DELETE SET NULL;</pre>
                                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                                     <h6 class="card-title mb-0">
                                                         <i class="fas fa-cube me-1 text-primary"></i>
-                                                        <?php echo htmlspecialchars($bloco['nome_bloco']); ?>
+                                                        <?php echo htmlspecialchars($bloco['titulo']); ?>
                                                     </h6>
                                                     <span class="badge bg-light text-dark stats-badge">
                                                         <?php echo $bloco['total_atividades']; ?> ativid.
                                                     </span>
                                                 </div>
+                                                
+                                                <p class="card-text small text-muted mb-2">
+                                                    <strong>Nome:</strong> <?php echo htmlspecialchars($bloco['nome_bloco']); ?>
+                                                </p>
                                                 
                                                 <p class="card-text small text-muted mb-2">
                                                     <?php echo !empty($bloco['descricao']) ? htmlspecialchars($bloco['descricao']) : '<em>Sem descrição</em>'; ?>
