@@ -472,7 +472,7 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
                             </nav>
 
                             <div class="d-flex justify-content-end gap-2 mt-3">
-                                    <button type="submit" class="btn btn-success">Salvar Idioma e Quiz (Fim)</button>
+                                    <button type="submit" class="btn btn-warning">Salvar Idioma e Quiz (Fim)</button>
                             </div>
                         </form>
                     </div>

@@ -709,7 +709,6 @@ $database->closeConnection();
         <div class="container-fluid mt-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="h2"><i class="fas fa-users"></i> Gerenciar Usuários</h1>
-                <a href="gerenciar_caminho.php" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
             </div>
 
             <!-- Estatísticas Rápidas - MODIFICADO -->
