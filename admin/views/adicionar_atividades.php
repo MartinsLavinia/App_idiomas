@@ -21,73 +21,111 @@ if (!isset($_GET['unidade_id']) || !is_numeric($_GET['unidade_id'])) {
 $unidade_id = $_GET['unidade_id'];
 $mensagem = '';
 
-// BUSCA OS CAMINHOS E BLOCOS DISPONÍVEIS PARA ESTA UNIDADE
+// Instancia a conexão com o banco de dados
 $database = new Database();
 $conn = $database->conn;
 
-// Buscar informações da unidade
-$sql_unidade = "SELECT u.*, c.nome_caminho, c.nivel 
-                FROM unidades u 
-                LEFT JOIN caminhos_aprendizagem c ON u.id = c.id_unidade 
-                WHERE u.id = ?";
-$stmt_unidade = $conn->prepare($sql_unidade);
-$stmt_unidade->bind_param("i", $unidade_id);
-$stmt_unidade->execute();
-$unidade_info = $stmt_unidade->get_result()->fetch_assoc();
-$stmt_unidade->close();
+// --- Funções de Acesso a Dados (simulando um Model) ---
+function getUnidadeInfo($conn, $unidadeId) {
+    $sql = "SELECT u.*, c.nome_caminho, c.nivel 
+            FROM unidades u 
+            LEFT JOIN caminhos_aprendizagem c ON u.id = c.id_unidade 
+            WHERE u.id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $unidadeId);
+    $stmt->execute();
+    $result = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    return $result;
+}
 
-// BUSCA OS CAMINHOS RELACIONADOS A ESTA UNIDADE
-$sql_caminhos = "SELECT id, nome_caminho FROM caminhos_aprendizagem WHERE id_unidade = ?";
-$stmt_caminhos = $conn->prepare($sql_caminhos);
-$stmt_caminhos->bind_param("i", $unidade_id);
-$stmt_caminhos->execute();
-$caminhos = $stmt_caminhos->get_result()->fetch_all(MYSQLI_ASSOC);
-$stmt_caminhos->close();
+function getCaminhosByUnidade($conn, $unidadeId) {
+    $sql = "SELECT id, nome_caminho FROM caminhos_aprendizagem WHERE id_unidade = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $unidadeId);
+    $stmt->execute();
+    $result = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    return $result;
+}
 
-// BUSCAR TODOS OS BLOCOS DOS CAMINHOS DESTA UNIDADE PARA PRÉ-CARREGAMENTO
-$blocos_por_caminho = [];
-if (!empty($caminhos)) {
-    $caminho_ids = array_column($caminhos, 'id');
-    $placeholders = str_repeat('?,', count($caminho_ids) - 1) . '?';
+function getBlocosByCaminhos($conn, array $caminhoIds) {
+    if (empty($caminhoIds)) {
+        return [];
+    }
+    $placeholders = str_repeat('?,' , count($caminhoIds) - 1) . '?';
+    $sql = "SELECT id, caminho_id, nome_bloco, ordem 
+            FROM blocos 
+            WHERE caminho_id IN ($placeholders) 
+            ORDER BY caminho_id, ordem ASC";
+    $stmt = $conn->prepare($sql);
+    $types = str_repeat('i', count($caminhoIds));
+    $stmt->bind_param($types, ...$caminhoIds);
+    $stmt->execute();
+    $result = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
     
-    $sql_blocos = "SELECT id, caminho_id, nome_bloco, ordem 
-                   FROM blocos 
-                   WHERE caminho_id IN ($placeholders) 
-                   ORDER BY caminho_id, ordem ASC";
-    $stmt_blocos = $conn->prepare($sql_blocos);
-    
-    if ($stmt_blocos) {
-        $types = str_repeat('i', count($caminho_ids));
-        $stmt_blocos->bind_param($types, ...$caminho_ids);
-        $stmt_blocos->execute();
-        $result_blocos = $stmt_blocos->get_result();
-        
-        while ($bloco = $result_blocos->fetch_assoc()) {
-            $blocos_por_caminho[$bloco['caminho_id']][] = $bloco;
+    $blocosPorCaminho = [];
+    foreach ($result as $bloco) {
+        $blocosPorCaminho[$bloco["caminho_id"]][] = $bloco;
+    }
+    return $blocosPorCaminho;
+}
+
+function adicionarExercicio($conn, $caminhoId, $blocoId, $ordem, $tipo, $pergunta, $conteudo) {
+    $sql = "INSERT INTO exercicios (caminho_id, bloco_id, ordem, tipo, pergunta, conteudo) VALUES (?, ?, ?, ?, ?, ?)";
+    $stmt = $conn->prepare($sql);
+    if ($stmt) {
+        $stmt->bind_param("iiisss", $caminhoId, $blocoId, $ordem, $tipo, $pergunta, $conteudo);
+        if ($stmt->execute()) {
+            $stmt->close();
+            return true;
+        } else {
+            error_log("Erro ao adicionar exercício: " . $stmt->error);
+            $stmt->close();
+            return false;
         }
-        $stmt_blocos->close();
+    } else {
+        error_log("Erro na preparação da consulta: " . $conn->error);
+        return false;
     }
 }
 
-// LÓGICA DE PROCESSAMENTO DO FORMULÁRIO (se o método for POST)
+function getExercicioById($conn, $exercicioId) {
+    $sql = "SELECT * FROM exercicios WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $exercicioId);
+    $stmt->execute();
+    $result = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    return $result;
+}
+
+// --- Lógica de Processamento (simulando um Controller) ---
+
+// Buscar informações da unidade, caminhos e blocos
+$unidade_info = getUnidadeInfo($conn, $unidade_id);
+$caminhos = getCaminhosByUnidade($conn, $unidade_id);
+
+$blocos_por_caminho = [];
+if (!empty($caminhos)) {
+    $caminho_ids = array_column($caminhos, 'id');
+    $blocos_por_caminho = getBlocosByCaminhos($conn, $caminho_ids);
+}
+
+// Lógica para lidar com a submissão do formulário
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $caminho_id = $_POST['caminho_id'];
-    $bloco_id = $_POST['bloco_id'];
-    $ordem = $_POST['ordem'];
-    $tipo = $_POST['tipo'];
-    $pergunta = $_POST['pergunta'];
-    $tipo_exercicio = $_POST['tipo_exercicio'];
+    $caminho_id = $_POST["caminho_id"] ?? null;
+    $bloco_id = $_POST["bloco_id"] ?? null;
+    $ordem = $_POST["ordem"] ?? null;
+    $tipo = $_POST["tipo"] ?? null;
+    $pergunta = $_POST["pergunta"] ?? null;
+    $tipo_exercicio = $_POST["tipo_exercicio"] ?? null;
     $conteudo = null;
 
-    // Log para debug
-    error_log("POST recebido - Caminho ID: $caminho_id, Bloco ID: $bloco_id, Ordem: $ordem, Tipo: $tipo, Pergunta: $pergunta");
-
-    // Validação simples
     if (empty($caminho_id) || empty($bloco_id) || empty($ordem) || empty($pergunta)) {
         $mensagem = '<div class="alert alert-danger">Por favor, preencha todos os campos obrigatórios.</div>';
     } else {
-        // Constrói o conteúdo JSON com base no tipo de exercício
-        
         switch ($tipo) {
             case 'normal':
                 if ($tipo_exercicio === 'multipla_escolha') {
@@ -98,7 +136,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         foreach ($_POST['alt_texto'] as $index => $texto) {
                             if (!empty($texto)) {
                                 $alternativas[] = [
-                                    'id' => chr(97 + $index), // a, b, c, d...
+                                    'id' => chr(97 + $index),
                                     'texto' => $texto,
                                     'correta' => ($index == $_POST['alt_correta'])
                                 ];
@@ -180,37 +218,99 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 break;
         }
 
-        // Se não houve erros, insere os dados no banco
         if (empty($mensagem)) {
-            // Insere o novo exercício na tabela exercicios (agora vinculado à unidade)
-            $sql_insert = "INSERT INTO exercicios (unidade_id, caminho_id, bloco_id, ordem, tipo, pergunta, conteudo) VALUES (?, ?, ?, ?, ?, ?, ?)";
-            $stmt_insert = $conn->prepare($sql_insert);
-            
-            if ($stmt_insert) {
-                $stmt_insert->bind_param("iiiisss", $unidade_id, $caminho_id, $bloco_id, $ordem, $tipo, $pergunta, $conteudo);
-                
-                if ($stmt_insert->execute()) {
-                    $mensagem = '<div class="alert alert-success">Exercício adicionado com sucesso!</div>';
-                    // Limpar os campos do formulário após sucesso
-                    $_POST = array();
-                } else {
-                    $error_msg = $stmt_insert->error;
-                    $mensagem = '<div class="alert alert-danger">Erro ao adicionar exercício: ' . $error_msg . '</div>';
-                    error_log("Erro MySQL: " . $error_msg);
-                }
-                $stmt_insert->close();
+            if (adicionarExercicio($conn, $caminho_id, $bloco_id, $ordem, $tipo, $pergunta, $conteudo)) {
+                $mensagem = '<div class="alert alert-success">Exercício adicionado com sucesso!</div>';
+                $_POST = array(); // Limpar campos do formulário
             } else {
-                $error_msg = $conn->error;
-                $mensagem = '<div class="alert alert-danger">Erro na preparação da consulta: ' . $error_msg . '</div>';
-                error_log("Erro preparação: " . $error_msg);
+                $mensagem = '<div class="alert alert-danger">Erro ao adicionar exercício.</div>';
             }
-        } else {
-            error_log("Mensagem de erro presente: " . strip_tags($mensagem));
         }
     }
 }
 
+// --- Lógica de Correção de Áudio (para AJAX) ---
+if (isset($_GET['action']) && $_GET['action'] === 'corrigir_audio') {
+    header('Content-Type: application/json');
+    $data = json_decode(file_get_contents('php://input'), true);
+    $exercicioId = $data['exercicio_id'] ?? null;
+    $transcricaoUsuario = $data['transcricao'] ?? '';
+
+    if (!$exercicioId) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'ID do exercício não fornecido.']);
+        exit();
+    }
+
+    $exercicio = getExercicioById($conn, $exercicioId);
+
+    if (!$exercicio) {
+        http_response_code(404);
+        echo json_encode(['success' => false, 'message' => 'Exercício não encontrado.']);
+        exit();
+    }
+
+    $conteudo = json_decode($exercicio['conteudo'], true);
+    $fraseEsperada = $conteudo['resposta_correta'] ?? '';
+
+    // Normalização básica dos textos para comparação
+    $normalizeText = function($text) {
+        $text = strtolower($text);
+        $text = preg_replace('/[\p{P}\p{S}]/u', '', $text); // Remove pontuação e símbolos
+        $text = trim($text);
+        return $text;
+    };
+
+    $fraseEsperadaNormalizada = $normalizeText($fraseEsperada);
+    $transcricaoUsuarioNormalizada = $normalizeText($transcricaoUsuario);
+
+    // Cálculo da similaridade (usando similar_text)
+    $similaridade = 0;
+    similar_text($fraseEsperadaNormalizada, $transcricaoUsuarioNormalizada, $similaridade);
+
+    $acertou = $similaridade >= 80; // Define um limiar de 80% de similaridade
+
+    echo json_encode([
+        'success' => true,
+        'acertou' => $acertou,
+        'similaridade' => round($similaridade, 2),
+        'frase_correta' => $fraseEsperada
+    ]);
+    exit(); // Termina a execução após a resposta AJAX
+}
+
 $database->closeConnection();
+
+// --- Variáveis para pré-preencher o formulário em caso de erro ou sucesso ---
+$post_caminho_id = $_POST["caminho_id"] ?? '';
+$post_bloco_id = $_POST["bloco_id"] ?? '';
+$post_ordem = $_POST["ordem"] ?? '';
+$post_tipo = $_POST["tipo"] ?? "normal";
+$post_tipo_exercicio = $_POST["tipo_exercicio"] ?? "multipla_escolha";
+$post_pergunta = $_POST["pergunta"] ?? '';
+
+// Campos específicos para cada tipo de exercício
+$post_alt_texto = $_POST["alt_texto"] ?? [];
+$post_alt_correta = $_POST["alt_correta"] ?? null;
+$post_explicacao = $_POST["explicacao"] ?? '';
+$post_resposta_esperada = $_POST["resposta_esperada"] ?? '';
+$post_alternativas_aceitas = $_POST["alternativas_aceitas"] ?? '';
+$post_dica_texto = $_POST["dica_texto"] ?? '';
+$post_frase_completar = $_POST["frase_completar"] ?? '';
+$post_resposta_completar = $_POST["resposta_completar"] ?? '';
+$post_alternativas_completar = $_POST["alternativas_completar"] ?? '';
+$post_dica_completar = $_POST["dica_completar"] ?? '';
+$post_placeholder_completar = $_POST["placeholder_completar"] ?? 'Digite sua resposta...';
+$post_frase_esperada = $_POST["frase_esperada"] ?? '';
+$post_pronuncia_fonetica = $_POST["pronuncia_fonetica"] ?? '';
+$post_palavras_chave = $_POST["palavras_chave"] ?? '';
+$post_audio_url = $_POST["audio_url"] ?? '';
+$post_transcricao = $_POST["transcricao"] ?? '';
+$post_resposta_audio_correta = $_POST["resposta_audio_correta"] ?? '';
+$post_link_video = $_POST["link_video"] ?? '';
+$post_pergunta_extra = $_POST["pergunta_extra"] ?? '';
+$post_quiz_id = $_POST["quiz_id"] ?? '';
+
 ?>
 
 <!DOCTYPE html>
@@ -261,7 +361,7 @@ $database->closeConnection();
                             <option value="">-- Selecione um caminho --</option>
                             <?php foreach ($caminhos as $caminho): ?>
                                 <option value="<?php echo $caminho['id']; ?>" 
-                                    <?php echo (isset($_POST['caminho_id']) && $_POST['caminho_id'] == $caminho['id']) ? 'selected' : ''; ?>>
+                                    <?php echo ($post_caminho_id == $caminho['id']) ? "selected" : ""; ?>>
                                     <?php echo htmlspecialchars($caminho['nome_caminho']); ?>
                                 </option>
                             <?php endforeach; ?>
@@ -277,10 +377,10 @@ $database->closeConnection();
                     </div>
 
                     <!-- Se houver um caminho selecionado no POST, pré-carregar os blocos -->
-                    <?php if (isset($_POST['caminho_id']) && !empty($_POST['caminho_id'])): ?>
+                    <?php if (!empty($post_caminho_id)): ?>
                     <script>
                     document.addEventListener('DOMContentLoaded', function() {
-                        carregarBlocos(<?php echo $_POST['caminho_id']; ?>, <?php echo isset($_POST['bloco_id']) ? $_POST['bloco_id'] : 'null'; ?>);
+                        carregarBlocos(<?php echo $post_caminho_id; ?>, <?php echo !empty($post_bloco_id) ? $post_bloco_id : 'null'; ?>);
                     });
                     </script>
                     <?php endif; ?>
@@ -288,7 +388,7 @@ $database->closeConnection();
                     <!-- Campo Ordem -->
                     <div class="mb-3">
                         <label for="ordem" class="form-label">Ordem do Exercício no Bloco</label>
-                        <input type="number" class="form-control" id="ordem" name="ordem" value="<?php echo isset($_POST['ordem']) ? htmlspecialchars($_POST['ordem']) : ''; ?>" required>
+                        <input type="number" class="form-control" id="ordem" name="ordem" value="<?php echo htmlspecialchars($post_ordem); ?>" required>
                         <div class="form-text">Define a sequência em que este exercício aparecerá dentro do bloco selecionado</div>
                     </div>
 
@@ -296,9 +396,9 @@ $database->closeConnection();
                     <div class="mb-3">
                         <label for="tipo" class="form-label">Tipo de Exercício</label>
                         <select class="form-select" id="tipo" name="tipo" required>
-                            <option value="normal" <?php echo (isset($_POST['tipo']) && $_POST['tipo'] == 'normal') ? 'selected' : ''; ?>>Normal</option>
-                            <option value="especial" <?php echo (isset($_POST['tipo']) && $_POST['tipo'] == 'especial') ? 'selected' : ''; ?>>Especial (Vídeo/Áudio)</option>
-                            <option value="quiz" <?php echo (isset($_POST['tipo']) && $_POST['tipo'] == 'quiz') ? 'selected' : ''; ?>>Quiz</option>
+                            <option value="normal" <?php echo ($post_tipo == "normal") ? "selected" : ""; ?>>Normal</option>
+                            <option value="especial" <?php echo ($post_tipo == "especial") ? "selected" : ""; ?>>Especial (Vídeo/Áudio)</option>
+                            <option value="quiz" <?php echo ($post_tipo == "quiz") ? "selected" : ""; ?>>Quiz</option>
                         </select>
                     </div>
                     
@@ -306,18 +406,18 @@ $database->closeConnection();
                     <div class="mb-3">
                         <label for="tipo_exercicio" class="form-label">Subtipo do Exercício</label>
                         <select class="form-select" id="tipo_exercicio" name="tipo_exercicio" required>
-                            <option value="multipla_escolha" <?php echo (isset($_POST['tipo_exercicio']) && $_POST['tipo_exercicio'] == 'multipla_escolha') ? 'selected' : ''; ?>>Múltipla Escolha</option>
-                            <option value="texto_livre" <?php echo (isset($_POST['tipo_exercicio']) && $_POST['tipo_exercicio'] == 'texto_livre') ? 'selected' : ''; ?>>Texto Livre (Completar)</option>
-                            <option value="completar" <?php echo (isset($_POST['tipo_exercicio']) && $_POST['tipo_exercicio'] == 'completar') ? 'selected' : ''; ?>>Completar Frase</option>
-                            <option value="fala" <?php echo (isset($_POST['tipo_exercicio']) && $_POST['tipo_exercicio'] == 'fala') ? 'selected' : ''; ?>>Exercício de Fala</option>
-                            <option value="audicao" <?php echo (isset($_POST['tipo_exercicio']) && $_POST['tipo_exercicio'] == 'audicao') ? 'selected' : ''; ?>>Exercício de Audição</option>
+                            <option value="multipla_escolha" <?php echo ($post_tipo_exercicio == "multipla_escolha") ? "selected" : ""; ?>>Múltipla Escolha</option>
+                            <option value="texto_livre" <?php echo ($post_tipo_exercicio == "texto_livre") ? "selected" : ""; ?>>Texto Livre (Completar)</option>
+                            <option value="completar" <?php echo ($post_tipo_exercicio == "completar") ? "selected" : ""; ?>>Completar Frase</option>
+                            <option value="fala" <?php echo ($post_tipo_exercicio == "fala") ? "selected" : ""; ?>>Exercício de Fala</option>
+                            <option value="audicao" <?php echo ($post_tipo_exercicio == "audicao") ? "selected" : ""; ?>>Exercício de Audição</option>
                         </select>
                     </div>
 
                     <!-- Campo Pergunta -->
                     <div class="mb-3">
                         <label for="pergunta" class="form-label">Pergunta</label>
-                        <textarea class="form-control" id="pergunta" name="pergunta" required><?php echo isset($_POST['pergunta']) ? htmlspecialchars($_POST['pergunta']) : ''; ?></textarea>
+                        <textarea class="form-control" id="pergunta" name="pergunta" required><?php echo htmlspecialchars($post_pergunta); ?></textarea>
                     </div>
 
                     <!-- Campos Dinâmicos -->
@@ -330,204 +430,195 @@ $database->closeConnection();
                                     <label class="form-label">Alternativas</label>
                                     <div id="alternativas-container">
                                         <?php
-                                        // Se houve POST, tentar preencher as alternativas
-                                        if (isset($_POST['alt_texto']) && is_array($_POST['alt_texto'])) {
-                                            foreach ($_POST['alt_texto'] as $index => $texto) {
+                                        if (!empty($post_alt_texto)) {
+                                            foreach ($post_alt_texto as $index => $texto) {
                                                 $letra = chr(65 + $index);
-                                                $checked = (isset($_POST['alt_correta']) && $_POST['alt_correta'] == $index) ? 'checked' : '';
-                                                echo '<div class="input-group mb-2">';
-                                                echo '<span class="input-group-text">' . $letra . '</span>';
-                                                echo '<input type="text" class="form-control" name="alt_texto[]" placeholder="Texto da alternativa" value="' . htmlspecialchars($texto) . '">';
-                                                echo '<div class="input-group-text">';
-                                                echo '<input type="radio" name="alt_correta" value="' . $index . '" ' . $checked . ' title="Marcar como correta">';
-                                                echo '</div>';
-                                                echo '<button type="button" class="btn btn-outline-danger" onclick="this.parentElement.remove()">×</button>';
-                                                echo '</div>';
+                                                echo "
+                                                <div class=\"input-group mb-2\">
+                                                    <span class=\"input-group-text\">{$letra}</span>
+                                                    <input type=\"text\" class=\"form-control\" name=\"alt_texto[]\" placeholder=\"Texto da alternativa\" value=\"" . htmlspecialchars($texto) . "\">
+                                                    <div class=\"input-group-text\">
+                                                        <input type=\"radio\" name=\"alt_correta\" value=\"{$index}\" " . (($post_alt_correta == $index) ? "checked" : "") . " title=\"Marcar como correta\">
+                                                    </div>
+                                                    <button type=\"button\" class=\"btn btn-outline-danger\" onclick=\"this.parentElement.remove()\">×</button>
+                                                </div>";
                                             }
                                         } else {
-                                            // Padrão: duas alternativas
-                                            echo '<div class="input-group mb-2">';
-                                            echo '<span class="input-group-text">A</span>';
-                                            echo '<input type="text" class="form-control" name="alt_texto[]" placeholder="Texto da alternativa">';
-                                            echo '<div class="input-group-text">';
-                                            echo '<input type="radio" name="alt_correta" value="0" title="Marcar como correta">';
-                                            echo '</div>';
-                                            echo '</div>';
-                                            echo '<div class="input-group mb-2">';
-                                            echo '<span class="input-group-text">B</span>';
-                                            echo '<input type="text" class="form-control" name="alt_texto[]" placeholder="Texto da alternativa">';
-                                            echo '<div class="input-group-text">';
-                                            echo '<input type="radio" name="alt_correta" value="1" title="Marcar como correta">';
-                                            echo '</div>';
-                                            echo '</div>';
+                                            // Adiciona uma alternativa vazia por padrão se não houver POST
+                                            echo "
+                                            <div class=\"input-group mb-2\">
+                                                <span class=\"input-group-text\">A</span>
+                                                <input type=\"text\" class=\"form-control\" name=\"alt_texto[]\" placeholder=\"Texto da alternativa\">
+                                                <div class=\"input-group-text\">
+                                                    <input type=\"radio\" name=\"alt_correta\" value=\"0\" title=\"Marcar como correta\">
+                                                </div>
+                                                <button type=\"button\" class=\"btn btn-outline-danger\" onclick=\"this.parentElement.remove()\">×</button>
+                                            </div>";
                                         }
                                         ?>
                                     </div>
-                                    <button type="button" class="btn btn-sm btn-secondary" onclick="adicionarAlternativa()">+ Adicionar Alternativa</button>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="adicionarAlternativa()">Adicionar Alternativa</button>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="explicacao" class="form-label">Explicação</label>
-                                    <textarea class="form-control" id="explicacao" name="explicacao" placeholder="Explicação da resposta correta"><?php echo isset($_POST['explicacao']) ? htmlspecialchars($_POST['explicacao']) : ''; ?></textarea>
-                                    <div class="form-text">Esta explicação aparecerá para o usuário após ele responder o exercício</div>
+                                    <label for="explicacao" class="form-label">Explicação (Opcional)</label>
+                                    <textarea class="form-control" id="explicacao" name="explicacao" rows="2"><?php echo htmlspecialchars($post_explicacao); ?></textarea>
                                 </div>
                             </div>
-                            
+
                             <!-- Campos para Texto Livre -->
-                            <div id="campos-texto" class="subtipo-campos" style="display: none;">
+                            <div id="campos-texto" class="subtipo-campos">
                                 <h5>Configuração - Texto Livre</h5>
                                 <div class="mb-3">
-                                    <label for="resposta_esperada" class="form-label">Resposta Esperada</label>
-                                    <input type="text" class="form-control" id="resposta_esperada" name="resposta_esperada" placeholder="Resposta principal" value="<?php echo isset($_POST['resposta_esperada']) ? htmlspecialchars($_POST['resposta_esperada']) : ''; ?>">
+                                    <label for="resposta_esperada" class="form-label">Resposta Esperada *</label>
+                                    <input type="text" class="form-control" id="resposta_esperada" name="resposta_esperada" value="<?php echo htmlspecialchars($post_resposta_esperada); ?>">
                                 </div>
                                 <div class="mb-3">
                                     <label for="alternativas_aceitas" class="form-label">Alternativas Aceitas (separadas por vírgula)</label>
-                                    <input type="text" class="form-control" id="alternativas_aceitas" name="alternativas_aceitas" placeholder="is, é, am" value="<?php echo isset($_POST['alternativas_aceitas']) ? htmlspecialchars($_POST['alternativas_aceitas']) : ''; ?>">
+                                    <input type="text" class="form-control" id="alternativas_aceitas" name="alternativas_aceitas" value="<?php echo htmlspecialchars($post_alternativas_aceitas); ?>">
+                                    <div class="form-text">Ex: resposta um, resposta dois. Inclua a resposta esperada aqui também.</div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="dica_texto" class="form-label">Dica</label>
-                                    <textarea class="form-control" id="dica_texto" name="dica_texto" placeholder="Dica para ajudar o usuário"><?php echo isset($_POST['dica_texto']) ? htmlspecialchars($_POST['dica_texto']) : ''; ?></textarea>
+                                    <label for="dica_texto" class="form-label">Dica (Opcional)</label>
+                                    <input type="text" class="form-control" id="dica_texto" name="dica_texto" value="<?php echo htmlspecialchars($post_dica_texto); ?>">
                                 </div>
                             </div>
-                            
-                            <!-- Campos para Completar -->
-                            <div id="campos-completar" class="subtipo-campos" style="display: none;">
+
+                            <!-- Campos para Completar Frase -->
+                            <div id="campos-completar" class="subtipo-campos">
                                 <h5>Configuração - Completar Frase</h5>
                                 <div class="mb-3">
-                                    <label for="frase_completar" class="form-label">Frase para Completar</label>
-                                    <input type="text" class="form-control" id="frase_completar" name="frase_completar" placeholder="I _____ a student. (use _____ para indicar onde completar)" value="<?php echo isset($_POST['frase_completar']) ? htmlspecialchars($_POST['frase_completar']) : ''; ?>">
-                                    <div class="form-text">Use _____ para indicar onde o usuário deve completar</div>
+                                    <label for="frase_completar" class="form-label">Frase para Completar *</label>
+                                    <textarea class="form-control" id="frase_completar" name="frase_completar" rows="2"><?php echo htmlspecialchars($post_frase_completar); ?></textarea>
+                                    <div class="form-text">Use <code>___</code> para indicar o espaço a ser preenchido. Ex: "Eu gosto de ___ maçãs."</div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="resposta_completar" class="form-label">Resposta Correta</label>
-                                    <input type="text" class="form-control" id="resposta_completar" name="resposta_completar" placeholder="am" value="<?php echo isset($_POST['resposta_completar']) ? htmlspecialchars($_POST['resposta_completar']) : ''; ?>">
+                                    <label for="resposta_completar" class="form-label">Resposta Correta *</label>
+                                    <input type="text" class="form-control" id="resposta_completar" name="resposta_completar" value="<?php echo htmlspecialchars($post_resposta_completar); ?>">
                                 </div>
                                 <div class="mb-3">
                                     <label for="alternativas_completar" class="form-label">Alternativas Aceitas (separadas por vírgula)</label>
-                                    <input type="text" class="form-control" id="alternativas_completar" name="alternativas_completar" placeholder="am, 'm" value="<?php echo isset($_POST['alternativas_completar']) ? htmlspecialchars($_POST['alternativas_completar']) : ''; ?>">
-                                    <div class="form-text">Outras formas aceitas da resposta</div>
+                                    <input type="text" class="form-control" id="alternativas_completar" name="alternativas_completar" value="<?php echo htmlspecialchars($post_alternativas_completar); ?>">
+                                    <div class="form-text">Ex: resposta um, resposta dois. Inclua a resposta correta aqui também.</div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="placeholder_completar" class="form-label">Placeholder do Campo</label>
-                                    <input type="text" class="form-control" id="placeholder_completar" name="placeholder_completar" placeholder="Digite sua resposta..." value="<?php echo isset($_POST['placeholder_completar']) ? htmlspecialchars($_POST['placeholder_completar']) : 'Digite sua resposta...'; ?>">
+                                    <label for="dica_completar" class="form-label">Dica (Opcional)</label>
+                                    <input type="text" class="form-control" id="dica_completar" name="dica_completar" value="<?php echo htmlspecialchars($post_dica_completar); ?>">
                                 </div>
                                 <div class="mb-3">
-                                    <label for="dica_completar" class="form-label">Dica</label>
-                                    <textarea class="form-control" id="dica_completar" name="dica_completar" placeholder="Dica para ajudar o usuário"><?php echo isset($_POST['dica_completar']) ? htmlspecialchars($_POST['dica_completar']) : ''; ?></textarea>
+                                    <label for="placeholder_completar" class="form-label">Placeholder do Campo (Opcional)</label>
+                                    <input type="text" class="form-control" id="placeholder_completar" name="placeholder_completar" value="<?php echo htmlspecialchars($post_placeholder_completar); ?>">
                                 </div>
                             </div>
-                            
-                            <!-- Campos para Fala -->
-                            <div id="campos-fala" class="subtipo-campos" style="display: none;">
+
+                            <!-- Campos para Exercício de Fala -->
+                            <div id="campos-fala" class="subtipo-campos">
                                 <h5>Configuração - Exercício de Fala</h5>
                                 <div class="mb-3">
-                                    <label for="frase_esperada" class="form-label">Frase para Pronunciar</label>
-                                    <input type="text" class="form-control" id="frase_esperada" name="frase_esperada" placeholder="Hello, my name is John" value="<?php echo isset($_POST['frase_esperada']) ? htmlspecialchars($_POST['frase_esperada']) : ''; ?>">
+                                    <label for="frase_esperada" class="form-label">Frase Esperada para Fala *</label>
+                                    <textarea class="form-control" id="frase_esperada" name="frase_esperada" rows="2"><?php echo htmlspecialchars($post_frase_esperada); ?></textarea>
+                                    <div class="form-text">A frase que o usuário deve falar.</div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="pronuncia_fonetica" class="form-label">Pronúncia Fonética (opcional)</label>
-                                    <input type="text" class="form-control" id="pronuncia_fonetica" name="pronuncia_fonetica" placeholder="/həˈloʊ maɪ neɪm ɪz ʤɑn/" value="<?php echo isset($_POST['pronuncia_fonetica']) ? htmlspecialchars($_POST['pronuncia_fonetica']) : ''; ?>">
+                                    <label for="pronuncia_fonetica" class="form-label">Pronúncia Fonética (Opcional)</label>
+                                    <input type="text" class="form-control" id="pronuncia_fonetica" name="pronuncia_fonetica" value="<?php echo htmlspecialchars($post_pronuncia_fonetica); ?>">
+                                    <div class="form-text">Para ajudar na avaliação da pronúncia.</div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="palavras_chave" class="form-label">Palavras-chave (separadas por vírgula)</label>
-                                    <input type="text" class="form-control" id="palavras_chave" name="palavras_chave" placeholder="hello, name, john" value="<?php echo isset($_POST['palavras_chave']) ? htmlspecialchars($_POST['palavras_chave']) : ''; ?>">
+                                    <label for="palavras_chave" class="form-label">Palavras-chave (separadas por vírgula, opcional)</label>
+                                    <input type="text" class="form-control" id="palavras_chave" name="palavras_chave" value="<?php echo htmlspecialchars($post_palavras_chave); ?>">
+                                    <div class="form-text">Palavras importantes para a correção.</div>
                                 </div>
                             </div>
-                            
-                            <!-- Campos para Audição -->
-                            <div id="campos-audicao" class="subtipo-campos" style="display: none;">
+
+                            <!-- Campos para Exercício de Audição -->
+                            <div id="campos-audicao" class="subtipo-campos">
                                 <h5>Configuração - Exercício de Audição</h5>
                                 <div class="mb-3">
-                                    <label for="audio_url" class="form-label">URL do Áudio</label>
-                                    <input type="url" class="form-control" id="audio_url" name="audio_url" placeholder="https://exemplo.com/audio.mp3" value="<?php echo isset($_POST['audio_url']) ? htmlspecialchars($_POST['audio_url']) : ''; ?>">
-                                    <div class="form-text">Cole aqui o link do arquivo de áudio (MP3, WAV, etc.)</div>
+                                    <label for="audio_url" class="form-label">URL do Áudio *</label>
+                                    <input type="url" class="form-control" id="audio_url" name="audio_url" value="<?php echo htmlspecialchars($post_audio_url); ?>">
+                                    <div class="form-text">Link para o arquivo de áudio (MP3, WAV, etc.).</div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="transcricao" class="form-label">Transcrição do Áudio</label>
-                                    <textarea class="form-control" id="transcricao" name="transcricao" rows="3" placeholder="Texto que é falado no áudio"><?php echo isset($_POST['transcricao']) ? htmlspecialchars($_POST['transcricao']) : ''; ?></textarea>
-                                    <div class="form-text">Digite exatamente o que é dito no áudio</div>
+                                    <label for="transcricao" class="form-label">Transcrição do Áudio (Opcional)</label>
+                                    <textarea class="form-control" id="transcricao" name="transcricao" rows="2"><?php echo htmlspecialchars($post_transcricao); ?></textarea>
+                                    <div class="form-text">Texto do áudio para referência.</div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="pergunta_audio" class="form-label">Pergunta sobre o Áudio</label>
-                                    <input type="text" class="form-control" id="pergunta_audio" name="pergunta_audio" placeholder="O que a pessoa disse?" value="<?php echo isset($_POST['pergunta_audio']) ? htmlspecialchars($_POST['pergunta_audio']) : ''; ?>">
+                                    <label for="resposta_audio_correta" class="form-label">Resposta Correta *</label>
+                                    <input type="text" class="form-control" id="resposta_audio_correta" name="resposta_audio_correta" value="<?php echo htmlspecialchars($post_resposta_audio_correta); ?>">
+                                    <div class="form-text">A resposta esperada do usuário após ouvir o áudio.</div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="resposta_audio_correta" class="form-label">Resposta Correta</label>
-                                    <input type="text" class="form-control" id="resposta_audio_correta" name="resposta_audio_correta" placeholder="Resposta esperada do usuário" value="<?php echo isset($_POST['resposta_audio_correta']) ? htmlspecialchars($_POST['resposta_audio_correta']) : ''; ?>">
+                                    <label for="exercicio_id_audicao" class="form-label">ID do Exercício (para correção)</label>
+                                    <input type="number" class="form-control" id="exercicio_id_audicao" name="exercicio_id_audicao" placeholder="Preenchido após salvar o exercício">
+                                    <button type="button" class="btn btn-info mt-2" onclick="testarCorrecaoAudio()">Testar Correção de Áudio</button>
+                                    <div id="resultado_correcao_audio" class="mt-2"></div>
                                 </div>
                             </div>
                         </div>
 
-                        <div id="campos-especial" style="display: none;">
+                        <!-- Campos para Tipo Especial -->
+                        <div id="campos-especial" class="subtipo-campos">
+                            <h5>Configuração - Exercício Especial (Vídeo/Áudio)</h5>
                             <div class="mb-3">
-                                <label for="link_video" class="form-label">Link do Vídeo/Áudio</label>
-                                <input type="text" class="form-control" id="link_video" name="link_video" value="<?php echo isset($_POST['link_video']) ? htmlspecialchars($_POST['link_video']) : ''; ?>">
+                                <label for="link_video" class="form-label">Link do Vídeo/Áudio (YouTube, Vimeo, etc.) *</label>
+                                <input type="url" class="form-control" id="link_video" name="link_video" value="<?php echo htmlspecialchars($post_link_video); ?>">
                             </div>
                             <div class="mb-3">
-                                <label for="pergunta_extra" class="form-label">Pergunta Extra</label>
-                                <textarea class="form-control" id="pergunta_extra" name="pergunta_extra"><?php echo isset($_POST['pergunta_extra']) ? htmlspecialchars($_POST['pergunta_extra']) : ''; ?></textarea>
+                                <label for="pergunta_extra" class="form-label">Pergunta Extra *</label>
+                                <textarea class="form-control" id="pergunta_extra" name="pergunta_extra" rows="3"><?php echo htmlspecialchars($post_pergunta_extra); ?></textarea>
                             </div>
                         </div>
 
-                        <div id="campos-quiz" style="display: none;">
+                        <!-- Campos para Tipo Quiz -->
+                        <div id="campos-quiz" class="subtipo-campos">
+                            <h5>Configuração - Quiz</h5>
                             <div class="mb-3">
-                                <label for="quiz_id" class="form-label">ID do Quiz</label>
-                                <input type="number" class="form-control" id="quiz_id" name="quiz_id" value="<?php echo isset($_POST['quiz_id']) ? htmlspecialchars($_POST['quiz_id']) : ''; ?>">
+                                <label for="quiz_id" class="form-label">ID do Quiz *</label>
+                                <input type="number" class="form-control" id="quiz_id" name="quiz_id" value="<?php echo htmlspecialchars($post_quiz_id); ?>">
+                                <div class="form-text">Insira o ID do quiz existente.</div>
                             </div>
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-success">Salvar Exercício</button>
+                    <button type="submit" class="btn btn-primary mt-3">Adicionar Exercício</button>
                 </form>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-    // Dados pré-carregados dos blocos
-    const blocosPreCarregados = <?php echo json_encode($blocos_por_caminho); ?>;
+    const blocosPorCaminho = <?php echo json_encode($blocos_por_caminho, JSON_UNESCAPED_UNICODE); ?>;
 
     function carregarBlocos(caminhoId, blocoSelecionado = null) {
-        if (!caminhoId) {
-            document.getElementById('bloco_id').innerHTML = '<option value="">-- Primeiro selecione um caminho --</option>';
-            return;
-        }
-        
-        const selectBloco = document.getElementById('bloco_id');
-        
-        // Primeiro tenta usar os dados pré-carregados
-        if (blocosPreCarregados[caminhoId]) {
-            preencherSelectBlocos(blocosPreCarregados[caminhoId], blocoSelecionado);
-            return;
-        }
-        
-        // Se não tiver pré-carregado, faz requisição AJAX
-        fetch(`get_blocos_admin.php?caminho_id=${caminhoId}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Erro na requisição: ' + response.status);
+        const selectBloco = document.getElementById("bloco_id");
+        selectBloco.innerHTML = '<option value="">-- Selecione um bloco --</option>'; // Limpa as opções anteriores
+
+        const blocos = blocosPorCaminho[caminhoId] || [];
+
+        if (blocos.length > 0) {
+            blocos.forEach(bloco => {
+                const option = document.createElement("option");
+                option.value = bloco.id;
+                option.textContent = `Bloco ${bloco.ordem}: ${bloco.nome_bloco}`;
+                
+                if (blocoSelecionado && bloco.id == blocoSelecionado) {
+                    option.selected = true;
                 }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success && data.blocos.length > 0) {
-                    preencherSelectBlocos(data.blocos, blocoSelecionado);
-                } else {
-                    selectBloco.innerHTML = '<option value="">-- Nenhum bloco encontrado --</option>';
-                }
-            })
-            .catch(error => {
-                console.error('Erro ao carregar blocos:', error);
-                selectBloco.innerHTML = '<option value="">-- Erro ao carregar blocos --</option>';
+                
+                selectBloco.appendChild(option);
             });
+        } else {
+            selectBloco.innerHTML = '<option value="">-- Nenhum bloco encontrado --</option>';
+        }
     }
     
     function preencherSelectBlocos(blocos, blocoSelecionado = null) {
-        const selectBloco = document.getElementById('bloco_id');
+        const selectBloco = document.getElementById("bloco_id");
         selectBloco.innerHTML = '<option value="">-- Selecione um bloco --</option>';
         
         blocos.forEach(bloco => {
-            const option = document.createElement('option');
+            const option = document.createElement("option");
             option.value = bloco.id;
             option.textContent = `Bloco ${bloco.ordem}: ${bloco.nome_bloco}`;
             
@@ -539,65 +630,71 @@ $database->closeConnection();
         });
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const tipoSelect = document.getElementById('tipo');
-        const tipoExercicioSelect = document.getElementById('tipo_exercicio');
-        const camposNormal = document.getElementById('campos-normal');
-        const camposEspecial = document.getElementById('campos-especial');
-        const camposQuiz = document.getElementById('campos-quiz');
+    document.addEventListener("DOMContentLoaded", function() {
+        const tipoSelect = document.getElementById("tipo");
+        const tipoExercicioSelect = document.getElementById("tipo_exercicio");
+        const camposNormal = document.getElementById("campos-normal");
+        const camposEspecial = document.getElementById("campos-especial");
+        const camposQuiz = document.getElementById("campos-quiz");
         
-        const camposMultipla = document.getElementById('campos-multipla');
-        const camposTexto = document.getElementById('campos-texto');
-        const camposCompletar = document.getElementById('campos-completar');
-        const camposFala = document.getElementById('campos-fala');
-        const camposAudicao = document.getElementById('campos-audicao');
+        const camposMultipla = document.getElementById("campos-multipla");
+        const camposTexto = document.getElementById("campos-texto");
+        const camposCompletar = document.getElementById("campos-completar");
+        const camposFala = document.getElementById("campos-fala");
+        const camposAudicao = document.getElementById("campos-audicao");
 
         function atualizarCampos() {
             // Esconder todos os campos principais
-            camposNormal.style.display = 'none';
-            camposEspecial.style.display = 'none';
-            camposQuiz.style.display = 'none';
+            camposNormal.style.display = "none";
+            camposEspecial.style.display = "none";
+            camposQuiz.style.display = "none";
             
             // Esconder todos os subcampos
-            camposMultipla.style.display = 'none';
-            camposTexto.style.display = 'none';
-            camposCompletar.style.display = 'none';
-            camposFala.style.display = 'none';
-            camposAudicao.style.display = 'none';
+            camposMultipla.style.display = "none";
+            camposTexto.style.display = "none";
+            camposCompletar.style.display = "none";
+            camposFala.style.display = "none";
+            camposAudicao.style.display = "none";
 
-            if (tipoSelect.value === 'normal') {
-                camposNormal.style.display = 'block';
+            if (tipoSelect.value === "normal") {
+                camposNormal.style.display = "block";
                 
                 // Mostrar subcampo baseado no tipo de exercício
                 switch (tipoExercicioSelect.value) {
-                    case 'multipla_escolha':
-                        camposMultipla.style.display = 'block';
+                    case "multipla_escolha":
+                        camposMultipla.style.display = "block";
                         break;
-                    case 'texto_livre':
-                        camposTexto.style.display = 'block';
+                    case "texto_livre":
+                        camposTexto.style.display = "block";
                         break;
-                    case 'completar':
-                        camposCompletar.style.display = 'block';
+                    case "completar":
+                        camposCompletar.style.display = "block";
                         break;
-                    case 'fala':
-                        camposFala.style.display = 'block';
+                    case "fala":
+                        camposFala.style.display = "block";
                         break;
-                    case 'audicao':
-                        camposAudicao.style.display = 'block';
+                    case "audicao":
+                        camposAudicao.style.display = "block";
                         break;
                 }
-            } else if (tipoSelect.value === 'especial') {
-                camposEspecial.style.display = 'block';
-            } else if (tipoSelect.value === 'quiz') {
-                camposQuiz.style.display = 'block';
+            } else if (tipoSelect.value === "especial") {
+                camposEspecial.style.display = "block";
+            } else if (tipoSelect.value === "quiz") {
+                camposQuiz.style.display = "block";
             }
         }
 
-        tipoSelect.addEventListener('change', atualizarCampos);
-        tipoExercicioSelect.addEventListener('change', atualizarCampos);
+        tipoSelect.addEventListener("change", atualizarCampos);
+        tipoExercicioSelect.addEventListener("change", atualizarCampos);
         
         // Inicializar
         atualizarCampos();
+
+        // Carregar blocos se um caminho já estiver selecionado (útil após POST com erro)
+        const initialCaminhoId = document.getElementById('caminho_id').value;
+        if (initialCaminhoId) {
+            carregarBlocos(initialCaminhoId, <?php echo !empty($post_bloco_id) ? $post_bloco_id : 'null'; ?>);
+        }
     });
     
     function adicionarAlternativa() {
@@ -615,6 +712,62 @@ $database->closeConnection();
             <button type="button" class="btn btn-outline-danger" onclick="this.parentElement.remove()">×</button>
         `;
         container.appendChild(novaAlternativa);
+    }
+
+    async function testarCorrecaoAudio() {
+        const exercicioId = document.getElementById("exercicio_id_audicao").value;
+        const transcricaoUsuario = prompt("Digite a transcrição do áudio para testar a correção:");
+        const resultadoDiv = document.getElementById("resultado_correcao_audio");
+
+        if (!exercicioId || !transcricaoUsuario) {
+            resultadoDiv.innerHTML = '';
+            resultadoDiv.classList.remove("alert-success", "alert-danger");
+            resultadoDiv.classList.add("alert", "alert-warning");
+            resultadoDiv.textContent = "Por favor, insira o ID do exercício e a transcrição para testar.";
+            return;
+        }
+
+        resultadoDiv.innerHTML = '';
+        resultadoDiv.classList.remove("alert-success", "alert-danger", "alert-warning");
+        resultadoDiv.classList.add("alert", "alert-info");
+        resultadoDiv.textContent = "Testando correção...";
+
+        try {
+            // A requisição AJAX agora aponta para o próprio arquivo, com uma action específica
+            const response = await fetch(`adicionar_atividades.php?unidade_id=${<?php echo $unidade_id; ?>}&action=corrigir_audio`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    exercicio_id: exercicioId,
+                    transcricao: transcricaoUsuario
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                if (data.acertou) {
+                    resultadoDiv.classList.remove("alert-info", "alert-warning");
+                    resultadoDiv.classList.add("alert-success");
+                    resultadoDiv.innerHTML = `✅ Correto! Similaridade: ${data.similaridade}%<br>Frase esperada: ${data.frase_correta}`;
+                } else {
+                    resultadoDiv.classList.remove("alert-info", "alert-warning");
+                    resultadoDiv.classList.add("alert-danger");
+                    resultadoDiv.innerHTML = `❌ Incorreto. Similaridade: ${data.similaridade}%<br>Frase esperada: ${data.frase_correta}`;
+                }
+            } else {
+                resultadoDiv.classList.remove("alert-info", "alert-success");
+                resultadoDiv.classList.add("alert-danger");
+                resultadoDiv.textContent = `Erro: ${data.message}`;
+            }
+        } catch (error) {
+            console.error("Erro ao testar correção de áudio:", error);
+            resultadoDiv.classList.remove("alert-info", "alert-success");
+            resultadoDiv.classList.add("alert-danger");
+            resultadoDiv.textContent = "Erro ao conectar com o servidor de correção.";
+        }
     }
     </script>
 </body>
