@@ -480,7 +480,7 @@ $database->closeConnection();
             <i class="fas fa-plus-circle"></i> Adicionar Caminho
         </a>
         
-        <a href="pagina_adicionar_idiomas.php" class="list-group-item" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
+        <a href="pagina_adicionar_idiomas.php" class="list-group-item" >
             <i class="fas fa-globe"></i> Gerenciar Idiomas
         </a>
         <a href="gerenciar_teorias.php" class="list-group-item active">
