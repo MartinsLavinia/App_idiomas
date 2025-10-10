@@ -31,10 +31,13 @@ CREATE TABLE `exercicios` (
   `conteudo` json DEFAULT NULL,
   `categoria` enum('gramatica','fala','escrita','leitura','audicao') DEFAULT 'gramatica',
   `dificuldade` enum('facil','medio','dificil') DEFAULT 'medio',
+  `bloco_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `caminho_id` (`caminho_id`),
-  CONSTRAINT `exercicios_ibfk_1` FOREIGN KEY (`caminho_id`) REFERENCES `caminhos_aprendizagem` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `fk_exercicios_bloco` (`bloco_id`),
+  CONSTRAINT `exercicios_ibfk_1` FOREIGN KEY (`caminho_id`) REFERENCES `caminhos_aprendizagem` (`id`),
+  CONSTRAINT `fk_exercicios_bloco` FOREIGN KEY (`bloco_id`) REFERENCES `blocos` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -43,7 +46,7 @@ CREATE TABLE `exercicios` (
 
 LOCK TABLES `exercicios` WRITE;
 /*!40000 ALTER TABLE `exercicios` DISABLE KEYS */;
-INSERT INTO `exercicios` VALUES (3,11,1,'normal','What do you need to travel to another country?','{\"explicacao\": \"A passport is an official document you need to enter another country. A bike, television, or book are not necessary for travel.\", \"alternativas\": [{\"id\": \"a\", \"texto\": \"A passport\", \"correta\": true}, {\"id\": \"b\", \"texto\": \"A bike\", \"correta\": false}, {\"id\": \"c\", \"texto\": \"A television\", \"correta\": false}, {\"id\": \"d\", \"texto\": \"A book\", \"correta\": false}]}','gramatica','medio');
+INSERT INTO `exercicios` VALUES (3,11,1,'normal','What do you need to travel to another country?','{\"explicacao\": \"A passport is an official document you need to enter another country. A bike, television, or book are not necessary for travel.\", \"alternativas\": [{\"id\": \"a\", \"texto\": \"A passport\", \"correta\": true}, {\"id\": \"b\", \"texto\": \"A bike\", \"correta\": false}, {\"id\": \"c\", \"texto\": \"A television\", \"correta\": false}, {\"id\": \"d\", \"texto\": \"A book\", \"correta\": false}]}','gramatica','medio',NULL);
 /*!40000 ALTER TABLE `exercicios` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -56,4 +59,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-09-29 15:10:04
+-- Dump completed on 2025-10-06 16:12:32

@@ -45,8 +45,7 @@ try {
                 e.tipo,
                 e.pergunta,
                 e.conteudo,
-                e.tipo_exercicio,
-                e.unidade_id,
+
                 e.caminho_id,
                 e.bloco_id
             FROM exercicios e
@@ -64,8 +63,7 @@ try {
                 e.tipo,
                 e.pergunta,
                 e.conteudo,
-                e.tipo_exercicio,
-                e.unidade_id,
+
                 e.caminho_id,
                 e.bloco_id
             FROM exercicios e
@@ -80,15 +78,20 @@ try {
     $result = $stmt->get_result();
     
     while ($row = $result->fetch_assoc()) {
-        // Processar o conteúdo se for JSON string
         if ($row['conteudo'] && is_string($row['conteudo']) && $row['conteudo'][0] === '{') {
             try {
                 $conteudo_decodificado = json_decode($row['conteudo'], true);
                 if (json_last_error() === JSON_ERROR_NONE) {
-                    $row['conteudo'] = $conteudo_decocificado;
+                    if (isset($conteudo_decodificado['alternativas'])) {
+                        $row['tipo_exercicio'] = 'multipla_escolha';
+                    } elseif (isset($conteudo_decodificado['frase_completar'])) {
+                        $row['tipo_exercicio'] = 'completar';
+                    } else {
+                        $row['tipo_exercicio'] = 'texto_livre';
+                    }
+                    $row['conteudo'] = $conteudo_decodificado;
                 }
             } catch (Exception $e) {
-                // Manter como string se der erro
                 error_log("Erro ao decodificar JSON: " . $e->getMessage());
             }
         }

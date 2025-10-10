@@ -16,36 +16,32 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `resultado_atividade_bloco`
+-- Table structure for table `bloco_atividades_itens`
 --
 
-DROP TABLE IF EXISTS `resultado_atividade_bloco`;
+DROP TABLE IF EXISTS `bloco_atividades_itens`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `resultado_atividade_bloco` (
+CREATE TABLE `bloco_atividades_itens` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `id_progresso_bloco` int NOT NULL,
+  `id_bloco` int NOT NULL,
   `id_exercicio` int NOT NULL,
-  `acertou` tinyint(1) DEFAULT '0',
-  `pontos_obtidos` int DEFAULT '0',
-  `tempo_gasto` int DEFAULT '0',
-  `tentativas` int DEFAULT '1',
-  `data_conclusao` datetime DEFAULT CURRENT_TIMESTAMP,
+  `ordem` int NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `id_progresso_bloco` (`id_progresso_bloco`),
+  KEY `id_bloco` (`id_bloco`),
   KEY `id_exercicio` (`id_exercicio`),
-  CONSTRAINT `resultado_atividade_bloco_ibfk_1` FOREIGN KEY (`id_progresso_bloco`) REFERENCES `progresso_bloco` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `resultado_atividade_bloco_ibfk_2` FOREIGN KEY (`id_exercicio`) REFERENCES `exercicios` (`id`) ON DELETE CASCADE
+  CONSTRAINT `bloco_atividades_itens_ibfk_1` FOREIGN KEY (`id_bloco`) REFERENCES `blocos_atividades` (`id`),
+  CONSTRAINT `bloco_atividades_itens_ibfk_2` FOREIGN KEY (`id_exercicio`) REFERENCES `exercicios` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `resultado_atividade_bloco`
+-- Dumping data for table `bloco_atividades_itens`
 --
 
-LOCK TABLES `resultado_atividade_bloco` WRITE;
-/*!40000 ALTER TABLE `resultado_atividade_bloco` DISABLE KEYS */;
-/*!40000 ALTER TABLE `resultado_atividade_bloco` ENABLE KEYS */;
+LOCK TABLES `bloco_atividades_itens` WRITE;
+/*!40000 ALTER TABLE `bloco_atividades_itens` DISABLE KEYS */;
+/*!40000 ALTER TABLE `bloco_atividades_itens` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -57,4 +53,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-06 16:12:31
+-- Dump completed on 2025-10-06 16:12:32

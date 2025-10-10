@@ -615,6 +615,96 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
                 </div>
             </div>
         </div>
+
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-xl-10">
+                <h2 class="mb-4">Gerenciar idiomas simples</h2>
+
+                    <a href="#" class="btn btn-warning mb-4" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
+                        <i class="fas fa-plus-circle me-2"></i>Gerenciar idiomas
+                    </a>
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Adicionar Novo Idioma com Quiz (Página <?php echo $pagina_atual . ' de ' . $total_paginas; ?>)</h5>
+                    </div>
+                    <div class="card-body">
+                        <form action="adicionar_idioma_completo.php?page=<?php echo $pagina_atual + 1; ?>" method="POST">
+                            <?php if ($pagina_atual === 1): ?>
+                            <div class="mb-3">
+                                <label for="idioma_novo_completo" class="form-label">Nome do Idioma</label>
+                                <input type="text" class="form-control" id="idioma_novo_completo" name="idioma" placeholder="Ex: Espanhol" required>
+                            </div>
+                            <hr>
+                            <?php endif; ?>
+
+                            <h5>Perguntas do Quiz de Nivelamento (Total: 20 perguntas)</h5>
+                            
+                            <p class="text-muted">A resposta correta para cada pergunta deve ser "A", "B" ou "C".</p>
+                            
+                            <?php for ($i = $offset_inicial; $i < $offset_inicial + $limit && $i <= $total_perguntas; $i++): ?>
+                            <div class="card mb-3">
+                                <div class="card-header">Pergunta #<?php echo $i; ?></div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="pergunta_<?php echo $i; ?>" class="form-label">Pergunta</label>
+                                        <textarea class="form-control" id="pergunta_<?php echo $i; ?>" name="pergunta_<?php echo $i; ?>" rows="2" required></textarea>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label for="opcao_a_<?php echo $i; ?>" class="form-label">Opção A</label>
+                                            <input type="text" class="form-control" id="opcao_a_<?php echo $i; ?>" name="opcao_a_<?php echo $i; ?>" required>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="opcao_b_<?php echo $i; ?>" class="form-label">Opção B</label>
+                                            <input type="text" class="form-control" id="opcao_b_<?php echo $i; ?>" name="opcao_b_<?php echo $i; ?>" required>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="opcao_c_<?php echo $i; ?>" class="form-label">Opção C</label>
+                                            <input type="text" class="form-control" id="opcao_c_<?php echo $i; ?>" name="opcao_c_<?php echo $i; ?>" required>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="resposta_correta_<?php echo $i; ?>" class="form-label">Resposta Correta</label>
+                                        <select id="resposta_correta_<?php echo $i; ?>" name="resposta_correta_<?php echo $i; ?>" class="form-select" required>
+                                            <option value="">Selecione a resposta correta</option>
+                                            <option value="A">Opção A</option>
+                                            <option value="B">Opção B</option>
+                                            <option value="C">Opção C</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endfor; ?>
+                            
+                            <hr>
+                            
+                            <nav aria-label="Navegação de Páginas">
+                                <ul class="pagination justify-content-center">
+                                    <li class="page-item <?php echo ($pagina_atual <= 1) ? 'disabled' : ''; ?>">
+                                        <a class="page-link" href="?page=<?php echo $pagina_atual - 1; ?>">Anterior</a>
+                                    </li>
+                                    
+                                    <?php for ($p = 1; $p <= $total_paginas; $p++): ?>
+                                    <li class="page-item <?php echo ($p == $pagina_atual) ? 'active' : ''; ?>">
+                                        <a class="page-link" href="?page=<?php echo $p; ?>"><?php echo $p; ?></a>
+                                    </li>
+                                    <?php endfor; ?>
+                                    
+                                    <li class="page-item <?php echo ($pagina_atual >= $total_paginas) ? 'disabled' : ''; ?>">
+                                        <a class="page-link" href="?page=<?php echo $pagina_atual + 1; ?>">Próximo</a>
+                                    </li>
+                                </ul>
+                            </nav>
+
+                            <div class="d-flex justify-content-end gap-2 mt-3">
+                                    <button type="submit" class="btn btn-warning">Salvar Idioma e Quiz (Fim)</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

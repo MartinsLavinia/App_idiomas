@@ -16,36 +16,41 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `resultado_atividade_bloco`
+-- Table structure for table `exercicios_especiais`
 --
 
-DROP TABLE IF EXISTS `resultado_atividade_bloco`;
+DROP TABLE IF EXISTS `exercicios_especiais`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `resultado_atividade_bloco` (
+CREATE TABLE `exercicios_especiais` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `id_progresso_bloco` int NOT NULL,
-  `id_exercicio` int NOT NULL,
-  `acertou` tinyint(1) DEFAULT '0',
-  `pontos_obtidos` int DEFAULT '0',
-  `tempo_gasto` int DEFAULT '0',
-  `tentativas` int DEFAULT '1',
-  `data_conclusao` datetime DEFAULT CURRENT_TIMESTAMP,
+  `id_bloco` int NOT NULL,
+  `tipo` enum('musica','filme','anime','video') NOT NULL,
+  `titulo` varchar(255) NOT NULL,
+  `descricao` text,
+  `url_media` varchar(500) NOT NULL,
+  `transcricao` text,
+  `pergunta` text NOT NULL,
+  `tipo_exercicio` enum('multipla_escolha','preencher_lacunas','arrastar_soltar','ordenar') DEFAULT 'multipla_escolha',
+  `opcoes_resposta` json DEFAULT NULL,
+  `resposta_correta` json DEFAULT NULL,
+  `explicacao` text,
+  `pontos` int DEFAULT '20',
+  `ordem` int DEFAULT '1',
+  `data_criacao` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `id_progresso_bloco` (`id_progresso_bloco`),
-  KEY `id_exercicio` (`id_exercicio`),
-  CONSTRAINT `resultado_atividade_bloco_ibfk_1` FOREIGN KEY (`id_progresso_bloco`) REFERENCES `progresso_bloco` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `resultado_atividade_bloco_ibfk_2` FOREIGN KEY (`id_exercicio`) REFERENCES `exercicios` (`id`) ON DELETE CASCADE
+  KEY `id_bloco` (`id_bloco`),
+  CONSTRAINT `exercicios_especiais_ibfk_1` FOREIGN KEY (`id_bloco`) REFERENCES `blocos_atividades` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `resultado_atividade_bloco`
+-- Dumping data for table `exercicios_especiais`
 --
 
-LOCK TABLES `resultado_atividade_bloco` WRITE;
-/*!40000 ALTER TABLE `resultado_atividade_bloco` DISABLE KEYS */;
-/*!40000 ALTER TABLE `resultado_atividade_bloco` ENABLE KEYS */;
+LOCK TABLES `exercicios_especiais` WRITE;
+/*!40000 ALTER TABLE `exercicios_especiais` DISABLE KEYS */;
+/*!40000 ALTER TABLE `exercicios_especiais` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

@@ -114,22 +114,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     border-bottom: 3px solid var(--amarelo-detalhe);
 }
 
+/* Botão Visualizar (Preview) - Mais bonito e moderno */
 .btn-info {
     background-color: #0dcaf0;
-    border-color: #0dcaf0;
-    color: var(--branco);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    transition: background 0.2s, color 0.2s, border 0.2s, transform 0.2s;
+    box-shadow: none;
 }
 
-.btn-info:hover {
+.btn-info:hover, .btn-info:focus {
     background-color: #31d2f2;
-    border-color: #31d2f2;
-    transform: translateY(-2px);
+    color: #fff;
+    transform: translateY(-2px) scale(1.03);
+    outline: none;
+}
+
+.btn-info:active {
+    background-color: #0dcaf0;
+    transform: scale(0.98);
+}
+
+.btn-info i {
+    margin-right: 0.5rem;
 }
         /* Paleta de Cores - MESMAS DO SITE */
         :root {
             --roxo-principal: #6a0dad;
             --roxo-escuro: #4c087c;
             --amarelo-detalhe: #ffd700;
+            --amarelo-botao: #ffd700;
+            --amarelo-hover: #e7c500;
             --branco: #ffffff;
             --preto-texto: #212529;
             --cinza-claro: #f8f9fa;
@@ -523,20 +541,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             transform: translateY(-2px);
         }
 
+
+        /* Botão Cancelar padrão (vermelho suave) */
         .btn-secondary {
-            background-color: var(--cinza-medio);
-            border-color: var(--cinza-medio);
+            background: rgba(33, 37, 41, 0.08); /* preto-texto com transparência */
+            border: 1.5px solid var(--preto-texto);
             color: var(--preto-texto);
             padding: 0.75rem 2rem;
             border-radius: 6px;
             font-weight: 600;
-            transition: all 0.3s ease;
+            transition: background 0.2s, color 0.2s, border 0.2s, transform 0.2s;
+            box-shadow: none;
         }
 
-        .btn-secondary:hover {
-            background-color: #c8c9cb;
-            border-color: #c8c9cb;
-            transform: translateY(-2px);
+        .btn-secondary:hover, .btn-secondary:focus {
+            background: rgba(33, 37, 41, 0.18);
+            color: var(--preto-texto);
+
+            transform: translateY(-2px) scale(1.03);
+            outline: none;
+        }
+
+        .btn-secondary:active {
+            background: rgba(33, 37, 41, 0.28);
+            color: var(--preto-texto);
+            border-color: var(--roxo-escuro);
+            transform: scale(0.98);
         }
 
         .btn-group-actions {
@@ -613,6 +643,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 width: 100%;
             }
         }
+
+            .btn-warning {
+                background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
+                color: var(--cinza-texto);
+                box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+                min-width: 180px;
+            }
+
+            .btn-warning:hover {
+                background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
+                color: var(--cinza-texto);
+            }
     </style>
 
     
@@ -770,7 +814,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                         <!-- Botões de Ação -->
                         <div class="btn-group-actions">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-warning">
                                 <i class="fas fa-save me-2"></i>Adicionar Teoria
                             </button>
                             <a href="gerenciar_teorias.php" class="btn btn-secondary">
