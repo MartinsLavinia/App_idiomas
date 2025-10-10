@@ -44,6 +44,31 @@ $stmt_caminhos->execute();
 $caminhos = $stmt_caminhos->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt_caminhos->close();
 
+// BUSCAR TODOS OS BLOCOS DOS CAMINHOS DESTA UNIDADE PARA PRÉ-CARREGAMENTO
+$blocos_por_caminho = [];
+if (!empty($caminhos)) {
+    $caminho_ids = array_column($caminhos, 'id');
+    $placeholders = str_repeat('?,', count($caminho_ids) - 1) . '?';
+    
+    $sql_blocos = "SELECT id, caminho_id, nome_bloco, ordem 
+                   FROM blocos 
+                   WHERE caminho_id IN ($placeholders) 
+                   ORDER BY caminho_id, ordem ASC";
+    $stmt_blocos = $conn->prepare($sql_blocos);
+    
+    if ($stmt_blocos) {
+        $types = str_repeat('i', count($caminho_ids));
+        $stmt_blocos->bind_param($types, ...$caminho_ids);
+        $stmt_blocos->execute();
+        $result_blocos = $stmt_blocos->get_result();
+        
+        while ($bloco = $result_blocos->fetch_assoc()) {
+            $blocos_por_caminho[$bloco['caminho_id']][] = $bloco;
+        }
+        $stmt_blocos->close();
+    }
+}
+
 // LÓGICA DE PROCESSAMENTO DO FORMULÁRIO (se o método for POST)
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $caminho_id = $_POST['caminho_id'];
@@ -158,11 +183,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Se não houve erros, insere os dados no banco
         if (empty($mensagem)) {
             // Insere o novo exercício na tabela exercicios (agora vinculado à unidade)
-            $sql_insert = "INSERT INTO exercicios (unidade_id, caminho_id, bloco_id, ordem, tipo, pergunta, conteudo, tipo_exercicio) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            $sql_insert = "INSERT INTO exercicios (unidade_id, caminho_id, bloco_id, ordem, tipo, pergunta, conteudo) VALUES (?, ?, ?, ?, ?, ?, ?)";
             $stmt_insert = $conn->prepare($sql_insert);
             
             if ($stmt_insert) {
-                $stmt_insert->bind_param("iiiissss", $unidade_id, $caminho_id, $bloco_id, $ordem, $tipo, $pergunta, $conteudo, $tipo_exercicio);
+                $stmt_insert->bind_param("iiiisss", $unidade_id, $caminho_id, $bloco_id, $ordem, $tipo, $pergunta, $conteudo);
                 
                 if ($stmt_insert->execute()) {
                     $mensagem = '<div class="alert alert-success">Exercício adicionado com sucesso!</div>';
@@ -250,6 +275,15 @@ $database->closeConnection();
                             <option value="">-- Primeiro selecione um caminho --</option>
                         </select>
                     </div>
+
+                    <!-- Se houver um caminho selecionado no POST, pré-carregar os blocos -->
+                    <?php if (isset($_POST['caminho_id']) && !empty($_POST['caminho_id'])): ?>
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        carregarBlocos(<?php echo $_POST['caminho_id']; ?>, <?php echo isset($_POST['bloco_id']) ? $_POST['bloco_id'] : 'null'; ?>);
+                    });
+                    </script>
+                    <?php endif; ?>
 
                     <!-- Campo Ordem -->
                     <div class="mb-3">
@@ -450,6 +484,61 @@ $database->closeConnection();
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+    // Dados pré-carregados dos blocos
+    const blocosPreCarregados = <?php echo json_encode($blocos_por_caminho); ?>;
+
+    function carregarBlocos(caminhoId, blocoSelecionado = null) {
+        if (!caminhoId) {
+            document.getElementById('bloco_id').innerHTML = '<option value="">-- Primeiro selecione um caminho --</option>';
+            return;
+        }
+        
+        const selectBloco = document.getElementById('bloco_id');
+        
+        // Primeiro tenta usar os dados pré-carregados
+        if (blocosPreCarregados[caminhoId]) {
+            preencherSelectBlocos(blocosPreCarregados[caminhoId], blocoSelecionado);
+            return;
+        }
+        
+        // Se não tiver pré-carregado, faz requisição AJAX
+        fetch(`get_blocos_admin.php?caminho_id=${caminhoId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro na requisição: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success && data.blocos.length > 0) {
+                    preencherSelectBlocos(data.blocos, blocoSelecionado);
+                } else {
+                    selectBloco.innerHTML = '<option value="">-- Nenhum bloco encontrado --</option>';
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar blocos:', error);
+                selectBloco.innerHTML = '<option value="">-- Erro ao carregar blocos --</option>';
+            });
+    }
+    
+    function preencherSelectBlocos(blocos, blocoSelecionado = null) {
+        const selectBloco = document.getElementById('bloco_id');
+        selectBloco.innerHTML = '<option value="">-- Selecione um bloco --</option>';
+        
+        blocos.forEach(bloco => {
+            const option = document.createElement('option');
+            option.value = bloco.id;
+            option.textContent = `Bloco ${bloco.ordem}: ${bloco.nome_bloco}`;
+            
+            if (blocoSelecionado && bloco.id == blocoSelecionado) {
+                option.selected = true;
+            }
+            
+            selectBloco.appendChild(option);
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         const tipoSelect = document.getElementById('tipo');
         const tipoExercicioSelect = document.getElementById('tipo_exercicio');
@@ -526,34 +615,6 @@ $database->closeConnection();
             <button type="button" class="btn btn-outline-danger" onclick="this.parentElement.remove()">×</button>
         `;
         container.appendChild(novaAlternativa);
-    }
-
-    function carregarBlocos(caminhoId) {
-        if (!caminhoId) {
-            document.getElementById('bloco_id').innerHTML = '<option value="">-- Primeiro selecione um caminho --</option>';
-            return;
-        }
-        
-        fetch(`get_blocos.php?caminho_id=${caminhoId}`)
-            .then(response => response.json())
-            .then(data => {
-                const selectBloco = document.getElementById('bloco_id');
-                selectBloco.innerHTML = '<option value="">-- Selecione um bloco --</option>';
-                
-                if (data.success && data.blocos.length > 0) {
-                    data.blocos.forEach(bloco => {
-                        const option = document.createElement('option');
-                        option.value = bloco.id;
-                        option.textContent = `Bloco ${bloco.ordem}: ${bloco.nome_bloco}`;
-                        selectBloco.appendChild(option);
-                    });
-                } else {
-                    selectBloco.innerHTML = '<option value="">-- Nenhum bloco encontrado --</option>';
-                }
-            })
-            .catch(error => {
-                console.error('Erro ao carregar blocos:', error);
-            });
     }
     </script>
 </body>
