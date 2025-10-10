@@ -100,42 +100,131 @@ $database->closeConnection();
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- link direto dos icones -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" />
+    <style>
+        /* Paleta de Cores - MESMAS DO ADMIN */
+        :root {
+            --roxo-principal: #6a0dad;
+            --roxo-escuro: #4c087c;
+            --amarelo-detalhe: #ffd700;
+            --branco: #ffffff;
+            --preto-texto: #212529;
+            --cinza-claro: #f8f9fa;
+        }
+
+        /* Estilos Gerais do Corpo */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--cinza-claro);
+            color: var(--preto-texto);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* SIDEBAR FIXO */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100%;
+            background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+            color: var(--branco);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .sidebar .profile {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 0 15px;
+        }
+
+        .sidebar .profile i {
+            font-size: 4rem;
+            color: var(--amarelo-detalhe);
+            margin-bottom: 10px;
+        }
+
+        .sidebar .profile h5 {
+            font-weight: 600;
+            margin-bottom: 0;
+            color: var(--branco);
+        }
+
+        .sidebar .profile small {
+            color: var(--cinza-claro);
+        }
+
+        .sidebar .list-group {
+            width: 100%;
+        }
+
+        .sidebar .list-group-item {
+            background-color: transparent;
+            color: var(--branco);
+            border: none;
+            padding: 15px 25px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .sidebar .list-group-item:hover {
+            background-color: var(--roxo-escuro);
+            cursor: pointer;
+        }
+
+        .sidebar .list-group-item.active {
+            background-color: var(--roxo-escuro) !important;
+            color: var(--branco) !important;
+            font-weight: 600;
+            border-left: 4px solid var(--amarelo-detalhe);
+        }
+
+        .sidebar .list-group-item i {
+            color: var(--amarelo-detalhe);
+            width: 20px; /* Alinhamento dos ícones */
+            text-align: center;
+        }
+
+        /* Conteúdo principal */
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+    </style>
 </head>
 
 <body>
-    <header id="myHeader">
-    <div class="header-content">
-        <div class="user-profile">
-            <img src="..\..\imagens\avatar-placeholder.png" alt="Avatar Usuário" class="user-avatar">
-            <span class="user-name">Bem-vindo, <?php echo htmlspecialchars($nome_usuario); ?>!</span>
+    <div class="sidebar">
+        <div class="profile">
+            <i class="fas fa-user-circle"></i>
+            <h5><?php echo htmlspecialchars($nome_usuario); ?></h5>
+            <small>Usuário</small>
         </div>
-        <nav>
-            <ul>
-                <li>
-                    <a href="painel.php" class="nav-link-item">
-                        <span class="material-symbols-outlined">home</span>
-                        <span>Início</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="flashcards.php" class="nav-link-item">
-                        <span class="material-symbols-outlined">cards_star</span>
-                        <span>Flash Cards</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="../../logout.php" class="nav-link-item">
-                        <span class="material-symbols-outlined">logout</span>
-                        <span>Sair</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </div>
-</header>
 
-    <div class="container mt-5">
+        <div class="list-group">
+            <a href="painel.php" class="list-group-item active">
+                <i class="fas fa-home"></i> Início
+            </a>
+            <a href="flashcards.php" class="list-group-item">
+                <i class="fas fa-layer-group"></i> Flash Cards
+            </a>
+            <a href="../../logout.php" class="list-group-item mt-auto">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="container-fluid mt-4">
         <div class="row justify-content-center">
             <div class="col-md-11">
                 <?php if ($mostrar_selecao_idioma): ?>
@@ -282,6 +371,7 @@ $database->closeConnection();
                     </div>
                 <?php endif; ?>
             </div>
+        </div>
         </div>
     </div>
 

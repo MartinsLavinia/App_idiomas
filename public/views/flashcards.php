@@ -43,10 +43,8 @@ $database->closeConnection();
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- link direto dos icones -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=home" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=cards_star" />
     <style>
-        /* Paleta de Cores */
+        /* Paleta de Cores - MESMAS DO ADMIN */
         :root {
             --roxo-principal: #6a0dad;
             --roxo-escuro: #4c087c;
@@ -57,12 +55,14 @@ $database->closeConnection();
             --cinza-medio: #dee2e6;
         }
 
-        /* Estilos Gerais */
+        /* Estilos Gerais do Corpo */
         body {
             font-family: 'Poppins', sans-serif;
             background-color: var(--cinza-claro);
             color: var(--preto-texto);
             animation: fadeIn 1s ease-in-out;
+            margin: 0;
+            padding: 0;
         }
 
         @keyframes fadeIn {
@@ -70,28 +70,78 @@ $database->closeConnection();
             to { opacity: 1; }
         }
 
-        /* Barra de Navegação */
-        .navbar {
-            background: var(--roxo-principal) !important;
-            border-bottom: 3px solid var(--amarelo-detalhe);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        /* SIDEBAR FIXO */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100%;
+            background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+            color: var(--branco);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
         }
 
-        .navbar-brand {
-            font-weight: 700;
-            letter-spacing: 1px;
+        .sidebar .profile {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 0 15px;
         }
 
-        .btn-outline-light {
+        .sidebar .profile i {
+            font-size: 4rem;
             color: var(--amarelo-detalhe);
-            border-color: var(--amarelo-detalhe);
-            font-weight: 600;
-            transition: all 0.3s ease;
+            margin-bottom: 10px;
         }
 
-        .btn-outline-light:hover {
-            background-color: var(--amarelo-detalhe);
-            color: var(--preto-texto);
+        .sidebar .profile h5 {
+            font-weight: 600;
+            margin-bottom: 0;
+            color: var(--branco);
+        }
+
+        .sidebar .profile small {
+            color: var(--cinza-claro);
+        }
+
+        .sidebar .list-group {
+            width: 100%;
+        }
+
+        .sidebar .list-group-item {
+            background-color: transparent;
+            color: var(--branco);
+            border: none;
+            padding: 15px 25px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .sidebar .list-group-item:hover {
+            background-color: var(--roxo-escuro);
+            cursor: pointer;
+        }
+
+        .sidebar .list-group-item.active {
+            background-color: var(--roxo-escuro) !important;
+            color: var(--branco) !important;
+            font-weight: 600;
+            border-left: 4px solid var(--amarelo-detalhe);
+        }
+
+        .sidebar .list-group-item i {
+            color: var(--amarelo-detalhe);
+            width: 20px; /* Alinhamento dos ícones */
+            text-align: center;
         }
 
         /* Cards */
@@ -245,42 +295,38 @@ $database->closeConnection();
                 padding: 1rem;
             }
         }
+
+        /* Conteúdo principal */
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
         
     </style>
 </head>
 <body>
-    <header id="myHeader">
-    <div class="header-content">
-        <div class="user-profile">
-            <img src="..\..\imagens\avatar-placeholder.png" alt="Avatar Usuário" class="user-avatar">
-            <span class="user-name">Bem-vindo, <?php echo htmlspecialchars($nome_usuario); ?>!</span>
+    <div class="sidebar">
+        <div class="profile">
+            <i class="fas fa-user-circle"></i>
+            <h5><?php echo htmlspecialchars($nome_usuario); ?></h5>
+            <small>Usuário</small>
         </div>
-        <nav>
-            <ul>
-                <li>
-                    <a href="painel.php" class="nav-link-item">
-                        <span class="material-symbols-outlined">home</span>
-                        <span>Início</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="flashcards.php" class="nav-link-item">
-                        <span class="material-symbols-outlined">cards_star</span>
-                        <span>Flash Cards</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="//logout.php" class="nav-link-item">Sair</a>
-                </li>
-            </ul>
-        </nav>
-    </div>
-    <button id="toggleButton" class="toggle-button">
-        <span class="material-symbols-outlined">menu</span>
-    </button>
-</header>
 
-    <div class="container mt-4">
+        <div class="list-group">
+            <a href="painel.php" class="list-group-item">
+                <i class="fas fa-home"></i> Início
+            </a>
+            <a href="flashcards.php" class="list-group-item active">
+                <i class="fas fa-layer-group"></i> Flash Cards
+            </a>
+            <a href="../../logout.php" class="list-group-item mt-auto">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="container-fluid mt-4">
         <!-- Cabeçalho -->
         <div class="row mb-4">
             <div class="col-12">
@@ -348,6 +394,7 @@ $database->closeConnection();
         <div id="listaDecks" class="row">
             <!-- O conteúdo dos decks será carregado aqui via JavaScript -->
         </div>
+    </div>
     </div>
 
     <!-- Modal Criar/Editar Deck -->
