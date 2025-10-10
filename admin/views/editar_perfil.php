@@ -83,6 +83,7 @@ $database->closeConnection();
             --preto-texto: #212529;
             --verde-sucesso: #28a745;
             --azul-info: #17a2b8;
+            --laranja-alerta: #fd7e14;
             --shadow-light: 0 2px 10px rgba(106, 13, 173, 0.1);
             --shadow-medium: 0 8px 25px rgba(106, 13, 173, 0.15);
             --shadow-heavy: 0 15px 35px rgba(106, 13, 173, 0.2);
@@ -225,11 +226,32 @@ $database->closeConnection();
             color: var(--branco);
             box-shadow: var(--shadow-medium);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            cursor: pointer;
         }
 
         .profile-avatar:hover {
             transform: translateY(-5px) scale(1.05);
             box-shadow: var(--shadow-heavy);
+        }
+
+        .avatar-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .profile-avatar:hover .avatar-overlay {
+            opacity: 1;
         }
 
         .profile-info {
@@ -251,6 +273,54 @@ $database->closeConnection();
             font-weight: 500;
             display: inline-block;
             margin-bottom: 15px;
+        }
+
+        /* Botões de foto - ESTILIZADOS */
+        .photo-buttons-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .btn-photo {
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 140px;
+            justify-content: center;
+        }
+
+        .btn-alterar-foto {
+            background: linear-gradient(135deg, var(--azul-info), #0dcaf0);
+            color: var(--branco);
+            box-shadow: 0 4px 15px rgba(13, 202, 240, 0.3);
+        }
+
+        .btn-alterar-foto:hover {
+            background: linear-gradient(135deg, #0dcaf0, var(--azul-info));
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(13, 202, 240, 0.4);
+            color: var(--branco);
+        }
+
+        .btn-remover-foto {
+            background: linear-gradient(135deg, var(--laranja-alerta), #fd5643ff);
+            color: var(--branco);
+            box-shadow: 0 4px 15px rgba(253, 126, 20, 0.3);
+        }
+
+        .btn-remover-foto:hover {
+            background: linear-gradient(135deg, #d54738ff, var(--laranja-alerta));
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(253, 126, 20, 0.4);
+            color: var(--branco);
         }
 
         /* Informações adicionais do perfil */
@@ -419,125 +489,101 @@ $database->closeConnection();
             color: var(--branco);
         }
 
-        /* Container de navegação */
-        .navigation-buttons-container {
-            max-width: 1200px;
-            margin: 15px auto 0;
-            padding: 0 20px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
+        /* Container de navegação - ATUALIZADO */
+.navigation-buttons-container {
+    max-width: 1200px;
+    margin: 25px auto 0;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    animation: fadeInUp 0.6s ease-out 0.3s both;
+}
 
-        /* Alertas aprimorados */
-        .alert-enhanced {
-            border: none;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 25px;
-            font-weight: 500;
-            box-shadow: var(--shadow-light);
-        }
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+/* Botões de navegação - ESTILO SIMPLES E PROFISSIONAL */
+.btn-navigation {
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    min-height: 54px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    cursor: pointer;
+}
 
-        /* Modais aprimorados */
-        .modal-content-enhanced {
-            border: none;
-            border-radius: 20px;
-            box-shadow: var(--shadow-heavy);
-        }
+.btn-navigation:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
 
-        .modal-header-enhanced {
-            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-claro));
-            color: var(--branco);
-            border-radius: 20px 20px 0 0;
-            padding: 25px;
-        }
+.btn-voltar-dashboard {
+    background: #241fc2ff;
+    color: white;
+    border: 2px solid #241fc2ff;
+}
 
-        /* Animações */
-        @keyframes fadeInLeft {
-            from {
-                opacity: 0;
-                transform: translateX(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
+.btn-voltar-dashboard:hover {
+    background: #1e1a9bff;
+}
 
-        @keyframes fadeInRight {
-            from {
-                opacity: 0;
-                transform: translateX(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
+.btn-cancelar-alteracoes {
+    background: #A0A0A0;
+    color: white;
+    border: 2px solid #909090;
+}
 
-        .fade-in-left {
-            animation: fadeInLeft 0.6s ease-out;
-        }
+.btn-cancelar-alteracoes:hover {
+    background: #909090;
+}
 
-        .fade-in-right {
-            animation: fadeInRight 0.6s ease-out;
-        }
+/* Ícones dos botões */
+.btn-navigation i {
+    font-size: 1.1em;
+    transition: transform 0.3s ease;
+}
 
-        /* Responsividade - LAYOUT HORIZONTAL */
-        @media (max-width: 992px) {
-            .horizontal-layout {
-                flex-direction: column;
-            }
-            
-            .left-column {
-                flex: none;
-                border-right: none;
-                border-bottom: 2px solid var(--cinza-medio);
-                padding: 30px;
-            }
-            
-            .profile-avatar {
-                width: 120px;
-                height: 120px;
-                font-size: 3rem;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 10px;
-            }
-            
-            .right-column {
-                padding: 30px;
-            }
-        }
+.btn-voltar-dashboard:hover i {
+    transform: translateX(-2px);
+}
 
-        @media (max-width: 768px) {
-            .profile-container {
-                margin: 20px auto;
-                padding: 0 15px;
-            }
-            
-            .left-column, .right-column {
-                padding: 20px;
-            }
-            
-            .navigation-buttons-container {
-                grid-template-columns: 1fr;
-                padding: 0 15px;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .profile-avatar {
-                width: 100px;
-                height: 100px;
-                font-size: 2.5rem;
-            }
-        }
+/* Responsividade */
+@media (max-width: 768px) {
+    .navigation-buttons-container {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .btn-navigation {
+        padding: 12px 24px;
+        min-height: 50px;
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .btn-navigation {
+        padding: 10px 20px;
+        min-height: 48px;
+        font-size: 0.9rem;
+    }
+}
 
         /* Efeitos de loading */
         .loading-overlay {
@@ -629,16 +675,29 @@ $database->closeConnection();
             <div class="horizontal-layout">
                 <!-- COLUNA ESQUERDA - Perfil e Estatísticas -->
                 <div class="left-column fade-in-left">
-                    <!-- Seção do Avatar e Info -->
+                    <!-- Seção do Avatar e Info - COM BOTÕES ESTILIZADOS -->
                     <div class="profile-avatar-section">
-                        <div class="profile-avatar">
+                        <div class="profile-avatar" data-bs-toggle="modal" data-bs-target="#editPhotoModal">
                             <i class="fas fa-user-graduate"></i>
+                            <div class="avatar-overlay">
+                                <i class="fas fa-camera text-white" style="font-size: 1.5rem;"></i>
+                            </div>
                         </div>
                         <div class="profile-info">
-                           <h4><?= htmlspecialchars($_SESSION['nome_admin'] ?? $admin['nome_usuario'] ?? 'Usuário') ?></h4>
+                            <h4><?= htmlspecialchars($_SESSION['nome_admin'] ?? $admin['nome_usuario'] ?? 'Usuário') ?></h4>
                             <span class="profile-role">
                                 <i class="fas fa-crown me-1"></i>Administrador
                             </span>
+                        </div>
+                        
+                        <!-- BOTÕES DE FOTO ESTILIZADOS -->
+                        <div class="photo-buttons-container">
+                            <button type="button" class="btn btn-photo btn-alterar-foto" data-bs-toggle="modal" data-bs-target="#editPhotoModal">
+                                <i class="fas fa-camera me-1"></i>Alterar Foto
+                            </button>
+                            <button type="button" class="btn btn-photo btn-remover-foto" data-bs-toggle="modal" data-bs-target="#confirmRemovePhotoModal">
+                                <i class="fas fa-trash me-1"></i>Remover Foto
+                            </button>
                         </div>
                     </div>
 
@@ -752,6 +811,16 @@ $database->closeConnection();
                                         <i class="fas fa-save me-2"></i>Salvar Alterações
                                     </button>
                                 </div>
+
+                                <!-- BOTÕES DE NAVEGAÇÃO - ESTILO ATUALIZADO -->
+<div class="navigation-buttons-container">
+    <a href="gerenciar_caminho.php" class="btn btn-navigation btn-voltar-dashboard">
+        <i class="fas fa-arrow-left me-2"></i>Voltar ao Dashboard
+    </a>
+    <button type="button" class="btn btn-navigation btn-cancelar-alteracoes" data-bs-toggle="modal" data-bs-target="#confirmCancelModal">
+        <i class="fas fa-times me-2"></i>Cancelar Alterações
+    </button>
+</div>s
                             </form>
                         </div>
                     </div>
@@ -760,16 +829,7 @@ $database->closeConnection();
         </div>
     </div>
 
-    <!-- BOTÕES DE NAVEGAÇÃO -->
-    <div class="navigation-buttons-container">
-        <a href="gerenciar_caminho.php" class="btn btn-success-enhanced btn-enhanced">
-            <i class="fas fa-arrow-left me-2"></i>Voltar ao Dashboard
-        </a>
-        <button type="button" class="btn btn-danger-enhanced btn-enhanced" data-bs-toggle="modal" data-bs-target="#confirmCancelModal">
-            <i class="fas fa-times me-2"></i>Cancelar Alterações
-        </button>
-    </div>
-
+    
     <!-- Modal de Confirmação para ATUALIZAR -->
     <div class="modal fade" id="confirmUpdateModal" tabindex="-1" aria-labelledby="confirmUpdateModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -803,7 +863,7 @@ $database->closeConnection();
         </div>
     </div>
 
-    <!-- Modal de Confirmação para CANCELAR -->
+    <!-- Modal de Confirmação para CANCELAR - CORRIGIDO -->
     <div class="modal fade" id="confirmCancelModal" tabindex="-1" aria-labelledby="confirmCancelModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content modal-content-enhanced">
@@ -830,6 +890,93 @@ $database->closeConnection();
                     <a href="gerenciar_caminho.php" class="btn btn-danger">
                         <i class="fas fa-trash me-1"></i>Sim, Descartar Alterações
                     </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Editar Foto - NOVO -->
+    <div class="modal fade" id="editPhotoModal" tabindex="-1" aria-labelledby="editPhotoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-enhanced">
+                <div class="modal-header modal-header-enhanced">
+                    <h5 class="modal-title" id="editPhotoModalLabel">
+                        <i class="fas fa-camera me-2"></i>Alterar Foto do Perfil
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="text-center mb-4">
+                        <div class="profile-avatar mx-auto mb-3" style="width: 120px; height: 120px; cursor: pointer;" id="currentAvatar">
+                            <i class="fas fa-user-graduate" style="font-size: 2.5rem;"></i>
+                        </div>
+                        <p class="text-muted">Clique na imagem para visualizar</p>
+                    </div>
+                    
+                    <form id="photoUploadForm" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="foto_perfil" class="form-label-enhanced">
+                                <i class="fas fa-upload me-2"></i>Selecionar Nova Foto
+                            </label>
+                            <input type="file" class="form-control form-control-enhanced" id="foto_perfil" name="foto_perfil" 
+                                   accept="image/*" onchange="previewImage(this)">
+                            <div class="form-text">
+                                Formatos suportados: JPG, PNG, GIF. Tamanho máximo: 2MB.
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3 text-center">
+                            <div id="imagePreview" class="mt-3" style="display: none;">
+                                <p class="text-muted mb-2">Pré-visualização:</p>
+                                <img id="preview" class="rounded-circle border" style="width: 100px; height: 100px; object-fit: cover;">
+                            </div>
+                        </div>
+                        
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">
+                                    <i class="fas fa-times me-1"></i>Cancelar
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="button" class="btn btn-success w-100" onclick="uploadPhoto()">
+                                    <i class="fas fa-save me-1"></i>Salvar Foto
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Remover Foto - NOVO -->
+    <div class="modal fade" id="confirmRemovePhotoModal" tabindex="-1" aria-labelledby="confirmRemovePhotoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-enhanced">
+                <div class="modal-header modal-header-enhanced">
+                    <h5 class="modal-title" id="confirmRemovePhotoModalLabel">
+                        <i class="fas fa-trash me-2"></i>Remover Foto do Perfil
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-exclamation-triangle text-warning" style="font-size: 4rem;"></i>
+                    </div>
+                    <p class="text-center mb-3">Tem certeza que deseja remover sua foto de perfil?</p>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-warning me-2"></i>
+                        <strong>Atenção:</strong> Esta ação não pode ser desfeita. Sua foto será substituída pelo avatar padrão.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Cancelar
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="removePhoto()">
+                        <i class="fas fa-trash me-1"></i>Sim, Remover Foto
+                    </button>
                 </div>
             </div>
         </div>
@@ -883,7 +1030,7 @@ $database->closeConnection();
                 });
 
                 // Efeitos de hover nos botões
-                const buttons = document.querySelectorAll('.btn-enhanced');
+                const buttons = document.querySelectorAll('.btn-enhanced, .btn-photo');
                 buttons.forEach(btn => {
                     btn.addEventListener('mouseenter', function() {
                         this.style.transform = 'translateY(-2px)';
@@ -933,8 +1080,99 @@ $database->closeConnection();
             statNumbers.forEach(stat => {
                 observer.observe(stat);
             });
+
+            // Click no avatar para ver em tamanho maior
+            const currentAvatar = document.getElementById('currentAvatar');
+            currentAvatar.addEventListener('click', function() {
+                const preview = document.getElementById('preview');
+                if (preview.src) {
+                    window.open(preview.src, '_blank');
+                }
+            });
         });
+
+        // Funções para edição de foto
+        function previewImage(input) {
+            const preview = document.getElementById('preview');
+            const imagePreview = document.getElementById('imagePreview');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                }
+                
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function uploadPhoto() {
+            const fileInput = document.getElementById('foto_perfil');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            
+            if (!fileInput.files[0]) {
+                alert('Por favor, selecione uma foto para upload.');
+                return;
+            }
+            
+            // Validação do arquivo
+            const file = fileInput.files[0];
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            const maxSize = 2 * 1024 * 1024; // 2MB
+            
+            if (!validTypes.includes(file.type)) {
+                alert('Por favor, selecione uma imagem nos formatos JPG, PNG ou GIF.');
+                return;
+            }
+            
+            if (file.size > maxSize) {
+                alert('A imagem deve ter no máximo 2MB.');
+                return;
+            }
+            
+            // Mostra loading
+            loadingOverlay.style.display = 'flex';
+            
+            // Simula upload (substitua por AJAX real)
+            setTimeout(() => {
+                loadingOverlay.style.display = 'none';
+                alert('Foto atualizada com sucesso!');
+                bootstrap.Modal.getInstance(document.getElementById('editPhotoModal')).hide();
+                
+                // Atualiza a pré-visualização principal
+                const preview = document.getElementById('preview');
+                const currentAvatar = document.querySelector('.profile-avatar i');
+                currentAvatar.style.display = 'none';
+                document.querySelector('.profile-avatar').style.backgroundImage = `url(${preview.src})`;
+                document.querySelector('.profile-avatar').style.backgroundSize = 'cover';
+                document.querySelector('.profile-avatar').style.backgroundPosition = 'center';
+            }, 1500);
+        }
+
+        // Função para remover foto
+        function removePhoto() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            
+            // Mostra loading
+            loadingOverlay.style.display = 'flex';
+            
+            // Simula remoção (substitua por AJAX real)
+            setTimeout(() => {
+                loadingOverlay.style.display = 'none';
+                alert('Foto removida com sucesso!');
+                bootstrap.Modal.getInstance(document.getElementById('confirmRemovePhotoModal')).hide();
+                
+                // Restaura o avatar padrão
+                const profileAvatar = document.querySelector('.profile-avatar');
+                const icon = profileAvatar.querySelector('i');
+                
+                profileAvatar.style.backgroundImage = 'none';
+                profileAvatar.style.background = 'linear-gradient(135deg, var(--roxo-claro), var(--roxo-principal))';
+                icon.style.display = 'flex';
+            }, 1500);
+        }
     </script>
 </body>
 </html>
-

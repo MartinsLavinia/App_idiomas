@@ -46,13 +46,12 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
             --roxo-principal: #6a0dad;
             --roxo-escuro: #4c087c;
             --amarelo-detalhe: #ffd700;
+            --amarelo-botao: #ffd700;
+            --amarelo-hover: #e7c500;
+            --branco: #ffffff;
+            --preto-texto: #212529;
             --cinza-claro: #f8f9fa;
             --cinza-medio: #dee2e6;
-            --cinza-escuro: #b0b3b8;
-            --preto-texto: #212529;
-            --branco: #fff;
-            --branco-azulado: #f6f8fc;
-            --sombra-suave: 0 4px 24px rgba(106,13,173,0.07);
         }
 
         body {
@@ -60,11 +59,155 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
             background: var(--cinza-claro);
             color: var(--preto-texto);
             min-height: 100vh;
+            animation: fadeIn 1s ease-in-out;
         }
 
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .settings-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .settings-icon:hover {
+            color: var(--roxo-escuro) !important;
+            transform: rotate(90deg);
+        }
+
+        /* Barra de Navegação - MODIFICADA PARA TRANSPARENTE COM DECORAÇÃO AMARELA */
+        .navbar {
+            background-color: transparent !important;
+            border-bottom: 3px solid var(--amarelo-detalhe);
+            box-shadow: 0 4px 15px rgba(255, 238, 0, 0.38);
+        }
+
+        .navbar-brand {
+            margin-left: auto;
+            margin-right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            width: 100%;
+        }
+
+        .navbar-brand .logo-header {
+            height: 70px;
+            width: auto;
+            display: block;
+        }
+
+        .btn-outline-warning {
+            color: var(--amarelo-detalhe);
+            border-color: var(--amarelo-detalhe);
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-warning:hover {
+            background-color: var(--amarelo-detalhe);
+            box-shadow: 0 4px 8px rgba(235, 183, 14, 0.77);
+        }
+
+        /* Menu Lateral - ADICIONADO DECORAÇÃO AMARELA */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100%;
+            background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+            color: var(--branco);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .sidebar .profile {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .sidebar .profile i {
+            font-size: 4rem;
+            color: var(--amarelo-detalhe);
+            margin-bottom: 10px;
+        }
+
+        .sidebar .profile h5 {
+            font-weight: 600;
+            margin-bottom: 0;
+            color: var(--branco);
+        }
+
+        .sidebar .profile small {
+            color: var(--cinza-claro);
+        }
+
+        .sidebar .list-group {
+            width: 100%;
+        }
+
+        .sidebar .list-group-item {
+            background-color: transparent;
+            color: var(--branco);
+            border: none;
+            padding: 15px 25px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .list-group-item:hover {
+            background-color: var(--roxo-escuro);
+            cursor: pointer;
+        }
+
+        .sidebar .list-group-item.active {
+            background-color: var(--roxo-escuro) !important;
+            color: var(--branco) !important;
+            font-weight: 600;
+            border-left: 4px solid var(--amarelo-detalhe);
+        }
+
+        .sidebar .list-group-item i {
+            color: var(--amarelo-detalhe);
+        }
+
+        /* Ajuste do conteúdo principal para não ficar por baixo do sidebar */
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
+            color: var(--preto-texto);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+            min-width: 180px;
+            border: none;
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
+            color: var(--preto-texto);
+        }
+
+        /* ESTILOS EXISTENTES DO SEGUNDO CÓDIGO (MANTIDOS) */
         .card {
             border-radius: 1.2rem;
-            box-shadow: var(--sombra-suave);
+            box-shadow: 0 4px 24px rgba(106,13,173,0.07);
             border: none;
             background: var(--branco);
             transition: box-shadow 0.2s;
@@ -75,7 +218,6 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
         }
 
         .card-header {
-            /* MANTIDO - GRADIENTE ROXO PARA O CARD PRINCIPAL */
             background: linear-gradient(90deg, var(--roxo-principal) 70%, var(--roxo-escuro) 100%);
             color: var(--branco);
             border-radius: 1.2rem 1.2rem 0 0;
@@ -98,7 +240,6 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
         }
 
         .btn-success {
-            /* MANTIDO - COR AMARELO DETALHE */
             background: var(--amarelo-detalhe);
             color: var(--preto-texto);
             border: none;
@@ -113,13 +254,12 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
             color: var(--preto-texto);
         }
 
-        /* ALTERAÇÃO: Labels mais escuros e com mais contraste */
         label {
             font-weight: 600;
-            color: var(--roxo-escuro); /* Mudança para roxo mais escuro */
-            margin-bottom: 0.5rem; /* Aumenta o espaçamento abaixo */
+            color: var(--roxo-escuro);
+            margin-bottom: 0.5rem;
             letter-spacing: 0.5px;
-            text-transform: uppercase; /* Mais destaque */
+            text-transform: uppercase;
             font-size: 0.85rem;
         }
 
@@ -130,11 +270,10 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
             letter-spacing: 0.5px;
         }
 
-        /* ALTERAÇÃO: Inputs/Selects com borda inferior de foco (sublinhado) */
         .form-control, .form-select {
-            border-radius: 0.5rem; /* Levemente menos arredondado */
+            border-radius: 0.5rem;
             border: 1px solid var(--cinza-medio);
-            border-bottom: 2px solid var(--cinza-escuro); /* Borda inferior mais marcada */
+            border-bottom: 2px solid var(--cinza-escuro);
             background: var(--branco);
             font-size: 1rem;
             transition: border-color 0.3s, box-shadow 0.3s, border-bottom 0.3s;
@@ -142,19 +281,18 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
         }
 
         .form-control:focus, .form-select:focus {
-            border-color: var(--roxo-principal); /* Borda lateral em roxo */
-            border-bottom: 3px solid var(--roxo-principal); /* Destaque na borda inferior em roxo */
-            box-shadow: none; /* Remove a sombra do focus para um visual mais flat */
-            background: var(--branco-azulado); /* Fundo levemente azulado no focus */
+            border-color: var(--roxo-principal);
+            border-bottom: 3px solid var(--roxo-principal);
+            box-shadow: none;
+            background: #f6f8fc;
         }
         
-        /* Ajuste para o textarea (pergunta) */
         textarea.form-control {
             min-height: 80px;
         }
 
         .mb-3 {
-            margin-bottom: 1.5rem !important; /* Aumenta o espaçamento entre campos */
+            margin-bottom: 1.5rem !important;
         }
 
         .gap-2 {
@@ -164,36 +302,33 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
         .card-body {
             background: rgba(255,255,255,0.97);
             border-radius: 0 0 1.2rem 1.2rem;
-            padding: 1.8rem; /* Aumenta o padding do body principal */
+            padding: 1.8rem;
         }
 
-        /* ALTERAÇÃO: Card da Pergunta (Card Interno) - Minimalista e Focado */
         .card.mb-3 {
-            border-radius: 0.5rem; /* Menos arredondado */
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05); /* Sombra mais sutil e definida */
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             border: 1px solid var(--cinza-medio);
-            background: var(--branco); /* Fundo branco para contraste com o cinza-claro do body */
-            overflow: hidden; /* Garantir que a borda de cima seja bem definida */
+            background: var(--branco);
+            overflow: hidden;
         }
 
-        /* ALTERAÇÃO: Header do Card da Pergunta - Cor Sólida Roxo Principal */
         .card.mb-3 .card-header {
-            background: var(--roxo-principal); /* Cor sólida principal */
+            background: var(--roxo-principal);
             color: var(--branco);
-            border-radius: 0.5rem 0.5rem 0 0; /* Menos arredondado */
-            font-size: 1.15rem; /* Levemente maior */
-            font-weight: 700; /* Mais negrito */
-            border-bottom: 3px solid var(--amarelo-detalhe); /* Borda amarela de destaque */
+            border-radius: 0.5rem 0.5rem 0 0;
+            font-size: 1.15rem;
+            font-weight: 700;
+            border-bottom: 3px solid var(--amarelo-detalhe);
             padding: 0.8rem 1.25rem;
         }
 
         .text-muted {
-            color: var(--roxo-escuro) !important; /* Text-muted mais escuro para melhor legibilidade */
+            color: var(--roxo-escuro) !important;
             font-size: 0.95rem;
             font-style: italic;
         }
 
-        /* PAGINAÇÃO ESTILIZADA (Levemente ajustada para consistência) */
         .pagination {
             --bs-pagination-padding-x: 0.8rem;
             --bs-pagination-padding-y: 0.5rem;
@@ -203,18 +338,18 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
         .pagination .page-item .page-link {
             color: var(--roxo-principal);
             border: 1px solid var(--cinza-medio);
-            border-radius: 0.5rem; /* Menos arredondado */
+            border-radius: 0.5rem;
             margin: 0 0.2rem;
             background: var(--branco);
             font-weight: 500;
             transition: background 0.2s, color 0.2s, border-color 0.2s;
-            box-shadow: none; /* Remove a sombra da paginação */
+            box-shadow: none;
         }
 
         .pagination .page-item.active .page-link {
             z-index: 3;
             color: var(--branco);
-            background: var(--roxo-principal); /* Cor sólida no ativo */
+            background: var(--roxo-principal);
             border-color: var(--roxo-escuro);
             font-weight: 600;
             box-shadow: none;
@@ -222,7 +357,7 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
 
         .pagination .page-item .page-link:hover:not(.disabled) {
             color: var(--roxo-principal);
-            background: var(--branco-azulado); /* Usa o azulado para hover */
+            background: #f6f8fc;
             border-color: var(--roxo-principal);
         }
 
@@ -233,16 +368,16 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
             cursor: not-allowed;
             opacity: 0.7;
         }
-        .settings-icon {
-            color: var(--roxo-principal) !important;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            font-size: 1.2rem;
-        }
 
-        .settings-icon:hover {
-            color: var(--roxo-escuro) !important;
-            transform: rotate(90deg);
+        @media (max-width: 768px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+            }
+            .main-content {
+                margin-left: 0;
+            }
         }
     </style>
 </head>
@@ -274,7 +409,7 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
                     <i class="fas fa-plus-circle"></i> Adicionar Caminho
                 </a>
              
-                <a href="pagina_adicionar_idiomas.php" class="list-group-item">
+                <a href="pagina_adicionar_idiomas.php" class="list-group-item active">
                     <i class="fas fa-language "></i> Gerenciar Idiomas
                 </a>
                 <a href="gerenciar_teorias.php" class="list-group-item">
@@ -295,7 +430,99 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
             </div>
         </div>
 
-    <!-- Modal para Gerenciar Idiomas -->
+    <div class="main-content">
+        <div class="container py-4">
+            <div class="row justify-content-center">
+                <div class="col-xl-10">
+                    <h2 class="mb-4">Gerenciar idiomas simples</h2>
+
+                        <a href="#" class="btn btn-warning mb-4" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
+                            <i class="fas fa-plus-circle me-2"></i>Gerenciar idiomas
+                        </a>
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Adicionar Novo Idioma com Quiz (Página <?php echo $pagina_atual . ' de ' . $total_paginas; ?>)</h5>
+                        </div>
+                        <div class="card-body">
+                            <form action="adicionar_idioma_completo.php?page=<?php echo $pagina_atual + 1; ?>" method="POST">
+                                <?php if ($pagina_atual === 1): ?>
+                                <div class="mb-3">
+                                    <label for="idioma_novo_completo" class="form-label">Nome do Idioma</label>
+                                    <input type="text" class="form-control" id="idioma_novo_completo" name="idioma" placeholder="Ex: Espanhol" required>
+                                </div>
+                                <hr>
+                                <?php endif; ?>
+
+                                <h5>Perguntas do Quiz de Nivelamento (Total: 20 perguntas)</h5>
+                                
+                                <p class="text-muted">A resposta correta para cada pergunta deve ser "A", "B" ou "C".</p>
+                                
+                                <?php for ($i = $offset_inicial; $i < $offset_inicial + $limit && $i <= $total_perguntas; $i++): ?>
+                                <div class="card mb-3">
+                                    <div class="card-header">Pergunta #<?php echo $i; ?></div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="pergunta_<?php echo $i; ?>" class="form-label">Pergunta</label>
+                                            <textarea class="form-control" id="pergunta_<?php echo $i; ?>" name="pergunta_<?php echo $i; ?>" rows="2" required></textarea>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-4 mb-3">
+                                                <label for="opcao_a_<?php echo $i; ?>" class="form-label">Opção A</label>
+                                                <input type="text" class="form-control" id="opcao_a_<?php echo $i; ?>" name="opcao_a_<?php echo $i; ?>" required>
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label for="opcao_b_<?php echo $i; ?>" class="form-label">Opção B</label>
+                                                <input type="text" class="form-control" id="opcao_b_<?php echo $i; ?>" name="opcao_b_<?php echo $i; ?>" required>
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label for="opcao_c_<?php echo $i; ?>" class="form-label">Opção C</label>
+                                                <input type="text" class="form-control" id="opcao_c_<?php echo $i; ?>" name="opcao_c_<?php echo $i; ?>" required>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="resposta_correta_<?php echo $i; ?>" class="form-label">Resposta Correta</label>
+                                            <select id="resposta_correta_<?php echo $i; ?>" name="resposta_correta_<?php echo $i; ?>" class="form-select" required>
+                                                <option value="">Selecione a resposta correta</option>
+                                                <option value="A">Opção A</option>
+                                                <option value="B">Opção B</option>
+                                                <option value="C">Opção C</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <?php endfor; ?>
+                                
+                                <hr>
+                                
+                                <nav aria-label="Navegação de Páginas">
+                                    <ul class="pagination justify-content-center">
+                                        <li class="page-item <?php echo ($pagina_atual <= 1) ? 'disabled' : ''; ?>">
+                                            <a class="page-link" href="?page=<?php echo $pagina_atual - 1; ?>">Anterior</a>
+                                        </li>
+                                        
+                                        <?php for ($p = 1; $p <= $total_paginas; $p++): ?>
+                                        <li class="page-item <?php echo ($p == $pagina_atual) ? 'active' : ''; ?>">
+                                            <a class="page-link" href="?page=<?php echo $p; ?>"><?php echo $p; ?></a>
+                                        </li>
+                                        <?php endfor; ?>
+                                        
+                                        <li class="page-item <?php echo ($pagina_atual >= $total_paginas) ? 'disabled' : ''; ?>">
+                                            <a class="page-link" href="?page=<?php echo $pagina_atual + 1; ?>">Próximo</a>
+                                        </li>
+                                    </ul>
+                                </nav>
+
+                                <div class="d-flex justify-content-end gap-2 mt-3">
+                                        <button type="submit" class="btn btn-success">Salvar Idioma e Quiz (Fim)</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal para Gerenciar Idiomas -->
         <div class="modal fade" id="gerenciarIdiomasModal" tabindex="-1" aria-labelledby="gerenciarIdiomasModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -388,98 +615,8 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
                 </div>
             </div>
         </div>
-
-
-    <div class="container py-4">
-        <div class="row justify-content-center">
-            <div class="col-xl-10">
-                <h2 class="mb-4">Gerenciar idiomas simples</h2>
-
-                    <a href="#" class="btn btn-warning mb-4" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
-                        <i class="fas fa-plus-circle me-2"></i>Gerenciar idiomas
-                    </a>
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Adicionar Novo Idioma com Quiz (Página <?php echo $pagina_atual . ' de ' . $total_paginas; ?>)</h5>
-                    </div>
-                    <div class="card-body">
-                        <form action="adicionar_idioma_completo.php?page=<?php echo $pagina_atual + 1; ?>" method="POST">
-                            <?php if ($pagina_atual === 1): ?>
-                            <div class="mb-3">
-                                <label for="idioma_novo_completo" class="form-label">Nome do Idioma</label>
-                                <input type="text" class="form-control" id="idioma_novo_completo" name="idioma" placeholder="Ex: Espanhol" required>
-                            </div>
-                            <hr>
-                            <?php endif; ?>
-
-                            <h5>Perguntas do Quiz de Nivelamento (Total: 20 perguntas)</h5>
-                            
-                            <p class="text-muted">A resposta correta para cada pergunta deve ser "A", "B" ou "C".</p>
-                            
-                            <?php for ($i = $offset_inicial; $i < $offset_inicial + $limit && $i <= $total_perguntas; $i++): ?>
-                            <div class="card mb-3">
-                                <div class="card-header">Pergunta #<?php echo $i; ?></div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <label for="pergunta_<?php echo $i; ?>" class="form-label">Pergunta</label>
-                                        <textarea class="form-control" id="pergunta_<?php echo $i; ?>" name="pergunta_<?php echo $i; ?>" rows="2" required></textarea>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-4 mb-3">
-                                            <label for="opcao_a_<?php echo $i; ?>" class="form-label">Opção A</label>
-                                            <input type="text" class="form-control" id="opcao_a_<?php echo $i; ?>" name="opcao_a_<?php echo $i; ?>" required>
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label for="opcao_b_<?php echo $i; ?>" class="form-label">Opção B</label>
-                                            <input type="text" class="form-control" id="opcao_b_<?php echo $i; ?>" name="opcao_b_<?php echo $i; ?>" required>
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label for="opcao_c_<?php echo $i; ?>" class="form-label">Opção C</label>
-                                            <input type="text" class="form-control" id="opcao_c_<?php echo $i; ?>" name="opcao_c_<?php echo $i; ?>" required>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="resposta_correta_<?php echo $i; ?>" class="form-label">Resposta Correta</label>
-                                        <select id="resposta_correta_<?php echo $i; ?>" name="resposta_correta_<?php echo $i; ?>" class="form-select" required>
-                                            <option value="">Selecione a resposta correta</option>
-                                            <option value="A">Opção A</option>
-                                            <option value="B">Opção B</option>
-                                            <option value="C">Opção C</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <?php endfor; ?>
-                            
-                            <hr>
-                            
-                            <nav aria-label="Navegação de Páginas">
-                                <ul class="pagination justify-content-center">
-                                    <li class="page-item <?php echo ($pagina_atual <= 1) ? 'disabled' : ''; ?>">
-                                        <a class="page-link" href="?page=<?php echo $pagina_atual - 1; ?>">Anterior</a>
-                                    </li>
-                                    
-                                    <?php for ($p = 1; $p <= $total_paginas; $p++): ?>
-                                    <li class="page-item <?php echo ($p == $pagina_atual) ? 'active' : ''; ?>">
-                                        <a class="page-link" href="?page=<?php echo $p; ?>"><?php echo $p; ?></a>
-                                    </li>
-                                    <?php endfor; ?>
-                                    
-                                    <li class="page-item <?php echo ($pagina_atual >= $total_paginas) ? 'disabled' : ''; ?>">
-                                        <a class="page-link" href="?page=<?php echo $pagina_atual + 1; ?>">Próximo</a>
-                                    </li>
-                                </ul>
-                            </nav>
-
-                            <div class="d-flex justify-content-end gap-2 mt-3">
-                                    <button type="submit" class="btn btn-success">Salvar Idioma e Quiz (Fim)</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
