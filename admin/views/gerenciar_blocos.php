@@ -489,7 +489,7 @@ FOREIGN KEY (bloco_id) REFERENCES blocos(id) ON DELETE SET NULL;</pre>
                     </div>
                 </div>
 
-                <!-- Ações Rápidas -->
+                <!-- Ações Rápidas CORRIGIDAS -->
                 <div class="card mt-4">
                     <div class="card-header">
                         <h6 class="card-title mb-0">
@@ -499,10 +499,28 @@ FOREIGN KEY (bloco_id) REFERENCES blocos(id) ON DELETE SET NULL;</pre>
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6 mb-2">
-                                <a href="adicionar_atividades.php?caminho_id=<?php echo $caminho_id; ?>" 
-                                   class="btn btn-outline-success w-100">
-                                    <i class="fas fa-plus me-1"></i>Adicionar Atividade
-                                </a>
+                                <?php if ($coluna_bloco_id_existe && !empty($blocos)): ?>
+                                    <!-- Dropdown para escolher em qual bloco adicionar a atividade -->
+                                    <div class="dropdown">
+                                        <button class="btn btn-outline-success w-100 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            <i class="fas fa-plus me-1"></i>Adicionar Atividade
+                                        </button>
+                                        <ul class="dropdown-menu w-100">
+                                            <?php foreach ($blocos as $bloco): ?>
+                                                <li>
+                                                    <a class="dropdown-item" href="adicionar_atividades.php?unidade_id=<?php echo $caminho_info['id_unidade']; ?>&bloco_id=<?php echo $bloco['id']; ?>">
+                                                        <i class="fas fa-cube me-2"></i><?php echo htmlspecialchars($bloco['titulo']); ?>
+                                                    </a>
+                                                </li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    </div>
+                                <?php else: ?>
+                                    <button class="btn btn-outline-secondary w-100" disabled 
+                                            title="<?php echo !$coluna_bloco_id_existe ? 'Coluna bloco_id não existe' : 'Crie um bloco primeiro'; ?>">
+                                        <i class="fas fa-plus me-1"></i>Adicionar Atividade
+                                    </button>
+                                <?php endif; ?>
                             </div>
                             <div class="col-md-6 mb-2">
                                 <a href="gerenciar_exercicios.php?caminho_id=<?php echo $caminho_id; ?>" 
