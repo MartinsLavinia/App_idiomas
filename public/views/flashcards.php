@@ -166,36 +166,60 @@ $database->closeConnection();
 
         /* Deck Cards */
         .deck-card {
-            border: 2px solid transparent;
+            background-color: var(--branco);
+            border: 1px solid var(--cinza-medio);
+            border-top: 4px solid transparent; /* Espaço para o gradiente no hover */
+            border-radius: 1rem;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: relative;
         }
 
         .deck-card:hover {
-            border-color: var(--amarelo-detalhe);
-            transform: translateY(-8px) scale(1.02);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-top-color: var(--roxo-principal);
+        }
+
+        .deck-info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: #6c757d; /* Cinza mais escuro para melhor leitura */
+        }
+
+        .deck-info-item i {
+            color: var(--roxo-claro);
+            font-size: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .deck-info-item.public {
+            color: #198754; /* Verde para público */
         }
 
         .deck-stats {
-            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
-            color: white;
-            border-radius: 0.5rem;
-            padding: 1rem;
+            border-top: 1px solid var(--cinza-medio);
+            padding-top: 1rem;
             margin-top: 1rem;
         }
 
         .stat-item {
             text-align: center;
         }
-
+        
         .stat-number {
             font-size: 1.5rem;
             font-weight: 700;
-            color: var(--amarelo-detalhe);
+            color: var(--roxo-principal);
         }
 
         .stat-label {
             font-size: 0.8rem;
             opacity: 0.9;
+            color: var(--cinza-escuro);
         }
 
         /* Botões */
@@ -212,11 +236,69 @@ $database->closeConnection();
             transform: scale(1.05);
         }
 
+        .btn-open-deck {
+            background-color: transparent;
+            border: 2px solid var(--roxo-principal);
+            color: var(--roxo-principal);
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-open-deck:hover {
+            background-color: var(--roxo-principal);
+            color: var(--branco);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(106, 13, 173, 0.2);
+        }
+
+        .btn-open-deck::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
         .btn-warning {
             background-color: var(--amarelo-detalhe);
             border-color: var(--amarelo-detalhe);
             color: var(--preto-texto);
             font-weight: 600;
+        }
+
+        /* Botão de Call-to-Action para o estado vazio */
+        .btn-cta-empty {
+            background: linear-gradient(135deg, var(--amarelo-detalhe) 0%, #f39c12 100%);
+            color: var(--preto-texto);
+            border: none;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+            animation: pulse-glow 2s infinite;
+        }
+
+        .btn-cta-empty:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+        }
+
+        .btn-cta-empty i {
+            font-size: 1.3rem; /* Aumenta significativamente o tamanho do ícone */
+            font-weight: 700; /* Deixa o ícone mais "grosso" */
+            margin-right: 0.5rem; /* Garante um bom espaçamento */
+            transition: transform 0.3s ease;
+        }
+
+        .btn-cta-empty:hover i {
+            transform: rotate(180deg) scale(1.15); /* Animação mais pronunciada no hover */
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3); }
+            50% { box-shadow: 0 6px 25px rgba(255, 215, 0, 0.5); }
         }
 
         /* Dropdown Menu */
@@ -232,13 +314,30 @@ $database->closeConnection();
         }
 
         .dropdown-item:hover {
-            background-color: var(--roxo-principal);
-            color: white;
+            background-color: #f2e9f9; /* Roxo bem claro */
+            color: var(--roxo-escuro);
+            transform: translateX(4px);
         }
 
         .dropdown-item.text-danger:hover {
-            background-color: #dc3545;
-            color: white;
+            background-color: #fceaea; /* Vermelho bem claro */
+            color: #b02a37;
+            transform: translateX(4px);
+        }
+
+        /* Botão Limpar Filtros */
+        .btn-limpar-filtros {
+            background-color: var(--cinza-claro);
+            color: var(--preto-texto);
+            border: 1px solid var(--cinza-medio);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-limpar-filtros:hover {
+            background-color: var(--cinza-medio);
+            border-color: #adb5bd;
+            transform: translateY(-2px);
         }
 
         /* Botão de opções */
@@ -276,13 +375,16 @@ $database->closeConnection();
         .empty-state {
             text-align: center;
             padding: 3rem;
-            color: var(--cinza-medio);
+            background-color: var(--branco); /* Fundo branco */
+            color: var(--preto-texto); /* Texto preto */
+            border-radius: 1rem; /* Bordas arredondadas */
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
         }
 
         .empty-state i {
             font-size: 4rem;
             margin-bottom: 1rem;
-            color: var(--cinza-medio);
+            color: var(--amarelo-detalhe); /* Ícone roxo para destaque */
         }
 
         /* Responsive */
@@ -302,6 +404,93 @@ $database->closeConnection();
             padding: 20px;
         }
         
+        /* Estilos para o Modal de Deck */
+        #modalDeck .modal-content {
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        #modalDeck .modal-header {
+            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+            color: var(--branco);
+            border-bottom: none;
+            border-radius: 1rem 1rem 0 0;
+            padding: 1.5rem;
+        }
+
+        #modalDeck .modal-header .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+
+        #modalDeck .modal-body {
+            padding: 2rem;
+        }
+
+        #modalDeck .modal-footer {
+            background-color: var(--cinza-claro);
+            border-top: none;
+            border-radius: 0 0 1rem 1rem;
+            padding: 1.5rem;
+        }
+
+        #modalDeck .form-label {
+            font-weight: 600;
+            color: var(--roxo-escuro);
+        }
+
+        #modalDeck .form-label i {
+            color: var(--amarelo-detalhe);
+            margin-right: 0.5rem;
+        }
+
+        #modalDeck .form-check-input:checked {
+            background-color: var(--roxo-principal);
+            border-color: var(--roxo-principal);
+        }
+
+        #modalDeck .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--cinza-medio);
+            color: var(--preto-texto);
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        #modalDeck .btn-secondary:hover {
+            background-color: var(--cinza-claro);
+            border-color: #adb5bd;
+            transform: scale(1.05); /* Efeito de zoom */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Sombra suave */
+        }
+
+        /* Estilos para o Modal de Confirmação de Exclusão */
+        #modalConfirmarExclusao .modal-content {
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        #modalConfirmarExclusao .modal-header {
+            background: #dc3545; /* Vermelho de perigo */
+            color: var(--branco);
+            border-bottom: none;
+            border-radius: 1rem 1rem 0 0;
+        }
+
+        #modalConfirmarExclusao .modal-header .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+
+        #modalConfirmarExclusao .modal-body {
+            padding: 2rem;
+        }
+
+        #modalConfirmarExclusao .modal-footer {
+            background-color: var(--cinza-claro);
+            border-top: 1px solid var(--cinza-medio);
+            border-radius: 0 0 1rem 1rem;
+        }
     </style>
 </head>
 <body>
@@ -327,109 +516,115 @@ $database->closeConnection();
 
     <div class="main-content">
         <div class="container-fluid mt-4">
-        <!-- Cabeçalho -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h1 class="mb-2">
-                            <i class="fas fa-layer-group me-2 text-warning"></i>
-                            Flash Cards
-                        </h1>
-                        <p class="text-muted mb-0">Estude com flashcards personalizados</p>
+            <div class="row justify-content-center">
+                <div class="col-11">
+                    <!-- Cabeçalho -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h1 class="mb-2">
+                                        <i class="fas fa-layer-group me-2 text-warning"></i>
+                                        Flash Cards
+                                    </h1>
+                                    <p class="text-muted mb-0">Estude com flashcards personalizados</p>
+                                </div>
+                                <div>
+                                   <button class="btn btn-primary me-2" onclick="abrirModalCriarDeck()">
+                <i class="fas fa-plus me-2"></i>Novo Deck
+            </button>
+                                    <button class="btn btn-warning" onclick="estudarFlashcards()">
+                                        <i class="fas fa-play me-2"></i>Estudar Agora
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                       <button class="btn btn-primary me-2" onclick="abrirModalCriarDeck()">
-    <i class="fas fa-plus me-2"></i>Novo Deck
-</button>
-                        <button class="btn btn-warning" onclick="estudarFlashcards()">
-                            <i class="fas fa-play me-2"></i>Estudar Agora
-                        </button>
+
+                    <!-- Filtros -->
+                    <div class="filter-section">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-3">
+                                <label for="filtroIdioma" class="form-label">Idioma</label>
+                                <select class="form-select" id="filtroIdioma" onchange="aplicarFiltros()">
+                                    <option value="">Todos os idiomas</option>
+                                    <option value="Ingles" <?php echo $idioma_atual === 'Ingles' ? 'selected' : ''; ?>>Inglês</option>
+                                    <option value="Japones" <?php echo $idioma_atual === 'Japones' ? 'selected' : ''; ?>>Japonês</option>
+                                </select>
+                            </div>
+                    
+                            <div class="col-md-3">
+                                <label for="filtroNivel" class="form-label">Nível</label>
+                                <select class="form-select" id="filtroNivel" onchange="aplicarFiltros()">
+                                    <option value="">Todos os níveis</option>
+                                    <option value="A1" <?php echo $nivel_atual === 'A1' ? 'selected' : ''; ?>>A1</option>
+                                    <option value="A2" <?php echo $nivel_atual === 'A2' ? 'selected' : ''; ?>>A2</option>
+                                    <option value="B1" <?php echo $nivel_atual === 'B1' ? 'selected' : ''; ?>>B1</option>
+                                    <option value="B2" <?php echo $nivel_atual === 'B2' ? 'selected' : ''; ?>>B2</option>
+                                    <option value="C1" <?php echo $nivel_atual === 'C1' ? 'selected' : ''; ?>>C1</option>
+                                    <option value="C2" <?php echo $nivel_atual === 'C2' ? 'selected' : ''; ?>>C2</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label for="tipoDecks" class="form-label">Tipo</label>
+                                <select class="form-select" id="tipoDecks" onchange="aplicarFiltros()">
+                                    <option value="meus">Meus Decks</option>
+                                    <option value="publicos">Decks Públicos</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button class="btn btn-limpar-filtros w-100" onclick="limparFiltros()">
+                                    <i class="fas fa-times me-2"></i>Limpar Filtros
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lista de Decks -->
+                    <div id="listaDecks" class="row">
+                        <!-- O conteúdo dos decks será carregado aqui via JavaScript -->
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Filtros -->
-        <div class="filter-section">
-            <div class="row align-items-end">
-                <div class="col-md-4">
-                    <label for="filtroIdioma" class="form-label">Idioma</label>
-                    <select class="form-select" id="filtroIdioma" onchange="aplicarFiltros()">
-                        <option value="">Todos os idiomas</option>
-                        <option value="Ingles" <?php echo $idioma_atual === 'Ingles' ? 'selected' : ''; ?>>Inglês</option>
-                        <option value="Japones" <?php echo $idioma_atual === 'Japones' ? 'selected' : ''; ?>>Japonês</option>
-                    </select>
-                </div>
-        
-<div class="col-md-4">
-    <label for="filtroNivel" class="form-label">Nível</label>
-    <select class="form-select" id="filtroNivel" onchange="aplicarFiltros()">
-        <option value="">Todos os níveis</option>
-        <option value="A1" <?php echo $nivel_atual === 'A1' ? 'selected' : ''; ?>>A1</option>
-        <option value="A2" <?php echo $nivel_atual === 'A2' ? 'selected' : ''; ?>>A2</option>
-        <option value="B1" <?php echo $nivel_atual === 'B1' ? 'selected' : ''; ?>>B1</option>
-        <option value="B2" <?php echo $nivel_atual === 'B2' ? 'selected' : ''; ?>>B2</option>
-        <option value="C1" <?php echo $nivel_atual === 'C1' ? 'selected' : ''; ?>>C1</option>
-        <option value="C2" <?php echo $nivel_atual === 'C2' ? 'selected' : ''; ?>>C2</option>
-    </select>
-</div>
-
-                <div class="col-md-4">
-                    <label for="tipoDecks" class="form-label">Tipo</label>
-                    <select class="form-select" id="tipoDecks" onchange="aplicarFiltros()">
-                        <option value="meus">Meus Decks</option>
-                        <option value="publicos">Decks Públicos</option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <button class="btn btn-outline-secondary w-100" onclick="limparFiltros()">
-                        <i class="fas fa-times me-2"></i>Limpar Filtros
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Lista de Decks -->
-        <div id="listaDecks" class="row">
-            <!-- O conteúdo dos decks será carregado aqui via JavaScript -->
         </div>
     </div>
     </div>
 
     <!-- Modal Criar/Editar Deck -->
     <div class="modal fade" id="modalDeck" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="tituloModalDeck">Novo Deck</h5>
+                    <h5 class="modal-title" id="tituloModalDeck"><i class="fas fa-layer-group me-2"></i>Novo Deck</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="formDeck">
                         <input type="hidden" id="deckId" name="id_deck">
                         <div class="mb-3">
-                            <label for="deckNome" class="form-label">Nome do Deck *</label>
+                            <label for="deckNome" class="form-label"><i class="fas fa-heading"></i>Nome do Deck *</label>
                             <input type="text" class="form-control" id="deckNome" name="nome" required>
                         </div>
                         <div class="mb-3">
-                            <label for="deckDescricao" class="form-label">Descrição</label>
+                            <label for="deckDescricao" class="form-label"><i class="fas fa-align-left"></i>Descrição</label>
                             <textarea class="form-control" id="deckDescricao" name="descricao" rows="3"></textarea>
                         </div>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="deckIdioma" class="form-label">Idioma *</label>
+                                    <label for="deckIdioma" class="form-label"><i class="fas fa-language"></i>Idioma *</label>
                                     <select class="form-select" id="deckIdioma" name="idioma" required>
                                         <option value="">Selecione...</option>
                                         <option value="Ingles">Inglês</option>
                                         <option value="Japones">Japonês</option>
+                                        <!-- Adicionar mais idiomas aqui se necessário -->
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="deckNivel" class="form-label">Nível *</label>
+                                    <label for="deckNivel" class="form-label"><i class="fas fa-signal"></i>Nível *</label>
                                     <select class="form-select" id="deckNivel" name="nivel" required>
                                         <option value="">Selecione...</option>
                                         <option value="A1">A1</option>
@@ -441,11 +636,10 @@ $database->closeConnection();
                                     </select>
                                 </div>
                             </div>
-
                         </div>
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="deckPublico" name="publico">
+                        <div class="mb-3 mt-2">
+                            <div class="form-check form-switch fs-5">
+                                <input class="form-check-input" type="checkbox" role="switch" id="deckPublico" name="publico">
                                 <label class="form-check-label" for="deckPublico">
                                     Tornar este deck público (outros usuários poderão estudá-lo)
                                 </label>
@@ -454,8 +648,33 @@ $database->closeConnection();
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="salvarDeck()">Salvar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="salvarDeck()">
+                        <i class="fas fa-save me-2"></i>Salvar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Exclusão -->
+    <div class="modal fade" id="modalConfirmarExclusao" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tituloModalExclusao"><i class="fas fa-exclamation-triangle me-2"></i>Confirmar Exclusão</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="mensagemModalExclusao">Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarExclusao"><i class="fas fa-trash me-2"></i>Excluir</button>
                 </div>
             </div>
         </div>

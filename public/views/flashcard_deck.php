@@ -197,6 +197,34 @@ if (!$id_deck) {
             margin-bottom: 1rem;
             color: var(--cinza-medio);
         }
+
+        /* Estilos para o Modal de Confirmação de Exclusão */
+        #modalConfirmarExclusao .modal-content {
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        #modalConfirmarExclusao .modal-header {
+            background: #dc3545; /* Vermelho de perigo */
+            color: var(--branco);
+            border-bottom: none;
+            border-radius: 1rem 1rem 0 0;
+        }
+
+        #modalConfirmarExclusao .modal-header .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+
+        #modalConfirmarExclusao .modal-body {
+            padding: 2rem;
+        }
+
+        #modalConfirmarExclusao .modal-footer {
+            background-color: var(--cinza-claro);
+            border-top: 1px solid var(--cinza-medio);
+            border-radius: 0 0 1rem 1rem;
+        }
     </style>
 </head>
 <body>
@@ -336,17 +364,40 @@ if (!$id_deck) {
         </div>
     </div>
 
+    <!-- Modal de Confirmação de Exclusão -->
+    <div class="modal fade" id="modalConfirmarExclusao" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tituloModalExclusao"><i class="fas fa-exclamation-triangle me-2"></i>Confirmar Exclusão</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="mensagemModalExclusao">Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarExclusao"><i class="fas fa-trash me-2"></i>Excluir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Variáveis globais
         const idDeck = <?php echo $id_deck; ?>;
         let modalFlashcard = null;
+        let modalConfirmarExclusao = null;
         let deckAtual = null;
         let flashcardAtual = null;
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
             modalFlashcard = new bootstrap.Modal(document.getElementById('modalFlashcard'));
+            modalConfirmarExclusao = new bootstrap.Modal(document.getElementById('modalConfirmarExclusao'));
             carregarDeck();
             carregarFlashcards();
             
@@ -434,32 +485,44 @@ if (!$id_deck) {
         // Excluir deck atual
         function excluirDeckAtual() {
             if (!deckAtual) return;
-            
-            if (!confirm(`Tem certeza que deseja excluir o deck "${deckAtual.nome}"? Esta ação não pode ser desfeita e todos os flashcards serão perdidos.`)) {
-                return;
-            }
 
-            const formData = new FormData();
-            formData.append('action', 'excluir_deck');
-            formData.append('id_deck', idDeck);
+            // Prepara e exibe o modal de confirmação
+            const mensagem = `Tem certeza que deseja excluir o deck "<strong>${deckAtual.nome}</strong>"? Esta ação não pode ser desfeita e todos os flashcards serão perdidos.`;
+            document.getElementById('mensagemModalExclusao').innerHTML = mensagem;
 
-            fetch('flashcard_controller.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Deck excluído com sucesso!');
-                    window.location.href = 'flashcards.php';
-                } else {
-                    alert('Erro ao excluir deck: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                alert('Erro de conexão ao excluir deck.');
+            const btnConfirmar = document.getElementById('btnConfirmarExclusao');
+
+            // Remove listeners antigos para evitar múltiplas execuções
+            const novoBtn = btnConfirmar.cloneNode(true);
+            btnConfirmar.parentNode.replaceChild(novoBtn, btnConfirmar);
+
+            novoBtn.addEventListener('click', function() {
+                const formData = new FormData();
+                formData.append('action', 'excluir_deck');
+                formData.append('id_deck', idDeck);
+
+                fetch('flashcard_controller.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    modalConfirmarExclusao.hide();
+                    if (data.success) {
+                        alert('Deck excluído com sucesso!'); // Pode ser substituído por um toast
+                        window.location.href = 'flashcards.php';
+                    } else {
+                        alert('Erro ao excluir deck: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    modalConfirmarExclusao.hide();
+                    console.error('Erro:', error);
+                    alert('Erro de conexão ao excluir deck.');
+                });
             });
+
+            modalConfirmarExclusao.show();
         }
 
         // Carrega flashcards do deck

@@ -1,4 +1,5 @@
 <?php
+// processar_exercicio.php
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
@@ -91,61 +92,46 @@ function processarResposta($resposta_usuario, $conteudo, $tipo_exercicio) {
             return processarArrastarSoltar($resposta_usuario, $conteudo);
         case 'completar':
             return processarCompletar($resposta_usuario, $conteudo);
+        case 'listening':
+            return processarListening($resposta_usuario, $conteudo);
         default:
-            return ['correto' => false, 'explicacao' => 'Tipo de exercício não suportado.'];
+            return ['success' => false, 'correto' => false, 'explicacao' => 'Tipo de exercício não suportado.'];
     }
 }
 
-function processarCompletar($resposta_usuario, $conteudo) {
-    $resposta_correta = $conteudo['resposta_correta'] ?? '';
-    $alternativas_aceitas = $conteudo['alternativas_aceitas'] ?? [$resposta_correta];
+// FUNÇÃO CORRIGIDA: Processar exercício de listening
+function processarListening($resposta_usuario, $conteudo) {
+    if (!isset($conteudo['resposta_correta']) || !isset($conteudo['opcoes'])) {
+        return [
+            'success' => false,
+            'correto' => false,
+            'explicacao' => 'Exercício de listening mal configurado.'
+        ];
+    }
 
-    // Limpar e normalizar a resposta do usuário
-    $resposta_limpa = trim(strtolower($resposta_usuario));
+    $resposta_correta_index = $conteudo['resposta_correta'];
+    $resposta_correta = $conteudo['opcoes'][$resposta_correta_index] ?? '';
     
-    $correto = false;
-    $melhor_similaridade = 0;
-    $resposta_encontrada = '';
-    
-    foreach ($alternativas_aceitas as $alternativa) {
-        // Limpar e normalizar alternativa
-        $alt_limpa = trim(strtolower($alternativa));
-        
-        // Verificar correspondência exata
-        if ($resposta_limpa === $alt_limpa) {
-            $correto = true;
-            $melhor_similaridade = 1.0;
-            $resposta_encontrada = $alternativa;
-            break;
-        }
-        
-        // Calcular similaridade
-        $similaridade = calcularSimilaridade($resposta_limpa, $alt_limpa);
-        if ($similaridade > $melhor_similaridade) {
-            $melhor_similaridade = $similaridade;
-            $resposta_encontrada = $alternativa;
-        }
-    }
-    
-    // Considerar correto se similaridade >= 80%
-    if (!$correto && $melhor_similaridade >= 0.8) {
-        $correto = true;
-    }
+    // Converter para inteiro para comparação
+    $resposta_usuario_int = intval($resposta_usuario);
+    $correto = ($resposta_usuario_int === $resposta_correta_index);
 
     return [
+        'success' => true,
         'correto' => $correto,
-        'explicacao' => $conteudo['explicacao'] ?? ($correto ? 'Correto!' : "Resposta incorreta. Esperado: '$resposta_encontrada'"),
-        'dica' => $correto ? null : ($conteudo['dica'] ?? "Tente novamente. Resposta esperada: '$resposta_encontrada'"),
-        'pontuacao' => $correto ? 100 : ($melhor_similaridade * 100),
-        'similaridade' => $melhor_similaridade,
-        'resposta_correta' => $resposta_encontrada,
-        'success' => true
+        'explicacao' => $conteudo['explicacao'] ?? ($correto ? 'Excelente! Você acertou!' : 'Resposta incorreta. Tente novamente.'),
+        'mensagem' => $correto ? '🎉 Parabéns! Resposta correta!' : '❌ Resposta incorreta.',
+        'audio_url' => $conteudo['audio_url'] ?? '',
+        'frase_original' => $conteudo['frase_original'] ?? '',
+        'resposta_correta' => $resposta_correta,
+        'resposta_correta_index' => $resposta_correta_index,
+        'pontuacao' => $correto ? 100 : 0
     ];
 }
 
 function processarMultiplaEscolha($resposta_usuario, $conteudo) {
     if (!isset($conteudo['alternativas'])) {
-        return ['correto' => false, 'explicacao' => 'Exercício mal configurado.'];
+        return ['success' => false, 'correto' => false, 'explicacao' => 'Exercício mal configurado.'];
     }
 
     $resposta_correta = null;
@@ -163,11 +149,11 @@ function processarMultiplaEscolha($resposta_usuario, $conteudo) {
     $correto = strtolower($resposta_usuario) === strtolower($resposta_correta);
 
     return [
+        'success' => true,
         'correto' => $correto,
         'explicacao' => $conteudo['explicacao'] ?? ($correto ? 'Correto!' : 'Resposta incorreta.'),
         'dica' => $correto ? null : ($conteudo['dica'] ?? null),
-        'pontuacao' => $correto ? 100 : 0,
-        'success' => true
+        'pontuacao' => $correto ? 100 : 0
     ];
 }
 
@@ -208,27 +194,73 @@ function processarTextoLivre($resposta_usuario, $conteudo) {
     }
 
     return [
+        'success' => true,
         'correto' => $correto,
         'explicacao' => $conteudo['explicacao'] ?? ($correto ? 'Correto!' : "Resposta incorreta. Esperado: '$resposta_encontrada'"),
         'dica' => $correto ? null : ($conteudo['dica'] ?? "Tente novamente. Resposta esperada: '$resposta_encontrada'"),
         'pontuacao' => $correto ? 100 : ($melhor_similaridade * 100),
         'similaridade' => $melhor_similaridade,
-        'resposta_correta' => $resposta_encontrada,
-        'success' => true
+        'resposta_correta' => $resposta_encontrada
+    ];
+}
+
+function processarCompletar($resposta_usuario, $conteudo) {
+    $resposta_correta = $conteudo['resposta_correta'] ?? '';
+    $alternativas_aceitas = $conteudo['alternativas_aceitas'] ?? [$resposta_correta];
+
+    // Limpar e normalizar a resposta do usuário
+    $resposta_limpa = trim(strtolower($resposta_usuario));
+    
+    $correto = false;
+    $melhor_similaridade = 0;
+    $resposta_encontrada = '';
+    
+    foreach ($alternativas_aceitas as $alternativa) {
+        // Limpar e normalizar alternativa
+        $alt_limpa = trim(strtolower($alternativa));
+        
+        // Verificar correspondência exata
+        if ($resposta_limpa === $alt_limpa) {
+            $correto = true;
+            $melhor_similaridade = 1.0;
+            $resposta_encontrada = $alternativa;
+            break;
+        }
+        
+        // Calcular similaridade
+        $similaridade = calcularSimilaridade($resposta_limpa, $alt_limpa);
+        if ($similaridade > $melhor_similaridade) {
+            $melhor_similaridade = $similaridade;
+            $resposta_encontrada = $alternativa;
+        }
+    }
+    
+    // Considerar correto se similaridade >= 80%
+    if (!$correto && $melhor_similaridade >= 0.8) {
+        $correto = true;
+    }
+
+    return [
+        'success' => true,
+        'correto' => $correto,
+        'explicacao' => $conteudo['explicacao'] ?? ($correto ? 'Correto!' : "Resposta incorreta. Esperado: '$resposta_encontrada'"),
+        'dica' => $correto ? null : ($conteudo['dica'] ?? "Tente novamente. Resposta esperada: '$resposta_encontrada'"),
+        'pontuacao' => $correto ? 100 : ($melhor_similaridade * 100),
+        'similaridade' => $melhor_similaridade,
+        'resposta_correta' => $resposta_encontrada
     ];
 }
 
 function processarFala($resposta_usuario, $conteudo) {
     // Simulação de processamento de fala
-    // Em uma implementação real, aqui seria feita a análise do áudio
     $correto = $resposta_usuario === 'fala_processada';
 
     return [
+        'success' => true,
         'correto' => $correto,
         'explicacao' => $correto ? 'Excelente pronúncia!' : 'Tente novamente, prestando atenção à pronúncia.',
         'dica' => $correto ? null : 'Ouça o áudio de exemplo e pratique devagar.',
-        'pontuacao' => $correto ? 100 : 0,
-        'success' => true
+        'pontuacao' => $correto ? 100 : 0
     ];
 }
 
@@ -239,11 +271,11 @@ function processarArrastarSoltar($resposta_usuario, $conteudo) {
     $correto = json_encode($resposta_usuario) === json_encode($resposta_correta);
 
     return [
+        'success' => true,
         'correto' => $correto,
         'explicacao' => $conteudo['explicacao'] ?? ($correto ? 'Correto!' : 'Verifique as posições dos elementos.'),
         'dica' => $correto ? null : ($conteudo['dica'] ?? 'Leia as categorias com atenção.'),
-        'pontuacao' => $correto ? 100 : 0,
-        'success' => true
+        'pontuacao' => $correto ? 100 : 0
     ];
 }
 

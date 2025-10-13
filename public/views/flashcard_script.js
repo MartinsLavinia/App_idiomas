@@ -1,10 +1,12 @@
 let modalDeck = null;
+let modalConfirmarExclusao = null;
 let deckAtual = null;
 const nivelAtual = '<?php echo $nivel_atual; ?>';
 
 // Inicialização
 document.addEventListener('DOMContentLoaded', function () {
     modalDeck = new bootstrap.Modal(document.getElementById('modalDeck'));
+    modalConfirmarExclusao = new bootstrap.Modal(document.getElementById('modalConfirmarExclusao'));
     carregarDecks();
 });
 
@@ -143,7 +145,7 @@ function exibirDecks(decks) {
                     <i class="fas fa-box-open"></i>
                     <h3>Nenhum deck encontrado</h3>
                     <p>Crie seu primeiro deck ou ajuste os filtros.</p>
-                    <button class="btn btn-primary mt-3" onclick="abrirModalCriarDeck()">
+                    <button class="btn btn-cta-empty mt-3" onclick="abrirModalCriarDeck()">
                         <i class="fas fa-plus me-2"></i>Criar Primeiro Deck
                     </button>
                 </div>
@@ -178,28 +180,31 @@ function exibirDecks(decks) {
                                 </ul>
                             </div>
                         </div>
-                        <p class="card-text text-muted">${deck.descricao || 'Sem descrição'}</p>
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <span class="badge bg-primary">${deck.idioma}</span>
-                            <span class="badge bg-info">${deck.nivel}</span>
+                        <p class="card-text text-muted small">${deck.descricao || 'Sem descrição'}</p>
+                        
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            <div class="deck-info-item"><i class="fas fa-language"></i> ${deck.idioma}</div>
+                            <div class="deck-info-item"><i class="fas fa-signal"></i> ${deck.nivel}</div>
                             ${deck.publico == 1
-                                ? '<span class="badge bg-success">Público</span>'
-                                : '<span class="badge bg-secondary">Privado</span>'}
+                                ? '<div class="deck-info-item public"><i class="fas fa-globe-americas"></i> Público</div>'
+                                : '<div class="deck-info-item"><i class="fas fa-lock"></i> Privado</div>'}
                         </div>
-                        <div class="deck-stats mt-3">
+
+                        <div class="deck-stats">
                             <div class="row">
                                 <div class="col-6 stat-item">
                                     <div class="stat-number">${deck.total_flashcards || 0}</div>
                                     <div class="stat-label">Cards</div>
                                 </div>
                                 <div class="col-6 stat-item">
-                                    <div class="stat-number">${deck.flashcards_estudados || 0}</div>
-                                    <div class="stat-label">Estudados</div>
+                                    <div class="stat-number">${Math.round(deck.progresso || 0)}%</div>
+                                    <div class="stat-label">Progresso</div>
                                 </div>
                             </div>
                         </div>
-                        <div class="mt-3">
-                            <button class="btn btn-primary btn-sm w-100" onclick="abrirDeck(${deck.id})">
+
+                        <div class="mt-4">
+                            <button class="btn btn-open-deck w-100" onclick="abrirDeck(${deck.id})">
                                 <i class="fas fa-folder-open me-2"></i>Abrir Deck
                             </button>
                         </div>
@@ -303,31 +308,43 @@ function excluirDeck(idDeck, nomeDeck, event) {
         event.stopPropagation();
     }
     
-    if (!confirm(`Tem certeza que deseja excluir o deck "${nomeDeck}"? Esta ação não pode ser desfeita e todos os flashcards serão perdidos.`)) {
-        return;
-    }
+    // Prepara e exibe o modal de confirmação
+    const mensagem = `Tem certeza que deseja excluir o deck "<strong>${nomeDeck}</strong>"? Esta ação não pode ser desfeita e todos os flashcards serão perdidos.`;
+    document.getElementById('mensagemModalExclusao').innerHTML = mensagem;
+    
+    const btnConfirmar = document.getElementById('btnConfirmarExclusao');
+    
+    // Remove listeners antigos para evitar múltiplas execuções
+    const novoBtn = btnConfirmar.cloneNode(true);
+    btnConfirmar.parentNode.replaceChild(novoBtn, btnConfirmar);
 
-    const formData = new FormData();
-    formData.append('action', 'excluir_deck');
-    formData.append('id_deck', idDeck);
+    novoBtn.addEventListener('click', function() {
+        const formData = new FormData();
+        formData.append('action', 'excluir_deck');
+        formData.append('id_deck', idDeck);
 
-    fetch('flashcard_controller.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            mostrarMensagem('Deck excluído com sucesso!', 'success');
-            carregarDecks();
-        } else {
-            mostrarMensagem('Erro ao excluir deck: ' + data.message, 'danger');
-        }
-    })
-    .catch(error => {
-        console.error('Erro:', error);
-        mostrarMensagem('Erro de conexão ao excluir deck.', 'danger');
+        fetch('flashcard_controller.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            modalConfirmarExclusao.hide();
+            if (data.success) {
+                mostrarMensagem('Deck excluído com sucesso!', 'success');
+                carregarDecks();
+            } else {
+                mostrarMensagem('Erro ao excluir deck: ' + data.message, 'danger');
+            }
+        })
+        .catch(error => {
+            modalConfirmarExclusao.hide();
+            console.error('Erro:', error);
+            mostrarMensagem('Erro de conexão ao excluir deck.', 'danger');
+        });
     });
+
+    modalConfirmarExclusao.show();
 }
 
 // Estudar todos os flashcards

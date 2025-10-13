@@ -199,6 +199,74 @@ $database->closeConnection();
             margin-left: 250px;
             padding: 20px;
         }
+
+        /* Estilos para o Modal de Confirmação de Exclusão */
+        #modalConfirmarExclusao .modal-content {
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        #modalConfirmarExclusao .modal-header {
+            background: #dc3545; /* Vermelho de perigo */
+            color: var(--branco);
+            border-bottom: none;
+            border-radius: 1rem 1rem 0 0;
+        }
+
+        #modalConfirmarExclusao .modal-header .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+
+        #modalConfirmarExclusao .modal-body {
+            padding: 2rem;
+        }
+
+        #modalConfirmarExclusao .modal-footer {
+            background-color: var(--cinza-claro);
+            border-top: 1px solid var(--cinza-medio);
+            border-radius: 0 0 1rem 1rem;
+        /* Estilos para exercícios de listening */
+        .audio-player-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #e9ecef;
+        }
+
+        .audio-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .listening-options {
+            display: grid;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-option {
+            text-align: left;
+            padding: 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .btn-option:hover {
+            border-color: #007bff;
+            background: #f8f9fa;
+        }
+
+        .btn-option.selected {
+            border-color: #007bff;
+            background: #007bff;
+            color: white;
+        }
     </style>
 </head>
 
@@ -226,7 +294,7 @@ $database->closeConnection();
     <div class="main-content">
         <div class="container-fluid mt-4">
         <div class="row justify-content-center">
-            <div class="col-md-11">
+            <div class="col-11">
                 <?php if ($mostrar_selecao_idioma): ?>
                     <!-- Seleção de idioma para usuários sem progresso -->
                     <div class="card">
@@ -502,6 +570,7 @@ $database->closeConnection();
         </div>
     </div>
 </div>
+
     <!-- Modal Blocos da Unidade -->
     <div class="modal fade" id="modalBlocos" tabindex="-1" aria-labelledby="modalBlocosLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -578,6 +647,27 @@ $database->closeConnection();
         </div>
     </div>
 
+    <!-- Modal de Confirmação de Exclusão -->
+    <div class="modal fade" id="modalConfirmarExclusao" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tituloModalExclusao"><i class="fas fa-exclamation-triangle me-2"></i>Confirmar Exclusão</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="mensagemModalExclusao">Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarExclusao"><i class="fas fa-trash me-2"></i>Excluir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
     // ==================== VARIÁVEIS GLOBAIS ====================
     let modalBlocos = null;
@@ -585,6 +675,7 @@ $database->closeConnection();
     let modalAdicionarPalavra = null;
     let unidadeAtual = null;
     let blocoAtual = null;
+    let modalConfirmarExclusao = null;
     let exercicioAtual = null;
     let exerciciosLista = [];
     let exercicioIndex = 0;
@@ -597,6 +688,7 @@ $database->closeConnection();
         modalBlocos = new bootstrap.Modal(document.getElementById('modalBlocos'));
         modalExercicios = new bootstrap.Modal(document.getElementById('modalExercicios'));
         modalAdicionarPalavra = new bootstrap.Modal(document.getElementById('modalAdicionarPalavra'));
+        modalConfirmarExclusao = new bootstrap.Modal(document.getElementById('modalConfirmarExclusao'));
 
         // Carrega palavras do usuário ao inicializar
         if (typeof carregarPalavras === 'function') {
@@ -811,6 +903,51 @@ $database->closeConnection();
                     </div>
                 </div>
             `;
+        } 
+        // NOVO: CASO PARA EXERCÍCIOS DE LISTENING
+        else if (exercicioAtual.tipo_exercicio === "listening") {
+            htmlConteudo += `
+                <div class="audio-player-container">
+                    <h6 class="text-center mb-3">🎧 Exercício de Listening</h6>
+                    <div class="text-center mb-4">
+                        <h6>Ouça o áudio e selecione a opção correta:</h6>
+                        <audio controls class="w-100 mb-3" id="audioPlayerListening">
+                            <source src="${conteudo.audio_url || ''}" type="audio/mpeg">
+                            Seu navegador não suporta o elemento de áudio.
+                        </audio>
+                        <div class="audio-controls">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('audioPlayerListening').play()">
+                                <i class="fas fa-play me-1"></i>Reproduzir
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('audioPlayerListening').pause()">
+                                <i class="fas fa-pause me-1"></i>Pausar
+                            </button>
+                            <button type="button" class="btn btn-outline-info btn-sm" onclick="document.getElementById('audioPlayerListening').currentTime = 0">
+                                <i class="fas fa-redo me-1"></i>Reiniciar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="listening-options">
+            `;
+            
+            // Mostrar opções de resposta
+            if (conteudo.opcoes && Array.isArray(conteudo.opcoes)) {
+                conteudo.opcoes.forEach((opcao, index) => {
+                    if (opcao && opcao.trim() !== '') {
+                        htmlConteudo += `
+                            <button type="button" class="btn btn-option btn-resposta" 
+                                    data-id="${index}" onclick="selecionarResposta(this)">
+                                ${opcao}
+                            </button>
+                        `;
+                    }
+                });
+            }
+            
+            htmlConteudo += `
+                    </div>
+                </div>
+            `;
         }
 
         conteudoExercicioDiv.innerHTML = htmlConteudo;
@@ -867,69 +1004,47 @@ $database->closeConnection();
         } else if (exercicioAtual.tipo_exercicio === "fala") {
             respostaUsuario = "fala_processada";
         }
+        // NOVO: Captura resposta para listening
+        else if (exercicioAtual.tipo_exercicio === "listening") {
+            respostaUsuario = respostaSelecionada;
+            if (!respostaUsuario) {
+                alert("Por favor, selecione uma opção após ouvir o áudio.");
+                return;
+            }
+        }
 
         if (!respostaUsuario) {
             alert("Por favor, forneça uma resposta.");
             return;
         }
 
-        // Processar resposta localmente
-        processarRespostaLocal(respostaUsuario);
-    };
-
-    // Função para processar resposta localmente
-    function processarRespostaLocal(respostaUsuario) {
-        let conteudo = exercicioAtual.conteudo;
-        if (typeof conteudo === 'string' && conteudo.startsWith('{')) {
-            try {
-                conteudo = JSON.parse(conteudo);
-            } catch (e) {
-                console.error("Erro ao fazer parse do conteúdo:", e);
-                conteudo = {};
+        // Enviar resposta para o servidor
+        fetch('../../admin/controller/processar_exercicio.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                exercicio_id: exercicioAtual.id,
+                resposta: respostaUsuario,
+                tipo_exercicio: exercicioAtual.tipo_exercicio
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                exibirFeedback(data);
+                document.getElementById("btnEnviarResposta").style.display = "none";
+                document.getElementById("btnProximoExercicio").style.display = "block";
+            } else {
+                alert("Erro ao processar resposta: " + data.message);
             }
-        }
-
-        let correto = false;
-        let explicacao = '';
-        let respostaCorreta = '';
-
-        if (exercicioAtual.tipo_exercicio === "multipla_escolha") {
-            const alternativaCorreta = conteudo.alternativas?.find(alt => alt.correta);
-            respostaCorreta = alternativaCorreta ? alternativaCorreta.id : '';
-            correto = respostaUsuario === respostaCorreta;
-            explicacao = conteudo.explicacao || (correto ? 'Resposta correta!' : 'Resposta incorreta.');
-            
-        } else if (exercicioAtual.tipo_exercicio === "texto_livre") {
-            respostaCorreta = conteudo.resposta_correta || '';
-            const alternativasAceitas = conteudo.alternativas_aceitas || [respostaCorreta];
-            correto = alternativasAceitas.some(resp => 
-                respostaUsuario.toLowerCase() === resp.toLowerCase()
-            );
-            explicacao = conteudo.explicacao || (correto ? 'Resposta correta!' : `Resposta incorreta. A resposta correta é: ${respostaCorreta}`);
-            
-        } else if (exercicioAtual.tipo_exercicio === "completar") {
-            respostaCorreta = conteudo.resposta_correta || '';
-            const alternativasAceitas = conteudo.alternativas_aceitas || [respostaCorreta];
-            correto = alternativasAceitas.some(resp => 
-                respostaUsuario.toLowerCase() === resp.toLowerCase()
-            );
-            explicacao = conteudo.explicacao || (correto ? 'Resposta correta!' : `Resposta incorreta. A resposta correta é: ${respostaCorreta}`);
-            
-        } else if (exercicioAtual.tipo_exercicio === "fala") {
-            correto = true;
-            explicacao = 'Exercício de fala processado com sucesso!';
-        }
-
-        exibirFeedback({
-            correto: correto,
-            explicacao: explicacao,
-            dica: conteudo.dica || '',
-            resposta_correta: respostaCorreta
+        })
+        .catch(error => {
+            console.error("Erro:", error);
+            alert("Erro de conexão. Tente novamente.");
         });
-
-        document.getElementById("btnEnviarResposta").style.display = "none";
-        document.getElementById("btnProximoExercicio").style.display = "block";
-    }
+    };
 
     // Função para exibir feedback (correto/incorreto)
     window.exibirFeedback = function(data) {
@@ -984,6 +1099,36 @@ $database->closeConnection();
                 } else {
                     inputField.classList.add("is-invalid");
                 }
+            }
+        }
+        // NOVO: Feedback para listening
+        else if (exercicioAtual.tipo_exercicio === "listening") {
+            document.querySelectorAll(".btn-resposta").forEach(btn => {
+                btn.disabled = true;
+                const respostaIndex = parseInt(btn.dataset.id);
+                const conteudo = typeof exercicioAtual.conteudo === 'string' ? 
+                    JSON.parse(exercicioAtual.conteudo) : exercicioAtual.conteudo;
+                
+                const respostaCorreta = conteudo.resposta_correta || 0;
+                
+                if (respostaIndex === respostaCorreta) {
+                    btn.classList.remove("btn-outline-primary");
+                    btn.classList.add("btn-success");
+                } else if (btn.classList.contains("selected")) {
+                    btn.classList.remove("btn-outline-primary");
+                    btn.classList.add("btn-danger");
+                }
+            });
+            
+            // Mostrar frase original do áudio
+            if (data.frase_original) {
+                const fraseDiv = document.createElement('div');
+                fraseDiv.className = 'alert alert-info mt-3';
+                fraseDiv.innerHTML = `
+                    <strong><i class="fas fa-volume-up me-2"></i>Frase do áudio:</strong>
+                    <p class="mb-0 mt-2">"${data.frase_original}"</p>
+                `;
+                conteudoExercicioDiv.appendChild(fraseDiv);
             }
         }
     };
@@ -1047,61 +1192,62 @@ $database->closeConnection();
         });
     };
        
-    // Função para carregar palavras do usuário - ADICIONE DEBUG AQUI
-window.carregarPalavras = function() {
-    const status = document.getElementById('filtroPalavrasStatus').value;
-    const container = document.getElementById('listaPalavras');
-    
-    console.log('=== CARREGAR PALAVRAS INICIADO ===');
-    console.log('Status:', status);
-    console.log('URL do controller:', 'flashcard_controller.php');
-    
-    // Mostra loading
-    container.innerHTML = `
-        <div class="col-12 text-center">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Carregando...</span>
+    // Função para carregar palavras do usuário
+    window.carregarPalavras = function() {
+        const status = document.getElementById('filtroPalavrasStatus').value;
+        const container = document.getElementById('listaPalavras');
+        
+        console.log('=== CARREGAR PALAVRAS INICIADO ===');
+        console.log('Status:', status);
+        console.log('URL do controller:', 'flashcard_controller.php');
+        
+        // Mostra loading
+        container.innerHTML = `
+            <div class="col-12 text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Carregando...</span>
+                </div>
+                <p class="mt-2 text-muted">Carregando suas palavras...</p>
             </div>
-            <p class="mt-2 text-muted">Carregando suas palavras...</p>
-        </div>
-    `;
-    
-    const formData = new FormData();
-    formData.append('action', 'listar_flashcards_painel'); // CORRIGIDO: estava 'listar_flashcards'
-    if (status !== '') {
-        formData.append('status', status);
-    }
-    
-    console.log('Enviando requisição para flashcard_controller.php');
-    
-    fetch('flashcard_controller.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => {
-        console.log('Resposta recebida - Status:', response.status);
-        console.log('Resposta OK:', response.ok);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        `;
+        
+        const formData = new FormData();
+        formData.append('action', 'listar_flashcards_painel');
+        if (status !== '') {
+            formData.append('status', status);
         }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Dados recebidos:', data);
-        if (data.success) {
-            palavrasCarregadas = data.flashcards;
-            exibirPalavras(data.flashcards);
-        } else {
-            console.error('Erro do servidor:', data.message);
-            exibirErroPalavras(data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Erro na requisição:', error);
-        console.error('Detalhes do erro:', error.message);
-        exibirErroPalavras('Erro de conexão. Tente novamente. Detalhes: ' + error.message);
-    });
-};
+        
+        console.log('Enviando requisição para flashcard_controller.php');
+        
+        fetch('flashcard_controller.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            console.log('Resposta recebida - Status:', response.status);
+            console.log('Resposta OK:', response.ok);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Dados recebidos:', data);
+            if (data.success) {
+                palavrasCarregadas = data.flashcards;
+                exibirPalavras(data.flashcards);
+            } else {
+                console.error('Erro do servidor:', data.message);
+                exibirErroPalavras(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Erro na requisição:', error);
+            console.error('Detalhes do erro:', error.message);
+            exibirErroPalavras('Erro de conexão. Tente novamente. Detalhes: ' + error.message);
+        });
+    };
+
     // Função para exibir palavras na interface
     window.exibirPalavras = function(palavras) {
         const container = document.getElementById('listaPalavras');
@@ -1208,30 +1354,41 @@ window.carregarPalavras = function() {
        
     // Função para excluir palavra
     window.excluirPalavra = function(idFlashcard) {
-        if (!confirm('Tem certeza que deseja excluir esta palavra?')) {
-            return;
-        }
-       
-        const formData = new FormData();
-        formData.append('action', 'excluir_flashcard');
-        formData.append('id_flashcard', idFlashcard);
-       
-        fetch('flashcard_controller.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                carregarPalavras();
-            } else {
-                alert('Erro: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Erro:', error);
-            alert('Erro de conexão. Tente novamente.');
+        // Prepara e exibe o modal de confirmação
+        document.getElementById('mensagemModalExclusao').innerHTML = "Tem certeza que deseja excluir esta palavra? Esta ação não pode ser desfeita.";
+        
+        const btnConfirmar = document.getElementById('btnConfirmarExclusao');
+        
+        // Remove listeners antigos para evitar múltiplas execuções
+        const novoBtn = btnConfirmar.cloneNode(true);
+        btnConfirmar.parentNode.replaceChild(novoBtn, btnConfirmar);
+
+        novoBtn.addEventListener('click', function() {
+            const formData = new FormData();
+            formData.append('action', 'excluir_flashcard'); // Usando a action correta
+            formData.append('id_flashcard', idFlashcard);
+        
+            fetch('flashcard_controller.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                modalConfirmarExclusao.hide();
+                if (data.success) {
+                    carregarPalavras();
+                    // Opcional: mostrar uma mensagem de sucesso
+                } else {
+                    alert('Erro: ' + data.message);
+                }
+            })
+            .catch(error => {
+                modalConfirmarExclusao.hide();
+                console.error('Erro:', error);
+                alert('Erro de conexão. Tente novamente.');
+            });
         });
+        modalConfirmarExclusao.show();
     };
        
     // Função para exibir erro ao carregar palavras
