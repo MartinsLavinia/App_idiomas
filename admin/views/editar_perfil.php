@@ -70,6 +70,7 @@ $database->closeConnection();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+     <link rel="icon" type="image/png" href="../../imagens/mini-esquilo.png">
     <style>
         :root {
             --roxo-principal: #6a0dad;
@@ -102,28 +103,63 @@ $database->closeConnection();
             line-height: 1.6;
         }
 
-        /* Navbar aprimorada */
-        .navbar { 
-            background: linear-gradient(135deg, var(--roxo-principal) 0%, var(--roxo-escuro) 100%) !important; 
+        /* Navbar igual ao primeiro código */
+        .navbar {
+            background: transparent !important;
             border-bottom: 3px solid var(--amarelo-detalhe);
-            box-shadow: var(--shadow-medium);
-            padding: 1rem 0;
-        }
-        
-        .navbar-brand img { 
-            height: 65px; 
-            transition: transform 0.3s ease;
-        }
-        
-        .navbar-brand img:hover {
-            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(255, 238, 0, 0.38);
         }
 
-        /* Container principal - LAYOUT HORIZONTAL */
+        .navbar-brand {
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .btn-outline-light {
+            color: var(--amarelo-detalhe);
+            border-color: var(--amarelo-detalhe);
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-light:hover {
+            background-color: var(--amarelo-detalhe);
+            color: var(--preto-texto);
+        }
+
+        /* Ajuste da logo no header */
+        .navbar-brand {
+            margin-left: auto;
+            margin-right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            width: 100%;
+        }
+        .navbar-brand .logo-header {
+            height: 70px;
+            width: auto;
+            display: block;
+        }
+
+        .settings-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .settings-icon:hover {
+            color: var(--roxo-principal) !important;
+            transform: rotate(90deg);
+        }
+
+        /* Container principal */
         .profile-container { 
-            max-width: 1200px; 
+             
             margin: 40px auto; 
             padding: 0 20px;
+            width: 80%;
         }
 
         /* Breadcrumb */
@@ -469,121 +505,219 @@ $database->closeConnection();
         }
 
         .btn-primary-enhanced {
-            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-claro));
-            color: var(--branco);
+     background-color: #4c087c;
+    border: 2px solid #4c087c;
+    color: #ffffffff;
+    font-weight: 700;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+    box-shadow: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: inherit;
         }
 
-        .btn-primary-enhanced:hover {
-            background: linear-gradient(135deg, var(--roxo-escuro), var(--roxo-principal));
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-medium);
-        }
+       .btn-primary-enhanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 150%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    transform: skewX(-25deg);
+    transition: left 0.8s ease;
+    pointer-events: none;
+}
 
+.btn-primary-enhanced:hover::before {
+    left: 150%;
+}
+
+.btn-primary-enhanced:hover {
+    background: linear-gradient(135deg, #4c087c 0%, #8a2be2 100%);
+    border-color: #8a2be2;
+    color: white;
+    box-shadow: 0 6px 20px rgba(36, 31, 194, 0.4);
+    transform: translateY(-3px) scale(1.05);
+}
+
+.btn-primary-enhanced:active {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 4px 15px rgba(30, 26, 155, 0.5);
+}
+        
         .btn-success-enhanced {
             background: linear-gradient(135deg, var(--verde-sucesso), #20c997);
             color: var(--branco);
         }
 
         .btn-danger-enhanced {
-            background: linear-gradient(135deg, #dc3545, #c82333);
+            background: linear-gradient(135deg, #e21a2eff, #dd0e23ff);
             color: var(--branco);
         }
 
         /* Container de navegação - ATUALIZADO */
-.navigation-buttons-container {
-    max-width: 1200px;
-    margin: 25px auto 0;
-    padding: 0 20px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    animation: fadeInUp 0.6s ease-out 0.3s both;
+        .navigation-buttons-container {
+            max-width: 1200px;
+            margin: 25px auto 0;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            animation: fadeInUp 0.6s ease-out 0.3s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+         /* Botões de navegação - ESTILO SIMPLES E PROFISSIONAL */
+        .btn-navigation {
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            min-height: 54px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            cursor: pointer;
+        }
+
+        .btn-navigation:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+       .btn-voltar-dashboard {
+    background: transparent;
+    border: 2px solid #4c087c;
+    color: #4c087c;
+    font-weight: 700;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+    box-shadow: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: inherit;
 }
 
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-/* Botões de navegação - ESTILO SIMPLES E PROFISSIONAL */
-.btn-navigation {
-    padding: 14px 28px;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    text-decoration: none;
-    min-height: 54px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    cursor: pointer;
+.btn-voltar-dashboard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 150%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    transform: skewX(-25deg);
+    transition: left 0.8s ease;
+    pointer-events: none;
 }
 
-.btn-navigation:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
-
-.btn-voltar-dashboard {
-    background: #241fc2ff;
-    color: white;
-    border: 2px solid #241fc2ff;
+.btn-voltar-dashboard:hover::before {
+    left: 150%;
 }
 
 .btn-voltar-dashboard:hover {
-    background: #1e1a9bff;
+    background: linear-gradient(135deg, #4c087c 0%, #8a2be2 100%);
+    border-color: #8a2be2;
+    color: white;
+    box-shadow: 0 6px 20px rgba(36, 31, 194, 0.4);
+    transform: translateY(-3px) scale(1.05);
 }
 
+.btn-voltar-dashboard:active {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 4px 15px rgba(30, 26, 155, 0.5);
+}
+
+/* --------------------- */
+
 .btn-cancelar-alteracoes {
-    background: #A0A0A0;
-    color: white;
+    background: transparent;
     border: 2px solid #909090;
+    color: #909090;
+    font-weight: 700;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+    box-shadow: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: inherit;
+}
+
+.btn-cancelar-alteracoes::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 150%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    transform: skewX(-25deg);
+    transition: left 0.8s ease;
+    pointer-events: none;
+}
+
+.btn-cancelar-alteracoes:hover::before {
+    left: 150%;
 }
 
 .btn-cancelar-alteracoes:hover {
-    background: #909090;
+    background: linear-gradient(135deg, #909090 0%, #A0A0A0 100%);
+    border-color: #909090;
+    color: white;
+    box-shadow: 0 6px 20px rgba(144, 144, 144, 0.4);
+    transform: translateY(-3px) scale(1.05);
 }
 
-/* Ícones dos botões */
-.btn-navigation i {
-    font-size: 1.1em;
-    transition: transform 0.3s ease;
+.btn-cancelar-alteracoes:active {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 4px 15px rgba(144, 144, 144, 0.5);
 }
 
-.btn-voltar-dashboard:hover i {
-    transform: translateX(-2px);
-}
 
-/* Responsividade */
-@media (max-width: 768px) {
-    .navigation-buttons-container {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-    
-    .btn-navigation {
-        padding: 12px 24px;
-        min-height: 50px;
-        font-size: 0.95rem;
-    }
-}
+        /* Ícones dos botões */
+        .btn-navigation i {
+            font-size: 1.1em;
+            transition: transform 0.3s ease;
+        }
 
-@media (max-width: 480px) {
-    .btn-navigation {
-        padding: 10px 20px;
-        min-height: 48px;
-        font-size: 0.9rem;
-    }
-}
+        .btn-voltar-dashboard:hover i {
+            transform: translateX(-2px);
+        }
 
         /* Efeitos de loading */
         .loading-overlay {
@@ -628,6 +762,30 @@ $database->closeConnection();
             color: var(--verde-sucesso);
             margin-bottom: 20px;
         }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .horizontal-layout {
+                flex-direction: column;
+            }
+            .left-column {
+                flex: none;
+                border-right: none;
+                border-bottom: 2px solid var(--cinza-medio);
+            }
+            .navigation-buttons-container {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .btn-navigation {
+                padding: 10px 20px;
+                min-height: 48px;
+                font-size: 0.9rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -636,15 +794,17 @@ $database->closeConnection();
         <div class="spinner"></div>
     </div>
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" href="gerenciar_caminho.php">
-                <img src="../../imagens/logo-idiomas.png" alt="Logo da Plataforma de Cursos">
-            </a>
-            <div class="navbar-text text-white">
-                <i class="fas fa-user-circle me-2"></i>
-                Bem-vindo, <?= htmlspecialchars($_SESSION['nome_admin'] ?? 'Administrador') ?>
+    <!-- Navbar igual ao primeiro código -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div></div>
+            <div class="d-flex align-items-center" style="gap: 24px;">
+                <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
+                    <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
+                </a>
+                <a href="editar_perfil.php" class="settings-icon">
+                    <i class="fas fa-cog fa-lg"></i>
+                </a>
             </div>
         </div>
     </nav>
@@ -660,7 +820,7 @@ $database->closeConnection();
                         </a>
                     </li>
                     <li class="breadcrumb-item active" aria-current="page">
-                        <i class="fas fa-user-edit me-1"></i>Editar Perfil
+                            <i class="fas fa-user-edit me-1"></i>Editar Perfil
                     </li>
                 </ol>
             </nav>
@@ -775,15 +935,15 @@ $database->closeConnection();
                                     <i class="fas fa-edit input-icon"></i>
                                 </div>
 
-                                <div class="form-group-enhanced">
-                                    <label for="email_display" class="form-label-enhanced">
-                                        <i class="fas fa-envelope"></i>Email (Somente leitura)
-                                    </label>
-                                    <input type="email" class="form-control form-control-enhanced" id="email_display"
-                                        value="admin@cursosidiomas.com" readonly
-                                        style="background-color: #f8f9fa;">
-                                    <i class="fas fa-lock input-icon"></i>
-                                </div>
+<div class="form-group-enhanced">
+    <label for="email" class="form-label-enhanced">
+        <i class="fas fa-envelope"></i>Email
+    </label>
+    <input type="email" class="form-control form-control-enhanced" id="email" name="email"
+        value="<?= htmlspecialchars($admin['email'] ?? '') ?>" required
+        placeholder="Digite seu email">
+   
+</div>
 
                                 <div class="form-group-enhanced">
                                     <label for="cargo_display" class="form-label-enhanced">
@@ -799,7 +959,7 @@ $database->closeConnection();
                                     <label for="bio_display" class="form-label-enhanced">
                                         <i class="fas fa-quote-left"></i>Biografia Profissional
                                     </label>
-                                    <textarea class="form-control form-control-enhanced" id="bio_display" rows="4" readonly
+                                    <textarea class="form-control form-control-enhanced" id="bio_display" rows="4" 
                                         style="background-color: #f8f9fa;">Administrador experiente com mais de 5 anos na área de educação online. Especialista em gestão de plataformas de ensino e desenvolvimento de cursos de idiomas.</textarea>
                                 </div>
                                 
@@ -813,14 +973,14 @@ $database->closeConnection();
                                 </div>
 
                                 <!-- BOTÕES DE NAVEGAÇÃO - ESTILO ATUALIZADO -->
-<div class="navigation-buttons-container">
-    <a href="gerenciar_caminho.php" class="btn btn-navigation btn-voltar-dashboard">
-        <i class="fas fa-arrow-left me-2"></i>Voltar ao Dashboard
-    </a>
-    <button type="button" class="btn btn-navigation btn-cancelar-alteracoes" data-bs-toggle="modal" data-bs-target="#confirmCancelModal">
-        <i class="fas fa-times me-2"></i>Cancelar Alterações
-    </button>
-</div>s
+                                <div class="navigation-buttons-container">
+                                    <a href="gerenciar_caminho.php" class="btn btn-navigation btn-voltar-dashboard">
+                                        <i class="fas fa-arrow-left me-2"></i>Voltar ao Dashboard
+                                    </a>
+                                    <button type="button" class="btn btn-navigation btn-cancelar-alteracoes" data-bs-toggle="modal" data-bs-target="#confirmCancelModal">
+                                        <i class="fas fa-times me-2"></i>Cancelar Alterações
+                                    </button>
+                                </div>
                             </form>
                         </div>
                     </div>
@@ -829,26 +989,29 @@ $database->closeConnection();
         </div>
     </div>
 
-    
     <!-- Modal de Confirmação para ATUALIZAR -->
     <div class="modal fade" id="confirmUpdateModal" tabindex="-1" aria-labelledby="confirmUpdateModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content modal-content-enhanced">
-                <div class="modal-header modal-header-enhanced">
+            <div class="modal-content">
+                <div class="modal-header">
                     <h5 class="modal-title" id="confirmUpdateModalLabel">
-                        <i class="fas fa-save me-2"></i>Confirmar Alterações
+                        <i class="fas fa-save me-2"></i>Confirmar Atualização
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
                     <div class="text-center mb-3">
                         <i class="fas fa-question-circle text-warning" style="font-size: 3rem;"></i>
                     </div>
-                    <p class="text-center mb-3">Você deseja salvar as alterações no seu perfil?</p>
+                    <p class="text-center mb-3"><strong>Deseja atualizar alterações?</strong></p>
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>
                         <strong>Nome de usuário será alterado para:</strong><br>
                         '<strong id="novoNomeUsuario"></strong>'
+                    </div>
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Esta ação atualizará permanentemente suas informações de perfil.
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -856,22 +1019,22 @@ $database->closeConnection();
                         <i class="fas fa-times me-1"></i>Cancelar
                     </button>
                     <button type="button" class="btn btn-success" id="confirmarUpdateBtn">
-                        <i class="fas fa-check me-1"></i>Sim, Salvar Alterações
+                        <i class="fas fa-check me-1"></i>Sim, Atualizar Alterações
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal de Confirmação para CANCELAR - CORRIGIDO -->
+    <!-- Modal de Confirmação para CANCELAR -->
     <div class="modal fade" id="confirmCancelModal" tabindex="-1" aria-labelledby="confirmCancelModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content modal-content-enhanced">
-                <div class="modal-header modal-header-enhanced">
+            <div class="modal-content">
+                <div class="modal-header">
                     <h5 class="modal-title" id="confirmCancelModalLabel">
                         <i class="fas fa-exclamation-triangle me-2"></i>Cancelar Edição
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
                     <div class="text-center mb-3">
@@ -895,15 +1058,15 @@ $database->closeConnection();
         </div>
     </div>
 
-    <!-- Modal para Editar Foto - NOVO -->
+    <!-- Modal para Editar Foto -->
     <div class="modal fade" id="editPhotoModal" tabindex="-1" aria-labelledby="editPhotoModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content modal-content-enhanced">
-                <div class="modal-header modal-header-enhanced">
+            <div class="modal-content">
+                <div class="modal-header">
                     <h5 class="modal-title" id="editPhotoModalLabel">
                         <i class="fas fa-camera me-2"></i>Alterar Foto do Perfil
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
                     <div class="text-center mb-4">
@@ -950,15 +1113,15 @@ $database->closeConnection();
         </div>
     </div>
 
-    <!-- Modal para Remover Foto - NOVO -->
+    <!-- Modal para Remover Foto -->
     <div class="modal fade" id="confirmRemovePhotoModal" tabindex="-1" aria-labelledby="confirmRemovePhotoModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content modal-content-enhanced">
-                <div class="modal-header modal-header-enhanced">
+            <div class="modal-content">
+                <div class="modal-header">
                     <h5 class="modal-title" id="confirmRemovePhotoModalLabel">
                         <i class="fas fa-trash me-2"></i>Remover Foto do Perfil
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
                     <div class="text-center mb-4">
@@ -1009,13 +1172,17 @@ $database->closeConnection();
                 });
 
                 document.getElementById('confirmarUpdateBtn').addEventListener('click', function() {
+                    // Atualiza o texto do botão para mostrar que está processando
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Atualizando...';
+                    this.disabled = true;
+                    
                     // Mostra loading
                     loadingOverlay.style.display = 'flex';
                     
                     // Simula um pequeno delay para melhor UX
                     setTimeout(() => {
                         form.submit();
-                    }, 500);
+                    }, 800);
                 });
 
                 // Validação em tempo real

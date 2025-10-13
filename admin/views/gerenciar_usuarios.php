@@ -672,39 +672,40 @@ $database->closeConnection();
         </div>
     </nav>
 
-    <div class="sidebar">
+      <div class="sidebar">
         <div class="profile">
             <i class="fas fa-user-circle"></i>
             <h5 id="nome-admin"><?php echo isset($_SESSION['nome_admin']) ? htmlspecialchars($_SESSION['nome_admin']) : 'Administrador'; ?></h5>
-             <small>Administrador(a)</small>
-           
+            <small>Administrador(a)</small>
         </div>
 
-         <div class="list-group">
-        <a href="gerenciar_caminho.php" class="list-group-item">
-            <i class="fas fa-plus-circle"></i> Adicionar Caminho
-        </a>
-        
-        <a href="pagina_adicionar_idiomas.php" class="list-group-item" >
-            <i class="fas fa-globe"></i> Gerenciar Idiomas
-        </a>
-        <a href="gerenciar_teorias.php" class="list-group-item active">
-            <i class="fas fa-book-open"></i> Gerenciar Teorias
-        </a>
-        <a href="gerenciar_unidades.php" class="list-group-item">
-            <i class="fas fa-cubes"></i> Gerenciar Unidades
-        </a>
-        <a href="gerenciar_usuarios.php" class="list-group-item">
-            <i class="fas fa-users"></i> Gerenciar Usuários
-        </a>
-        <a href="estatisticas_usuarios.php" class="list-group-item">
-            <i class="fas fa-chart-bar"></i> Estatísticas
-        </a>
-        <a href="logout.php" class="list-group-item mt-auto">
-            <i class="fas fa-sign-out-alt"></i> Sair
-        </a>
+        <div class="list-group">
+            <a href="gerenciar_caminho.php" class="list-group-item">
+                <i class="fas fa-road"></i> Gerenciar Caminhos
+            </a>
+            
+            <a href="pagina_adicionar_idiomas.php" class="list-group-item">
+                <i class="fas fa-globe"></i> Gerenciar Idiomas
+            </a>
+            <a href="gerenciar_teorias.php" class="list-group-item">
+                <i class="fas fa-book-open"></i> Gerenciar Teorias
+            </a>
+           <a href="gerenciar_unidades.php" class="list-group-item">
+    <i class="fas fa-cubes"></i> Gerenciar Unidades
+</a>
+<a href="gerenciar_usuarios.php" class="list-group-item active">
+    <i class="fas fa-users"></i> Gerenciar Usuários
+</a>
+            <a href="estatisticas_usuarios.php" class="list-group-item">
+                <i class="fas fa-chart-bar"></i> Estatísticas
+            </a>
+            <a href="logout.php" class="list-group-item mt-auto">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </a>
+        </div>
     </div>
-</div>
+
+
     <div class="main-content">
         <div class="container-fluid mt-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
