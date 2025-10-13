@@ -16,6 +16,7 @@
     --sombra-forte: 0 12px 40px rgba(106, 13, 173, 0.2);
     --border-radius: 16px;
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --espacamento-lateral: 20px; /* Nova variável para margem lateral */
 }
 
 /* Reset e estilos base */
@@ -683,13 +684,6 @@ html {
     transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-/* Estilos para o corpo e conteúdo principal */
-.main-content {
-    width: 100%; /* Garante que o conteúdo ocupe a largura disponível */
-    max-width: 1200px; /* Define uma largura máxima para não ficar muito esticado */
-    padding: 20px;
-}
-
 /* Ajustes para mobile */
 @media screen and (max-width: 768px) {
     #myHeader {
@@ -732,10 +726,6 @@ html {
     #myHeader nav {
         display: none; /* Oculta a navegação principal no mobile */
     }
-
-    .main-content {
-        margin-left: 0 !important;
-    }
 }
 
 
@@ -774,6 +764,3 @@ html {
         font-size: 14px;
     }
 }
-
-
-
