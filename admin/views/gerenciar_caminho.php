@@ -18,6 +18,17 @@ $stmt_idiomas->execute();
 $idiomas_db = $stmt_idiomas->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt_idiomas->close();
 
+$id_admin = $_SESSION['id_admin'];
+$sql_foto = "SELECT foto_perfil FROM administradores WHERE id = ?";
+$stmt_foto = $conn->prepare($sql_foto);
+$stmt_foto->bind_param("i", $id_admin);
+$stmt_foto->execute();
+$resultado_foto = $stmt_foto->get_result();
+$admin_foto = $resultado_foto->fetch_assoc();
+$stmt_foto->close();
+
+$foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
+
 // Buscar unidades do banco de dados
 $sql_unidades = "SELECT id, nome_unidade FROM unidades ORDER BY nome_unidade";
 $stmt_unidades = $conn->prepare($sql_unidades);
@@ -367,11 +378,17 @@ border: 0 4px 8px rgba(235, 183, 14, 0.77);
     </nav>
 
     <div class="sidebar">
-        <div class="profile">
+    <div class="profile">
+        <?php if ($foto_admin): ?>
+            <div class="profile-avatar-sidebar">
+                <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
+            </div>
+        <?php else: ?>
             <i class="fas fa-user-circle"></i>
-            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
-            <small>Administrador(a)</small>
-        </div>
+        <?php endif; ?>
+        <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+        <small>Administrador(a)</small>
+    </div>
 
         <div class="list-group">
             <a href="gerenciar_caminho.php" class="list-group-item active">
