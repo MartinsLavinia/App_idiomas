@@ -296,59 +296,26 @@ $database->closeConnection();
             transform: rotate(90deg);
         }
         
-        /* Navbar igual ao primeiro código */
-        .navbar {
-            background: transparent !important;
-            border-bottom: 3px solid var(--amarelo-detalhe);
-            box-shadow: 0 4px 15px rgba(255, 238, 0, 0.38);
+        .table-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(106, 13, 173, 0.1);
+            transition: all 0.3s ease;
         }
 
-        .navbar-brand {
-            font-weight: 700;
-            letter-spacing: 1px;
-        }
-
-        .btn-outline-light {
-            color: var(--amarelo-detalhe);
-            border-color: var(--amarelo-detalhe);
+        .card-header h5 {
+            font-size: 1.3rem;
             font-weight: 600;
-            transition: all 0.3s ease;
+            color: white;
         }
 
-        .btn-outline-light:hover {
-            background-color: var(--amarelo-detalhe);
-            color: var(--preto-texto);
+        .card-header h5 i {
+            color: var(--amarelo-detalhe);
         }
 
-      /* Ajuste da logo no header */
-        .navbar-brand {
-            margin-left: auto;
-            margin-right: 0;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            width: 100%;
-        }
-        .navbar-brand .logo-header {
-            height: 70px;
-            width: auto;
-            display: block;
-        }
-
-        .settings-icon {
-            color: var(--roxo-principal) !important;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            font-size: 1.2rem;
-        }
-
-        .settings-icon:hover {
-            color: var(--roxo-principal) !important;
-            transform: rotate(90deg);
-        }
-        
-
-        /* Cartões de Estatísticas */
+        /* Cartões de Estatísticas - MESMO ESTILO DO PRIMEIRO CÓDIGO */
         .stats-card {
             background: rgba(255, 255, 255, 0.95) !important;
             color: var(--preto-texto);
@@ -417,6 +384,131 @@ $database->closeConnection();
             margin-bottom: 1rem;
         }
 
+        /* Barra de Navegação - MODIFICADA PARA TRANSPARENTE */
+        .navbar {
+            background-color: transparent !important;
+            border-bottom: 3px solid var(--amarelo-detalhe);
+            box-shadow: 0 4px 15px rgba(255, 238, 0, 0.38);
+        }
+
+        .navbar-brand {
+            margin-left: auto;
+            margin-right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            width: 100%;
+        }
+
+        .navbar-brand .logo-header {
+            height: 70px;
+            width: auto;
+            display: block;
+        }
+
+        .btn-outline-light {
+            color: var(--amarelo-detalhe);
+            border-color: var(--amarelo-detalhe);
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+       .btn-outline-warning:hover {
+            background-color: var(--amarelo-detalhe);
+            border: 0 4px 8px rgba(235, 183, 14, 0.77);
+        }
+
+        /* Menu Lateral */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100%;
+            background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+            color: var(--branco);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .sidebar .profile {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .sidebar .profile i {
+            font-size: 4rem;
+            color: var(--amarelo-detalhe);
+            margin-bottom: 10px;
+        }
+
+        .sidebar .profile h5 {
+            font-weight: 600;
+            margin-bottom: 0;
+            color: var(--branco);
+        }
+
+        .sidebar .profile small {
+            color: var(--cinza-claro);
+        }
+
+        .sidebar .list-group {
+            width: 100%;
+        }
+
+        .sidebar .list-group-item {
+            background-color: transparent;
+            color: var(--branco);
+            border: none;
+            padding: 15px 25px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .list-group-item:hover {
+            background-color: var(--roxo-escuro);
+            cursor: pointer;
+        }
+
+        .sidebar .list-group-item.active {
+            background-color: var(--roxo-escuro) !important;
+            color: var(--branco) !important;
+            font-weight: 600;
+            border-left: 4px solid var(--amarelo-detalhe);
+        }
+
+        .sidebar .list-group-item i {
+            color: var(--amarelo-detalhe);
+        }
+
+        /* Ajuste do conteúdo principal para não ficar por baixo do sidebar */
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
+            color: var(--preto-texto);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+            min-width: 180px;
+            border: none;
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
+            color: var(--preto-texto);
+        }
+
         /* Botões principais */
         .btn-primary {
             background: linear-gradient(135deg, var(--roxo-principal) 0%, var(--roxo-escuro) 100%);
@@ -432,22 +524,6 @@ $database->closeConnection();
             transform: translateY(-2px);
             box-shadow: 0 6px 25px rgba(106, 13, 173, 0.4);
             color: white;
-        }
-
-        .btn-warning {
-            background: linear-gradient(135deg, var(--roxo-principal) 0%, #600bafff 100%);
-            color: var(--preto-texto);
-            box-shadow: 0 4px 15px rgba(179, 100, 253, 0.77);
-            border: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .btn-warning:hover {
-            background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(179, 100, 253, 0.77);
-            color: var(--preto-texto);
         }
 
         .btn-outline-warning {
@@ -595,34 +671,38 @@ $database->closeConnection();
             border-radius: 6px;
         }
 
-        /* Responsividade */
-        @media (max-width: 768px) {
-            .stats-card h3 {
-                font-size: 2rem;
-            }
-            
-            .bloco-actions {
-                opacity: 1; /* Sempre visível em mobile */
-            }
-            
-            .navbar-brand .logo-header {
-                height: 50px;
-            }
-            
-            .main-content {
-                padding: 15px;
-            }
-        }
-
         /* Animações adicionais para stats-card */
         .stats-card:nth-child(1) { animation-delay: 0.1s; }
         .stats-card:nth-child(2) { animation-delay: 0.2s; }
         .stats-card:nth-child(3) { animation-delay: 0.3s; }
         .stats-card:nth-child(4) { animation-delay: 0.4s; }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .stats-card h3 {
+                font-size: 2rem;
+            }
+            .bloco-actions {
+                opacity: 1; /* Sempre visível em mobile */
+            }
+            .navbar-brand .logo-header {
+                height: 50px;
+            }
+            .main-content {
+                padding: 15px;
+            }
+        }
     </style>
 </head>
+
 <body>
-     <!-- Navbar igual ao primeiro código -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container d-flex justify-content-between align-items-center">
             <div></div>
@@ -637,257 +717,290 @@ $database->closeConnection();
         </div>
     </nav>
 
-    <!-- Conteúdo Principal -->
-    <div class="container mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h2 class="mb-1">
-                    <i class="fas fa-cubes me-2"></i>Gerenciar Blocos
-                </h2>
-                <p class="text-muted mb-0">
-                    Caminho: <strong><?php echo htmlspecialchars($caminho_info['nome_caminho']); ?></strong> 
-                    (<?php echo htmlspecialchars($caminho_info['nivel']); ?>)
-                </p>
-            </div>
-            <div>
-                <a href="gerenciar_caminho.php" class="btn btn-outline-warning">
-                    <i class="fas fa-arrow-left me-1"></i>Voltar para Caminhos
-                </a>
-            </div>
+    <div class="sidebar">
+        <div class="profile">
+            <i class="fas fa-user-circle"></i>
+            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+            <small>Administrador(a)</small>
         </div>
 
-        <?php echo $mensagem; ?>
+        <div class="list-group">
+            <a href="gerenciar_caminho.php" class="list-group-item">
+                <i class="fas fa-plus-circle"></i> Adicionar Caminho
+            </a>
+            <a href="pagina_adicionar_idiomas.php" class="list-group-item">
+                <i class="fas fa-language"></i> Gerenciar Idiomas
+            </a>
+            <a href="gerenciar_teorias.php" class="list-group-item">
+                <i class="fas fa-book-open"></i> Gerenciar Teorias
+            </a>
+            <a href="gerenciar_unidades.php" class="list-group-item">
+                <i class="fas fa-cubes"></i> Gerenciar Unidades
+            </a>
+            <a href="gerenciar_usuarios.php" class="list-group-item">
+                <i class="fas fa-users"></i> Gerenciar Usuários
+            </a>
+            <a href="estatisticas_usuarios.php" class="list-group-item">
+                <i class="fas fa-chart-bar"></i> Estatísticas
+            </a>
+            <a href="logout.php" class="list-group-item mt-auto">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </a>
+        </div>
+    </div>
 
-        <!-- Alerta se a coluna bloco_id não existir -->
-        <?php if (!$coluna_bloco_id_existe): ?>
-        <div class="alert alert-warning">
-            <h5><i class="fas fa-exclamation-triangle me-2"></i>Atenção: Coluna bloco_id não encontrada</h5>
-            <p>A coluna <strong>bloco_id</strong> não existe na tabela <strong>exercicios</strong>.</p>
-            <p class="mb-2">Execute este comando SQL para adicionar a coluna:</p>
-            <pre class="bg-dark text-light p-3 rounded small">ALTER TABLE exercicios ADD COLUMN bloco_id INT;
+    <div class="main-content">
+        <div class="container-fluid mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="fas fa-cubes me-2"></i>Gerenciar Blocos
+                    </h2>
+                    <p class="text-muted mb-0">
+                        Caminho: <strong><?php echo htmlspecialchars($caminho_info['nome_caminho']); ?></strong> 
+                        (<?php echo htmlspecialchars($caminho_info['nivel']); ?>)
+                    </p>
+                </div>
+                <div>
+                    <a href="gerenciar_caminho.php" class="btn btn-outline-warning">
+                        <i class="fas fa-arrow-left me-1"></i>Voltar para Caminhos
+                    </a>
+                </div>
+            </div>
+
+            <?php echo $mensagem; ?>
+
+            <!-- Alerta se a coluna bloco_id não existir -->
+            <?php if (!$coluna_bloco_id_existe): ?>
+            <div class="alert alert-warning">
+                <h5><i class="fas fa-exclamation-triangle me-2"></i>Atenção: Coluna bloco_id não encontrada</h5>
+                <p>A coluna <strong>bloco_id</strong> não existe na tabela <strong>exercicios</strong>.</p>
+                <p class="mb-2">Execute este comando SQL para adicionar a coluna:</p>
+                <pre class="bg-dark text-light p-3 rounded small">ALTER TABLE exercicios ADD COLUMN bloco_id INT;
 ALTER TABLE exercicios ADD CONSTRAINT fk_exercicios_bloco 
 FOREIGN KEY (bloco_id) REFERENCES blocos(id) ON DELETE SET NULL;</pre>
-            <p class="mt-2 mb-0"><small>Enquanto a coluna não for criada, as atividades não serão vinculadas aos blocos.</small></p>
-        </div>
-        <?php endif; ?>
+                <p class="mt-2 mb-0"><small>Enquanto a coluna não for criada, as atividades não serão vinculadas aos blocos.</small></p>
+            </div>
+            <?php endif; ?>
 
-        <div class="row">
-            <!-- Formulário para Adicionar/Editar Bloco -->
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-plus-circle me-1"></i>
-                            <?php echo isset($_GET['editar']) ? 'Editar Bloco' : 'Adicionar Novo Bloco'; ?>
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <?php
-                        $edit_mode = isset($_GET['editar']);
-                        $bloco_edit = null;
-                        
-                        if ($edit_mode) {
-                            $bloco_id_edit = intval($_GET['editar']);
-                            foreach ($blocos as $bloco) {
-                                if ($bloco['id'] == $bloco_id_edit) {
-                                    $bloco_edit = $bloco;
-                                    break;
+            <div class="row">
+                <!-- Formulário para Adicionar/Editar Bloco -->
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-plus-circle me-1"></i>
+                                <?php echo isset($_GET['editar']) ? 'Editar Bloco' : 'Adicionar Novo Bloco'; ?>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <?php
+                            $edit_mode = isset($_GET['editar']);
+                            $bloco_edit = null;
+                            
+                            if ($edit_mode) {
+                                $bloco_id_edit = intval($_GET['editar']);
+                                foreach ($blocos as $bloco) {
+                                    if ($bloco['id'] == $bloco_id_edit) {
+                                        $bloco_edit = $bloco;
+                                        break;
+                                    }
                                 }
                             }
-                        }
-                        ?>
-                        
-                        <form method="POST">
-                            <div class="mb-3">
-                                <label for="titulo" class="form-label">Título do Bloco *</label>
-                                <input type="text" class="form-control" id="titulo" name="titulo" 
-                                       value="<?php echo $bloco_edit ? htmlspecialchars($bloco_edit['titulo']) : ''; ?>" 
-                                       required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="nome_bloco" class="form-label">Nome do Bloco *</label>
-                                <input type="text" class="form-control" id="nome_bloco" name="nome_bloco" 
-                                       value="<?php echo $bloco_edit ? htmlspecialchars($bloco_edit['nome_bloco']) : ''; ?>" 
-                                       required>
-                            </div>
+                            ?>
                             
-                            <div class="mb-3">
-                                <label for="ordem_bloco" class="form-label">Ordem no Caminho *</label>
-                                <input type="number" class="form-control" id="ordem_bloco" name="ordem_bloco" 
-                                       value="<?php echo $bloco_edit ? htmlspecialchars($bloco_edit['ordem']) : ''; ?>" 
-                                       min="1" required>
-                                <div class="form-text">Define a sequência deste bloco no caminho</div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="descricao" class="form-label">Descrição</label>
-                                <textarea class="form-control" id="descricao" name="descricao" rows="3"><?php echo $bloco_edit ? htmlspecialchars($bloco_edit['descricao']) : ''; ?></textarea>
-                            </div>
-                            
-                            <?php if ($edit_mode): ?>
-                                <input type="hidden" name="bloco_id" value="<?php echo $bloco_edit['id']; ?>">
-                                <button type="submit" name="editar_bloco" class="btn btn-warning w-100">
-                                    <i class="fas fa-save me-1"></i>Atualizar Bloco
-                                </button>
-                                <a href="gerenciar_blocos.php?caminho_id=<?php echo $caminho_id; ?>" class="btn btn-secondary w-100 mt-2">
-                                    <i class="fas fa-times me-1"></i>Cancelar
-                                </a>
-                            <?php else: ?>
-                                <button type="submit" name="adicionar_bloco" class="btn btn-primary w-100">
-                                    <i class="fas fa-plus me-1"></i>Adicionar Bloco
-                                </button>
-                            <?php endif; ?>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Estatísticas -->
-                <div class="card mt-4">
-                    <div class="card-header">
-                        <h6 class="card-title mb-0">
-                            <i class="fas fa-chart-bar me-1"></i>Estatísticas
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="row text-center">
-                            <div class="col-6">
-                                <div class="border-end">
-                                    <h4 class="text-primary mb-0"><?php echo count($blocos); ?></h4>
-                                    <small class="text-muted">Total de Blocos</small>
+                            <form method="POST">
+                                <div class="mb-3">
+                                    <label for="titulo" class="form-label">Título do Bloco *</label>
+                                    <input type="text" class="form-control" id="titulo" name="titulo" 
+                                           value="<?php echo $bloco_edit ? htmlspecialchars($bloco_edit['titulo']) : ''; ?>" 
+                                           required>
                                 </div>
-                            </div>
-                            <div class="col-6">
-                                <div>
-                                    <?php
-                                    $total_atividades = 0;
-                                    foreach ($blocos as $bloco) {
-                                        $total_atividades += $bloco['total_atividades'];
-                                    }
-                                    ?>
-                                    <h4 class="text-success mb-0"><?php echo $total_atividades; ?></h4>
-                                    <small class="text-muted">Total de Atividades</small>
+
+                                <div class="mb-3">
+                                    <label for="nome_bloco" class="form-label">Nome do Bloco *</label>
+                                    <input type="text" class="form-control" id="nome_bloco" name="nome_bloco" 
+                                           value="<?php echo $bloco_edit ? htmlspecialchars($bloco_edit['nome_bloco']) : ''; ?>" 
+                                           required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="ordem_bloco" class="form-label">Ordem no Caminho *</label>
+                                    <input type="number" class="form-control" id="ordem_bloco" name="ordem_bloco" 
+                                           value="<?php echo $bloco_edit ? htmlspecialchars($bloco_edit['ordem']) : ''; ?>" 
+                                           min="1" required>
+                                    <div class="form-text">Define a sequência deste bloco no caminho</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="descricao" class="form-label">Descrição</label>
+                                    <textarea class="form-control" id="descricao" name="descricao" rows="3"><?php echo $bloco_edit ? htmlspecialchars($bloco_edit['descricao']) : ''; ?></textarea>
+                                </div>
+                                
+                                <?php if ($edit_mode): ?>
+                                    <input type="hidden" name="bloco_id" value="<?php echo $bloco_edit['id']; ?>">
+                                    <button type="submit" name="editar_bloco" class="btn btn-warning w-100">
+                                        <i class="fas fa-save me-1"></i>Atualizar Bloco
+                                    </button>
+                                    <a href="gerenciar_blocos.php?caminho_id=<?php echo $caminho_id; ?>" class="btn btn-secondary w-100 mt-2">
+                                        <i class="fas fa-times me-1"></i>Cancelar
+                                    </a>
+                                <?php else: ?>
+                                    <button type="submit" name="adicionar_bloco" class="btn btn-primary w-100">
+                                        <i class="fas fa-plus me-1"></i>Adicionar Bloco
+                                    </button>
+                                <?php endif; ?>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Estatísticas -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">
+                                <i class="fas fa-chart-bar me-1"></i>Estatísticas
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="border-end">
+                                        <h4 class="text-primary mb-0"><?php echo count($blocos); ?></h4>
+                                        <small class="text-muted">Total de Blocos</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div>
+                                        <?php
+                                        $total_atividades = 0;
+                                        foreach ($blocos as $bloco) {
+                                            $total_atividades += $bloco['total_atividades'];
+                                        }
+                                        ?>
+                                        <h4 class="text-success mb-0"><?php echo $total_atividades; ?></h4>
+                                        <small class="text-muted">Total de Atividades</small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Lista de Blocos Existentes -->
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-list me-1"></i>Blocos do Caminho
-                        </h5>
-                        <span class="badge bg-primary"><?php echo count($blocos); ?> blocos</span>
-                    </div>
-                    <div class="card-body">
-                        <?php if (empty($blocos)): ?>
-                            <div class="text-center py-4">
-                                <i class="fas fa-cubes fa-3x text-muted mb-3"></i>
-                                <p class="text-muted">Nenhum bloco criado ainda.</p>
-                                <p class="text-muted small">Use o formulário ao lado para adicionar o primeiro bloco.</p>
-                            </div>
-                        <?php else: ?>
-                            <div class="row">
-                                <?php foreach ($blocos as $bloco): ?>
-                                    <div class="col-md-6 mb-3">
-                                        <div class="card bloco-card h-100">
-                                            <div class="card-body">
-                                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                                    <h6 class="card-title mb-0">
-                                                        <i class="fas fa-cube me-1 text-primary"></i>
-                                                        <?php echo htmlspecialchars($bloco['titulo']); ?>
-                                                    </h6>
-                                                    <span class="badge bg-light text-dark stats-badge">
-                                                        <?php echo $bloco['total_atividades']; ?> ativid.
-                                                    </span>
-                                                </div>
-                                                
-                                                <p class="card-text small text-muted mb-2">
-                                                    <strong>Nome:</strong> <?php echo htmlspecialchars($bloco['nome_bloco']); ?>
-                                                </p>
-                                                
-                                                <p class="card-text small text-muted mb-2">
-                                                    <?php echo !empty($bloco['descricao']) ? htmlspecialchars($bloco['descricao']) : '<em>Sem descrição</em>'; ?>
-                                                </p>
-                                                
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <small class="text-muted">
-                                                        Ordem: <strong><?php echo $bloco['ordem']; ?></strong> | 
-                                                        Criado: <?php echo date('d/m/Y', strtotime($bloco['data_criacao'])); ?>
-                                                    </small>
+                <!-- Lista de Blocos Existentes -->
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-list me-1"></i>Blocos do Caminho
+                            </h5>
+                            <span class="badge bg-primary"><?php echo count($blocos); ?> blocos</span>
+                        </div>
+                        <div class="card-body">
+                            <?php if (empty($blocos)): ?>
+                                <div class="text-center py-4">
+                                    <i class="fas fa-cubes fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">Nenhum bloco criado ainda.</p>
+                                    <p class="text-muted small">Use o formulário ao lado para adicionar o primeiro bloco.</p>
+                                </div>
+                            <?php else: ?>
+                                <div class="row">
+                                    <?php foreach ($blocos as $bloco): ?>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card bloco-card h-100">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                                        <h6 class="card-title mb-0">
+                                                            <i class="fas fa-cube me-1 text-primary"></i>
+                                                            <?php echo htmlspecialchars($bloco['titulo']); ?>
+                                                        </h6>
+                                                        <span class="badge bg-light text-dark stats-badge">
+                                                            <?php echo $bloco['total_atividades']; ?> ativid.
+                                                        </span>
+                                                    </div>
                                                     
-                                                    <div class="bloco-actions">
-                                                        <div class="btn-group btn-group-sm">
-                                                            <?php if ($coluna_bloco_id_existe): ?>
-                                                            <a href="gerenciar_exercicios.php?bloco_id=<?php echo $bloco['id']; ?>" 
-                                                               class="btn btn-outline-primary" title="Gerenciar Atividades">
-                                                                <i class="fas fa-tasks"></i>
-                                                            </a>
-                                                            <?php endif; ?>
-                                                            <a href="gerenciar_blocos.php?caminho_id=<?php echo $caminho_id; ?>&editar=<?php echo $bloco['id']; ?>" 
-                                                               class="btn btn-outline-warning" title="Editar Bloco">
-                                                                <i class="fas fa-edit"></i>
-                                                            </a>
-                                                            <a href="gerenciar_blocos.php?caminho_id=<?php echo $caminho_id; ?>&excluir_bloco=<?php echo $bloco['id']; ?>" 
-                                                               class="btn btn-outline-danger" 
-                                                               title="Excluir Bloco"
-                                                               onclick="return confirm('Tem certeza que deseja excluir este bloco?')">
-                                                                <i class="fas fa-trash"></i>
-                                                            </a>
+                                                    <p class="card-text small text-muted mb-2">
+                                                        <strong>Nome:</strong> <?php echo htmlspecialchars($bloco['nome_bloco']); ?>
+                                                    </p>
+                                                    
+                                                    <p class="card-text small text-muted mb-2">
+                                                        <?php echo !empty($bloco['descricao']) ? htmlspecialchars($bloco['descricao']) : '<em>Sem descrição</em>'; ?>
+                                                    </p>
+                                                    
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <small class="text-muted">
+                                                            Ordem: <strong><?php echo $bloco['ordem']; ?></strong> | 
+                                                            Criado: <?php echo date('d/m/Y', strtotime($bloco['data_criacao'])); ?>
+                                                        </small>
+                                                        
+                                                        <div class="bloco-actions">
+                                                            <div class="btn-group btn-group-sm">
+                                                                <?php if ($coluna_bloco_id_existe): ?>
+                                                                <a href="gerenciar_exercicios.php?bloco_id=<?php echo $bloco['id']; ?>" 
+                                                                   class="btn btn-outline-primary" title="Gerenciar Atividades">
+                                                                    <i class="fas fa-tasks"></i>
+                                                                </a>
+                                                                <?php endif; ?>
+                                                                <a href="gerenciar_blocos.php?caminho_id=<?php echo $caminho_id; ?>&editar=<?php echo $bloco['id']; ?>" 
+                                                                   class="btn btn-outline-warning" title="Editar Bloco">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </a>
+                                                                <a href="gerenciar_blocos.php?caminho_id=<?php echo $caminho_id; ?>&excluir_bloco=<?php echo $bloco['id']; ?>" 
+                                                                   class="btn btn-outline-danger" 
+                                                                   title="Excluir Bloco"
+                                                                   onclick="return confirm('Tem certeza que deseja excluir este bloco?')">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </a>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Ações Rápidas CORRIGIDAS -->
-                <div class="card mt-4">
-                    <div class="card-header">
-                        <h6 class="card-title mb-0">
-                            <i class="fas fa-bolt me-1"></i>Ações Rápidas
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6 mb-2">
-                                <?php if ($coluna_bloco_id_existe && !empty($blocos)): ?>
-                                    <!-- Dropdown para escolher em qual bloco adicionar a atividade -->
-                                    <div class="dropdown">
-                                        <button class="btn btn-outline-success w-100 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <!-- Ações Rápidas -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">
+                                <i class="fas fa-bolt me-1"></i>Ações Rápidas
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <?php if ($coluna_bloco_id_existe && !empty($blocos)): ?>
+                                        <!-- Dropdown para escolher em qual bloco adicionar a atividade -->
+                                        <div class="dropdown">
+                                            <button class="btn btn-outline-success w-100 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                <i class="fas fa-plus me-1"></i>Adicionar Atividade
+                                            </button>
+                                            <ul class="dropdown-menu w-100">
+                                                <?php foreach ($blocos as $bloco): ?>
+                                                    <li>
+                                                        <a class="dropdown-item" href="adicionar_atividades.php?unidade_id=<?php echo $caminho_info['id_unidade']; ?>&bloco_id=<?php echo $bloco['id']; ?>">
+                                                            <i class="fas fa-cube me-2"></i><?php echo htmlspecialchars($bloco['titulo']); ?>
+                                                        </a>
+                                                    </li>
+                                                <?php endforeach; ?>
+                                            </ul>
+                                        </div>
+                                    <?php else: ?>
+                                        <button class="btn btn-outline-secondary w-100" disabled 
+                                                title="<?php echo !$coluna_bloco_id_existe ? 'Coluna bloco_id não existe' : 'Crie um bloco primeiro'; ?>">
                                             <i class="fas fa-plus me-1"></i>Adicionar Atividade
                                         </button>
-                                        <ul class="dropdown-menu w-100">
-                                            <?php foreach ($blocos as $bloco): ?>
-                                                <li>
-                                                    <a class="dropdown-item" href="adicionar_atividades.php?unidade_id=<?php echo $caminho_info['id_unidade']; ?>&bloco_id=<?php echo $bloco['id']; ?>">
-                                                        <i class="fas fa-cube me-2"></i><?php echo htmlspecialchars($bloco['titulo']); ?>
-                                                    </a>
-                                                </li>
-                                            <?php endforeach; ?>
-                                        </ul>
-                                    </div>
-                                <?php else: ?>
-                                    <button class="btn btn-outline-secondary w-100" disabled 
-                                            title="<?php echo !$coluna_bloco_id_existe ? 'Coluna bloco_id não existe' : 'Crie um bloco primeiro'; ?>">
-                                        <i class="fas fa-plus me-1"></i>Adicionar Atividade
-                                    </button>
-                                <?php endif; ?>
-                            </div>
-                            <div class="col-md-6 mb-2">
-                                <a href="gerenciar_exercicios.php?caminho_id=<?php echo $caminho_id; ?>" 
-                                   class="btn btn-outline-info w-100">
-                                    <i class="fas fa-list me-1"></i>Ver Todas as Atividades
-                                </a>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <a href="gerenciar_exercicios.php?caminho_id=<?php echo $caminho_id; ?>" 
+                                       class="btn btn-outline-info w-100">
+                                        <i class="fas fa-list me-1"></i>Ver Todas as Atividades
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
