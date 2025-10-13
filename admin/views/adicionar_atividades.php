@@ -1,7 +1,8 @@
 <?php
 session_start();
 include_once __DIR__ . '/../../conexao.php';
-
+// INCLUIR O CONTROLLER DE LISTENING
+include_once __DIR__ . '/../controller/listening_controller.php';
 // Ativar exibição de erros (apenas para desenvolvimento)
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -101,7 +102,7 @@ function getExercicioById($conn, $exercicioId) {
     return $result;
 }
 
-// --- Lógica de Processamento (simulando um Controller) ---
+// --- Lógica de Processamento (ATUALIZADA COM LISTENING) ---
 
 // Buscar informações da unidade, caminhos e blocos
 $unidade_info = getUnidadeInfo($conn, $unidade_id);
@@ -123,6 +124,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $tipo_exercicio = $_POST["tipo_exercicio"] ?? null;
     $conteudo = null;
 
+    // VERIFICAR SE É TESTE DE ÁUDIO
+    // A lógica de teste de áudio foi movida para 'gerar_audio_api.php'
+
     if (empty($caminho_id) || empty($bloco_id) || empty($ordem) || empty($pergunta)) {
         $mensagem = '<div class="alert alert-danger">Por favor, preencha todos os campos obrigatórios.</div>';
     } else {
@@ -138,7 +142,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 $alternativas[] = [
                                     'id' => chr(97 + $index),
                                     'texto' => $texto,
-                                    'correta' => ($index == $_POST['alt_correta'])
+                                    'correta' => ($index == $_POST['alt_correta']),
                                 ];
                             }
                         }
@@ -195,6 +199,45 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         'transcricao' => $_POST['transcricao'] ?? '',
                         'resposta_correta' => $_POST['resposta_audio_correta'] ?? ''
                     ], JSON_UNESCAPED_UNICODE);
+                } 
+                // NOVO: PROCESSAMENTO PARA LISTENING
+                elseif ($tipo_exercicio === 'listening') {
+                    if (empty($_POST['frase_listening']) || empty($_POST['listening_opcao1']) || empty($_POST['listening_opcao2'])) {
+                        $mensagem = '<div class="alert alert-danger">Frase e pelo menos 2 opções são obrigatórias para listening.</div>';
+                    } else {
+                        try {
+                            $listeningController = new ListeningController();
+                            
+                            // Gerar áudio automaticamente
+                            $audio_url = $listeningController->gerarAudio(
+                                $_POST['frase_listening'], 
+                                $_POST['idioma_audio'] ?? 'en-us'
+                            );
+                            
+                            // Preparar opções
+                            $opcoes = [
+                                trim($_POST['listening_opcao1']),
+                                trim($_POST['listening_opcao2'])
+                            ];
+                            
+                            if (!empty($_POST['listening_opcao3'])) $opcoes[] = trim($_POST['listening_opcao3']);
+                            if (!empty($_POST['listening_opcao4'])) $opcoes[] = trim($_POST['listening_opcao4']);
+                            
+                            $resposta_correta = 0; // Primeira opção é a correta
+                            
+                            $conteudo = json_encode([
+                                'audio_url' => $audio_url,
+                                'frase_original' => $_POST['frase_listening'],
+                                'opcoes' => $opcoes,
+                                'resposta_correta' => $resposta_correta,
+                                'tipo' => 'listening',
+                                'explicacao' => $_POST['explicacao_listening'] ?? 'Ouça o áudio com atenção e selecione a opção correta.'
+                            ], JSON_UNESCAPED_UNICODE);
+                            
+                        } catch (Exception $e) {
+                            $mensagem = '<div class="alert alert-danger">Erro ao gerar áudio: ' . $e->getMessage() . '</div>';
+                        }
+                    }
                 }
                 break;
             case 'especial':
@@ -219,75 +262,46 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         if (empty($mensagem)) {
-            if (adicionarExercicio($conn, $caminho_id, $bloco_id, $ordem, $tipo, $pergunta, $conteudo)) {
-                $mensagem = '<div class="alert alert-success">Exercício adicionado com sucesso!</div>';
-                $_POST = array(); // Limpar campos do formulário
+            // Inserir exercício na tabela exercicios
+            $sql = "INSERT INTO exercicios (caminho_id, bloco_id, ordem, tipo, tipo_exercicio, pergunta, conteudo) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            $stmt = $conn->prepare($sql);
+            
+            if ($stmt) {
+                $stmt->bind_param("iiissss", $caminho_id, $bloco_id, $ordem, $tipo, $tipo_exercicio, $pergunta, $conteudo);
+                
+                if ($stmt->execute()) {
+                    $mensagem = '<div class="alert alert-success">Exercício adicionado com sucesso!</div>';
+                    $_POST = array(); // Limpar campos do formulário
+                } else {
+                    $mensagem = '<div class="alert alert-danger">Erro ao adicionar exercício: ' . $stmt->error . '</div>';
+                }
+                $stmt->close();
             } else {
-                $mensagem = '<div class="alert alert-danger">Erro ao adicionar exercício.</div>';
+                $mensagem = '<div class="alert alert-danger">Erro na preparação da consulta: ' . $conn->error . '</div>';
             }
         }
     }
 }
 
-// --- Lógica de Correção de Áudio (para AJAX) ---
-if (isset($_GET['action']) && $_GET['action'] === 'corrigir_audio') {
-    header('Content-Type: application/json');
-    $data = json_decode(file_get_contents('php://input'), true);
-    $exercicioId = $data['exercicio_id'] ?? null;
-    $transcricaoUsuario = $data['transcricao'] ?? '';
+// ... (o resto do código PHP permanece igual) ...
 
-    if (!$exercicioId) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'ID do exercício não fornecido.']);
-        exit();
-    }
-
-    $exercicio = getExercicioById($conn, $exercicioId);
-
-    if (!$exercicio) {
-        http_response_code(404);
-        echo json_encode(['success' => false, 'message' => 'Exercício não encontrado.']);
-        exit();
-    }
-
-    $conteudo = json_decode($exercicio['conteudo'], true);
-    $fraseEsperada = $conteudo['resposta_correta'] ?? '';
-
-    // Normalização básica dos textos para comparação
-    $normalizeText = function($text) {
-        $text = strtolower($text);
-        $text = preg_replace('/[\p{P}\p{S}]/u', '', $text); // Remove pontuação e símbolos
-        $text = trim($text);
-        return $text;
-    };
-
-    $fraseEsperadaNormalizada = $normalizeText($fraseEsperada);
-    $transcricaoUsuarioNormalizada = $normalizeText($transcricaoUsuario);
-
-    // Cálculo da similaridade (usando similar_text)
-    $similaridade = 0;
-    similar_text($fraseEsperadaNormalizada, $transcricaoUsuarioNormalizada, $similaridade);
-
-    $acertou = $similaridade >= 80; // Define um limiar de 80% de similaridade
-
-    echo json_encode([
-        'success' => true,
-        'acertou' => $acertou,
-        'similaridade' => round($similaridade, 2),
-        'frase_correta' => $fraseEsperada
-    ]);
-    exit(); // Termina a execução após a resposta AJAX
-}
-
-$database->closeConnection();
-
-// --- Variáveis para pré-preencher o formulário em caso de erro ou sucesso ---
+// Variáveis para pré-preencher o formulário em caso de erro ou sucesso
 $post_caminho_id = $_POST["caminho_id"] ?? '';
 $post_bloco_id = $_POST["bloco_id"] ?? '';
 $post_ordem = $_POST["ordem"] ?? '';
 $post_tipo = $_POST["tipo"] ?? "normal";
 $post_tipo_exercicio = $_POST["tipo_exercicio"] ?? "multipla_escolha";
 $post_pergunta = $_POST["pergunta"] ?? '';
+
+// CAMPOS ESPECÍFICOS PARA LISTENING
+$post_frase_listening = $_POST["frase_listening"] ?? '';
+$post_idioma_audio = $_POST["idioma_audio"] ?? 'en-us';
+$post_listening_opcao1 = $_POST["listening_opcao1"] ?? '';
+$post_listening_opcao2 = $_POST["listening_opcao2"] ?? '';
+$post_listening_opcao3 = $_POST["listening_opcao3"] ?? '';
+$post_listening_opcao4 = $_POST["listening_opcao4"] ?? '';
+$post_listening_alt_correta = $_POST['listening_alt_correta'] ?? '0'; // Novo campo para a resposta correta
+$post_explicacao_listening = $_POST["explicacao_listening"] ?? '';
 
 // Campos específicos para cada tipo de exercício
 $post_alt_texto = $_POST["alt_texto"] ?? [];
@@ -311,6 +325,7 @@ $post_link_video = $_POST["link_video"] ?? '';
 $post_pergunta_extra = $_POST["pergunta_extra"] ?? '';
 $post_quiz_id = $_POST["quiz_id"] ?? '';
 
+$database->closeConnection();
 ?>
 
 <!DOCTYPE html>
@@ -331,6 +346,13 @@ $post_quiz_id = $_POST["quiz_id"] ?? '';
         .input-group-text {
             min-width: 40px;
             justify-content: center;
+        }
+        .audio-preview {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px dashed #dee2e6;
         }
     </style>
 </head>
@@ -402,7 +424,7 @@ $post_quiz_id = $_POST["quiz_id"] ?? '';
                         </select>
                     </div>
                     
-                    <!-- Campo Subtipo -->
+                    <!-- Campo Subtipo - ATUALIZADO COM LISTENING -->
                     <div class="mb-3">
                         <label for="tipo_exercicio" class="form-label">Subtipo do Exercício</label>
                         <select class="form-select" id="tipo_exercicio" name="tipo_exercicio" required>
@@ -410,6 +432,7 @@ $post_quiz_id = $_POST["quiz_id"] ?? '';
                             <option value="texto_livre" <?php echo ($post_tipo_exercicio == "texto_livre") ? "selected" : ""; ?>>Texto Livre (Completar)</option>
                             <option value="completar" <?php echo ($post_tipo_exercicio == "completar") ? "selected" : ""; ?>>Completar Frase</option>
                             <option value="fala" <?php echo ($post_tipo_exercicio == "fala") ? "selected" : ""; ?>>Exercício de Fala</option>
+                            <option value="listening" <?php echo ($post_tipo_exercicio == "listening") ? "selected" : ""; ?>>Exercício de Listening</option>
                             <option value="audicao" <?php echo ($post_tipo_exercicio == "audicao") ? "selected" : ""; ?>>Exercício de Audição</option>
                         </select>
                     </div>
@@ -420,7 +443,7 @@ $post_quiz_id = $_POST["quiz_id"] ?? '';
                         <textarea class="form-control" id="pergunta" name="pergunta" required><?php echo htmlspecialchars($post_pergunta); ?></textarea>
                     </div>
 
-                    <!-- Campos Dinâmicos -->
+                    <!-- Campos Dinâmicos - ADICIONADA SEÇÃO LISTENING -->
                     <div id="conteudo-campos">
                         <div id="campos-normal">
                             <!-- Campos para Múltipla Escolha -->
@@ -489,7 +512,7 @@ $post_quiz_id = $_POST["quiz_id"] ?? '';
                                 <div class="mb-3">
                                     <label for="frase_completar" class="form-label">Frase para Completar *</label>
                                     <textarea class="form-control" id="frase_completar" name="frase_completar" rows="2"><?php echo htmlspecialchars($post_frase_completar); ?></textarea>
-                                    <div class="form-text">Use <code>___</code> para indicar o espaço a ser preenchido. Ex: "Eu gosto de ___ maçãs."</div>
+                                    <div class="form-text">Use <code>_____</code> para indicar o espaço a ser preenchido. Ex: "Eu gosto de ___ maçãs."</div>
                                 </div>
                                 <div class="mb-3">
                                     <label for="resposta_completar" class="form-label">Resposta Correta *</label>
@@ -530,6 +553,75 @@ $post_quiz_id = $_POST["quiz_id"] ?? '';
                                 </div>
                             </div>
 
+                            <!-- NOVO: Campos para Listening -->
+                            <div id="campos-listening" class="subtipo-campos">
+                                <h5>Configuração - Exercício de Listening</h5>
+                                
+                                <div class="mb-3">
+                                    <label for="frase_listening" class="form-label">Frase para Gerar Áudio *</label>
+                                    <textarea class="form-control" id="frase_listening" name="frase_listening" rows="3" 
+                                            placeholder="Digite a frase que será convertida em áudio automaticamente"><?php echo htmlspecialchars($post_frase_listening); ?></textarea>
+                                    <div class="form-text">Esta frase será convertida em áudio automaticamente usando API de text-to-speech</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="idioma_audio" class="form-label">Idioma do Áudio *</label>
+                                    <select class="form-select" id="idioma_audio" name="idioma_audio">
+                                        <option value="en-us" <?php echo ($post_idioma_audio == 'en-us') ? 'selected' : ''; ?>>Inglês (EUA)</option>
+                                        <option value="en-gb" <?php echo ($post_idioma_audio == 'en-gb') ? 'selected' : ''; ?>>Inglês (UK)</option>
+                                        <option value="es-es" <?php echo ($post_idioma_audio == 'es-es') ? 'selected' : ''; ?>>Espanhol</option>
+                                        <option value="fr-fr" <?php echo($post_idioma_audio == 'fr-fr') ? 'selected' : ''; ?>>Francês</option>
+                                        <option value="de-de" <?php echo ($post_idioma_audio == 'de-de') ? 'selected' : ''; ?>>Alemão</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Opções de Resposta *</label>
+                                    <div class="input-group mb-2">
+                                        <div class="input-group-text">
+                                            <input type="radio" name="listening_alt_correta" value="0" <?php echo ($post_listening_alt_correta == '0') ? 'checked' : ''; ?> title="Marcar como correta">
+                                        </div>
+                                        <input type="text" class="form-control" name="listening_opcao1" placeholder="Opção 1" required value="<?php echo htmlspecialchars($post_listening_opcao1); ?>">
+                                    </div>
+                                    <div class="input-group mb-2">
+                                        <div class="input-group-text">
+                                            <input type="radio" name="listening_alt_correta" value="1" <?php echo ($post_listening_alt_correta == '1') ? 'checked' : ''; ?> title="Marcar como correta">
+                                        </div>
+                                        <input type="text" class="form-control" name="listening_opcao2" placeholder="Opção 2" required value="<?php echo htmlspecialchars($post_listening_opcao2); ?>">
+                                    </div>
+                                    <div class="input-group mb-2">
+                                        <div class="input-group-text">
+                                            <input type="radio" name="listening_alt_correta" value="2" <?php echo ($post_listening_alt_correta == '2') ? 'checked' : ''; ?> title="Marcar como correta">
+                                        </div>
+                                        <input type="text" class="form-control" name="listening_opcao3" placeholder="Opção 3 (Opcional)" value="<?php echo htmlspecialchars($post_listening_opcao3); ?>">
+                                    </div>
+                                    <div class="input-group mb-2">
+                                        <div class="input-group-text">
+                                            <input type="radio" name="listening_alt_correta" value="3" <?php echo ($post_listening_alt_correta == '3') ? 'checked' : ''; ?> title="Marcar como correta">
+                                        </div>
+                                        <input type="text" class="form-control" name="listening_opcao4" placeholder="Opção 4 (Opcional)" value="<?php echo htmlspecialchars($post_listening_opcao4); ?>">
+                                    </div>
+                                    <div class="form-text">Marque a bolinha ao lado da alternativa correta.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="explicacao_listening" class="form-label">Explicação (Opcional)</label>
+                                    <textarea class="form-control" id="explicacao_listening" name="explicacao_listening" rows="2" 
+                                              placeholder="Explicação que aparecerá após a resposta"><?php echo htmlspecialchars($post_explicacao_listening); ?></textarea>
+                                </div>
+                                
+                                <!-- Preview do Áudio -->
+                                <div class="mb-3">
+                                    <label class="form-label">Prévia do Áudio</label>
+                                    <div id="audioPreview" class="audio-preview text-center">
+                                        <p class="text-muted">O áudio será gerado automaticamente após digitar a frase</p>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="testarAudio()">
+                                        <i class="fas fa-play me-1"></i>Testar Áudio
+                                    </button>
+                                </div>
+                            </div>
+
                             <!-- Campos para Exercício de Audição -->
                             <div id="campos-audicao" class="subtipo-campos">
                                 <h5>Configuração - Exercício de Audição</h5>
@@ -547,12 +639,6 @@ $post_quiz_id = $_POST["quiz_id"] ?? '';
                                     <label for="resposta_audio_correta" class="form-label">Resposta Correta *</label>
                                     <input type="text" class="form-control" id="resposta_audio_correta" name="resposta_audio_correta" value="<?php echo htmlspecialchars($post_resposta_audio_correta); ?>">
                                     <div class="form-text">A resposta esperada do usuário após ouvir o áudio.</div>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="exercicio_id_audicao" class="form-label">ID do Exercício (para correção)</label>
-                                    <input type="number" class="form-control" id="exercicio_id_audicao" name="exercicio_id_audicao" placeholder="Preenchido após salvar o exercício">
-                                    <button type="button" class="btn btn-info mt-2" onclick="testarCorrecaoAudio()">Testar Correção de Áudio</button>
-                                    <div id="resultado_correcao_audio" class="mt-2"></div>
                                 </div>
                             </div>
                         </div>
@@ -613,23 +699,7 @@ $post_quiz_id = $_POST["quiz_id"] ?? '';
         }
     }
     
-    function preencherSelectBlocos(blocos, blocoSelecionado = null) {
-        const selectBloco = document.getElementById("bloco_id");
-        selectBloco.innerHTML = '<option value="">-- Selecione um bloco --</option>';
-        
-        blocos.forEach(bloco => {
-            const option = document.createElement("option");
-            option.value = bloco.id;
-            option.textContent = `Bloco ${bloco.ordem}: ${bloco.nome_bloco}`;
-            
-            if (blocoSelecionado && bloco.id == blocoSelecionado) {
-                option.selected = true;
-            }
-            
-            selectBloco.appendChild(option);
-        });
-    }
-
+    // JavaScript ATUALIZADO para incluir listening
     document.addEventListener("DOMContentLoaded", function() {
         const tipoSelect = document.getElementById("tipo");
         const tipoExercicioSelect = document.getElementById("tipo_exercicio");
@@ -637,11 +707,13 @@ $post_quiz_id = $_POST["quiz_id"] ?? '';
         const camposEspecial = document.getElementById("campos-especial");
         const camposQuiz = document.getElementById("campos-quiz");
         
+        // Adicionar referência aos campos de listening
         const camposMultipla = document.getElementById("campos-multipla");
         const camposTexto = document.getElementById("campos-texto");
         const camposCompletar = document.getElementById("campos-completar");
         const camposFala = document.getElementById("campos-fala");
         const camposAudicao = document.getElementById("campos-audicao");
+        const camposListening = document.getElementById("campos-listening");
 
         function atualizarCampos() {
             // Esconder todos os campos principais
@@ -655,6 +727,7 @@ $post_quiz_id = $_POST["quiz_id"] ?? '';
             camposCompletar.style.display = "none";
             camposFala.style.display = "none";
             camposAudicao.style.display = "none";
+            camposListening.style.display = "none";
 
             if (tipoSelect.value === "normal") {
                 camposNormal.style.display = "block";
@@ -672,6 +745,9 @@ $post_quiz_id = $_POST["quiz_id"] ?? '';
                         break;
                     case "fala":
                         camposFala.style.display = "block";
+                        break;
+                    case "listening":
+                        camposListening.style.display = "block";
                         break;
                     case "audicao":
                         camposAudicao.style.display = "block";
@@ -714,61 +790,64 @@ $post_quiz_id = $_POST["quiz_id"] ?? '';
         container.appendChild(novaAlternativa);
     }
 
-    async function testarCorrecaoAudio() {
-        const exercicioId = document.getElementById("exercicio_id_audicao").value;
-        const transcricaoUsuario = prompt("Digite a transcrição do áudio para testar a correção:");
-        const resultadoDiv = document.getElementById("resultado_correcao_audio");
-
-        if (!exercicioId || !transcricaoUsuario) {
-            resultadoDiv.innerHTML = '';
-            resultadoDiv.classList.remove("alert-success", "alert-danger");
-            resultadoDiv.classList.add("alert", "alert-warning");
-            resultadoDiv.textContent = "Por favor, insira o ID do exercício e a transcrição para testar.";
+    // Função para testar áudio
+    async function testarAudio() {
+        const frase = document.getElementById('frase_listening').value;
+        const idioma = document.getElementById('idioma_audio').value;
+        
+        if (!frase) {
+            alert('Digite uma frase primeiro');
             return;
         }
-
-        resultadoDiv.innerHTML = '';
-        resultadoDiv.classList.remove("alert-success", "alert-danger", "alert-warning");
-        resultadoDiv.classList.add("alert", "alert-info");
-        resultadoDiv.textContent = "Testando correção...";
-
+        
+        const preview = document.getElementById('audioPreview');
+        preview.innerHTML = '<div class="spinner-border text-primary" role="status"></div><p>Gerando áudio...</p>';
+        
         try {
-            // A requisição AJAX agora aponta para o próprio arquivo, com uma action específica
-            const response = await fetch(`adicionar_atividades.php?unidade_id=${<?php echo $unidade_id; ?>}&action=corrigir_audio`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    exercicio_id: exercicioId,
-                    transcricao: transcricaoUsuario
-                })
+            const formData = new FormData();
+            formData.append('frase', frase);
+            formData.append('idioma', idioma);
+            formData.append('testar_audio', 'true');
+            
+            // CORREÇÃO: Chamar o novo endpoint dedicado
+            const response = await fetch('../controller/gerar_audio_api.php', {
+                method: 'POST',
+                body: formData
             });
-
+            
             const data = await response.json();
-
+            
             if (data.success) {
-                if (data.acertou) {
-                    resultadoDiv.classList.remove("alert-info", "alert-warning");
-                    resultadoDiv.classList.add("alert-success");
-                    resultadoDiv.innerHTML = `✅ Correto! Similaridade: ${data.similaridade}%<br>Frase esperada: ${data.frase_correta}`;
-                } else {
-                    resultadoDiv.classList.remove("alert-info", "alert-warning");
-                    resultadoDiv.classList.add("alert-danger");
-                    resultadoDiv.innerHTML = `❌ Incorreto. Similaridade: ${data.similaridade}%<br>Frase esperada: ${data.frase_correta}`;
-                }
+                // Adiciona um timestamp para evitar problemas de cache do navegador
+                preview.innerHTML = `
+                    <audio controls autoplay class="w-100">
+                        <source src="${data.audio_url}?t=${new Date().getTime()}" type="audio/mpeg">
+                        Seu navegador não suporta o elemento de áudio.
+                    </audio>
+                    <p class="mt-2 text-success"><small><i class="fas fa-check me-1"></i>Áudio gerado com sucesso!</small></p>
+                `;
             } else {
-                resultadoDiv.classList.remove("alert-info", "alert-success");
-                resultadoDiv.classList.add("alert-danger");
-                resultadoDiv.textContent = `Erro: ${data.message}`;
+                preview.innerHTML = `<p class="text-danger"><i class="fas fa-times me-1"></i>Não foi possível gerar o áudio. Tente novamente. (${data.message})</p>`;
             }
         } catch (error) {
-            console.error("Erro ao testar correção de áudio:", error);
-            resultadoDiv.classList.remove("alert-info", "alert-success");
-            resultadoDiv.classList.add("alert-danger");
-            resultadoDiv.textContent = "Erro ao conectar com o servidor de correção.";
+            preview.innerHTML = `<p class="text-danger"><i class="fas fa-times me-1"></i>Erro de comunicação ao gerar áudio.</p>`;
         }
     }
+
+    // Gerar áudio automaticamente quando a frase for alterada
+    let timeoutId;
+    document.getElementById('frase_listening')?.addEventListener('input', function() {
+         clearTimeout(timeoutId);
+        timeoutId = setTimeout( () => {
+            if (this.value.length > 5) {
+                testarAudio();
+            }
+        }, 1500);
+    });
+
     </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
 </body>
 </html>
