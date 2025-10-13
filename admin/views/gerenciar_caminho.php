@@ -113,6 +113,14 @@ $database->closeConnection();
             color: var(--roxo-escuro) !important;
             transform: rotate(90deg);
         }
+        .table-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(106, 13, 173, 0.1);
+            transition: all 0.3s ease;
+        }
 
         .card-header h5 {
             font-size: 1.3rem;

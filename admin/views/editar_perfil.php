@@ -58,6 +58,15 @@ $stmt_admin->execute();
 $admin = $stmt_admin->get_result()->fetch_assoc();
 $stmt_admin->close();
 
+// 6. DATA DE REGISTRO FIXA NO CÓDIGO (sem banco de dados)
+// Você pode definir uma data específica ou usar a data atual
+//$data_registro_codigo = "15 de Outubro de 2024"; // ← ALTERE AQUI PARA A DATA QUE VOCÊ QUISER
+
+// Ou se quiser usar a data atual automaticamente:
+$meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+$data_atual = getdate();
+ $data_registro_codigo = $data_atual['mday'] . ' de ' . $meses[$data_atual['mon'] - 1] . ' de ' . $data_atual['year'];
+
 $database->closeConnection();
 ?>
 
@@ -786,6 +795,49 @@ $database->closeConnection();
                 font-size: 0.9rem;
             }
         }
+        /* 1. Define o container como o alvo e usa relative */
+.custom-tooltip {
+    position: relative; 
+}
+
+/* 2. O tooltip propriamente dito */
+.custom-tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    z-index: 1000;
+    bottom: 100%; /* Posiciona acima do container */
+    left: 50%;
+    transform: translateX(-50%);
+    
+    /* Estilos Visuais */
+    background-color: #333;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    
+    /* Controle de visibilidade */
+    opacity: 0;
+    visibility: hidden;
+    /* Transição rápida para aparecer/desaparecer, ligado ao foco */
+    transition: opacity 0.2s, visibility 0.2s; 
+}
+
+/* 3. Regra para mostrar o tooltip: */
+
+/* A mensagem aparece imediatamente quando o usuário clica no label (foca o input)
+   e só desaparece quando o foco é removido (clique fora, Tab, etc.) */
+.custom-tooltip:focus-within::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Opcional: Se quiser que funcione TAMBÉM ao passar o mouse, adicione o :hover */
+.custom-tooltip:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
     </style>
 </head>
 <body>
@@ -816,7 +868,7 @@ $database->closeConnection();
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item">
                         <a href="gerenciar_caminho.php">
-                            <i class="fas fa-home me-1"></i>Dashboard
+                            <i class="fas fa-home me-1"></i>
                         </a>
                     </li>
                     <li class="breadcrumb-item active" aria-current="page">
@@ -868,9 +920,9 @@ $database->closeConnection();
                             <span>admin@cursosidiomas.com</span>
                         </div>
                         <div class="profile-detail-item">
-                            <i class="fas fa-calendar-alt"></i>
-                            <span>Membro desde Janeiro 2024</span>
-                        </div>
+    <i class="fas fa-calendar-alt"></i>
+    <span>Membro desde <?= htmlspecialchars($data_registro_codigo) ?></span> <!-- NOVA LINHA -->
+</div>
                         <div class="profile-detail-item">
                             <i class="fas fa-map-marker-alt"></i>
                             <span>São Paulo, Brasil</span>
@@ -935,35 +987,27 @@ $database->closeConnection();
                                     <i class="fas fa-edit input-icon"></i>
                                 </div>
 
-<div class="form-group-enhanced">
+<div class="form-group-enhanced custom-tooltip" 
+     data-tooltip="Apenas membros com autorização da administração geral podem modificar informações privadas.">
+    
     <label for="email" class="form-label-enhanced">
         <i class="fas fa-envelope"></i>Email
     </label>
-    <input type="email" class="form-control form-control-enhanced" id="email" name="email"
-        value="<?= htmlspecialchars($admin['email'] ?? '') ?>" required
-        placeholder="Digite seu email">
-   
+    <input type="email" class="form-control form-control-enhanced" id="email" name="email" readonly 
+        value="admin@cursosidiomas.com" required
+        placeholder="Digite seu email"> <i class="fas fa-lock input-icon"></i>
 </div>
 
-                                <div class="form-group-enhanced">
-                                    <label for="cargo_display" class="form-label-enhanced">
-                                        <i class="fas fa-briefcase"></i>Cargo
-                                    </label>
-                                    <input type="text" class="form-control form-control-enhanced" id="cargo_display"
-                                        value="Administrador Principal" readonly
-                                        style="background-color: #f8f9fa;">
-                                    <i class="fas fa-crown input-icon"></i>
-                                </div>
-
-                                <div class="form-group-enhanced">
-                                    <label for="bio_display" class="form-label-enhanced">
-                                        <i class="fas fa-quote-left"></i>Biografia Profissional
-                                    </label>
-                                    <textarea class="form-control form-control-enhanced" id="bio_display" rows="4" 
-                                        style="background-color: #f8f9fa;">Administrador experiente com mais de 5 anos na área de educação online. Especialista em gestão de plataformas de ensino e desenvolvimento de cursos de idiomas.</textarea>
-                                </div>
-                                
-                                <input type="hidden" name="confirmar_update" value="1">
+<div class="form-group-enhanced custom-tooltip" 
+     data-tooltip="Apenas membros com autorização da administração geral podem modificar informações privadas.">
+    <label for="cargo_display" class="form-label-enhanced">
+        <i class="fas fa-briefcase"></i>Cargo
+    </label>
+    <input type="text" class="form-control form-control-enhanced" id="cargo_display"
+        value="Administrador Principal" readonly
+        style="background-color: #f8f9fa;">
+    <i class="fas fa-crown input-icon"></i>
+</div>
 
                                 <!-- Botão de Atualizar -->
                                 <div class="text-center mt-4">
@@ -1165,12 +1209,13 @@ $database->closeConnection();
             });
             
             if (form) {
-                // Lógica para o modal de ATUALIZAÇÃO
+                // Lógica para o modal de ATUALIZAÇÃO - CORRIGIDA
                 confirmUpdateModal.addEventListener('show.bs.modal', function () {
                     const novoNome = document.getElementById('nome_usuario').value;
                     document.getElementById('novoNomeUsuario').textContent = novoNome;
                 });
 
+                // CORREÇÃO PRINCIPAL: Adiciona evento de clique correto
                 document.getElementById('confirmarUpdateBtn').addEventListener('click', function() {
                     // Atualiza o texto do botão para mostrar que está processando
                     this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Atualizando...';
@@ -1179,10 +1224,8 @@ $database->closeConnection();
                     // Mostra loading
                     loadingOverlay.style.display = 'flex';
                     
-                    // Simula um pequeno delay para melhor UX
-                    setTimeout(() => {
-                        form.submit();
-                    }, 800);
+                    // CORREÇÃO: Submete o formulário diretamente
+                    form.submit();
                 });
 
                 // Validação em tempo real
