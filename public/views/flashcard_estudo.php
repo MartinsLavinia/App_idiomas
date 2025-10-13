@@ -41,54 +41,114 @@ $id_deck = intval($_GET['deck'] ?? 0);
         /* Estilos Gerais */
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
-            color: var(--branco);
+            background: linear-gradient(135deg, #f5f7fa 0%, #e3e8f0 100%);
+            color: var(--preto-texto);
             min-height: 100vh;
             overflow-x: hidden;
+            margin: 0;
+            padding: 0;
         }
 
-        /* Barra de Navegação */
-        .navbar {
-            background: rgba(255, 255, 255, 0.1) !important;
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        /* SIDEBAR FIXO */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100%;
+            background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+            color: var(--branco);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
         }
 
-        .navbar-brand, .navbar-text {
-            color: var(--branco) !important;
+        .sidebar .profile {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 0 15px;
         }
 
-        .btn-outline-light {
+        .sidebar .profile i {
+            font-size: 4rem;
             color: var(--amarelo-detalhe);
-            border-color: var(--amarelo-detalhe);
-            font-weight: 600;
+            margin-bottom: 10px;
         }
 
-        .btn-outline-light:hover {
-            background-color: var(--amarelo-detalhe);
-            color: var(--preto-texto);
+        .sidebar .profile h5 {
+            font-weight: 600;
+            margin-bottom: 0;
+            color: var(--branco);
+        }
+
+        .sidebar .profile small {
+            color: var(--cinza-claro);
+        }
+
+        .sidebar .list-group-item {
+            background-color: transparent;
+            color: var(--branco);
+            border: none;
+            padding: 15px 25px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .sidebar .list-group-item:hover {
+            background-color: var(--roxo-escuro);
+            cursor: pointer;
+        }
+
+        .sidebar .list-group-item.active {
+            background-color: var(--roxo-escuro) !important;
+            color: var(--branco) !important;
+            font-weight: 600;
+            border-left: 4px solid var(--amarelo-detalhe);
+        }
+
+        .sidebar .list-group-item i {
+            color: var(--amarelo-detalhe);
+            width: 20px; /* Alinhamento dos ícones */
+            text-align: center;
+        }
+
+        /* Conteúdo principal */
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
         }
 
         /* Container Principal */
         .study-container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 2rem 1rem;
+            padding: 0; /* Removido para ser controlado pelo main-content */
         }
 
         /* Progresso */
         .progress-section {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            background: var(--branco);
             border-radius: 1rem;
             padding: 1.5rem;
             margin-bottom: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid var(--cinza-medio);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .progress-section h5 {
+            color: var(--preto-texto);
         }
 
         .progress {
             height: 10px;
-            background: rgba(255, 255, 255, 0.2);
+            background: var(--cinza-medio);
             border-radius: 5px;
         }
 
@@ -101,13 +161,13 @@ $id_deck = intval($_GET['deck'] ?? 0);
         .flashcard-container {
             perspective: 1000px;
             margin-bottom: 2rem;
+            min-height: 420px; /* Garante espaço para o card não pular */
         }
 
         .flashcard {
             position: relative;
             width: 100%;
             height: 400px;
-            text-align: center;
             transition: transform 0.8s;
             transform-style: preserve-3d;
             cursor: pointer;
@@ -123,63 +183,65 @@ $id_deck = intval($_GET['deck'] ?? 0);
             height: 100%;
             backface-visibility: hidden;
             border-radius: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--cinza-medio);
+            overflow: hidden; /* Para o cabeçalho não vazar */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .flashcard-front {
+            background: var(--branco);
+        }
+
+        .flashcard-back {
+            background: var(--branco);
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-header {
+            padding: 1rem 1.5rem;
+            color: var(--branco);
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .flashcard-front .flashcard-header {
+            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+        }
+        .flashcard-back .flashcard-header {
+            background: linear-gradient(135deg, var(--amarelo-detalhe), #f39c12);
+            color: var(--preto-texto);
+        }
+
+        .flashcard-content {
+            flex-grow: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 2rem;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .flashcard-front {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
-            color: var(--preto-texto);
-        }
-
-        .flashcard-back {
-            background: linear-gradient(135deg, var(--amarelo-detalhe), #ffed4e);
-            color: var(--preto-texto);
-            transform: rotateY(180deg);
-        }
-
-        .flashcard-content {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: 600;
             line-height: 1.4;
             text-align: center;
         }
 
         .flashcard-hint {
-            margin-top: 1rem;
             font-size: 1rem;
             opacity: 0.8;
             font-style: italic;
+            margin-top: 1.5rem;
+            color: #6c757d;
         }
 
-        .flashcard-difficulty {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            padding: 0.25rem 0.75rem;
-            border-radius: 1rem;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .difficulty-facil {
-            background: var(--verde-sucesso);
-            color: white;
-        }
-
-        .difficulty-medio {
-            background: var(--amarelo-detalhe);
-            color: var(--preto-texto);
-        }
-
-        .difficulty-dificil {
-            background: var(--vermelho-erro);
-            color: white;
+        .flashcard-footer {
+            padding: 1rem;
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.9rem;
         }
 
         /* Botões de Resposta */
@@ -191,48 +253,53 @@ $id_deck = intval($_GET['deck'] ?? 0);
         }
 
         .btn-response {
-            padding: 1rem 2rem;
-            border-radius: 1rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
             font-weight: 600;
-            font-size: 1.1rem;
+            font-size: 1rem;
             border: none;
             transition: all 0.3s ease;
-            min-width: 120px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
         .btn-response:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
 
         .btn-again {
-            background: var(--vermelho-erro);
+            background: linear-gradient(135deg, #ff6b6b, #ee5253);
             color: white;
         }
 
         .btn-hard {
-            background: #fd7e14;
-            color: white;
+            background: linear-gradient(135deg, #feca57, #ff9f43);
+            color: var(--preto-texto);
         }
 
         .btn-good {
-            background: var(--verde-sucesso);
+            background: linear-gradient(135deg, #54a0ff, #2e86de);
             color: white;
         }
 
         .btn-easy {
-            background: var(--amarelo-detalhe);
-            color: var(--preto-texto);
+            background: linear-gradient(135deg, #1dd1a1, #10ac84);
+            color: white;
         }
 
         /* Estatísticas */
         .stats-section {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            background: var(--branco);
             border-radius: 1rem;
             padding: 1.5rem;
             margin-bottom: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid var(--cinza-medio);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
         }
 
         .stat-item {
@@ -247,13 +314,21 @@ $id_deck = intval($_GET['deck'] ?? 0);
 
         .stat-label {
             font-size: 0.9rem;
-            opacity: 0.8;
+            color: #6c757d;
         }
 
         /* Estados */
         .loading, .empty-state, .completed-state {
             text-align: center;
             padding: 3rem;
+            background-color: var(--branco);
+            border-radius: 1rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .loading h3, .empty-state h3, .completed-state h3 {
+            color: var(--preto-texto);
+            font-weight: 600;
         }
 
         .loading i, .empty-state i, .completed-state i {
@@ -261,12 +336,24 @@ $id_deck = intval($_GET['deck'] ?? 0);
             margin-bottom: 1rem;
             color: var(--amarelo-detalhe);
         }
+        
+        .completed-state .stat-number {
+            color: var(--roxo-principal);
+        }
+        .completed-state .text-success {
+            color: var(--verde-sucesso) !important;
+        }
+        .completed-state .text-warning {
+            color: var(--amarelo-detalhe) !important;
+        }
+
+
 
         /* Animações */
         @keyframes slideInUp {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(50px) scale(0.98);
             }
             to {
                 opacity: 1;
@@ -274,7 +361,7 @@ $id_deck = intval($_GET['deck'] ?? 0);
             }
         }
 
-        .slide-in {
+        .flashcard-container.slide-in {
             animation: slideInUp 0.5s ease-out;
         }
 
@@ -283,7 +370,7 @@ $id_deck = intval($_GET['deck'] ?? 0);
             .study-container {
                 padding: 1rem;
             }
-            
+
             .flashcard {
                 height: 300px;
             }
@@ -291,14 +378,14 @@ $id_deck = intval($_GET['deck'] ?? 0);
             .flashcard-content {
                 font-size: 1.2rem;
             }
-            
+
             .response-buttons {
                 flex-wrap: wrap;
                 gap: 0.5rem;
             }
-            
+
             .btn-response {
-                padding: 0.75rem 1.5rem;
+                padding: 0.75rem 1rem;
                 font-size: 1rem;
                 min-width: 100px;
             }
@@ -306,60 +393,71 @@ $id_deck = intval($_GET['deck'] ?? 0);
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg">
-        <div class="container">
-            <a class="navbar-brand" href="flashcards.php">
-                <i class="fas fa-arrow-left me-2"></i>Flash Cards
+    <div class="sidebar">
+        <div class="profile">
+            <i class="fas fa-user-circle"></i>
+            <h5><?php echo htmlspecialchars($nome_usuario); ?></h5>
+            <small>Usuário</small>
+        </div>
+
+        <div class="list-group">
+            <a href="painel.php" class="list-group-item">
+                <i class="fas fa-home"></i> Início
             </a>
-            <div class="d-flex">
-                <span class="navbar-text me-3">
-                    Bem-vindo, <?php echo htmlspecialchars($nome_usuario); ?>!
-                </span>
-                <a href="//logout.php" class="btn btn-outline-light btn-sm">Sair</a>
-            </div>
+            <a href="flashcards.php" class="list-group-item active">
+                <i class="fas fa-layer-group"></i> Flash Cards
+            </a>
+            <a href="../../logout.php" class="list-group-item mt-auto">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </a>
         </div>
-    </nav>
+    </div>
 
-    <div class="study-container">
-        <!-- Progresso -->
-        <div class="progress-section">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0">Progresso da Sessão</h5>
-                <span id="progressText">0 / 0</span>
-            </div>
-            <div class="progress">
-                <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%"></div>
-            </div>
-        </div>
+    <div class="main-content">
+        <div class="container-fluid">
+            <div class="study-container">
+                <!-- Cabeçalho -->
+                <div class="row mb-4 align-items-center">
+                    <div class="col">
+                        <h1 class="mb-2">
+                            <a href="flashcards.php" class="text-decoration-none text-muted me-2"><i class="fas fa-arrow-left"></i></a>
+                            Sessão de Estudo
+                        </h1>
+                        <p class="text-muted mb-0">Concentre-se e revise seus flashcards.</p>
+                    </div>
+                </div>
 
-        <!-- Estatísticas -->
-        <div id="statsSection" class="stats-section" style="display: none;">
-            <div class="row">
-                <div class="col-3 stat-item">
-                    <div id="statTotal" class="stat-number">0</div>
-                    <div class="stat-label">Total</div>
+                <!-- Progresso -->
+                <div class="progress-section">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Progresso da Sessão</h5>
+                        <span id="progressText" class="fw-bold">0 / 0</span>
+                    </div>
+                    <div class="progress">
+                        <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
                 </div>
-                <div class="col-3 stat-item">
-                    <div id="statCorrect" class="stat-number">0</div>
-                    <div class="stat-label">Acertos</div>
-                </div>
-                <div class="col-3 stat-item">
-                    <div id="statWrong" class="stat-number">0</div>
-                    <div class="stat-label">Erros</div>
-                </div>
-                <div class="col-3 stat-item">
-                    <div id="statAccuracy" class="stat-number">0%</div>
-                    <div class="stat-label">Precisão</div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Área de Estudo -->
-        <div id="studyArea">
-            <div class="loading">
-                <i class="fas fa-spinner fa-spin"></i>
-                <h3>Carregando flashcards...</h3>
-                <p>Preparando sua sessão de estudo</p>
+                <!-- Estatísticas -->
+                <div id="statsSection" class="stats-section" style="display: none;">
+                    <div class="row">
+                        <div class="col-3 stat-item"><div id="statTotal" class="stat-number">0</div><div class="stat-label">Total</div></div>
+                        <div class="col-3 stat-item"><div id="statCorrect" class="stat-number">0</div><div class="stat-label">Acertos</div></div>
+                        <div class="col-3 stat-item"><div id="statWrong" class="stat-number">0</div><div class="stat-label">Erros</div></div>
+                        <div class="col-3 stat-item"><div id="statAccuracy" class="stat-number">0%</div><div class="stat-label">Precisão</div></div>
+                    </div>
+                </div>
+
+                <!-- Área de Estudo -->
+                <div id="studyArea">
+                    <div class="loading">
+                        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="visually-hidden">Carregando...</span>
+                        </div>
+                        <h3 class="mt-3">Carregando flashcards...</h3>
+                        <p class="text-muted">Preparando sua sessão de estudo.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -432,46 +530,50 @@ $id_deck = intval($_GET['deck'] ?? 0);
             const flashcard = flashcards[currentIndex];
             isFlipped = false;
             
-            const dificuldadeClass = {
-                'facil': 'difficulty-facil',
-                'medio': 'difficulty-medio',
-                'dificil': 'difficulty-dificil'
-            };
-            
             const dificuldadeTexto = {
                 'facil': 'Fácil',
                 'medio': 'Médio',
                 'dificil': 'Difícil'
             };
 
+            // Adiciona a classe de animação
             const studyArea = document.getElementById('studyArea');
+            studyArea.innerHTML = ''; // Limpa a área
+
+            // Cria o novo card
             studyArea.innerHTML = `
                 <div class="flashcard-container slide-in">
                     <div class="flashcard" onclick="virarFlashcard()">
                         <div class="flashcard-side flashcard-front">
-                            <div class="flashcard-difficulty ${dificuldadeClass[flashcard.dificuldade] || 'difficulty-medio'}">
-                                ${dificuldadeTexto[flashcard.dificuldade] || 'Médio'}
+                            <div class="flashcard-header">
+                                <span>Pergunta</span>
+                                <span class="badge bg-light text-dark">${dificuldadeTexto[flashcard.dificuldade] || 'Médio'}</span>
                             </div>
-                            <div class="flashcard-content">${flashcard.frente}</div>
-                            ${flashcard.dica ? `<div class="flashcard-hint"><i class="fas fa-lightbulb me-1"></i> ${flashcard.dica}</div>` : ''}
-                            <div class="mt-4">
-                                <small class="opacity-75">Clique para ver a resposta</small>
+                            <div class="flashcard-content">
+                                <span>${flashcard.frente}</span>
+                                ${flashcard.dica ? `<div class="flashcard-hint"><i class="fas fa-lightbulb me-1"></i> ${flashcard.dica}</div>` : ''}
+                            </div>
+                            <div class="flashcard-footer">
+                                Clique no card para ver a resposta
                             </div>
                         </div>
                         <div class="flashcard-side flashcard-back">
-                            <div class="flashcard-difficulty ${dificuldadeClass[flashcard.dificuldade] || 'difficulty-medio'}">
-                                ${dificuldadeTexto[flashcard.dificuldade] || 'Médio'}
+                            <div class="flashcard-header">
+                                <span>Resposta</span>
+                                <span class="badge bg-dark text-light">${dificuldadeTexto[flashcard.dificuldade] || 'Médio'}</span>
                             </div>
-                            <div class="flashcard-content">${flashcard.verso}</div>
-                            <div class="mt-4">
-                                <small class="opacity-75">Como foi sua resposta?</small>
+                            <div class="flashcard-content">
+                                <span>${flashcard.verso}</span>
+                            </div>
+                            <div class="flashcard-footer">
+                                Como você se saiu?
                             </div>
                         </div>
                     </div>
                 </div>
                 
                 <div id="responseButtons" class="response-buttons" style="display: none;">
-                    <button class="btn btn-response btn-again" onclick="responder(1)">
+                    <button class="btn btn-response btn-again" onclick="responder(0)">
                         <i class="fas fa-times me-2"></i>Errei
                     </button>
                     <button class="btn btn-response btn-hard" onclick="responder(2)">
@@ -480,7 +582,7 @@ $id_deck = intval($_GET['deck'] ?? 0);
                     <button class="btn btn-response btn-good" onclick="responder(4)">
                         <i class="fas fa-smile me-2"></i>Bom
                     </button>
-                    <button class="btn btn-response btn-easy" onclick="responder(5)">
+                    <button class="btn btn-response btn-easy" onclick="responder(4)">
                         <i class="fas fa-laugh me-2"></i>Fácil
                     </button>
                 </div>
@@ -506,7 +608,7 @@ $id_deck = intval($_GET['deck'] ?? 0);
         // Registra resposta do usuário
         function responder(facilidade) {
             const flashcard = flashcards[currentIndex];
-            const acertou = facilidade >= 3; // 3, 4, 5 = acertou; 1, 2 = errou
+            const acertou = facilidade >= 2; // 2, 3, 4 = acertou; 0 = errou
             
             // Atualiza estatísticas da sessão
             if (acertou) {
@@ -573,10 +675,10 @@ $id_deck = intval($_GET['deck'] ?? 0);
                     <h3>Nenhum flashcard para revisar</h3>
                     <p>Você está em dia com seus estudos! Volte mais tarde ou adicione novos flashcards.</p>
                     <div class="mt-4">
-                        <a href="flashcards.php" class="btn btn-primary me-2">
+                        <a href="flashcards.php" class="btn btn-primary btn-lg me-2">
                             <i class="fas fa-layer-group me-2"></i>Ver Meus Decks
                         </a>
-                        <a href="flashcard_deck.php?id=${idDeck}" class="btn btn-outline-light">
+                        <a href="flashcard_deck.php?id=${idDeck}" class="btn btn-outline-secondary btn-lg">
                             <i class="fas fa-plus me-2"></i>Adicionar Cards
                         </a>
                     </div>
@@ -611,25 +713,25 @@ $id_deck = intval($_GET['deck'] ?? 0);
                     <p>Você completou sua sessão de estudo com ${accuracy}% de precisão.</p>
                     
                     <div class="row mt-4 mb-4">
-                        <div class="col-4 stat-item">
-                            <div class="stat-number text-info">${sessionStats.total}</div>
+                        <div class="col-sm-4 stat-item mb-3 mb-sm-0">
+                            <div class="stat-number">${sessionStats.total}</div>
                             <div class="stat-label">Cards Estudados</div>
                         </div>
-                        <div class="col-4 stat-item">
+                        <div class="col-sm-4 stat-item mb-3 mb-sm-0">
                             <div class="stat-number text-success">${sessionStats.correct}</div>
                             <div class="stat-label">Acertos</div>
                         </div>
-                        <div class="col-4 stat-item">
+                        <div class="col-sm-4 stat-item">
                             <div class="stat-number text-warning">${accuracy}%</div>
                             <div class="stat-label">Precisão</div>
                         </div>
                     </div>
                     
                     <div class="mt-4">
-                        <button class="btn btn-primary me-2" onclick="reiniciarEstudo()">
+                        <button class="btn btn-primary btn-lg me-2" onclick="reiniciarEstudo()">
                             <i class="fas fa-redo me-2"></i>Estudar Novamente
                         </button>
-                        <a href="flashcards.php" class="btn btn-outline-light">
+                        <a href="flashcards.php" class="btn btn-outline-secondary btn-lg">
                             <i class="fas fa-layer-group me-2"></i>Ver Meus Decks
                         </a>
                     </div>
@@ -659,7 +761,7 @@ $id_deck = intval($_GET['deck'] ?? 0);
             const studyArea = document.getElementById('studyArea');
             studyArea.innerHTML = `
                 <div class="empty-state">
-                    <i class="fas fa-exclamation-triangle"></i>
+                    <i class="fas fa-exclamation-triangle text-danger"></i>
                     <h3>Erro</h3>
                     <p>${mensagem}</p>
                     <div class="mt-4">

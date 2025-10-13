@@ -29,6 +29,7 @@ if (!$id_deck) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="painel.css" rel="stylesheet">
     <style>
         /* Paleta de Cores */
         :root {
@@ -41,36 +42,92 @@ if (!$id_deck) {
             --cinza-medio: #dee2e6;
         }
 
-        /* Estilos Gerais */
+        /* Estilos Gerais do Corpo */
         body {
             font-family: 'Poppins', sans-serif;
             background-color: var(--cinza-claro);
             color: var(--preto-texto);
+            margin: 0;
+            padding: 0;
         }
 
-        /* Barra de Navegação */
-        .navbar {
-            background: var(--roxo-principal) !important;
-            border-bottom: 3px solid var(--amarelo-detalhe);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        /* SIDEBAR FIXO */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100%;
+            background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+            color: var(--branco);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
         }
 
-        .navbar-brand {
-            font-weight: 700;
-            letter-spacing: 1px;
+        .sidebar .profile {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 0 15px;
         }
 
-        .btn-outline-light {
+        .sidebar .profile i {
+            font-size: 4rem;
             color: var(--amarelo-detalhe);
-            border-color: var(--amarelo-detalhe);
-            font-weight: 600;
-            transition: all 0.3s ease;
+            margin-bottom: 10px;
         }
 
-        .btn-outline-light:hover {
-            background-color: var(--amarelo-detalhe);
-            color: var(--preto-texto);
+        .sidebar .profile h5 {
+            font-weight: 600;
+            margin-bottom: 0;
+            color: var(--branco);
         }
+
+        .sidebar .profile small {
+            color: var(--cinza-claro);
+        }
+
+        .sidebar .list-group-item {
+            background-color: transparent;
+            color: var(--branco);
+            border: none;
+            padding: 15px 25px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .sidebar .list-group-item:hover {
+            background-color: var(--roxo-escuro);
+            cursor: pointer;
+        }
+
+        .sidebar .list-group-item.active {
+            background-color: var(--roxo-escuro) !important;
+            color: var(--branco) !important;
+            font-weight: 600;
+            border-left: 4px solid var(--amarelo-detalhe);
+        }
+
+        .sidebar .list-group-item i {
+            color: var(--amarelo-detalhe);
+            width: 20px; /* Alinhamento dos ícones */
+            text-align: center;
+        }
+
+        /* Conteúdo principal */
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        /* Estilos Gerais */
 
         /* Cards */
         .card {
@@ -228,54 +285,67 @@ if (!$id_deck) {
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="flashcards.php">
-                <i class="fas fa-arrow-left me-2"></i>Flash Cards
+    <div class="sidebar">
+        <div class="profile">
+            <i class="fas fa-user-circle"></i>
+            <h5><?php echo htmlspecialchars($nome_usuario); ?></h5>
+            <small>Usuário</small>
+        </div>
+
+        <div class="list-group">
+            <a href="painel.php" class="list-group-item">
+                <i class="fas fa-home"></i> Início
             </a>
-            <div class="d-flex">
-                <span class="navbar-text text-white me-3">
-                    Bem-vindo, <?php echo htmlspecialchars($nome_usuario); ?>!
-                </span>
-                <a href="//logout.php" class="btn btn-outline-light">Sair</a>
-            </div>
+            <a href="flashcards.php" class="list-group-item active">
+                <i class="fas fa-layer-group"></i> Flash Cards
+            </a>
+            <a href="../../logout.php" class="list-group-item mt-auto">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </a>
         </div>
-    </nav>
+    </div>
 
-    <div class="container mt-4">
-        <!-- Informações do Deck -->
-        <div id="infoDeck" class="row mb-4">
-            <div class="loading">
-                <div class="spinner-border" role="status">
-                    <span class="visually-hidden">Carregando...</span>
+    <div class="main-content">
+        <div class="container-fluid mt-4">
+            <!-- Cabeçalho e Ações -->
+            <div class="row mb-4 align-items-center">
+                <div class="col-md-6">
+                    <h1 class="mb-2">
+                        <a href="flashcards.php" class="text-decoration-none text-muted me-2"><i class="fas fa-arrow-left"></i></a>
+                        Gerenciar Deck
+                    </h1>
+                    <p class="text-muted mb-0">Adicione, edite e estude os flashcards do seu deck.</p>
                 </div>
-                <p class="mt-2">Carregando informações do deck...</p>
+                <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                    <button class="btn btn-primary me-2" onclick="abrirModalFlashcard()">
+                        <i class="fas fa-plus me-2"></i>Novo Flashcard
+                    </button>
+                    <button class="btn btn-warning me-2" onclick="estudarDeck()">
+                        <i class="fas fa-play me-2"></i>Estudar Deck
+                    </button>
+                    <button class="btn btn-danger" onclick="excluirDeckAtual()">
+                        <i class="fas fa-trash me-2"></i>Excluir Deck
+                    </button>
+                </div>
             </div>
-        </div>
 
-        <!-- Ações -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h3>Flashcards</h3>
-                    <div>
-                        <button class="btn btn-primary me-2" onclick="abrirModalFlashcard()">
-                            <i class="fas fa-plus me-2"></i>Novo Flashcard
-                        </button>
-                        <button class="btn btn-warning me-2" onclick="estudarDeck()">
-                            <i class="fas fa-play me-2"></i>Estudar Deck
-                        </button>
-                        <button class="btn btn-danger" onclick="excluirDeckAtual()">
-                            <i class="fas fa-trash me-2"></i>Excluir Deck
-                        </button>
+            <!-- Informações do Deck -->
+            <div id="infoDeck" class="row mb-4">
+                <div class="loading">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Carregando...</span>
                     </div>
+                    <p class="mt-2">Carregando informações do deck...</p>
                 </div>
             </div>
-        </div>
 
-        <!-- Lista de Flashcards -->
-        <div id="listaFlashcards" class="row">
-            <!-- O conteúdo dos flashcards será carregado aqui via JavaScript -->
+            <hr class="my-4">
+
+            <h3 class="mb-4">Flashcards no Deck</h3>
+            <!-- Lista de Flashcards -->
+            <div id="listaFlashcards" class="row">
+                <!-- O conteúdo dos flashcards será carregado aqui via JavaScript -->
+            </div>
         </div>
     </div>
 
