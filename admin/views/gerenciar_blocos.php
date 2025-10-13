@@ -255,28 +255,389 @@ $database->closeConnection();
     <title>Gerenciar Blocos - Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="../../imagens/mini-esquilo.png">
     <style>
+        :root {
+            --roxo-principal: #6a0dad;
+            --roxo-escuro: #4c087c;
+            --amarelo-detalhe: #ffd700;
+            --amarelo-botao: #ffd700;
+            --amarelo-hover: #e7c500;
+            --branco: #ffffff;
+            --preto-texto: #212529;
+            --cinza-claro: #f8f9fa;
+            --cinza-medio: #dee2e6;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--cinza-claro);
+            color: var(--preto-texto);
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .settings-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .settings-icon:hover {
+            color: var(--roxo-escuro) !important;
+            transform: rotate(90deg);
+        }
+        
+        /* Navbar igual ao primeiro código */
+        .navbar {
+            background: transparent !important;
+            border-bottom: 3px solid var(--amarelo-detalhe);
+            box-shadow: 0 4px 15px rgba(255, 238, 0, 0.38);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .btn-outline-light {
+            color: var(--amarelo-detalhe);
+            border-color: var(--amarelo-detalhe);
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-light:hover {
+            background-color: var(--amarelo-detalhe);
+            color: var(--preto-texto);
+        }
+
+      /* Ajuste da logo no header */
+        .navbar-brand {
+            margin-left: auto;
+            margin-right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            width: 100%;
+        }
+        .navbar-brand .logo-header {
+            height: 70px;
+            width: auto;
+            display: block;
+        }
+
+        .settings-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .settings-icon:hover {
+            color: var(--roxo-principal) !important;
+            transform: rotate(90deg);
+        }
+        
+
+        /* Cartões de Estatísticas */
+        .stats-card {
+            background: rgba(255, 255, 255, 0.95) !important;
+            color: var(--preto-texto);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(106, 13, 173, 0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            animation: statsCardAnimation 0.8s ease-out;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        @keyframes statsCardAnimation {
+            from {
+                opacity: 0;
+                transform: translateY(30px) rotateX(-10deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) rotateX(0);
+            }
+        }
+
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(106, 13, 173, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .stats-card:hover::before {
+            left: 100%;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 15px 30px rgba(106, 13, 173, 0.25);
+            border-color: rgba(106, 13, 173, 0.3);
+        }
+
+        .stats-card h3 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--roxo-principal);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stats-card p {
+            margin-bottom: 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+            color: var(--preto-texto);
+        }
+
+        .stats-card i {
+            font-size: 2rem;
+            color: var(--amarelo-detalhe);
+            margin-bottom: 1rem;
+        }
+
+        /* Botões principais */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--roxo-principal) 0%, var(--roxo-escuro) 100%);
+            border: none;
+            color: white;
+            box-shadow: 0 4px 15px rgba(106, 13, 173, 0.3);
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--roxo-escuro) 0%, var(--roxo-principal) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(106, 13, 173, 0.4);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--roxo-principal) 0%, #600bafff 100%);
+            color: var(--preto-texto);
+            box-shadow: 0 4px 15px rgba(179, 100, 253, 0.77);
+            border: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(179, 100, 253, 0.77);
+            color: var(--preto-texto);
+        }
+
+        .btn-outline-warning {
+            color: var(--roxo-principal);
+            border-color: var(--roxo-principal);
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-warning:hover {
+            background-color: var(--roxo-principal);
+            color: white;
+            box-shadow: 0 4px 8px rgba(179, 100, 253, 0.77);
+        }
+
+        /* Cartões de bloco */
         .bloco-card {
             transition: transform 0.2s;
-            border-left: 4px solid #007bff;
+            border-left: 4px solid var(--roxo-principal);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+            height: 100%;
         }
+
         .bloco-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(106, 13, 173, 0.2);
         }
+
         .stats-badge {
             font-size: 0.8rem;
         }
+
         .bloco-actions {
             opacity: 0;
             transition: opacity 0.2s;
         }
+
         .bloco-card:hover .bloco-actions {
             opacity: 1;
         }
+
+        /* Cards de formulário e listas */
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--roxo-principal) 0%, var(--roxo-escuro) 100%);
+            color: white;
+            border-bottom: 2px solid var(--amarelo-detalhe);
+            padding: 15px 20px;
+        }
+
+        .card-header h5, .card-header h6 {
+            margin-bottom: 0;
+            font-weight: 600;
+        }
+
+        .card-header h5 i {
+            color: var(--amarelo-detalhe);
+        }
+
+        /* Formulários */
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid var(--cinza-medio);
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--roxo-principal);
+            box-shadow: 0 0 0 0.25rem rgba(106, 13, 173, 0.25);
+        }
+
+        /* Alertas */
+        .alert {
+            border-radius: 10px;
+            border: none;
+            padding: 15px 20px;
+        }
+
+        .alert-success {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-danger {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .alert-warning {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+
+        /* Badges */
+        .badge {
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        /* Títulos e textos */
+        h2 {
+            color: var(--roxo-principal);
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .text-muted {
+            color: #6c757d !important;
+        }
+
+        /* Dropdown */
+        .dropdown-menu {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 10px 0;
+        }
+
+        .dropdown-item {
+            padding: 8px 15px;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: rgba(106, 13, 173, 0.1);
+            color: var(--roxo-principal);
+        }
+
+        /* Botões de ação */
+        .btn-group-sm > .btn {
+            padding: 5px 10px;
+            border-radius: 6px;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .stats-card h3 {
+                font-size: 2rem;
+            }
+            
+            .bloco-actions {
+                opacity: 1; /* Sempre visível em mobile */
+            }
+            
+            .navbar-brand .logo-header {
+                height: 50px;
+            }
+            
+            .main-content {
+                padding: 15px;
+            }
+        }
+
+        /* Animações adicionais para stats-card */
+        .stats-card:nth-child(1) { animation-delay: 0.1s; }
+        .stats-card:nth-child(2) { animation-delay: 0.2s; }
+        .stats-card:nth-child(3) { animation-delay: 0.3s; }
+        .stats-card:nth-child(4) { animation-delay: 0.4s; }
     </style>
 </head>
 <body>
+     <!-- Navbar igual ao primeiro código -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div></div>
+            <div class="d-flex align-items-center" style="gap: 24px;">
+                <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
+                    <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
+                </a>
+                <a href="editar_perfil.php" class="settings-icon">
+                    <i class="fas fa-cog fa-lg"></i>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Conteúdo Principal -->
     <div class="container mt-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
@@ -289,7 +650,7 @@ $database->closeConnection();
                 </p>
             </div>
             <div>
-                <a href="gerenciar_caminho.php" class="btn btn-outline-secondary">
+                <a href="gerenciar_caminho.php" class="btn btn-outline-warning">
                     <i class="fas fa-arrow-left me-1"></i>Voltar para Caminhos
                 </a>
             </div>
