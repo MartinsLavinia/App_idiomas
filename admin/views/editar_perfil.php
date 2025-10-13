@@ -14,58 +14,142 @@ $conn = $database->conn;
 $id_admin = $_SESSION['id_admin'];
 $mensagem = '';
 $tipo_mensagem = '';
-// Removido: $update_sucesso = false; // Flag para controlar a exibição dos botões
 
-// 2. Verifica se o formulário foi enviado (após confirmação do modal).
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirmar_update'])) {
-    $nome_usuario_novo = $_POST['nome_usuario'];
+// 2. Verifica se o formulário foi enviado
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    
+    // Atualização do nome de usuário
+    if (isset($_POST['confirmar_update'])) {
+        $nome_usuario_novo = $_POST['nome_usuario'];
 
-    // 3. LÓGICA ANTI-DUPLICAÇÃO:
-    $sql_check = "SELECT id FROM administradores WHERE nome_usuario = ? AND id != ?";
-    $stmt_check = $conn->prepare($sql_check);
-    $stmt_check->bind_param("si", $nome_usuario_novo, $id_admin);
-    $stmt_check->execute();
-    $stmt_check->store_result();
+        // LÓGICA ANTI-DUPLICAÇÃO:
+        $sql_check = "SELECT id FROM administradores WHERE nome_usuario = ? AND id != ?";
+        $stmt_check = $conn->prepare($sql_check);
+        $stmt_check->bind_param("si", $nome_usuario_novo, $id_admin);
+        $stmt_check->execute();
+        $stmt_check->store_result();
 
-    if ($stmt_check->num_rows > 0) {
-        $mensagem = "Erro: O nome de usuário '{$nome_usuario_novo}' já está em uso.";
-        $tipo_mensagem = 'danger';
-    } else {
-        // 4. Atualiza o nome de usuário.
-        $sql_update = "UPDATE administradores SET nome_usuario = ? WHERE id = ?";
-        $stmt_update = $conn->prepare($sql_update);
-        $stmt_update->bind_param("si", $nome_usuario_novo, $id_admin);
-
-        if ($stmt_update->execute()) {
-            $mensagem = "Nome de usuário atualizado com sucesso!";
-            $tipo_mensagem = 'success';
-            $_SESSION['nome_admin'] = $nome_usuario_novo;
-            // Removido: $update_sucesso = true; // Define a flag de sucesso
+        if ($stmt_check->num_rows > 0) {
+            $mensagem = "Erro: O nome de usuário '{$nome_usuario_novo}' já está em uso.";
+            $tipo_mensagem = 'danger';
         } else {
-            $mensagem = "Ocorreu um erro inesperado ao atualizar o perfil.";
+            // Atualiza o nome de usuário.
+            $sql_update = "UPDATE administradores SET nome_usuario = ? WHERE id = ?";
+            $stmt_update = $conn->prepare($sql_update);
+            $stmt_update->bind_param("si", $nome_usuario_novo, $id_admin);
+
+            if ($stmt_update->execute()) {
+                $mensagem = "Nome de usuário atualizado com sucesso!";
+                $tipo_mensagem = 'success';
+                $_SESSION['nome_admin'] = $nome_usuario_novo;
+            } else {
+                $mensagem = "Ocorreu um erro inesperado ao atualizar o perfil.";
+                $tipo_mensagem = 'danger';
+            }
+            $stmt_update->close();
+        }
+        $stmt_check->close();
+    }
+    
+    // Upload de foto de perfil
+    if (isset($_FILES['foto_perfil']) && $_FILES['foto_perfil']['error'] === UPLOAD_ERR_OK) {
+        $foto = $_FILES['foto_perfil'];
+        
+        // Validações
+        $tiposPermitidos = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        $tamanhoMaximo = 2 * 1024 * 1024; // 2MB
+        
+        if (!in_array($foto['type'], $tiposPermitidos)) {
+            $mensagem = "Erro: Formato de arquivo não permitido. Use JPG, PNG ou GIF.";
+            $tipo_mensagem = 'danger';
+        } elseif ($foto['size'] > $tamanhoMaximo) {
+            $mensagem = "Erro: A imagem deve ter no máximo 2MB.";
+            $tipo_mensagem = 'danger';
+        } else {
+            // Cria diretório se não existir
+            $diretorioFotos = __DIR__ . '/../../uploads/perfis/';
+            if (!is_dir($diretorioFotos)) {
+                mkdir($diretorioFotos, 0777, true);
+            }
+            
+            // Gera nome único para o arquivo
+            $extensao = pathinfo($foto['name'], PATHINFO_EXTENSION);
+            $nomeArquivo = 'perfil_' . $id_admin . '_' . time() . '.' . $extensao;
+            $caminhoCompleto = $diretorioFotos . $nomeArquivo;
+            
+            if (move_uploaded_file($foto['tmp_name'], $caminhoCompleto)) {
+                // Atualiza no banco de dados
+                $sql_foto = "UPDATE administradores SET foto_perfil = ? WHERE id = ?";
+                $stmt_foto = $conn->prepare($sql_foto);
+                $caminhoRelativo = 'uploads/perfis/' . $nomeArquivo;
+                $stmt_foto->bind_param("si", $caminhoRelativo, $id_admin);
+                
+                if ($stmt_foto->execute()) {
+                    $mensagem = "Foto de perfil atualizada com sucesso!";
+                    $tipo_mensagem = 'success';
+                    $_SESSION['foto_admin'] = $caminhoRelativo;
+                } else {
+                    $mensagem = "Erro ao salvar informações da foto no banco de dados.";
+                    $tipo_mensagem = 'danger';
+                    // Remove o arquivo se deu erro no banco
+                    unlink($caminhoCompleto);
+                }
+                $stmt_foto->close();
+            } else {
+                $mensagem = "Erro ao fazer upload da foto.";
+                $tipo_mensagem = 'danger';
+            }
+        }
+    }
+    
+    // Remover foto de perfil
+    if (isset($_POST['remover_foto'])) {
+        // Busca a foto atual
+        $sql_foto_atual = "SELECT foto_perfil FROM administradores WHERE id = ?";
+        $stmt_foto_atual = $conn->prepare($sql_foto_atual);
+        $stmt_foto_atual->bind_param("i", $id_admin);
+        $stmt_foto_atual->execute();
+        $resultado = $stmt_foto_atual->get_result();
+        $admin_foto = $resultado->fetch_assoc();
+        $stmt_foto_atual->close();
+        
+        // Remove o arquivo físico se existir
+        if (!empty($admin_foto['foto_perfil']) && file_exists(__DIR__ . '/../../' . $admin_foto['foto_perfil'])) {
+            unlink(__DIR__ . '/../../' . $admin_foto['foto_perfil']);
+        }
+        
+        // Atualiza no banco de dados
+        $sql_remove_foto = "UPDATE administradores SET foto_perfil = NULL WHERE id = ?";
+        $stmt_remove_foto = $conn->prepare($sql_remove_foto);
+        $stmt_remove_foto->bind_param("i", $id_admin);
+        
+        if ($stmt_remove_foto->execute()) {
+            $mensagem = "Foto de perfil removida com sucesso!";
+            $tipo_mensagem = 'success';
+            unset($_SESSION['foto_admin']);
+        } else {
+            $mensagem = "Erro ao remover foto do perfil.";
             $tipo_mensagem = 'danger';
         }
-        $stmt_update->close();
+        $stmt_remove_foto->close();
     }
-    $stmt_check->close();
 }
 
 // 5. Busca os dados do administrador para preencher o formulário.
-$sql_admin = "SELECT nome_usuario FROM administradores WHERE id = ?";
+$sql_admin = "SELECT nome_usuario, foto_perfil FROM administradores WHERE id = ?";
 $stmt_admin = $conn->prepare($sql_admin);
 $stmt_admin->bind_param("i", $id_admin);
 $stmt_admin->execute();
 $admin = $stmt_admin->get_result()->fetch_assoc();
 $stmt_admin->close();
 
-// 6. DATA DE REGISTRO FIXA NO CÓDIGO (sem banco de dados)
-// Você pode definir uma data específica ou usar a data atual
-//$data_registro_codigo = "15 de Outubro de 2024"; // ← ALTERE AQUI PARA A DATA QUE VOCÊ QUISER
+// Define a foto atual (se existir)
+$foto_atual = !empty($admin['foto_perfil']) ? '../../' . $admin['foto_perfil'] : null;
 
-// Ou se quiser usar a data atual automaticamente:
+// 6. DATA DE REGISTRO FIXA NO CÓDIGO
 $meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 $data_atual = getdate();
- $data_registro_codigo = $data_atual['mday'] . ' de ' . $meses[$data_atual['mon'] - 1] . ' de ' . $data_atual['year'];
+$data_registro_codigo = $data_atual['mday'] . ' de ' . $meses[$data_atual['mon'] - 1] . ' de ' . $data_atual['year'];
 
 $database->closeConnection();
 ?>
@@ -165,7 +249,6 @@ $database->closeConnection();
 
         /* Container principal */
         .profile-container { 
-             
             margin: 40px auto; 
             padding: 0 20px;
             width: 80%;
@@ -273,6 +356,18 @@ $database->closeConnection();
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             position: relative;
             cursor: pointer;
+            overflow: hidden;
+        }
+
+        .profile-avatar.has-photo {
+            background: none;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
         }
 
         .profile-avatar:hover {
@@ -514,53 +609,53 @@ $database->closeConnection();
         }
 
         .btn-primary-enhanced {
-     background-color: #4c087c;
-    border: 2px solid #4c087c;
-    color: #ffffffff;
-    font-weight: 700;
-    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    position: relative;
-    overflow: hidden;
-    box-shadow: none;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-size: inherit;
+            background-color: #4c087c;
+            border: 2px solid #4c087c;
+            color: #ffffffff;
+            font-weight: 700;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+            box-shadow: none;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: inherit;
         }
 
-       .btn-primary-enhanced::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -150%;
-    width: 150%;
-    height: 100%;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.3),
-        transparent
-    );
-    transform: skewX(-25deg);
-    transition: left 0.8s ease;
-    pointer-events: none;
-}
+        .btn-primary-enhanced::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 150%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.3),
+                transparent
+            );
+            transform: skewX(-25deg);
+            transition: left 0.8s ease;
+            pointer-events: none;
+        }
 
-.btn-primary-enhanced:hover::before {
-    left: 150%;
-}
+        .btn-primary-enhanced:hover::before {
+            left: 150%;
+        }
 
-.btn-primary-enhanced:hover {
-    background: linear-gradient(135deg, #4c087c 0%, #8a2be2 100%);
-    border-color: #8a2be2;
-    color: white;
-    box-shadow: 0 6px 20px rgba(36, 31, 194, 0.4);
-    transform: translateY(-3px) scale(1.05);
-}
+        .btn-primary-enhanced:hover {
+            background: linear-gradient(135deg, #4c087c 0%, #8a2be2 100%);
+            border-color: #8a2be2;
+            color: white;
+            box-shadow: 0 6px 20px rgba(36, 31, 194, 0.4);
+            transform: translateY(-3px) scale(1.05);
+        }
 
-.btn-primary-enhanced:active {
-    transform: translateY(-1px) scale(1.02);
-    box-shadow: 0 4px 15px rgba(30, 26, 155, 0.5);
-}
+        .btn-primary-enhanced:active {
+            transform: translateY(-1px) scale(1.02);
+            box-shadow: 0 4px 15px rgba(30, 26, 155, 0.5);
+        }
         
         .btn-success-enhanced {
             background: linear-gradient(135deg, var(--verde-sucesso), #20c997);
@@ -617,106 +712,103 @@ $database->closeConnection();
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
 
-       .btn-voltar-dashboard {
-    background: transparent;
-    border: 2px solid #4c087c;
-    color: #4c087c;
-    font-weight: 700;
-    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    position: relative;
-    overflow: hidden;
-    box-shadow: none;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-size: inherit;
-}
+        .btn-voltar-dashboard {
+            background: transparent;
+            border: 2px solid #4c087c;
+            color: #4c087c;
+            font-weight: 700;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+            box-shadow: none;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: inherit;
+        }
 
-.btn-voltar-dashboard::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -150%;
-    width: 150%;
-    height: 100%;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.3),
-        transparent
-    );
-    transform: skewX(-25deg);
-    transition: left 0.8s ease;
-    pointer-events: none;
-}
+        .btn-voltar-dashboard::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 150%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.3),
+                transparent
+            );
+            transform: skewX(-25deg);
+            transition: left 0.8s ease;
+            pointer-events: none;
+        }
 
-.btn-voltar-dashboard:hover::before {
-    left: 150%;
-}
+        .btn-voltar-dashboard:hover::before {
+            left: 150%;
+        }
 
-.btn-voltar-dashboard:hover {
-    background: linear-gradient(135deg, #4c087c 0%, #8a2be2 100%);
-    border-color: #8a2be2;
-    color: white;
-    box-shadow: 0 6px 20px rgba(36, 31, 194, 0.4);
-    transform: translateY(-3px) scale(1.05);
-}
+        .btn-voltar-dashboard:hover {
+            background: linear-gradient(135deg, #4c087c 0%, #8a2be2 100%);
+            border-color: #8a2be2;
+            color: white;
+            box-shadow: 0 6px 20px rgba(36, 31, 194, 0.4);
+            transform: translateY(-3px) scale(1.05);
+        }
 
-.btn-voltar-dashboard:active {
-    transform: translateY(-1px) scale(1.02);
-    box-shadow: 0 4px 15px rgba(30, 26, 155, 0.5);
-}
+        .btn-voltar-dashboard:active {
+            transform: translateY(-1px) scale(1.02);
+            box-shadow: 0 4px 15px rgba(30, 26, 155, 0.5);
+        }
 
-/* --------------------- */
+        .btn-cancelar-alteracoes {
+            background: transparent;
+            border: 2px solid #909090;
+            color: #909090;
+            font-weight: 700;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+            box-shadow: none;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: inherit;
+        }
 
-.btn-cancelar-alteracoes {
-    background: transparent;
-    border: 2px solid #909090;
-    color: #909090;
-    font-weight: 700;
-    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    position: relative;
-    overflow: hidden;
-    box-shadow: none;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-size: inherit;
-}
+        .btn-cancelar-alteracoes::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 150%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.3),
+                transparent
+            );
+            transform: skewX(-25deg);
+            transition: left 0.8s ease;
+            pointer-events: none;
+        }
 
-.btn-cancelar-alteracoes::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -150%;
-    width: 150%;
-    height: 100%;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.3),
-        transparent
-    );
-    transform: skewX(-25deg);
-    transition: left 0.8s ease;
-    pointer-events: none;
-}
+        .btn-cancelar-alteracoes:hover::before {
+            left: 150%;
+        }
 
-.btn-cancelar-alteracoes:hover::before {
-    left: 150%;
-}
+        .btn-cancelar-alteracoes:hover {
+            background: linear-gradient(135deg, #909090 0%, #A0A0A0 100%);
+            border-color: #909090;
+            color: white;
+            box-shadow: 0 6px 20px rgba(144, 144, 144, 0.4);
+            transform: translateY(-3px) scale(1.05);
+        }
 
-.btn-cancelar-alteracoes:hover {
-    background: linear-gradient(135deg, #909090 0%, #A0A0A0 100%);
-    border-color: #909090;
-    color: white;
-    box-shadow: 0 6px 20px rgba(144, 144, 144, 0.4);
-    transform: translateY(-3px) scale(1.05);
-}
-
-.btn-cancelar-alteracoes:active {
-    transform: translateY(-1px) scale(1.02);
-    box-shadow: 0 4px 15px rgba(144, 144, 144, 0.5);
-}
-
+        .btn-cancelar-alteracoes:active {
+            transform: translateY(-1px) scale(1.02);
+            box-shadow: 0 4px 15px rgba(144, 144, 144, 0.5);
+        }
 
         /* Ícones dos botões */
         .btn-navigation i {
@@ -795,49 +887,39 @@ $database->closeConnection();
                 font-size: 0.9rem;
             }
         }
-        /* 1. Define o container como o alvo e usa relative */
-.custom-tooltip {
-    position: relative; 
-}
 
-/* 2. O tooltip propriamente dito */
-.custom-tooltip::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    z-index: 1000;
-    bottom: 100%; /* Posiciona acima do container */
-    left: 50%;
-    transform: translateX(-50%);
-    
-    /* Estilos Visuais */
-    background-color: #333;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 12px;
-    white-space: nowrap;
-    
-    /* Controle de visibilidade */
-    opacity: 0;
-    visibility: hidden;
-    /* Transição rápida para aparecer/desaparecer, ligado ao foco */
-    transition: opacity 0.2s, visibility 0.2s; 
-}
+        /* Tooltip */
+        .custom-tooltip {
+            position: relative; 
+        }
 
-/* 3. Regra para mostrar o tooltip: */
+        .custom-tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            z-index: 1000;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, visibility 0.2s; 
+        }
 
-/* A mensagem aparece imediatamente quando o usuário clica no label (foca o input)
-   e só desaparece quando o foco é removido (clique fora, Tab, etc.) */
-.custom-tooltip:focus-within::after {
-    opacity: 1;
-    visibility: visible;
-}
+        .custom-tooltip:focus-within::after {
+            opacity: 1;
+            visibility: visible;
+        }
 
-/* Opcional: Se quiser que funcione TAMBÉM ao passar o mouse, adicione o :hover */
-.custom-tooltip:hover::after {
-    opacity: 1;
-    visibility: visible;
-}
+        .custom-tooltip:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
     </style>
 </head>
 <body>
@@ -889,11 +971,18 @@ $database->closeConnection();
                 <div class="left-column fade-in-left">
                     <!-- Seção do Avatar e Info - COM BOTÕES ESTILIZADOS -->
                     <div class="profile-avatar-section">
-                        <div class="profile-avatar" data-bs-toggle="modal" data-bs-target="#editPhotoModal">
-                            <i class="fas fa-user-graduate"></i>
-                            <div class="avatar-overlay">
-                                <i class="fas fa-camera text-white" style="font-size: 1.5rem;"></i>
-                            </div>
+                        <div class="profile-avatar <?= $foto_atual ? 'has-photo' : '' ?>" data-bs-toggle="modal" data-bs-target="#editPhotoModal">
+                            <?php if ($foto_atual): ?>
+                                <img src="<?= htmlspecialchars($foto_atual) ?>" alt="Foto de perfil">
+                                <div class="avatar-overlay">
+                                    <i class="fas fa-camera text-white" style="font-size: 1.5rem;"></i>
+                                </div>
+                            <?php else: ?>
+                                <i class="fas fa-user-graduate"></i>
+                                <div class="avatar-overlay">
+                                    <i class="fas fa-camera text-white" style="font-size: 1.5rem;"></i>
+                                </div>
+                            <?php endif; ?>
                         </div>
                         <div class="profile-info">
                             <h4><?= htmlspecialchars($_SESSION['nome_admin'] ?? $admin['nome_usuario'] ?? 'Usuário') ?></h4>
@@ -907,9 +996,11 @@ $database->closeConnection();
                             <button type="button" class="btn btn-photo btn-alterar-foto" data-bs-toggle="modal" data-bs-target="#editPhotoModal">
                                 <i class="fas fa-camera me-1"></i>Alterar Foto
                             </button>
+                            <?php if ($foto_atual): ?>
                             <button type="button" class="btn btn-photo btn-remover-foto" data-bs-toggle="modal" data-bs-target="#confirmRemovePhotoModal">
                                 <i class="fas fa-trash me-1"></i>Remover Foto
                             </button>
+                            <?php endif; ?>
                         </div>
                     </div>
 
@@ -920,9 +1011,9 @@ $database->closeConnection();
                             <span>admin@cursosidiomas.com</span>
                         </div>
                         <div class="profile-detail-item">
-    <i class="fas fa-calendar-alt"></i>
-    <span>Membro desde <?= htmlspecialchars($data_registro_codigo) ?></span> <!-- NOVA LINHA -->
-</div>
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Membro desde <?= htmlspecialchars($data_registro_codigo) ?></span>
+                        </div>
                         <div class="profile-detail-item">
                             <i class="fas fa-map-marker-alt"></i>
                             <span>São Paulo, Brasil</span>
@@ -975,8 +1066,10 @@ $database->closeConnection();
                         <?php endif; ?>
 
                         <div class="form-content">
-                            <!-- Formulário sempre visível -->
+                            <!-- Formulário para atualizar nome de usuário -->
                             <form id="editForm" method="POST" action="editar_perfil.php">
+                                <input type="hidden" name="confirmar_update" value="1">
+                                
                                 <div class="form-group-enhanced">
                                     <label for="nome_usuario" class="form-label-enhanced">
                                         <i class="fas fa-user"></i>Nome de Usuário
@@ -987,27 +1080,27 @@ $database->closeConnection();
                                     <i class="fas fa-edit input-icon"></i>
                                 </div>
 
-<div class="form-group-enhanced custom-tooltip" 
-     data-tooltip="Apenas membros com autorização da administração geral podem modificar informações privadas.">
-    
-    <label for="email" class="form-label-enhanced">
-        <i class="fas fa-envelope"></i>Email
-    </label>
-    <input type="email" class="form-control form-control-enhanced" id="email" name="email" readonly 
-        value="admin@cursosidiomas.com" required
-        placeholder="Digite seu email"> <i class="fas fa-lock input-icon"></i>
-</div>
+                                <div class="form-group-enhanced custom-tooltip" 
+                                     data-tooltip="Apenas membros com autorização da administração geral podem modificar informações privadas.">
+                                    <label for="email" class="form-label-enhanced">
+                                        <i class="fas fa-envelope"></i>Email
+                                    </label>
+                                    <input type="email" class="form-control form-control-enhanced" id="email" name="email" readonly 
+                                        value="admin@cursosidiomas.com" required
+                                        placeholder="Digite seu email">
+                                    <i class="fas fa-lock input-icon"></i>
+                                </div>
 
-<div class="form-group-enhanced custom-tooltip" 
-     data-tooltip="Apenas membros com autorização da administração geral podem modificar informações privadas.">
-    <label for="cargo_display" class="form-label-enhanced">
-        <i class="fas fa-briefcase"></i>Cargo
-    </label>
-    <input type="text" class="form-control form-control-enhanced" id="cargo_display"
-        value="Administrador Principal" readonly
-        style="background-color: #f8f9fa;">
-    <i class="fas fa-crown input-icon"></i>
-</div>
+                                <div class="form-group-enhanced custom-tooltip" 
+                                     data-tooltip="Apenas membros com autorização da administração geral podem modificar informações privadas.">
+                                    <label for="cargo_display" class="form-label-enhanced">
+                                        <i class="fas fa-briefcase"></i>Cargo
+                                    </label>
+                                    <input type="text" class="form-control form-control-enhanced" id="cargo_display"
+                                        value="Administrador Principal" readonly
+                                        style="background-color: #f8f9fa;">
+                                    <i class="fas fa-crown input-icon"></i>
+                                </div>
 
                                 <!-- Botão de Atualizar -->
                                 <div class="text-center mt-4">
@@ -1114,13 +1207,17 @@ $database->closeConnection();
                 </div>
                 <div class="modal-body p-4">
                     <div class="text-center mb-4">
-                        <div class="profile-avatar mx-auto mb-3" style="width: 120px; height: 120px; cursor: pointer;" id="currentAvatar">
-                            <i class="fas fa-user-graduate" style="font-size: 2.5rem;"></i>
+                        <div class="profile-avatar mx-auto mb-3 <?= $foto_atual ? 'has-photo' : '' ?>" style="width: 120px; height: 120px; cursor: pointer;" id="currentAvatar">
+                            <?php if ($foto_atual): ?>
+                                <img src="<?= htmlspecialchars($foto_atual) ?>" alt="Foto atual" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                            <?php else: ?>
+                                <i class="fas fa-user-graduate" style="font-size: 2.5rem;"></i>
+                            <?php endif; ?>
                         </div>
                         <p class="text-muted">Clique na imagem para visualizar</p>
                     </div>
                     
-                    <form id="photoUploadForm" enctype="multipart/form-data">
+                    <form id="photoUploadForm" method="POST" action="editar_perfil.php" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label for="foto_perfil" class="form-label-enhanced">
                                 <i class="fas fa-upload me-2"></i>Selecionar Nova Foto
@@ -1146,7 +1243,7 @@ $database->closeConnection();
                                 </button>
                             </div>
                             <div class="col-md-6">
-                                <button type="button" class="btn btn-success w-100" onclick="uploadPhoto()">
+                                <button type="submit" class="btn btn-success w-100">
                                     <i class="fas fa-save me-1"></i>Salvar Foto
                                 </button>
                             </div>
@@ -1181,9 +1278,12 @@ $database->closeConnection();
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         <i class="fas fa-times me-1"></i>Cancelar
                     </button>
-                    <button type="button" class="btn btn-danger" onclick="removePhoto()">
-                        <i class="fas fa-trash me-1"></i>Sim, Remover Foto
-                    </button>
+                    <form method="POST" action="editar_perfil.php" style="display: inline;">
+                        <input type="hidden" name="remover_foto" value="1">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i>Sim, Remover Foto
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -1209,22 +1309,17 @@ $database->closeConnection();
             });
             
             if (form) {
-                // Lógica para o modal de ATUALIZAÇÃO - CORRIGIDA
+                // Lógica para o modal de ATUALIZAÇÃO
                 confirmUpdateModal.addEventListener('show.bs.modal', function () {
                     const novoNome = document.getElementById('nome_usuario').value;
                     document.getElementById('novoNomeUsuario').textContent = novoNome;
                 });
 
-                // CORREÇÃO PRINCIPAL: Adiciona evento de clique correto
+                // Evento de clique para confirmar atualização
                 document.getElementById('confirmarUpdateBtn').addEventListener('click', function() {
-                    // Atualiza o texto do botão para mostrar que está processando
                     this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Atualizando...';
                     this.disabled = true;
-                    
-                    // Mostra loading
                     loadingOverlay.style.display = 'flex';
-                    
-                    // CORREÇÃO: Submete o formulário diretamente
                     form.submit();
                 });
 
@@ -1268,7 +1363,7 @@ $database->closeConnection();
                             const timer = setInterval(() => {
                                 currentNumber += increment;
                                 if (currentNumber >= finalNumber) {
-                                    stat.textContent = finalText; // Mantém formato original
+                                    stat.textContent = finalText;
                                     clearInterval(timer);
                                 } else {
                                     if (finalText.includes('K')) {
@@ -1293,15 +1388,17 @@ $database->closeConnection();
 
             // Click no avatar para ver em tamanho maior
             const currentAvatar = document.getElementById('currentAvatar');
-            currentAvatar.addEventListener('click', function() {
-                const preview = document.getElementById('preview');
-                if (preview.src) {
-                    window.open(preview.src, '_blank');
-                }
-            });
+            if (currentAvatar) {
+                currentAvatar.addEventListener('click', function() {
+                    const img = this.querySelector('img');
+                    if (img && img.src) {
+                        window.open(img.src, '_blank');
+                    }
+                });
+            }
         });
 
-        // Funções para edição de foto
+        // Função para pré-visualizar imagem
         function previewImage(input) {
             const preview = document.getElementById('preview');
             const imagePreview = document.getElementById('imagePreview');
@@ -1318,71 +1415,36 @@ $database->closeConnection();
             }
         }
 
-        function uploadPhoto() {
+        // Validação do formulário de upload de foto
+        document.getElementById('photoUploadForm')?.addEventListener('submit', function(e) {
             const fileInput = document.getElementById('foto_perfil');
             const loadingOverlay = document.getElementById('loadingOverlay');
             
             if (!fileInput.files[0]) {
+                e.preventDefault();
                 alert('Por favor, selecione uma foto para upload.');
                 return;
             }
             
-            // Validação do arquivo
             const file = fileInput.files[0];
             const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-            const maxSize = 2 * 1024 * 1024; // 2MB
+            const maxSize = 2 * 1024 * 1024;
             
             if (!validTypes.includes(file.type)) {
+                e.preventDefault();
                 alert('Por favor, selecione uma imagem nos formatos JPG, PNG ou GIF.');
                 return;
             }
             
             if (file.size > maxSize) {
+                e.preventDefault();
                 alert('A imagem deve ter no máximo 2MB.');
                 return;
             }
             
             // Mostra loading
             loadingOverlay.style.display = 'flex';
-            
-            // Simula upload (substitua por AJAX real)
-            setTimeout(() => {
-                loadingOverlay.style.display = 'none';
-                alert('Foto atualizada com sucesso!');
-                bootstrap.Modal.getInstance(document.getElementById('editPhotoModal')).hide();
-                
-                // Atualiza a pré-visualização principal
-                const preview = document.getElementById('preview');
-                const currentAvatar = document.querySelector('.profile-avatar i');
-                currentAvatar.style.display = 'none';
-                document.querySelector('.profile-avatar').style.backgroundImage = `url(${preview.src})`;
-                document.querySelector('.profile-avatar').style.backgroundSize = 'cover';
-                document.querySelector('.profile-avatar').style.backgroundPosition = 'center';
-            }, 1500);
-        }
-
-        // Função para remover foto
-        function removePhoto() {
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            
-            // Mostra loading
-            loadingOverlay.style.display = 'flex';
-            
-            // Simula remoção (substitua por AJAX real)
-            setTimeout(() => {
-                loadingOverlay.style.display = 'none';
-                alert('Foto removida com sucesso!');
-                bootstrap.Modal.getInstance(document.getElementById('confirmRemovePhotoModal')).hide();
-                
-                // Restaura o avatar padrão
-                const profileAvatar = document.querySelector('.profile-avatar');
-                const icon = profileAvatar.querySelector('i');
-                
-                profileAvatar.style.backgroundImage = 'none';
-                profileAvatar.style.background = 'linear-gradient(135deg, var(--roxo-claro), var(--roxo-principal))';
-                icon.style.display = 'flex';
-            }, 1500);
-        }
+        });
     </script>
 </body>
 </html>
