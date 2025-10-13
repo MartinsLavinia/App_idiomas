@@ -3,7 +3,7 @@
 class Database {
     private $host = "localhost";
     private $user = "root";
-    private $password = "";
+    private $password = "Home@spSENAI2025!";
     private $database = "site_idiomas";
     public $conn;
 
