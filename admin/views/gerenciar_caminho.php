@@ -363,6 +363,50 @@ border: 0 4px 8px rgba(235, 183, 14, 0.77);
 </head>
 
 <body>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const pesquisarCard = document.querySelector('.card-header h5');
+    
+    if (pesquisarCard) {
+        // Criar elemento para o efeito de brilho
+        const brilho = document.createElement('div');
+        brilho.style.position = 'absolute';
+        brilho.style.top = '0';
+        brilho.style.left = '-100%';
+        brilho.style.width = '50%';
+        brilho.style.height = '100%';
+        brilho.style.background = 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)';
+        brilho.style.transform = 'skewX(-20deg)';
+        brilho.style.transition = 'none';
+        brilho.style.pointerEvents = 'none';
+        
+        // Adicionar brilho ao card header
+        pesquisarCard.parentElement.style.position = 'relative';
+        pesquisarCard.parentElement.style.overflow = 'hidden';
+        pesquisarCard.parentElement.appendChild(brilho);
+        
+        // Função para ativar o brilho
+        function ativarBrilho() {
+            brilho.style.transition = 'left 0.8s ease-in-out';
+            brilho.style.left = '150%';
+            
+            // Reset após animação
+            setTimeout(() => {
+                brilho.style.transition = 'none';
+                brilho.style.left = '-100%';
+            }, 800);
+        }
+        
+        // Ativar brilho a cada 3 segundos
+        setInterval(ativarBrilho, 3000);
+        
+        // Ativar também ao passar o mouse
+        pesquisarCard.parentElement.addEventListener('mouseenter', ativarBrilho);
+    }
+});
+</script>
+
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container d-flex justify-content-between align-items-center">
             <div></div>

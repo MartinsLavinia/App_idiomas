@@ -640,10 +640,20 @@ $database->closeConnection();
     .stats-card:nth-child(3) { animation-delay: 0.3s; }
     .stats-card:nth-child(4) { animation-delay: 0.4s; }
 
-    .fas.fa-search {
-        color: var(--branco);
-    }
-    .settings-icon {
+   .fas.fa-search {
+    color: var(--amarelo-detalhe);
+}
+
+.fas.fa-users {
+    color: var(--amarelo-detalhe);
+}
+
+.fas .fa-search-alt {
+    color: #0000;
+
+
+}
+  .settings-icon {
     color: var(--roxo-principal) !important;
     transition: all 0.3s ease;
     text-decoration: none;
@@ -781,7 +791,7 @@ $database->closeConnection();
                             </div>
                             <div class="col-md-2 d-flex align-items-end">
                                 <button type="submit" class="btn btn-warning w-100 pesquisar-btn ">
-                                    <i class="fas fa-search me-2"></i>Pesquisar
+                                   <i class="fas fa-filter"></i> Pesquisar
                                 </button>
                             </div>
                         </div>
@@ -792,7 +802,9 @@ $database->closeConnection();
             <!-- Lista de Usuários -->
             <div class="table-container" style="margin-top: 30px;">
                 <div class="card-header">
-                    <h5 class="mb-0 text-white">Lista de Usuários (<?php echo count($usuarios); ?> encontrados)</h5>
+                   <h5 class="mb-0 text-white">
+    <i class="fas fa-users me-2"></i>Lista de Usuários (<?php echo count($usuarios); ?> encontrados)
+</h5>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
