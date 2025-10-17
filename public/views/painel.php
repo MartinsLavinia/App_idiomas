@@ -267,6 +267,60 @@ $database->closeConnection();
             background: #007bff;
             color: white;
         }
+
+        /* Estilo unificado do Flashcard (baseado em flashcard_estudo.php) */
+        .flashcard-preview {
+            perspective: 1000px;
+            height: 200px;
+            margin-bottom: 1rem;
+        }
+        
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        .flashcard-preview.flipped .flashcard-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-side {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--cinza-medio);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background: var(--branco);
+        }
+
+        .flashcard-front .flashcard-header { background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro)); }
+        .flashcard-back .flashcard-header { background: linear-gradient(135deg, var(--amarelo-detalhe), #f39c12); color: var(--preto-texto); }
+
+        .flashcard-header {
+            padding: 0.75rem 1rem;
+            color: var(--branco);
+            font-weight: 600;
+        }
+
+        .flashcard-content {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-align: center;
+        }
     </style>
 </head>
 
@@ -328,7 +382,7 @@ $database->closeConnection();
                             <h2>Seu Caminho de Aprendizado em <?php echo htmlspecialchars($idioma_escolhido); ?></h2>
                         </div>
                         <div class="card-body text-center">
-                            <p class="fs-4">Seu nível atual é: <span class="badge bg-success"><?php echo htmlspecialchars($nivel_usuario); ?></span></p>
+                            <p class="fs-4">Seu nível atual é: <span class="level-badge"><?php echo htmlspecialchars($nivel_usuario); ?></span></p>
                         </div>
                     </div>
 
@@ -536,12 +590,18 @@ $database->closeConnection();
                     <div class="col-md-6">
                         <label class="form-label">Preview do Flashcard</label>
                         <div class="flashcard-preview" id="palavraPreview" onclick="virarPreviewPalavra()">
-                            <div class="flashcard-inner">
-                                <div class="flashcard-front">
-                                    <div id="previewPalavraFrente">Digite o conteúdo da frente</div>
+                            <div class="flashcard-inner" id="previewInner">
+                                <div class="flashcard-side flashcard-front">
+                                    <div class="flashcard-header">
+                                        <span>Pergunta</span>
+                                    </div>
+                                    <div class="flashcard-content" id="previewPalavraFrente">Digite o conteúdo da frente</div>
                                 </div>
-                                <div class="flashcard-back">
-                                    <div id="previewPalavraVerso">Digite o conteúdo do verso</div>
+                                <div class="flashcard-side flashcard-back">
+                                    <div class="flashcard-header">
+                                        <span>Resposta</span>
+                                    </div>
+                                    <div class="flashcard-content" id="previewPalavraVerso">Digite o conteúdo do verso</div>
                                 </div>
                             </div>
                         </div>
@@ -693,6 +753,24 @@ $database->closeConnection();
         // Carrega palavras do usuário ao inicializar
         if (typeof carregarPalavras === 'function') {
             carregarPalavras();
+        }
+
+        // Event listeners para o preview do modal de palavras
+        const palavraFrenteInput = document.getElementById('palavraFrente');
+        const palavraVersoInput = document.getElementById('palavraVerso');
+        const palavraDicaInput = document.getElementById('palavraDica');
+
+        if (palavraFrenteInput) {
+            palavraFrenteInput.addEventListener('input', atualizarPreviewPalavra);
+        }
+        if (palavraVersoInput) {
+            palavraVersoInput.addEventListener('input', atualizarPreviewPalavra);
+        }
+        if (palavraDicaInput) {
+            palavraDicaInput.addEventListener('input', atualizarPreviewPalavra);
+        }
+        if (document.getElementById('palavraDificuldade')) {
+            document.getElementById('palavraDificuldade').addEventListener('change', atualizarPreviewPalavra);
         }
 
         // Event listeners para cards de unidades
@@ -1156,6 +1234,40 @@ $database->closeConnection();
         alert("Funcionalidade de gravação de fala será implementada em breve.");
     };
 
+    // Funções para o preview do modal de palavras
+    function virarPreviewPalavra() {
+        document.getElementById('palavraPreview').classList.toggle('flipped');
+    }
+
+    function atualizarPreviewPalavra() {
+        const frente = document.getElementById('palavraFrente').value || 'Digite o conteúdo da frente';
+        const verso = document.getElementById('palavraVerso').value || 'Digite o conteúdo do verso';
+        const dificuldade = document.getElementById('palavraDificuldade').value;
+        const dificuldadeTexto = {
+            'facil': 'Fácil',
+            'medio': 'Médio',
+            'dificil': 'Difícil'
+        };
+
+        document.getElementById('previewPalavraFrente').innerHTML = `<div>${frente}</div>`;
+        document.getElementById('previewPalavraVerso').innerHTML = `<div>${verso}</div>`;
+
+        // Atualiza o header do preview com a dificuldade
+        const headerFrente = document.getElementById('previewHeaderFrente');
+        if (headerFrente) {
+            headerFrente.innerHTML = `
+                <span>Pergunta</span>
+                <span class="badge bg-white bg-opacity-25 text-white">${dificuldadeTexto[dificuldade] || 'Médio'}</span>
+            `;
+        }
+        const headerVerso = document.getElementById('previewHeaderVerso');
+        if (headerVerso) {
+            headerVerso.innerHTML = `
+                <span>Resposta</span>
+                <span class="badge bg-black bg-opacity-25 text-black">${dificuldadeTexto[dificuldade] || 'Médio'}</span>
+            `;
+        }
+    }
     // ==================== FUNCIONALIDADES DE FLASHCARDS ====================
        
     // Função para abrir modal de adicionar palavra

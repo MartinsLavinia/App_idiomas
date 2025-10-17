@@ -95,9 +95,9 @@ body {
 }
 
 /* ===== BADGES E NÍVEIS ===== */
-.badge {
-    background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%) !important;
-    color: var(--cinza-texto) !important;
+.level-badge {
+    background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
+    color: var(--cinza-texto);
     font-weight: 600;
     padding: 0.75rem 1.5rem;
     border-radius: 50px;
