@@ -190,7 +190,7 @@ $database->closeConnection();
         }
 
         .deck-info-item i {
-            color: var(--roxo-claro);
+            color: var(--amarelo-detalhe);
             font-size: 1rem;
             width: 20px;
             text-align: center;
@@ -237,30 +237,32 @@ $database->closeConnection();
         }
 
         .btn-open-deck {
-            background-color: transparent;
-            border: 2px solid var(--roxo-principal);
-            color: var(--roxo-principal);
+            background: linear-gradient(135deg, var(--roxo-principal) 0%, var(--roxo-claro) 100%);
+            border: none;
+            color: var(--branco);
             font-weight: 600;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 4px 15px rgba(106, 13, 173, 0.2);
         }
 
         .btn-open-deck:hover {
-            background-color: var(--roxo-principal);
+            background: linear-gradient(135deg, var(--roxo-escuro) 0%, var(--roxo-principal) 100%);
             color: var(--branco);
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(106, 13, 173, 0.2);
+            box-shadow: 0 6px 20px rgba(106, 13, 173, 0.3);
         }
 
         .btn-open-deck::before {
             content: '';
             position: absolute;
             top: 0;
-            left: -100%;
-            width: 100%;
+            left: -150%;
+            width: 150%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: skewX(-25deg);
+            transition: left 0.8s ease;
         }
 
         .btn-warning {
@@ -384,7 +386,7 @@ $database->closeConnection();
         .empty-state i {
             font-size: 4rem;
             margin-bottom: 1rem;
-            color: var(--amarelo-detalhe); /* Ícone roxo para destaque */
+            color: var(--roxo-principal); /* Ícone roxo para destaque */
         }
 
         /* Responsive */
@@ -472,24 +474,97 @@ $database->closeConnection();
         }
 
         #modalConfirmarExclusao .modal-header {
-            background: #dc3545; /* Vermelho de perigo */
-            color: var(--branco);
-            border-bottom: none;
+            background: var(--branco); /* Remove o fundo vermelho */
+            color: #c82333; /* Deixa o texto vermelho */
+            border-bottom: 1px solid var(--cinza-medio); /* Adiciona uma linha sutil */
             border-radius: 1rem 1rem 0 0;
+            padding: 1.25rem 1.5rem;
         }
 
         #modalConfirmarExclusao .modal-header .btn-close {
-            filter: invert(1) grayscale(100%) brightness(200%);
+            filter: none; /* Reseta o filtro do botão de fechar */
         }
 
         #modalConfirmarExclusao .modal-body {
-            padding: 2rem;
+            padding: 2.5rem;
+            text-align: center;
+        }
+
+        #modalConfirmarExclusao .modal-body .icon-warning {
+            font-size: 3.5rem;
+            color: #e55353;
+            margin-bottom: 1.5rem;
+            display: block;
+            animation: pulse-warning 1.5s infinite;
+        }
+
+        @keyframes pulse-warning {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
         }
 
         #modalConfirmarExclusao .modal-footer {
             background-color: var(--cinza-claro);
-            border-top: 1px solid var(--cinza-medio);
+            border-top: none;
             border-radius: 0 0 1rem 1rem;
+            padding: 1.5rem;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        #modalConfirmarExclusao .modal-footer .btn-secondary {
+            background: transparent;
+            border: 2px solid #adb5bd;
+            color: #495057;
+            padding: 0.75rem 1.5rem; /* Garante o mesmo padding */
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        #modalConfirmarExclusao .modal-footer .btn-secondary:hover {
+            background-color: #e9ecef;
+            border-color: #6c757d;
+            transform: translateY(-2px);
+        }
+
+        #modalConfirmarExclusao .modal-footer .btn-danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            border: none;
+            color: var(--branco);
+            padding: 0.75rem 1.5rem; /* Garante o mesmo padding */
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #modalConfirmarExclusao .modal-footer .btn-danger::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 150%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.3),
+                transparent
+            );
+            transform: skewX(-25deg);
+            transition: left 0.8s ease;
+        }
+
+        #modalConfirmarExclusao .modal-footer .btn-danger:hover::before {
+            left: 150%;
+        }
+
+        #modalConfirmarExclusao .modal-footer .btn-danger:hover {
+            background: linear-gradient(135deg, #c82333, #a71d2a);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+            color: var(--branco);
         }
     </style>
 </head>
@@ -668,13 +743,16 @@ $database->closeConnection();
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p id="mensagemModalExclusao">Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.</p>
+                    <i class="fas fa-exclamation-circle icon-warning"></i>
+                    <p id="mensagemModalExclusao" class="lead">Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         <i class="fas fa-times me-2"></i>Cancelar
                     </button>
-                    <button type="button" class="btn btn-danger" id="btnConfirmarExclusao"><i class="fas fa-trash me-2"></i>Excluir</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarExclusao">
+                        <i class="fas fa-trash me-2"></i>Excluir
+                    </button>
                 </div>
             </div>
         </div>

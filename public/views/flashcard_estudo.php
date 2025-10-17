@@ -41,7 +41,7 @@ $id_deck = intval($_GET['deck'] ?? 0);
         /* Estilos Gerais */
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e3e8f0 100%);
+,            background: linear-gradient(135deg, #f5f7fa 0%, #e3e8f0 100%);
             color: var(--preto-texto);
             min-height: 100vh;
             overflow-x: hidden;
@@ -547,7 +547,7 @@ $id_deck = intval($_GET['deck'] ?? 0);
                         <div class="flashcard-side flashcard-front">
                             <div class="flashcard-header">
                                 <span>Pergunta</span>
-                                <span class="badge bg-light text-dark">${dificuldadeTexto[flashcard.dificuldade] || 'Médio'}</span>
+                                <span class="badge bg-white bg-opacity-25 text-white">${dificuldadeTexto[flashcard.dificuldade] || 'Médio'}</span>
                             </div>
                             <div class="flashcard-content">
                                 <span>${flashcard.frente}</span>
@@ -560,7 +560,7 @@ $id_deck = intval($_GET['deck'] ?? 0);
                         <div class="flashcard-side flashcard-back">
                             <div class="flashcard-header">
                                 <span>Resposta</span>
-                                <span class="badge bg-dark text-light">${dificuldadeTexto[flashcard.dificuldade] || 'Médio'}</span>
+                                <span class="badge bg-black bg-opacity-25 text-black">${dificuldadeTexto[flashcard.dificuldade] || 'Médio'}</span>
                             </div>
                             <div class="flashcard-content">
                                 <span>${flashcard.verso}</span>

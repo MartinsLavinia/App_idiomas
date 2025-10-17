@@ -30,6 +30,7 @@ if (!$id_deck) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="painel.css" rel="stylesheet">
+    <!-- Estilos específicos para esta página -->
     <style>
         /* Paleta de Cores */
         :root {
@@ -39,6 +40,7 @@ if (!$id_deck) {
             --branco: #ffffff;
             --preto-texto: #212529;
             --cinza-claro: #f8f9fa;
+            --cinza-escuro: #6c757d;
             --cinza-medio: #dee2e6;
         }
 
@@ -126,36 +128,27 @@ if (!$id_deck) {
             margin-left: 250px;
             padding: 20px;
         }
-
-        /* Estilos Gerais */
-
-        /* Cards */
-        .card {
-            border: none;
-            border-radius: 1rem;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-        }
-
-        .card-header {
+        
+        /* Cabeçalho da página */
+        .page-header .card-header {
             background-color: var(--roxo-principal);
             color: var(--branco);
             border-radius: 1rem 1rem 0 0 !important;
             padding: 1.5rem;
         }
 
-        /* Flashcard Preview */
+        /* Estilo unificado do Flashcard (baseado em flashcard_estudo.php) */
         .flashcard-preview {
             perspective: 1000px;
             height: 200px;
             margin-bottom: 1rem;
         }
-
+        
         .flashcard-inner {
             position: relative;
             width: 100%;
             height: 100%;
-            text-align: center;
-            transition: transform 0.6s;
+            transition: transform 0.8s;
             transform-style: preserve-3d;
             cursor: pointer;
         }
@@ -164,72 +157,187 @@ if (!$id_deck) {
             transform: rotateY(180deg);
         }
 
-        .flashcard-front, .flashcard-back {
+        .flashcard-side {
             position: absolute;
             width: 100%;
             height: 100%;
             backface-visibility: hidden;
-            border-radius: 0.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--cinza-medio);
+            overflow: hidden;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            flex-direction: column;
+            background: var(--branco);
         }
 
         .flashcard-front {
-            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
-            color: white;
+            /* Estilo da frente do card */
         }
 
         .flashcard-back {
-            background: linear-gradient(135deg, var(--amarelo-detalhe), #ffed4e);
-            color: var(--preto-texto);
             transform: rotateY(180deg);
         }
 
-        /* Flashcard List Item */
-        .flashcard-item {
-            border: 1px solid var(--cinza-medio);
-            border-radius: 0.5rem;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            transition: all 0.3s ease;
+        .flashcard-header {
+            padding: 0.75rem 1rem;
+            color: var(--branco);
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
+        .flashcard-front .flashcard-header { background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro)); }
+        .flashcard-back .flashcard-header { background: linear-gradient(135deg, var(--amarelo-detalhe), #f39c12); color: var(--preto-texto); }
+
+        .flashcard-content {
+            flex-grow: 1;
+            align-items: center;
+            justify-content: center;
+            display: flex;
+            text-align: center;
+            padding: 1rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        /* Flashcard List Item */
         .flashcard-item:hover {
-            border-color: var(--roxo-principal);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .flashcard-item .dropdown-menu {
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .flashcard-item .dropdown-item:hover {
+            background-color: #f2e9f9;
+            color: var(--roxo-escuro);
+        }
+
+        .flashcard-item .dropdown-item.text-danger:hover {
+            background-color: #fceaea;
+            color: #b02a37;
         }
 
         /* Botões */
-        .btn-primary {
-            background-color: var(--roxo-principal);
-            border-color: var(--roxo-principal);
+        .btn-action {
+            padding: 0.65rem 1.25rem; /* Padding ajustado */
+            border-radius: 12px; /* Bordas menos arredondadas */
             font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .btn-primary:hover {
-            background-color: var(--roxo-escuro);
-            border-color: var(--roxo-escuro);
+        .btn-action-primary {
+            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-claro));
+            color: var(--branco);
+            box-shadow: 0 4px 15px rgba(106, 13, 173, 0.3);
         }
 
-        .btn-warning {
-            background-color: var(--amarelo-detalhe);
-            border-color: var(--amarelo-detalhe);
+        .btn-action-primary:hover {
+            background: linear-gradient(135deg, var(--roxo-claro), var(--roxo-principal));
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(106, 13, 173, 0.4);
+            color: var(--branco);
+        }
+
+        .btn-action-warning {
+            background: linear-gradient(135deg, var(--amarelo-detalhe), #f39c12);
             color: var(--preto-texto);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-action-warning:hover {
+            background: linear-gradient(135deg, #f39c12, var(--amarelo-detalhe));
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+            color: var(--preto-texto);
+        }
+
+        .btn-action-danger {
+            background: linear-gradient(135deg, #e55353, #c82333);
+            color: var(--branco);
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-action-danger:hover {
+            background: linear-gradient(135deg, #c82333, #a71d2a);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+            color: var(--branco);
+        }
+
+        /* Modal Flashcard */
+        #modalFlashcard .modal-content {
+            border-radius: 1rem;
+            border: none;
+        }
+        #modalFlashcard .modal-header {
+            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+            color: var(--branco);
+            border-bottom: none;
+            border-radius: 1rem 1rem 0 0;
+        }
+        #modalFlashcard .modal-header .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+        #modalFlashcard .modal-footer {
+            background-color: var(--cinza-claro);
+            border-top: none;
+            border-radius: 0 0 1rem 1rem;
+        }
+
+        #modalFlashcard .form-label {
+            font-weight: 600;
+            color: var(--roxo-escuro);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #modalFlashcard .form-label i {
+            color: var(--amarelo-detalhe);
+            font-size: 1.1rem;
+        }
+
+        #modalFlashcard .form-control,
+        #modalFlashcard .form-select {
+            border-radius: 8px;
+            border: 1px solid var(--cinza-medio);
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        #modalFlashcard .form-control:focus,
+        #modalFlashcard .form-select:focus {
+            border-color: var(--roxo-principal);
+            box-shadow: 0 0 0 0.2rem rgba(106, 13, 173, 0.15);
+        }
+
+        #modalFlashcard .modal-footer .btn-secondary {
+            background-color: transparent;
+            border: 2px solid #adb5bd;
+            color: #495057;
             font-weight: 600;
         }
 
-        .btn-danger {
-            background-color: #dc3545;
-            border-color: #dc3545;
-            font-weight: 600;
+        #modalFlashcard .modal-footer .btn-secondary:hover {
+            background-color: #e9ecef;
+            border-color: #6c757d;
         }
 
-        .btn-danger:hover {
-            background-color: #c82333;
-            border-color: #bd2130;
+        #modalFlashcard .modal-footer .btn-primary {
+            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-claro));
+            border: none;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(106, 13, 173, 0.3);
         }
 
         /* Loading */
@@ -245,14 +353,39 @@ if (!$id_deck) {
         /* Empty State */
         .empty-state {
             text-align: center;
-            padding: 3rem;
-            color: var(--cinza-medio);
+            padding: 4rem;
+            background-color: var(--branco);
+            border-radius: 1rem;
         }
 
         .empty-state i {
             font-size: 4rem;
             margin-bottom: 1rem;
-            color: var(--cinza-medio);
+            color: var(--roxo-principal);
+        }
+
+        .empty-state .btn-cta-empty { /* Estilo igual ao de flashcards.php */
+            background: linear-gradient(135deg, var(--amarelo-detalhe) 0%, #f39c12 100%);
+            color: var(--preto-texto);
+            border: none;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+            padding: 0.75rem 1.5rem;
+            border-radius: 20px;
+            max-width: 500px; /* Limita a largura máxima */
+            margin: 1rem auto 0; /* Centraliza o botão */
+            display: block; /* Garante que margin: auto funcione */
+            animation: pulse-glow 2s infinite;
+        }
+
+        .empty-state .btn-cta-empty:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3); }
+            50% { box-shadow: 0 6px 25px rgba(255, 215, 0, 0.5); }
         }
 
         /* Estilos para o Modal de Confirmação de Exclusão */
@@ -263,7 +396,7 @@ if (!$id_deck) {
         }
 
         #modalConfirmarExclusao .modal-header {
-            background: #dc3545; /* Vermelho de perigo */
+            background: linear-gradient(135deg, #e55353, #c82333);
             color: var(--branco);
             border-bottom: none;
             border-radius: 1rem 1rem 0 0;
@@ -274,13 +407,23 @@ if (!$id_deck) {
         }
 
         #modalConfirmarExclusao .modal-body {
-            padding: 2rem;
+            padding: 2.5rem;
+            text-align: center;
+        }
+
+        #modalConfirmarExclusao .modal-body .icon-warning {
+            font-size: 3.5rem;
+            color: #e55353;
+            margin-bottom: 1.5rem;
+            display: block;
         }
 
         #modalConfirmarExclusao .modal-footer {
             background-color: var(--cinza-claro);
-            border-top: 1px solid var(--cinza-medio);
+            border-top: none;
             border-radius: 0 0 1rem 1rem;
+            justify-content: center;
+            gap: 1rem;
         }
     </style>
 </head>
@@ -309,21 +452,21 @@ if (!$id_deck) {
         <div class="container-fluid mt-4">
             <!-- Cabeçalho e Ações -->
             <div class="row mb-4 align-items-center">
-                <div class="col-md-6">
+                <div class="col-lg-6">
                     <h1 class="mb-2">
                         <a href="flashcards.php" class="text-decoration-none text-muted me-2"><i class="fas fa-arrow-left"></i></a>
                         Gerenciar Deck
                     </h1>
                     <p class="text-muted mb-0">Adicione, edite e estude os flashcards do seu deck.</p>
                 </div>
-                <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                    <button class="btn btn-primary me-2" onclick="abrirModalFlashcard()">
+                <div class="col-lg-6 text-lg-end mt-3 mt-lg-0">
+                    <button class="btn btn-action btn-action-primary me-2" onclick="abrirModalFlashcard()">
                         <i class="fas fa-plus me-2"></i>Novo Flashcard
                     </button>
-                    <button class="btn btn-warning me-2" onclick="estudarDeck()">
+                    <button class="btn btn-action btn-action-warning me-2" onclick="estudarDeck()">
                         <i class="fas fa-play me-2"></i>Estudar Deck
                     </button>
-                    <button class="btn btn-danger" onclick="excluirDeckAtual()">
+                    <button class="btn btn-action btn-action-danger" onclick="excluirDeckAtual()">
                         <i class="fas fa-trash me-2"></i>Excluir Deck
                     </button>
                 </div>
@@ -341,10 +484,15 @@ if (!$id_deck) {
 
             <hr class="my-4">
 
-            <h3 class="mb-4">Flashcards no Deck</h3>
+            <h3 class="mb-4"><i class="fas fa-clone me-2 text-primary"></i>Flashcards no Deck</h3>
             <!-- Lista de Flashcards -->
             <div id="listaFlashcards" class="row">
                 <!-- O conteúdo dos flashcards será carregado aqui via JavaScript -->
+            </div>
+
+            <!-- Container da Paginação -->
+            <div id="paginationContainer" class="d-flex justify-content-center mt-4">
+                <!-- A paginação será injetada aqui pelo JavaScript -->
             </div>
         </div>
     </div>
@@ -353,7 +501,7 @@ if (!$id_deck) {
     <div class="modal fade" id="modalFlashcard" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header page-header">
                     <h5 class="modal-title" id="tituloModalFlashcard">Novo Flashcard</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -365,24 +513,24 @@ if (!$id_deck) {
                                 <input type="hidden" id="flashcardDeckId" name="id_deck" value="<?php echo $id_deck; ?>">
                                 
                                 <div class="mb-3">
-                                    <label for="flashcardFrente" class="form-label">Frente do Card *</label>
+                                    <label for="flashcardFrente" class="form-label"><i class="fas fa-align-left"></i>Frente do Card *</label>
                                     <textarea class="form-control" id="flashcardFrente" name="frente" rows="3" required placeholder="Digite o conteúdo da frente do flashcard"></textarea>
                                 </div>
                                 
                                 <div class="mb-3">
-                                    <label for="flashcardVerso" class="form-label">Verso do Card *</label>
+                                    <label for="flashcardVerso" class="form-label"><i class="fas fa-align-right"></i>Verso do Card *</label>
                                     <textarea class="form-control" id="flashcardVerso" name="verso" rows="3" required placeholder="Digite o conteúdo do verso do flashcard"></textarea>
                                 </div>
                                 
                                 <div class="mb-3">
-                                    <label for="flashcardDica" class="form-label">Dica (opcional)</label>
+                                    <label for="flashcardDica" class="form-label"><i class="fas fa-lightbulb"></i>Dica (opcional)</label>
                                     <textarea class="form-control" id="flashcardDica" name="dica" rows="2" placeholder="Digite uma dica para ajudar na memorização"></textarea>
                                 </div>
                                 
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label for="flashcardDificuldade" class="form-label">Dificuldade</label>
+                                            <label for="flashcardDificuldade" class="form-label"><i class="fas fa-tachometer-alt"></i>Dificuldade</label>
                                             <select class="form-select" id="flashcardDificuldade" name="dificuldade">
                                                 <option value="facil">Fácil</option>
                                                 <option value="medio" selected>Médio</option>
@@ -392,7 +540,7 @@ if (!$id_deck) {
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label for="flashcardOrdem" class="form-label">Ordem</label>
+                                            <label for="flashcardOrdem" class="form-label"><i class="fas fa-sort-numeric-up"></i>Ordem</label>
                                             <input type="number" class="form-control" id="flashcardOrdem" name="ordem_no_deck" min="0" value="0">
                                         </div>
                                     </div>
@@ -411,12 +559,18 @@ if (!$id_deck) {
                         <div class="col-md-6">
                             <label class="form-label">Preview do Flashcard</label>
                             <div class="flashcard-preview" id="flashcardPreview" onclick="virarPreview()">
-                                <div class="flashcard-inner">
-                                    <div class="flashcard-front">
-                                        <div id="previewFrente">Digite o conteúdo da frente</div>
+                                <div class="flashcard-inner" id="previewInner">
+                                    <div class="flashcard-side flashcard-front">
+                                        <div class="flashcard-header" id="previewHeaderFrente">
+                                            <span>Pergunta</span>
+                                        </div>
+                                        <div class="flashcard-content" id="previewFrente">Digite o conteúdo da frente</div>
                                     </div>
-                                    <div class="flashcard-back">
-                                        <div id="previewVerso">Digite o conteúdo do verso</div>
+                                    <div class="flashcard-side flashcard-back">
+                                        <div class="flashcard-header" id="previewHeaderVerso">
+                                            <span>Resposta</span>
+                                        </div>
+                                        <div class="flashcard-content" id="previewVerso">Digite o conteúdo do verso</div>
                                     </div>
                                 </div>
                             </div>
@@ -427,8 +581,12 @@ if (!$id_deck) {
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="salvarFlashcard()">Salvar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="salvarFlashcard()">
+                        <i class="fas fa-save me-2"></i>Salvar
+                    </button>
                 </div>
             </div>
         </div>
@@ -443,13 +601,16 @@ if (!$id_deck) {
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <i class="fas fa-exclamation-circle icon-warning"></i>
                     <p id="mensagemModalExclusao">Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         <i class="fas fa-times me-2"></i>Cancelar
                     </button>
-                    <button type="button" class="btn btn-danger" id="btnConfirmarExclusao"><i class="fas fa-trash me-2"></i>Excluir</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarExclusao">
+                        <i class="fas fa-trash me-2"></i>Excluir
+                    </button>
                 </div>
             </div>
         </div>
@@ -463,6 +624,9 @@ if (!$id_deck) {
         let modalConfirmarExclusao = null;
         let deckAtual = null;
         let flashcardAtual = null;
+        let allFlashcards = [];
+        let currentPage = 1;
+        const cardsPerPage = 6; // Define quantos cards por página
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
@@ -474,6 +638,7 @@ if (!$id_deck) {
             // Event listeners para preview
             document.getElementById('flashcardFrente').addEventListener('input', atualizarPreview);
             document.getElementById('flashcardVerso').addEventListener('input', atualizarPreview);
+            document.getElementById('flashcardDificuldade').addEventListener('change', atualizarPreview);
         });
 
         // Carrega informações do deck
@@ -499,7 +664,7 @@ if (!$id_deck) {
         function exibirInfoDeck(deck) {
             const container = document.getElementById('infoDeck');
             container.innerHTML = `
-                <div class="col-12">
+                <div class="col-12 page-header">
                     <div class="card">
                         <div class="card-header">
                             <div class="d-flex justify-content-between align-items-center">
@@ -516,19 +681,19 @@ if (!$id_deck) {
                         </div>
                         <div class="card-body">
                             <div class="row text-center">
-                                <div class="col-md-3">
+                                <div class="col-md-3 col-6 mb-3 mb-md-0">
                                     <div class="h4 text-primary">${deck.total_flashcards || 0}</div>
                                     <div class="text-muted">Total de Cards</div>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-3 col-6 mb-3 mb-md-0">
                                     <div class="h4 text-success">${deck.flashcards_estudados || 0}</div>
                                     <div class="text-muted">Cards Estudados</div>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-3 col-6">
                                     <div class="h4 text-warning">${deck.total_flashcards > 0 ? Math.round(((deck.flashcards_estudados || 0) / deck.total_flashcards) * 100) : 0}%</div>
                                     <div class="text-muted">Progresso</div>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-3 col-6">
                                     <div class="h4 text-info">${deck.nome_criador || 'Você'}</div>
                                     <div class="text-muted">Criador</div>
                                 </div>
@@ -601,7 +766,10 @@ if (!$id_deck) {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        exibirFlashcards(data.flashcards);
+                        allFlashcards = data.flashcards;
+                        currentPage = 1;
+                        exibirFlashcards();
+                        renderPagination();
                     } else {
                         console.error('Erro ao carregar flashcards:', data.message);
                         exibirErroFlashcards('Erro ao carregar flashcards: ' + data.message);
@@ -614,17 +782,22 @@ if (!$id_deck) {
         }
 
         // Exibe flashcards
-        function exibirFlashcards(flashcards) {
+        function exibirFlashcards() {
             const container = document.getElementById('listaFlashcards');
+            container.innerHTML = '';
+
+            const startIndex = (currentPage - 1) * cardsPerPage;
+            const endIndex = startIndex + cardsPerPage;
+            const paginatedFlashcards = allFlashcards.slice(startIndex, endIndex);
             
-            if (flashcards.length === 0) {
+            if (allFlashcards.length === 0) {
                 container.innerHTML = `
                     <div class="col-12">
-                        <div class="empty-state">
+                        <div class="empty-state card card-body">
                             <i class="fas fa-layer-group"></i>
                             <h3>Nenhum flashcard encontrado</h3>
-                            <p>Adicione flashcards a este deck para começar a estudar.</p>
-                            <button class="btn btn-primary" onclick="abrirModalFlashcard()">
+                            <p>Adicione o primeiro flashcard a este deck para começar.</p>
+                            <button class="btn btn-cta-empty" onclick="abrirModalFlashcard()">
                                 <i class="fas fa-plus me-2"></i>Adicionar Primeiro Flashcard
                             </button>
                         </div>
@@ -634,7 +807,7 @@ if (!$id_deck) {
             }
 
             let html = '';
-            flashcards.forEach((flashcard, index) => {
+            paginatedFlashcards.forEach((flashcard, index) => {
                 const dificuldadeClass = {
                     'facil': 'success',
                     'medio': 'warning',
@@ -649,48 +822,57 @@ if (!$id_deck) {
 
                 html += `
                     <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="flashcard-item">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <span class="badge bg-${dificuldadeClass[flashcard.dificuldade] || 'secondary'}">${dificuldadeTexto[flashcard.dificuldade] || 'Médio'}</span>
-                                <div class="dropdown">
-                                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="#" onclick="editarFlashcard(${flashcard.id})">
-                                            <i class="fas fa-edit me-2"></i>Editar
-                                        </a></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item text-danger" href="#" onclick="excluirFlashcard(${flashcard.id})">
-                                            <i class="fas fa-trash me-2"></i>Excluir
-                                        </a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            
-                            <div class="flashcard-preview mb-3" onclick="virarFlashcard(this)">
+                        <div class="card h-100 flashcard-item">
+                            <div class="card-body d-flex flex-column">
+                                <div class="flashcard-preview mb-3" onclick="virarFlashcard(this, event)">
                                 <div class="flashcard-inner">
-                                    <div class="flashcard-front">
-                                        <div>${flashcard.frente}</div>
+                                    <div class="flashcard-side flashcard-front">
+                                        <div class="flashcard-header">
+                                            <span>Pergunta</span>
+                                            <span class="badge bg-white bg-opacity-25 text-white">${dificuldadeTexto[flashcard.dificuldade] || 'Médio'}</span>
+                                        </div>
+                                        <div class="flashcard-content">
+                                            <div>${flashcard.frente}</div>
+                                        </div>
                                     </div>
-                                    <div class="flashcard-back">
-                                        <div>${flashcard.verso}</div>
+                                    <div class="flashcard-side flashcard-back">
+                                        <div class="flashcard-header">
+                                            <span>Resposta</span>
+                                            <span class="badge bg-black bg-opacity-25 text-black">${dificuldadeTexto[flashcard.dificuldade] || 'Médio'}</span>
+                                        </div>
+                                        <div class="flashcard-content">
+                                            <div>${flashcard.verso}</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            
-                            ${flashcard.dica ? `<div class="text-muted small mb-2"><i class="fas fa-lightbulb me-1"></i> ${flashcard.dica}</div>` : ''}
-                            
-                            <div class="d-flex justify-content-between align-items-center">
-                                <small class="text-muted">Card #${index + 1}</small>
-                                ${flashcard.acertos !== undefined ? `
-                                    <small class="text-muted">
-                                        <i class="fas fa-check text-success me-1"></i>${flashcard.acertos || 0}
-                                        <i class="fas fa-times text-danger ms-2 me-1"></i>${flashcard.erros || 0}
-                                    </small>
-                                ` : ''}
+                            <div class="mt-auto d-flex justify-content-between align-items-center">
+                                <small class="text-muted">Card #${startIndex + index + 1}</small>
+                                <div class="d-flex align-items-center">
+                                    ${flashcard.acertos !== undefined ? `
+                                        <small class="text-muted me-2">
+                                            <i class="fas fa-check text-success me-1"></i>${flashcard.acertos || 0}
+                                            <i class="fas fa-times text-danger ms-2 me-1"></i>${flashcard.erros || 0}
+                                        </small>
+                                    ` : ''}
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown" onclick="event.stopPropagation()">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li><a class="dropdown-item" href="#" onclick="editarFlashcard(${flashcard.id})">
+                                                <i class="fas fa-edit me-2"></i>Editar
+                                            </a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" href="#" onclick="excluirFlashcard(${flashcard.id})">
+                                                <i class="fas fa-trash me-2"></i>Excluir
+                                            </a></li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                    </div>
                     </div>
                 `;
             });
@@ -712,7 +894,10 @@ if (!$id_deck) {
         }
 
         // Vira flashcard na lista
-        function virarFlashcard(element) {
+        function virarFlashcard(element, event) {
+            // Impede que o clique no dropdown vire o card
+            if (event.target.closest('.dropdown')) return;
+            
             element.classList.toggle('flipped');
         }
 
@@ -725,9 +910,27 @@ if (!$id_deck) {
         function atualizarPreview() {
             const frente = document.getElementById('flashcardFrente').value || 'Digite o conteúdo da frente';
             const verso = document.getElementById('flashcardVerso').value || 'Digite o conteúdo do verso';
+            const dificuldade = document.getElementById('flashcardDificuldade').value;
+            const dificuldadeTexto = {
+                'facil': 'Fácil',
+                'medio': 'Médio',
+                'dificil': 'Difícil'
+            };
             
-            document.getElementById('previewFrente').textContent = frente;
-            document.getElementById('previewVerso').textContent = verso;
+            document.getElementById('previewFrente').innerHTML = `<div>${frente}</div>`;
+            document.getElementById('previewVerso').innerHTML = `<div>${verso}</div>`;
+
+            // Atualiza o header do preview com a dificuldade
+            const headerFrente = document.getElementById('previewHeaderFrente');
+            headerFrente.innerHTML = `
+                <span>Pergunta</span>
+                <span class="badge bg-white bg-opacity-25 text-white">${dificuldadeTexto[dificuldade] || 'Médio'}</span>
+            `;
+            const headerVerso = document.getElementById('previewHeaderVerso');
+            headerVerso.innerHTML = `
+                <span>Resposta</span>
+                <span class="badge bg-black bg-opacity-25 text-black">${dificuldadeTexto[dificuldade] || 'Médio'}</span>
+            `;
         }
 
         // Abre modal para criar flashcard
@@ -743,6 +946,42 @@ if (!$id_deck) {
             atualizarPreview();
             
             modalFlashcard.show();
+        }
+
+        // Renderiza a paginação
+        function renderPagination() {
+            const paginationContainer = document.getElementById('paginationContainer');
+            paginationContainer.innerHTML = '';
+            const pageCount = Math.ceil(allFlashcards.length / cardsPerPage);
+
+            if (pageCount <= 1) return;
+
+            let paginationHTML = '<nav><ul class="pagination">';
+
+            // Botão Anterior
+            paginationHTML += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="changePage(${currentPage - 1})">Anterior</a></li>`;
+
+            // Botões de Página
+            for (let i = 1; i <= pageCount; i++) {
+                paginationHTML += `<li class="page-item ${currentPage === i ? 'active' : ''}"><a class="page-link" href="#" onclick="changePage(${i})">${i}</a></li>`;
+            }
+
+            // Botão Próximo
+            paginationHTML += `<li class="page-item ${currentPage === pageCount ? 'disabled' : ''}"><a class="page-link" href="#" onclick="changePage(${currentPage + 1})">Próximo</a></li>`;
+
+            paginationHTML += '</ul></nav>';
+            paginationContainer.innerHTML = paginationHTML;
+        }
+
+        // Muda de página
+        function changePage(page) {
+            const pageCount = Math.ceil(allFlashcards.length / cardsPerPage);
+            if (page < 1 || page > pageCount) return;
+
+            currentPage = page;
+            exibirFlashcards();
+            renderPagination();
+            window.scrollTo(0, 0); // Rola para o topo da página
         }
 
         // Edita flashcard
