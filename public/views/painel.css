@@ -224,7 +224,7 @@ body {
 
 /* Botões pequenos */
 .btn-sm {
-    padding: 0.5rem 1rem;
+    padding: 1rem 1rem;
     font-size: 0.875rem;
     border-radius: 8px;
 }
@@ -299,6 +299,42 @@ body {
     border-color: var(--cinza-borda-hover); /* Cor da borda ao passar o mouse */
     box-shadow: 0 0 5px rgba(106, 13, 173, 0.2); /* Sombra suave ao passar o mouse */
 }
+
+/* Estilos para formulários em fundos escuros (como o card-header roxo) */
+.form-control-dark,
+.form-select-dark {
+    background-color: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: var(--branco);
+    border-radius: 5px;
+}
+
+.form-control-dark::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.form-select-dark option {
+    background-color: var(--roxo-escuro);
+    color: var(--branco);
+}
+
+.form-control-dark:focus,
+.form-select-dark:focus {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: var(--amarelo-botao);
+    color: var(--branco);
+    box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.25);
+}
+
+.input-group .form-control-dark {
+    border-right: none;
+}
+
+.input-group .btn-light {
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+
 
 
 /* ===== CARDS DE UNIDADE ===== */
