@@ -200,32 +200,6 @@ $database->closeConnection();
             padding: 20px;
         }
 
-        /* Estilos para o Modal de Confirmação de Exclusão */
-        #modalConfirmarExclusao .modal-content {
-            border-radius: 1rem;
-            border: none;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        #modalConfirmarExclusao .modal-header {
-            background: #dc3545; /* Vermelho de perigo */
-            color: var(--branco);
-            border-bottom: none;
-            border-radius: 1rem 1rem 0 0;
-        }
-
-        #modalConfirmarExclusao .modal-header .btn-close {
-            filter: invert(1) grayscale(100%) brightness(200%);
-        }
-
-        #modalConfirmarExclusao .modal-body {
-            padding: 2rem;
-        }
-
-        #modalConfirmarExclusao .modal-footer {
-            background-color: var(--cinza-claro);
-            border-top: 1px solid var(--cinza-medio);
-            border-radius: 0 0 1rem 1rem;
         /* Estilos para exercícios de listening */
         .audio-player-container {
             background: #f8f9fa;
@@ -267,59 +241,6 @@ $database->closeConnection();
             background: #007bff;
             color: white;
         }
-
-        /* Estilo unificado do Flashcard (baseado em flashcard_estudo.php) */
-        .flashcard-preview {
-            perspective: 1000px;
-            height: 200px;
-            margin-bottom: 1rem;
-        }
-        
-        .flashcard-inner {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            transition: transform 0.8s;
-            transform-style: preserve-3d;
-            cursor: pointer;
-        }
-
-        .flashcard-preview.flipped .flashcard-inner {
-            transform: rotateY(180deg);
-        }
-
-        .flashcard-side {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            border-radius: 1rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            border: 1px solid var(--cinza-medio);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            background: var(--branco);
-        }
-
-        .flashcard-front .flashcard-header { background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro)); }
-        .flashcard-back .flashcard-header { background: linear-gradient(135deg, var(--amarelo-detalhe), #f39c12); color: var(--preto-texto); }
-
-        .flashcard-header {
-            padding: 0.75rem 1rem;
-            color: var(--branco);
-            font-weight: 600;
-        }
-
-        .flashcard-content {
-            flex-grow: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-            font-size: 1.2rem;
-            font-weight: 600;
-            text-align: center;
 
         /* Cards de unidade */
         .unidade-card {
@@ -365,7 +286,7 @@ $database->closeConnection();
     <div class="main-content">
         <div class="container-fluid mt-4">
         <div class="row justify-content-center">
-            <div class="col-11">
+            <div class="col-md-11">
                 <?php if ($mostrar_selecao_idioma): ?>
                     <!-- Seleção de idioma para usuários sem progresso -->
                     <div class="card">
@@ -399,7 +320,7 @@ $database->closeConnection();
                             <h2>Seu Caminho de Aprendizado em <?php echo htmlspecialchars($idioma_escolhido); ?></h2>
                         </div>
                         <div class="card-body text-center">
-                            <p class="fs-4">Seu nível atual é: <span class="level-badge"><?php echo htmlspecialchars($nivel_usuario); ?></span></p>
+                            <p class="fs-4">Seu nível atual é: <span class="badge bg-success"><?php echo htmlspecialchars($nivel_usuario); ?></span></p>
                         </div>
                     </div>
 
@@ -609,18 +530,12 @@ $database->closeConnection();
                     <div class="col-md-6">
                         <label class="form-label">Preview do Flashcard</label>
                         <div class="flashcard-preview" id="palavraPreview" onclick="virarPreviewPalavra()">
-                            <div class="flashcard-inner" id="previewInner">
-                                <div class="flashcard-side flashcard-front">
-                                    <div class="flashcard-header">
-                                        <span>Pergunta</span>
-                                    </div>
-                                    <div class="flashcard-content" id="previewPalavraFrente">Digite o conteúdo da frente</div>
+                            <div class="flashcard-inner">
+                                <div class="flashcard-front">
+                                    <div id="previewPalavraFrente">Digite o conteúdo da frente</div>
                                 </div>
-                                <div class="flashcard-side flashcard-back">
-                                    <div class="flashcard-header">
-                                        <span>Resposta</span>
-                                    </div>
-                                    <div class="flashcard-content" id="previewPalavraVerso">Digite o conteúdo do verso</div>
+                                <div class="flashcard-back">
+                                    <div id="previewPalavraVerso">Digite o conteúdo do verso</div>
                                 </div>
                             </div>
                         </div>
@@ -735,7 +650,7 @@ $database->closeConnection();
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p id="mensagemModalExclusao">Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.</p>
+                    <p id="mensagemModalExclusao">Tem certeza que deseja excluir esta palavra? Esta ação não pode ser desfeita.</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
@@ -752,9 +667,9 @@ $database->closeConnection();
     let modalBlocos = null;
     let modalExercicios = null;
     let modalAdicionarPalavra = null;
+    let modalConfirmarExclusao = null;
     let unidadeAtual = null;
     let blocoAtual = null;
-    let modalConfirmarExclusao = null;
     let exercicioAtual = null;
     let exerciciosLista = [];
     let exercicioIndex = 0;
@@ -779,31 +694,6 @@ $database->closeConnection();
             carregarPalavras();
         }
 
-        // Event listeners para o preview do modal de palavras
-        const palavraFrenteInput = document.getElementById('palavraFrente');
-        const palavraVersoInput = document.getElementById('palavraVerso');
-        const palavraDicaInput = document.getElementById('palavraDica');
-
-        if (palavraFrenteInput) {
-            palavraFrenteInput.addEventListener('input', atualizarPreviewPalavra);
-        }
-        if (palavraVersoInput) {
-            palavraVersoInput.addEventListener('input', atualizarPreviewPalavra);
-        }
-        if (palavraDicaInput) {
-            palavraDicaInput.addEventListener('input', atualizarPreviewPalavra);
-        }
-        if (document.getElementById('palavraDificuldade')) {
-            document.getElementById('palavraDificuldade').addEventListener('change', atualizarPreviewPalavra);
-        }
-
-        // Event listeners para cards de unidades
-        const unidadeCards = document.querySelectorAll('.unidade-card');
-        unidadeCards.forEach(card => {
-            card.addEventListener('click', function() {
-                const unidadeId = this.getAttribute('onclick').match(/abrirUnidade\((\d+),/)[1];
-                const titulo = this.getAttribute('onclick').match(/'([^']+)'/)[1];
-                const numero = this.getAttribute('onclick').match(/,\s*(\d+)\)/)[1];
         console.log('Painel inicializado com sucesso');
     });
 
@@ -979,8 +869,25 @@ $database->closeConnection();
             }
         }
 
-        // Renderiza o conteúdo com base no tipo de exercício
-        if (exercicioAtual.tipo_exercicio === "multipla_escolha") {
+        // Determinar o tipo de exercício baseado no conteúdo
+        let tipoExercicio = "multipla_escolha"; // padrão
+        
+        // Analisar o conteúdo para determinar o tipo real
+        if (conteudo.tipo_exercicio) {
+            tipoExercicio = conteudo.tipo_exercicio;
+        } else if (conteudo.opcoes && conteudo.audio_url) {
+            tipoExercicio = "listening";
+        } else if (conteudo.frase_completar) {
+            tipoExercicio = "completar";
+        } else if (conteudo.alternativas) {
+            tipoExercicio = "multipla_escolha";
+        }
+
+        // Armazenar o tipo determinado para uso posterior
+        exercicioAtual.tipoExercicioDeterminado = tipoExercicio;
+
+        // Renderiza o conteúdo com base no tipo de exercício determinado
+        if (tipoExercicio === "multipla_escolha") {
             if (conteudo.alternativas) {
                 htmlConteudo += '<div class="d-grid gap-2">';
                 conteudo.alternativas.forEach(alt => {
@@ -992,14 +899,14 @@ $database->closeConnection();
                 });
                 htmlConteudo += '</div>';
             }
-        } else if (exercicioAtual.tipo_exercicio === "texto_livre") {
+        } else if (tipoExercicio === "texto_livre") {
             htmlConteudo += `
                 <div class="mb-3">
                     <label for="respostaTextoLivre" class="form-label">Sua resposta:</label>
                     <textarea id="respostaTextoLivre" class="form-control" rows="4" placeholder="Digite sua resposta aqui..."></textarea>
                 </div>
             `;
-        } else if (exercicioAtual.tipo_exercicio === "completar") {
+        } else if (tipoExercicio === "completar") {
             const fraseCompletar = conteudo.frase_completar || '';
             const placeholderCompletar = conteudo.placeholder || 'Digite sua resposta...';
             
@@ -1012,7 +919,7 @@ $database->closeConnection();
                     <p class="fs-5">${fraseRenderizada}</p>
                 </div>
             `;
-        } else if (exercicioAtual.tipo_exercicio === "fala") {
+        } else if (tipoExercicio === "fala") {
             htmlConteudo += `
                 <div class="text-center p-4">
                     <i class="fas fa-microphone fa-5x text-primary mb-3" id="microfoneIcon" style="cursor: pointer;" onclick="iniciarGravacao()"></i>
@@ -1024,8 +931,8 @@ $database->closeConnection();
                 </div>
             `;
         } 
-        // NOVO: CASO PARA EXERCÍCIOS DE LISTENING
-        else if (exercicioAtual.tipo_exercicio === "listening") {
+        // CASO PARA EXERCÍCIOS DE LISTENING
+        else if (tipoExercicio === "listening") {
             htmlConteudo += `
                 <div class="audio-player-container">
                     <h6 class="text-center mb-3">🎧 Exercício de Listening</h6>
@@ -1100,32 +1007,34 @@ $database->closeConnection();
             return;
         }
 
+        const tipoExercicio = exercicioAtual.tipoExercicioDeterminado || "multipla_escolha";
+
         // Captura a resposta com base no tipo de exercício
-        if (exercicioAtual.tipo_exercicio === "multipla_escolha") {
+        if (tipoExercicio === "multipla_escolha") {
             respostaUsuario = respostaSelecionada;
             if (!respostaUsuario) {
                 alert("Por favor, selecione uma opção.");
                 return;
             }
-        } else if (exercicioAtual.tipo_exercicio === "texto_livre") {
+        } else if (tipoExercicio === "texto_livre") {
             const textarea = document.getElementById("respostaTextoLivre");
             respostaUsuario = textarea ? textarea.value.trim() : null;
             if (!respostaUsuario) {
                 alert("Por favor, digite sua resposta.");
                 return;
             }
-        } else if (exercicioAtual.tipo_exercicio === "completar") {
+        } else if (tipoExercicio === "completar") {
             const input = document.getElementById("respostaCompletar");
             respostaUsuario = input ? input.value.trim() : null;
             if (!respostaUsuario) {
                 alert("Por favor, preencha o campo.");
                 return;
             }
-        } else if (exercicioAtual.tipo_exercicio === "fala") {
+        } else if (tipoExercicio === "fala") {
             respostaUsuario = "fala_processada";
         }
-        // NOVO: Captura resposta para listening
-        else if (exercicioAtual.tipo_exercicio === "listening") {
+        // Captura resposta para listening
+        else if (tipoExercicio === "listening") {
             respostaUsuario = respostaSelecionada;
             if (!respostaUsuario) {
                 alert("Por favor, selecione uma opção após ouvir o áudio.");
@@ -1147,7 +1056,7 @@ $database->closeConnection();
             body: JSON.stringify({
                 exercicio_id: exercicioAtual.id,
                 resposta: respostaUsuario,
-                tipo_exercicio: exercicioAtual.tipo_exercicio
+                tipo_exercicio: tipoExercicio
             })
         })
         .then(response => response.json())
@@ -1184,8 +1093,10 @@ $database->closeConnection();
        
         conteudoExercicioDiv.appendChild(feedbackDiv);
 
+        const tipoExercicio = exercicioAtual.tipoExercicioDeterminado || "multipla_escolha";
+
         // Atualiza a aparência dos elementos após a resposta
-        if (exercicioAtual.tipo_exercicio === "multipla_escolha") {
+        if (tipoExercicio === "multipla_escolha") {
             document.querySelectorAll(".btn-resposta").forEach(btn => {
                 btn.disabled = true;
                 const altId = btn.dataset.id;
@@ -1210,8 +1121,8 @@ $database->closeConnection();
                     }
                 }
             });
-        } else if (exercicioAtual.tipo_exercicio === "texto_livre" || exercicioAtual.tipo_exercicio === "completar") {
-            const inputField = document.getElementById(exercicioAtual.tipo_exercicio === "texto_livre" ? "respostaTextoLivre" : "respostaCompletar");
+        } else if (tipoExercicio === "texto_livre" || tipoExercicio === "completar") {
+            const inputField = document.getElementById(tipoExercicio === "texto_livre" ? "respostaTextoLivre" : "respostaCompletar");
             if (inputField) {
                 inputField.disabled = true;
                 if (data.correto) {
@@ -1221,8 +1132,8 @@ $database->closeConnection();
                 }
             }
         }
-        // NOVO: Feedback para listening
-        else if (exercicioAtual.tipo_exercicio === "listening") {
+        // Feedback para listening
+        else if (tipoExercicio === "listening") {
             document.querySelectorAll(".btn-resposta").forEach(btn => {
                 btn.disabled = true;
                 const respostaIndex = parseInt(btn.dataset.id);
@@ -1276,40 +1187,6 @@ $database->closeConnection();
         alert("Funcionalidade de gravação de fala será implementada em breve.");
     };
 
-    // Funções para o preview do modal de palavras
-    function virarPreviewPalavra() {
-        document.getElementById('palavraPreview').classList.toggle('flipped');
-    }
-
-    function atualizarPreviewPalavra() {
-        const frente = document.getElementById('palavraFrente').value || 'Digite o conteúdo da frente';
-        const verso = document.getElementById('palavraVerso').value || 'Digite o conteúdo do verso';
-        const dificuldade = document.getElementById('palavraDificuldade').value;
-        const dificuldadeTexto = {
-            'facil': 'Fácil',
-            'medio': 'Médio',
-            'dificil': 'Difícil'
-        };
-
-        document.getElementById('previewPalavraFrente').innerHTML = `<div>${frente}</div>`;
-        document.getElementById('previewPalavraVerso').innerHTML = `<div>${verso}</div>`;
-
-        // Atualiza o header do preview com a dificuldade
-        const headerFrente = document.getElementById('previewHeaderFrente');
-        if (headerFrente) {
-            headerFrente.innerHTML = `
-                <span>Pergunta</span>
-                <span class="badge bg-white bg-opacity-25 text-white">${dificuldadeTexto[dificuldade] || 'Médio'}</span>
-            `;
-        }
-        const headerVerso = document.getElementById('previewHeaderVerso');
-        if (headerVerso) {
-            headerVerso.innerHTML = `
-                <span>Resposta</span>
-                <span class="badge bg-black bg-opacity-25 text-black">${dificuldadeTexto[dificuldade] || 'Médio'}</span>
-            `;
-        }
-    }
     // ==================== FUNCIONALIDADES DE FLASHCARDS ====================
        
     // Função para abrir modal de adicionar palavra
@@ -1519,7 +1396,7 @@ $database->closeConnection();
 
         novoBtn.addEventListener('click', function() {
             const formData = new FormData();
-            formData.append('action', 'excluir_flashcard'); // Usando a action correta
+            formData.append('action', 'excluir_flashcard');
             formData.append('id_flashcard', idFlashcard);
         
             fetch('flashcard_controller.php', {
@@ -1531,7 +1408,6 @@ $database->closeConnection();
                 modalConfirmarExclusao.hide();
                 if (data.success) {
                     carregarPalavras();
-                    // Opcional: mostrar uma mensagem de sucesso
                 } else {
                     alert('Erro: ' + data.message);
                 }
