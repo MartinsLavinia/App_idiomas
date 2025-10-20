@@ -290,37 +290,32 @@ $database->closeConnection();
         background-color: var(--roxo-escuro);
         border-color: var(--roxo-escuro);
         transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(106, 13, 173, 0.3);
     }
 
-    .btn-voltar {
-        background: linear-gradient(135deg, #9ca3a8ff, #8e9caaff);
-        border: none;
-        color: var(--branco);
-        font-weight: 600;
-        padding: 10px 20px;
-        border-radius: 8px;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
-    }
+   
 
-    .btn-voltar:hover {
-        background: linear-gradient(135deg, #495057, #343a40);
-        color: var(--branco);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
-    }
+.btn-back {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid var(--roxo-principal);
+    color: var(--roxo-principal);
+    padding: 0.6rem 1.5rem;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
 
-    .btn-voltar i {
-        font-size: 0.9em;
-        transition: transform 0.3s ease;
-    }
-
-    .btn-voltar:hover i {
-        transform: translateX(-4px);
-    }
+.btn-back:hover {
+    background-color:var(--roxo-escuro);
+    border-color: var(--branco); 
+    color: var(--branco);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+}
 
     .btn-secondary {
         background-color: var(--cinza-medio);
@@ -332,9 +327,11 @@ $database->closeConnection();
     }
 
     .btn-secondary:hover {
-        background-color: #c8c9cb;
+        background-color: #b8b9bdd3;
         border-color: #c8c9cb;
         transform: scale(1.05);
+        color: var(--preto-texto);
+        box-shadow: 0 4px 12px rgba(194, 192, 192, 0.53);
     }
 
     .btn-success {
@@ -542,6 +539,81 @@ $database->closeConnection();
         align-items: center;
         margin-bottom: 30px;
     }
+
+    /* ESTILOS PROFISSIONAIS MINIMALISTAS */
+.form-control {
+    border: none;
+    border-bottom: 2px solid #e1e5e9;
+    border-radius: 0;
+    padding: 0.4rem 0;
+    font-size: 1.0rem;
+    font-weight: 400;
+    color: #2d3748;
+    background: transparent;
+    transition: all 0.2s ease;
+    width: 50%;
+}
+
+.form-control:focus {
+    border-bottom-color: var(--roxo-principal);
+    background: transparent;
+    box-shadow: none;
+    outline: none;
+}
+
+.form-control::placeholder {
+    color: #718096;
+    font-size: 0.9rem;
+}
+   /* ESTILOS PROFISSIONAIS COM EFEITOS FIXOS PARA LABELS */
+.form-label {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--roxo-principal);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    display: block;
+    position: relative;
+    padding-left: 1rem;
+    transition: all 0.3s ease;
+    cursor: default;
+}
+
+/* Linha gradiente fixa abaixo do label */
+.form-label::before {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 1rem;
+    width: 40px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--roxo-principal), var(--amarelo-detalhe));
+    border-radius: 2px;
+}
+
+/* Indicador lateral fixo */
+.form-label::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 4px;
+    height: 20px;
+    background: var(--roxo-principal);
+    border-radius: 2px;
+    transform: translateY(-50%);
+    opacity: 1;
+}
+
+
+
+/* Container para melhor organização */
+.form-group {
+    position: relative;
+    margin-bottom: 2rem;
+} 
     </style>
 </head>
 <body>
@@ -600,9 +672,10 @@ $database->closeConnection();
             <!-- Cabeçalho com título e botão de voltar -->
             <div class="header-container">
                 <h2 class="mb-0">Editar Caminho de Aprendizagem</h2>
-                <a href="gerenciar_caminho.php" class="btn btn-voltar">
-                    <i class="fas fa-arrow-left"></i> Voltar ao Gerenciamento
-                </a>
+                 <a href="gerenciar_caminho.php" class="btn-back">
+    <i class="fas fa-arrow-left"></i>Voltar para Caminhos
+</a>
+
             </div>
             
             <?php echo $mensagem; ?>

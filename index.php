@@ -84,6 +84,7 @@
         cursor: pointer;
         transition: all 0.3s ease;
         font-size: 1.0rem;
+        font-family: 'Inter', sans-serif;
     }
 
     .nav-btn:hover {
@@ -739,6 +740,7 @@
         padding: 5rem 0;
         position: relative;
         overflow: hidden;
+       
     }
 
     .decorative-elements {
