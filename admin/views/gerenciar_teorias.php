@@ -16,6 +16,19 @@ if (isset($_GET['status']) && $_GET['status'] == 'sucesso_exclusao') {
 $database = new Database();
 $conn = $database->conn;
 
+
+$id_admin = $_SESSION['id_admin'];
+$sql_foto = "SELECT foto_perfil FROM administradores WHERE id = ?";
+$stmt_foto = $conn->prepare($sql_foto);
+$stmt_foto->bind_param("i", $id_admin);
+$stmt_foto->execute();
+$resultado_foto = $stmt_foto->get_result();
+$admin_foto = $resultado_foto->fetch_assoc();
+$stmt_foto->close();
+
+$foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
+
+
 $sql_teorias = "SELECT id, titulo, nivel, ordem, data_criacao FROM teorias ORDER BY nivel, ordem";
 $stmt_teorias = $conn->prepare($sql_teorias);
 $stmt_teorias->execute();
@@ -470,10 +483,17 @@ $database->closeConnection();
     </nav>
 <div class="sidebar">
     <div class="profile">
-        <i class="fas fa-user-circle"></i>
+        <?php if ($foto_admin): ?>
+            <div class="profile-avatar-sidebar">
+                <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
+            </div>
+        <?php else: ?>
+            <i class="fas fa-user-circle"></i>
+        <?php endif; ?>
         <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
         <small>Administrador(a)</small>
     </div>
+
 
     <div class="list-group">
         <a href="gerenciar_caminho.php" class="list-group-item">

@@ -109,12 +109,11 @@ function processarListening($resposta_usuario, $conteudo) {
         ];
     }
 
-    $resposta_correta_index = $conteudo['resposta_correta'];
-    $resposta_correta = $conteudo['opcoes'][$resposta_correta_index] ?? '';
+    $resposta_correta_index = $conteudo['resposta_correta_index']; // Agora espera o índice
+    $resposta_correta_texto = $conteudo['opcoes'][$resposta_correta_index] ?? '';
     
-    // Converter para inteiro para comparação
-    $resposta_usuario_int = intval($resposta_usuario);
-    $correto = ($resposta_usuario_int === $resposta_correta_index);
+    // Comparar o índice da resposta do usuário com o índice correto
+    $correto = (intval($resposta_usuario) === $resposta_correta_index);
 
     return [
         'success' => true,
@@ -123,7 +122,7 @@ function processarListening($resposta_usuario, $conteudo) {
         'mensagem' => $correto ? '🎉 Parabéns! Resposta correta!' : '❌ Resposta incorreta.',
         'audio_url' => $conteudo['audio_url'] ?? '',
         'frase_original' => $conteudo['frase_original'] ?? '',
-        'resposta_correta' => $resposta_correta,
+        'resposta_correta' => $resposta_correta_texto,
         'resposta_correta_index' => $resposta_correta_index,
         'pontuacao' => $correto ? 100 : 0
     ];

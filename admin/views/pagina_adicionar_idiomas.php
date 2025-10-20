@@ -3,13 +3,24 @@
 session_start();
 include_once __DIR__ . '/../../conexao.php';
 
+$database = new Database();
+$conn = $database->conn;
 // Verificação de segurança
 if (!isset($_SESSION['id_admin'])) {
     header("Location: login_admin.php");
     exit();
 }
 
+$id_admin = $_SESSION['id_admin'];
+$sql_foto = "SELECT foto_perfil FROM administradores WHERE id = ?";
+$stmt_foto = $conn->prepare($sql_foto);
+$stmt_foto->bind_param("i", $id_admin);
+$stmt_foto->execute();
+$resultado_foto = $stmt_foto->get_result();
+$admin_foto = $resultado_foto->fetch_assoc();
+$stmt_foto->close();
 
+$foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
 // 1. Configurações de Paginação
 $limit = 5; // Limite de perguntas por página
 $total_perguntas = 20; // Total de perguntas a serem exibidas
@@ -114,21 +125,47 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
         }
 
         /* Menu Lateral - ADICIONADO DECORAÇÃO AMARELA */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 250px;
-            height: 100%;
-            background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
-            color: var(--branco);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            padding-top: 20px;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-        }
+        /* ... outros estilos existentes ... */
+
+      /* Menu Lateral */
+        .sidebar .profile {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* ADICIONE AQUI O NOVO CSS */
+.profile-avatar-sidebar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid var(--amarelo-detalhe);
+    background: linear-gradient(135deg, var(--roxo-claro), var(--roxo-principal));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.profile-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Remove o ícone padrão quando há foto */
+.profile-avatar-sidebar:has(img) i {
+    display: none;
+}
+/* FIM DO NOVO CSS */
+
+.sidebar .profile h5 {
+    font-weight: 600;
+    margin-bottom: 0;
+    color: var(--branco);
+}
 
         .sidebar .profile {
             text-align: center;
@@ -397,12 +434,18 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
         </div>
     </nav>
 
-<div class="sidebar">
-            <div class="profile">
-                <i class="fas fa-user-circle"></i>
-                <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
-                <small>Administrador(a)</small>
+ <div class="sidebar">
+    <div class="profile">
+        <?php if ($foto_admin): ?>
+            <div class="profile-avatar-sidebar">
+                <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
             </div>
+        <?php else: ?>
+            <i class="fas fa-user-circle"></i>
+        <?php endif; ?>
+        <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+        <small>Administrador(a)</small>
+    </div>
 
             <div class="list-group">
                 <a href="gerenciar_caminho.php" class="list-group-item">

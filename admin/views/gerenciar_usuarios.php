@@ -11,6 +11,18 @@ if (!isset($_SESSION['id_admin'])) {
 $database = new Database();
 $conn = $database->conn;
 
+
+$id_admin = $_SESSION['id_admin'];
+$sql_foto = "SELECT foto_perfil FROM administradores WHERE id = ?";
+$stmt_foto = $conn->prepare($sql_foto);
+$stmt_foto->bind_param("i", $id_admin);
+$stmt_foto->execute();
+$resultado_foto = $stmt_foto->get_result();
+$admin_foto = $resultado_foto->fetch_assoc();
+$stmt_foto->close();
+
+$foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
+
 // Filtros de pesquisa
 $filtro_nome = isset($_GET['nome']) ? trim($_GET['nome']) : '';
 $filtro_email = isset($_GET['email']) ? trim($_GET['email']) : '';
@@ -682,12 +694,18 @@ $database->closeConnection();
         </div>
     </nav>
 
-      <div class="sidebar">
-        <div class="profile">
+     <div class="sidebar">
+    <div class="profile">
+        <?php if ($foto_admin): ?>
+            <div class="profile-avatar-sidebar">
+                <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
+            </div>
+        <?php else: ?>
             <i class="fas fa-user-circle"></i>
-            <h5 id="nome-admin"><?php echo isset($_SESSION['nome_admin']) ? htmlspecialchars($_SESSION['nome_admin']) : 'Administrador'; ?></h5>
-            <small>Administrador(a)</small>
-        </div>
+        <?php endif; ?>
+        <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+        <small>Administrador(a)</small>
+    </div>
 
         <div class="list-group">
             <a href="gerenciar_caminho.php" class="list-group-item">

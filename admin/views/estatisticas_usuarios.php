@@ -11,6 +11,17 @@ if (!isset($_SESSION['id_admin'])) {
 $database = new Database();
 $conn = $database->conn;
 
+$id_admin = $_SESSION['id_admin'];
+$sql_foto = "SELECT foto_perfil FROM administradores WHERE id = ?";
+$stmt_foto = $conn->prepare($sql_foto);
+$stmt_foto->bind_param("i", $id_admin);
+$stmt_foto->execute();
+$resultado_foto = $stmt_foto->get_result();
+$admin_foto = $resultado_foto->fetch_assoc();
+$stmt_foto->close();
+
+$foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
+
 // Estatísticas gerais de usuários
 $sql_total_usuarios = "SELECT COUNT(*) as total FROM usuarios";
 $result_total = $conn->query($sql_total_usuarios);
@@ -531,30 +542,98 @@ $database->closeConnection();
 
     /* Responsividade */
     @media (max-width: 992px) {
-        .sidebar {
-            width: 200px;
-        }
-        .main-content {
-            margin-left: 200px;
-        }
-    }
+             /* Menu Lateral */
+        .sidebar .profile {
+    text-align: center;
+    margin-bottom: 30px;
+}
 
-    @media (max-width: 768px) {
-        .sidebar {
-            position: relative;
+/* ADICIONE AQUI O NOVO CSS */
+.profile-avatar-sidebar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid var(--amarelo-detalhe);
+    background: linear-gradient(135deg, var(--roxo-claro), var(--roxo-principal));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.profile-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Remove o ícone padrão quando há foto */
+.profile-avatar-sidebar:has(img) i {
+    display: none;
+}
+/* FIM DO NOVO CSS */
+
+.sidebar .profile h5 {
+    font-weight: 600;
+    margin-bottom: 0;
+    color: var(--branco);
+}
+
+        .sidebar .profile {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .sidebar .profile i {
+            font-size: 4rem;
+            color: var(--amarelo-detalhe);
+            margin-bottom: 10px;
+        }
+
+        .sidebar .profile h5 {
+            font-weight: 600;
+            margin-bottom: 0;
+            color: var(--branco);
+        }
+
+        .sidebar .profile small {
+            color: var(--cinza-claro);
+        }
+
+        .sidebar .list-group {
             width: 100%;
-            height: auto;
         }
-        .main-content {
-            margin-left: 0;
+
+        .sidebar .list-group-item {
+            background-color: transparent;
+            color: var(--branco);
+            border: none;
+            padding: 15px 25px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
         }
-        .stats-card h3 {
-            font-size: 2rem;
+
+        .sidebar .list-group-item:hover {
+            background-color: var(--roxo-escuro);
+            cursor: pointer;
         }
-        .chart-container {
-            height: 300px;
+
+        .sidebar .list-group-item.active {
+            background-color: var(--roxo-escuro) !important;
+            color: var(--branco) !important;
+            font-weight: 600;
+            border-left: 4px solid var(--amarelo-detalhe);
         }
-    }
+
+        .sidebar .list-group-item i {
+            color: var(--amarelo-detalhe);
+        }
 
      .settings-icon {
             color: var(--roxo-principal) !important;
@@ -637,11 +716,17 @@ $database->closeConnection();
     </nav>
 
     <div class="sidebar">
-        <div class="profile">
+    <div class="profile">
+        <?php if ($foto_admin): ?>
+            <div class="profile-avatar-sidebar">
+                <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
+            </div>
+        <?php else: ?>
             <i class="fas fa-user-circle"></i>
-            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
-            <small>Administrador(a)</small>
-        </div>
+        <?php endif; ?>
+        <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+        <small>Administrador(a)</small>
+    </div>
 
         <div class="list-group">
             <a href="gerenciar_caminho.php" class="list-group-item">

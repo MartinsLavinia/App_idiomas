@@ -138,74 +138,98 @@ $database->closeConnection();
     }
 
     /* SIDEBAR FIXO - CORREÇÃO APLICADA */
-    .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 250px;
-        height: 100%;
-        background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
-        color: var(--branco);
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        padding-top: 20px;
-        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-        z-index: 1100 !important; /* CORREÇÃO: z-index aumentado */
-    }
+          /* Menu Lateral */
+        .sidebar .profile {
+    text-align: center;
+    margin-bottom: 30px;
+}
 
-    .sidebar .profile {
-        text-align: center;
-        margin-bottom: 30px;
-    }
+/* ADICIONE AQUI O NOVO CSS */
+.profile-avatar-sidebar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid var(--amarelo-detalhe);
+    background: linear-gradient(135deg, var(--roxo-claro), var(--roxo-principal));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
 
-    .sidebar .profile i {
-        font-size: 4rem;
-        color: var(--amarelo-detalhe);
-        margin-bottom: 10px;
-    }
+.profile-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
 
-    .sidebar .profile h5 {
-        font-weight: 600;
-        margin-bottom: 0;
-        color: var(--branco);
-    }
+/* Remove o ícone padrão quando há foto */
+.profile-avatar-sidebar:has(img) i {
+    display: none;
+}
+/* FIM DO NOVO CSS */
 
-    .sidebar .profile small {
-        color: var(--cinza-claro);
-    }
+.sidebar .profile h5 {
+    font-weight: 600;
+    margin-bottom: 0;
+    color: var(--branco);
+}
 
-    .sidebar .list-group {
-        width: 100%;
-    }
+        .sidebar .profile {
+            text-align: center;
+            margin-bottom: 30px;
+        }
 
-    .sidebar .list-group-item {
-        background-color: transparent;
-        color: var(--branco);
-        border: none;
-        padding: 15px 25px;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        transition: all 0.3s ease;
-    }
+        .sidebar .profile i {
+            font-size: 4rem;
+            color: var(--amarelo-detalhe);
+            margin-bottom: 10px;
+        }
 
-    .sidebar .list-group-item:hover {
-        background-color: var(--roxo-escuro);
-        cursor: pointer;
-    }
+        .sidebar .profile h5 {
+            font-weight: 600;
+            margin-bottom: 0;
+            color: var(--branco);
+        }
 
-    .sidebar .list-group-item.active {
-        background-color: var(--roxo-escuro) !important;
-        color: var(--branco) !important;
-        font-weight: 600;
-        border-left: 4px solid var(--amarelo-detalhe);
-    }
+        .sidebar .profile small {
+            color: var(--cinza-claro);
+        }
 
-    .sidebar .list-group-item i {
-        color: var(--amarelo-detalhe);
-    }
+        .sidebar .list-group {
+            width: 100%;
+        }
+
+        .sidebar .list-group-item {
+            background-color: transparent;
+            color: var(--branco);
+            border: none;
+            padding: 15px 25px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .list-group-item:hover {
+            background-color: var(--roxo-escuro);
+            cursor: pointer;
+        }
+
+        .sidebar .list-group-item.active {
+            background-color: var(--roxo-escuro) !important;
+            color: var(--branco) !important;
+            font-weight: 600;
+            border-left: 4px solid var(--amarelo-detalhe);
+        }
+
+        .sidebar .list-group-item i {
+            color: var(--amarelo-detalhe);
+        }
 
     /* CORREÇÃO PARA O BACKDROP DO MODAL */
     .modal-backdrop {

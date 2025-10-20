@@ -1,8 +1,10 @@
 <?php
 session_start();
-include_once __DIR__ . '/../../conexao.php';
-// INCLUIR O CONTROLLER DE LISTENING
-include_once __DIR__ . '/../controller/listening_controller.php';
+include_once __DIR__ . 
+'/../../conexao.php';
+include_once __DIR__ . 
+'/../../ListeningModel.php';// INCLUIR O CONTROLLER DE LISTENING
+include_once __DIR__ . '/../../controller/listening_controller.php';
 // Ativar exibição de erros (apenas para desenvolvimento)
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -25,6 +27,7 @@ $mensagem = '';
 // Instancia a conexão com o banco de dados
 $database = new Database();
 $conn = $database->conn;
+$listeningModel = new ListeningModel(); // Instancia o modelo de listening
 
 // BUSCAR DADOS DO ADMINISTRADOR PARA O SIDEBAR
 $id_admin = $_SESSION['id_admin'];
@@ -214,8 +217,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 } 
                 // NOVO: PROCESSAMENTO PARA LISTENING
                 elseif ($tipo_exercicio === 'listening') {
-                    if (empty($_POST['frase_listening']) || empty($_POST['listening_opcao1']) || empty($_POST['listening_opcao2'])) {
-                        $mensagem = '<div class="alert alert-danger">Frase e pelo menos 2 opções são obrigatórias para listening.</div>';
+                    if (empty($_POST['frase_listening']) || empty($_POST['listening_opcao1']) || empty($_POST['listening_opcao2']) || !isset($_POST['listening_resposta_correta'])) {
+                        $mensagem = '<div class="alert alert-danger">Frase, pelo menos 2 opções e a indicação da resposta correta são obrigatórios para listening.</div>';
                     } else {
                         try {
                             $listeningController = new ListeningController();
@@ -235,24 +238,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             if (!empty($_POST['listening_opcao3'])) $opcoes[] = trim($_POST['listening_opcao3']);
                             if (!empty($_POST['listening_opcao4'])) $opcoes[] = trim($_POST['listening_opcao4']);
                             
-                            $resposta_correta = 0; // Primeira opção é a correta
+                            $resposta_correta_index = (int)($_POST['listening_resposta_correta'] ?? 0);
                             
                             $conteudo = json_encode([
                                 'audio_url' => $audio_url,
                                 'frase_original' => $_POST['frase_listening'],
                                 'opcoes' => $opcoes,
-                                'resposta_correta' => $resposta_correta,
+                                'resposta_correta_index' => $resposta_correta_index,
                                 'tipo' => 'listening',
                                 'explicacao' => $_POST['explicacao_listening'] ?? 'Ouça o áudio com atenção e selecione a opção correta.'
                             ], JSON_UNESCAPED_UNICODE);
                             
+                            $categoria = 'audicao';
+                            $dificuldade = $_POST['dificuldade'] ?? 'medio';
+                            if ($listeningModel->createListeningExercise($caminho_id, $bloco_id, $ordem, $pergunta, $conteudo, $categoria, $dificuldade)) {
+                                $mensagem = '<div class="alert alert-success">Exercício de listening adicionado com sucesso!</div>';
+                            } else {
+                                $mensagem = '<div class="alert alert-danger">Erro desconhecido ao salvar o exercício de listening.</div>';
+                            }
+
                         } catch (Exception $e) {
-                            $mensagem = '<div class="alert alert-danger">Erro ao gerar áudio: ' . $e->getMessage() . '</div>';
+                            $mensagem = '<div class="alert alert-danger">Erro ao gerar áudio ou salvar: ' . $e->getMessage() . '</div>';
                         }
                     }
-                }
-                break;
-            case 'especial':
+                } // Fim do elseif ($tipo_exercicio === 'listening')
+                
+                // Lógica para outros tipos de exercício 'normal' que não são 'listening'
+                // Esta parte do código deve ser mantida se houver outros tipos de exercício 'normal' que usam adicionarExercicio
+                if ($tipo_exercicio !== 'listening' && $conteudo) {
+                    if (adicionarExercicio($conn, $caminho_id, $bloco_id, $ordem, $tipo, $pergunta, $conteudo)) {
+                        $mensagem = '<div class="alert alert-success">Exercício adicionado com sucesso!</div>';
+                    } else {
+                        $mensagem = '<div class="alert alert-danger">Erro ao adicionar exercício.</div>';
+                    }
+                }:
                 if (empty($_POST['link_video']) || empty($_POST['pergunta_extra'])) {
                     $mensagem = '<div class="alert alert-danger">O Link do Vídeo/Áudio e a Pergunta Extra são obrigatórios para este tipo de exercício.</div>';
                 } else {

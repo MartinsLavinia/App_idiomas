@@ -335,40 +335,40 @@ $database->closeConnection();
         }
 
         /* Seção do avatar - HORIZONTAL */
-        .profile-avatar-section {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+       .profile-avatar-section {
+    text-align: center;
+    margin-bottom: 30px;
+}
 
-        .profile-avatar {
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            border: 5px solid var(--roxo-principal);
-            background: linear-gradient(135deg, var(--roxo-claro), var(--roxo-principal));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            font-size: 3.5rem;
-            color: var(--branco);
-            box-shadow: var(--shadow-medium);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            position: relative;
-            cursor: pointer;
-            overflow: hidden;
-        }
+.profile-avatar {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 5px solid var(--roxo-principal);
+    background: linear-gradient(135deg, var(--roxo-claro), var(--roxo-principal));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 3.5rem;
+    color: var(--branco);
+    box-shadow: var(--shadow-medium);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+}
 
-        .profile-avatar.has-photo {
-            background: none;
-        }
+.profile-avatar.has-photo {
+    background: none;
+}
 
-        .profile-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-        }
+.profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
 
         .profile-avatar:hover {
             transform: translateY(-5px) scale(1.05);

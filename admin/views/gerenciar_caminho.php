@@ -256,21 +256,77 @@ border: 0 4px 8px rgba(235, 183, 14, 0.77);
   
 
         /* Menu Lateral */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 250px;
-            height: 100%;
-            background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
-            color: var(--branco);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            padding-top: 20px;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-        }
+        .sidebar .profile {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* ADICIONE AQUI O NOVO CSS */
+.profile-avatar-sidebar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid var(--amarelo-detalhe);
+    background: linear-gradient(135deg, var(--roxo-claro), var(--roxo-principal));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.profile-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Remove o ícone padrão quando há foto */
+.profile-avatar-sidebar:has(img) i {
+    display: none;
+}
+/* FIM DO NOVO CSS */
+
+.sidebar .profile {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* ADICIONE AQUI O NOVO CSS */
+.profile-avatar-sidebar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid var(--amarelo-detalhe);
+    background: linear-gradient(135deg, var(--roxo-claro), var(--roxo-principal));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.profile-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Remove o ícone padrão quando há foto */
+.profile-avatar-sidebar:has(img) i {
+    display: none;
+}
+/* FIM DO NOVO CSS */
+
+.sidebar .profile h5 {
+    font-weight: 600;
+    margin-bottom: 0;
+    color: var(--branco);
+}
 
         .sidebar .profile {
             text-align: center;
@@ -324,6 +380,7 @@ border: 0 4px 8px rgba(235, 183, 14, 0.77);
         .sidebar .list-group-item i {
             color: var(--amarelo-detalhe);
         }
+
 
         /* Ajuste do conteúdo principal para não ficar por baixo do sidebar */
         .main-content {
