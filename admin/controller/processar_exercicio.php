@@ -95,10 +95,12 @@ function processarResposta($resposta_usuario, $conteudo, $tipo_exercicio) {
         case 'listening':
             return processarListening($resposta_usuario, $conteudo);
         default:
+            return ['correto' => false, 'explicacao' => 'Tipo de exercício não suportado.'];
             return ['success' => false, 'correto' => false, 'explicacao' => 'Tipo de exercício não suportado.'];
     }
 }
 
+function processarCompletar($resposta_usuario, $conteudo) {
 // FUNÇÃO CORRIGIDA: Processar exercício de listening
 function processarListening($resposta_usuario, $conteudo) {
     if (!isset($conteudo['resposta_correta']) || !isset($conteudo['opcoes'])) {
@@ -109,11 +111,12 @@ function processarListening($resposta_usuario, $conteudo) {
         ];
     }
 
-    $resposta_correta_index = $conteudo['resposta_correta_index']; // Agora espera o índice
-    $resposta_correta_texto = $conteudo['opcoes'][$resposta_correta_index] ?? '';
+    $resposta_correta_index = $conteudo['resposta_correta'];
+    $resposta_correta = $conteudo['opcoes'][$resposta_correta_index] ?? '';
     
-    // Comparar o índice da resposta do usuário com o índice correto
-    $correto = (intval($resposta_usuario) === $resposta_correta_index);
+    // Converter para inteiro para comparação
+    $resposta_usuario_int = intval($resposta_usuario);
+    $correto = ($resposta_usuario_int === $resposta_correta_index);
 
     return [
         'success' => true,
@@ -122,7 +125,7 @@ function processarListening($resposta_usuario, $conteudo) {
         'mensagem' => $correto ? '🎉 Parabéns! Resposta correta!' : '❌ Resposta incorreta.',
         'audio_url' => $conteudo['audio_url'] ?? '',
         'frase_original' => $conteudo['frase_original'] ?? '',
-        'resposta_correta' => $resposta_correta_texto,
+        'resposta_correta' => $resposta_correta,
         'resposta_correta_index' => $resposta_correta_index,
         'pontuacao' => $correto ? 100 : 0
     ];
@@ -199,10 +202,41 @@ function processarTextoLivre($resposta_usuario, $conteudo) {
         'dica' => $correto ? null : ($conteudo['dica'] ?? "Tente novamente. Resposta esperada: '$resposta_encontrada'"),
         'pontuacao' => $correto ? 100 : ($melhor_similaridade * 100),
         'similaridade' => $melhor_similaridade,
+        'resposta_correta' => $resposta_encontrada,
+        'success' => true
         'resposta_correta' => $resposta_encontrada
     ];
 }
 
+function processarMultiplaEscolha($resposta_usuario, $conteudo) {
+    if (!isset($conteudo['alternativas'])) {
+        return ['correto' => false, 'explicacao' => 'Exercício mal configurado.'];
+    }
+
+    $resposta_correta = null;
+    foreach ($conteudo['alternativas'] as $alt) {
+        if (isset($alt['correta']) && $alt['correta']) {
+            $resposta_correta = $alt['id'] ?? $alt['texto'];
+            break;
+        }
+    }
+
+    if (!$resposta_correta && isset($conteudo['resposta_correta'])) {
+        $resposta_correta = $conteudo['resposta_correta'];
+    }
+
+    $correto = strtolower($resposta_usuario) === strtolower($resposta_correta);
+
+    return [
+        'correto' => $correto,
+        'explicacao' => $conteudo['explicacao'] ?? ($correto ? 'Correto!' : 'Resposta incorreta.'),
+        'dica' => $correto ? null : ($conteudo['dica'] ?? null),
+        'pontuacao' => $correto ? 100 : 0,
+        'success' => true
+    ];
+}
+
+function processarTextoLivre($resposta_usuario, $conteudo) {
 function processarCompletar($resposta_usuario, $conteudo) {
     $resposta_correta = $conteudo['resposta_correta'] ?? '';
     $alternativas_aceitas = $conteudo['alternativas_aceitas'] ?? [$resposta_correta];
@@ -246,12 +280,15 @@ function processarCompletar($resposta_usuario, $conteudo) {
         'dica' => $correto ? null : ($conteudo['dica'] ?? "Tente novamente. Resposta esperada: '$resposta_encontrada'"),
         'pontuacao' => $correto ? 100 : ($melhor_similaridade * 100),
         'similaridade' => $melhor_similaridade,
+        'resposta_correta' => $resposta_encontrada,
+        'success' => true
         'resposta_correta' => $resposta_encontrada
     ];
 }
 
 function processarFala($resposta_usuario, $conteudo) {
     // Simulação de processamento de fala
+    // Em uma implementação real, aqui seria feita a análise do áudio
     $correto = $resposta_usuario === 'fala_processada';
 
     return [
@@ -259,6 +296,8 @@ function processarFala($resposta_usuario, $conteudo) {
         'correto' => $correto,
         'explicacao' => $correto ? 'Excelente pronúncia!' : 'Tente novamente, prestando atenção à pronúncia.',
         'dica' => $correto ? null : 'Ouça o áudio de exemplo e pratique devagar.',
+        'pontuacao' => $correto ? 100 : 0,
+        'success' => true
         'pontuacao' => $correto ? 100 : 0
     ];
 }
@@ -274,6 +313,8 @@ function processarArrastarSoltar($resposta_usuario, $conteudo) {
         'correto' => $correto,
         'explicacao' => $conteudo['explicacao'] ?? ($correto ? 'Correto!' : 'Verifique as posições dos elementos.'),
         'dica' => $correto ? null : ($conteudo['dica'] ?? 'Leia as categorias com atenção.'),
+        'pontuacao' => $correto ? 100 : 0,
+        'success' => true
         'pontuacao' => $correto ? 100 : 0
     ];
 }

@@ -1,8 +1,8 @@
 <?php
 session_start();
 include_once __DIR__ . '/../../conexao.php';
-include_once __DIR__ . '/../listening_model.php'; // Model de Listening
-include_once __DIR__ . '/../listening_controller.php'; // Controller de Listening
+include_once __DIR__ . '/../models/listening_model.php'; // Model de Listening
+include_once __DIR__ . '/../controller/listening_controller.php'; // Controller de Listening
 // Ativar exibição de erros (apenas para desenvolvimento)
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -215,9 +215,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         'resposta_correta' => $_POST['resposta_audio_correta'] ?? ''
                     ], JSON_UNESCAPED_UNICODE);
                 } 
-                // NOVO: PROCESSAMENTO PARA LISTENING
+                // CORREÇÃO: PROCESSAMENTO PARA LISTENING
                 elseif ($tipo_exercicio === 'listening') {
-                    if (empty($_POST['frase_listening']) || empty($_POST['listening_opcao1']) || empty($_POST['listening_opcao2']) || !isset($_POST['listening_resposta_correta'])) {
+                    // CORREÇÃO: Mudar de listening_resposta_correta para listening_alt_correta
+                    if (empty($_POST['frase_listening']) || empty($_POST['listening_opcao1']) || empty($_POST['listening_opcao2']) || !isset($_POST['listening_alt_correta'])) {
                         $mensagem = '<div class="alert alert-danger">Frase, pelo menos 2 opções e a indicação da resposta correta são obrigatórios para listening.</div>';
                     } else {
                         try {
@@ -238,7 +239,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             if (!empty($_POST['listening_opcao3'])) $opcoes[] = trim($_POST['listening_opcao3']);
                             if (!empty($_POST['listening_opcao4'])) $opcoes[] = trim($_POST['listening_opcao4']);
                             
-                            $resposta_correta_index = (int)($_POST['listening_resposta_correta'] ?? 0);
+                            // CORREÇÃO: Mudar de listening_resposta_correta para listening_alt_correta
+                            $resposta_correta_index = (int)($_POST['listening_alt_correta'] ?? 0);
                             
                             $bloco_info = $listeningModel->buscarInfoBloco($bloco_id); // Buscar info do bloco
 
@@ -253,6 +255,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 'ordem' => $ordem,
                                 'tipo_exercicio' => 'listening'
                             ];
+
+                            // CORREÇÃO: Inserir os dados do listening no banco
+                            $conteudo = json_encode($dados_listening, JSON_UNESCAPED_UNICODE);
+                            
+                            if (adicionarExercicio($conn, $caminho_id, $bloco_id, $ordem, $tipo, $pergunta, $conteudo)) {
+                                $mensagem = '<div class="alert alert-success">Exercício de listening adicionado com sucesso!</div>';
+                            } else {
+                                $mensagem = '<div class="alert alert-danger">Erro ao adicionar exercício de listening.</div>';
+                            }
+                            
                         } catch (Exception $e) {
                             $mensagem = '<div class="alert alert-danger">Erro ao gerar áudio ou salvar: ' . $e->getMessage() . '</div>';
                         }
@@ -260,7 +272,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 } // Fim do elseif ($tipo_exercicio === 'listening')
                 
                 // Lógica para outros tipos de exercício 'normal' que não são 'listening'
-                // Esta parte do código deve ser mantida se houver outros tipos de exercício 'normal' que usam adicionarExercicio
                 if ($tipo_exercicio !== 'listening' && $conteudo) {
                     if (adicionarExercicio($conn, $caminho_id, $bloco_id, $ordem, $tipo, $pergunta, $conteudo)) {
                         $mensagem = '<div class="alert alert-success">Exercício adicionado com sucesso!</div>';
@@ -292,8 +303,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 break;
         }
 
-        if (empty($mensagem)) {
-            // Inserir exercício na tabela exercicios
+        // CORREÇÃO: Removida a lógica duplicada de inserção
+        if (empty($mensagem) && $conteudo && $tipo_exercicio !== 'listening') {
+            // Inserir exercício na tabela exercicios apenas para tipos que não são listening
+            // (o listening já foi inserido na lógica específica acima)
             $sql = "INSERT INTO exercicios (caminho_id, bloco_id, ordem, tipo, tipo_exercicio, pergunta, conteudo) VALUES (?, ?, ?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($sql);
             
@@ -331,7 +344,7 @@ $post_listening_opcao1 = $_POST["listening_opcao1"] ?? '';
 $post_listening_opcao2 = $_POST["listening_opcao2"] ?? '';
 $post_listening_opcao3 = $_POST["listening_opcao3"] ?? '';
 $post_listening_opcao4 = $_POST["listening_opcao4"] ?? '';
-$post_listening_alt_correta = $_POST['listening_alt_correta'] ?? '0'; // Novo campo para a resposta correta
+$post_listening_alt_correta = $_POST['listening_alt_correta'] ?? '0';
 $post_explicacao_listening = $_POST["explicacao_listening"] ?? '';
 
 // Campos específicos para cada tipo de exercício
@@ -596,9 +609,60 @@ $database->closeConnection();
             z-index: 1000;
         }
 
-          .sidebar .profile {
+        .sidebar .profile {
             text-align: center;
             margin-bottom: 30px;
+            padding: 0 15px;
+        }
+
+        /* Estilos para foto de perfil no sidebar */
+        .profile-avatar-sidebar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid var(--amarelo-detalhe);
+            background: linear-gradient(135deg, var(--roxo-claro), var(--roxo-principal));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .profile-avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        /* Remove o ícone padrão quando há foto */
+        .profile-avatar-sidebar:has(img) i {
+            display: none;
+        }
+
+        /* Estilos para nome e email com quebra de texto */
+        .admin-name {
+            font-weight: 600;
+            margin-bottom: 0;
+            color: var(--branco);
+            word-wrap: break-word;
+            max-width: 200px;
+            text-align: center;
+            line-height: 1.3;
+            font-size: 1rem;
+        }
+
+        .admin-email {
+            color: var(--cinza-claro);
+            word-wrap: break-word;
+            max-width: 200px;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1.2;
+            margin-top: 5px;
+            opacity: 0.9;
         }
 
         .sidebar .profile i {
@@ -607,20 +671,9 @@ $database->closeConnection();
             margin-bottom: 10px;
         }
 
-        .sidebar .profile h5 {
-            font-weight: 600;
-            margin-bottom: 0;
-            color: var(--branco);
-        }
-
-        .sidebar .profile small {
-            color: var(--cinza-claro);
-        }
-
         .sidebar .list-group {
             width: 100%;
         }
-
 
         .sidebar .list-group-item {
             background-color: transparent;
@@ -1332,8 +1385,8 @@ $database->closeConnection();
         <?php else: ?>
             <i class="fas fa-user-circle"></i>
         <?php endif; ?>
-        <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
-        <small>Administrador(a)</small>
+        <h5 class="admin-name"><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+        <small class="admin-email"><?php echo htmlspecialchars($_SESSION['email_admin']); ?></small>
     </div>
 
         <div class="list-group">
@@ -1868,6 +1921,43 @@ $database->closeConnection();
                 testarAudio();
             }
         }, 1500);
+    });
+
+    // Debug helper para verificar se os campos estão sendo preenchidos
+    function debugListening() {
+        const frase = document.getElementById('frase_listening').value;
+        const opcao1 = document.querySelector('input[name="listening_opcao1"]').value;
+        const opcao2 = document.querySelector('input[name="listening_opcao2"]').value;
+        const respostaCorreta = document.querySelector('input[name="listening_alt_correta"]:checked');
+        
+        console.log('Debug Listening:');
+        console.log('Frase:', frase);
+        console.log('Opção 1:', opcao1);
+        console.log('Opção 2:', opcao2);
+        console.log('Resposta Correta selecionada:', respostaCorreta ? respostaCorreta.value : 'Nenhuma');
+        
+        // Verificar todas as opções de resposta
+        const todasOpcoes = document.querySelectorAll('input[name="listening_alt_correta"]');
+        todasOpcoes.forEach((opcao, index) => {
+            console.log(`Opção ${index}:`, opcao.checked ? '✓' : '✗', '- Valor:', opcao.value);
+        });
+    }
+
+    // Adicionar evento de debug ao formulário (opcional)
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (document.getElementById('tipo_exercicio').value === 'listening') {
+            debugListening();
+        }
+    });
+
+    // Garantir que pelo menos uma opção esteja selecionada
+    document.addEventListener('DOMContentLoaded', function() {
+        const radios = document.querySelectorAll('input[name="listening_alt_correta"]');
+        radios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                console.log('Opção selecionada:', this.value);
+            });
+        });
     });
 
     </script>

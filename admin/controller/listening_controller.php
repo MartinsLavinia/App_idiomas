@@ -377,11 +377,9 @@ class ListeningController {
         }
         
         $respostaCorretaIndex = $conteudoExercicio['resposta_correta'];
-	        $respostaCorreta = $conteudoExercicio['opcoes'][$respostaCorretaIndex] ?? '';
-	        
-	        // CORREÇÃO: A resposta do usuário (string vinda do input) deve ser comparada com o índice correto (int).
-	        // A conversão para int garante a comparação correta.
-	        $correto = (intval($respostaUsuario) === intval($respostaCorretaIndex));
+        $respostaCorreta = $conteudoExercicio['opcoes'][$respostaCorretaIndex] ?? '';
+        
+        $correto = (intval($respostaUsuario) === $respostaCorretaIndex);
         
         return [
             'correto' => $correto,

@@ -30,6 +30,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $sql_insert = "INSERT INTO teorias (titulo, nivel, ordem, conteudo, resumo, palavras_chave, data_criacao) VALUES (?, ?, ?, ?, ?, ?, NOW())";
         $stmt_insert = $conn->prepare($sql_insert);
         
+// BUSCAR DADOS DO ADMINISTRADOR PARA O SIDEBAR
+$id_admin = $_SESSION['id_admin'];
+$sql_foto = "SELECT foto_perfil FROM administradores WHERE id = ?";
+$stmt_foto = $conn->prepare($sql_foto);
+$stmt_foto->bind_param("i", $id_admin);
+$stmt_foto->execute();
+$resultado_foto = $stmt_foto->get_result();
+$admin_foto = $resultado_foto->fetch_assoc();
+$stmt_foto->close();
+
+$foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
+
         if ($stmt_insert) {
             $stmt_insert->bind_param("ssisss", $titulo, $nivel, $ordem, $conteudo, $resumo, $palavras_chave);
             
@@ -219,6 +231,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 /* ADICIONE AQUI O NOVO CSS */
+./* Estilos para foto de perfil no sidebar */
 .profile-avatar-sidebar {
     width: 80px;
     height: 80px;
@@ -244,66 +257,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 .profile-avatar-sidebar:has(img) i {
     display: none;
 }
-/* FIM DO NOVO CSS */
 
-.sidebar .profile h5 {
+/* Estilos para nome e email com quebra de texto */
+.admin-name {
     font-weight: 600;
     margin-bottom: 0;
     color: var(--branco);
+    word-wrap: break-word;
+    max-width: 200px;
+    text-align: center;
+    line-height: 1.3;
 }
 
-        .sidebar .profile {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+.admin-email {
+    color: var(--cinza-claro);
+    word-wrap: break-word;
+    max-width: 200px;
+    text-align: center;
+    font-size: 0.8rem;
+    line-height: 1.2;
+    margin-top: 5px;
+}
 
-        .sidebar .profile i {
-            font-size: 4rem;
-            color: var(--amarelo-detalhe);
-            margin-bottom: 10px;
-        }
+/* Ajuste do container do profile */
+.sidebar .profile {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 0 10px;
+}
 
-        .sidebar .profile h5 {
-            font-weight: 600;
-            margin-bottom: 0;
-            color: var(--branco);
-        }
-
-        .sidebar .profile small {
-            color: var(--cinza-claro);
-        }
-
-        .sidebar .list-group {
-            width: 100%;
-        }
-
-        .sidebar .list-group-item {
-            background-color: transparent;
-            color: var(--branco);
-            border: none;
-            padding: 15px 25px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar .list-group-item:hover {
-            background-color: var(--roxo-escuro);
-            cursor: pointer;
-        }
-
-        .sidebar .list-group-item.active {
-            background-color: var(--roxo-escuro) !important;
-            color: var(--branco) !important;
-            font-weight: 600;
-            border-left: 4px solid var(--amarelo-detalhe);
-        }
-
-        .sidebar .list-group-item i {
-            color: var(--amarelo-detalhe);
-        }
+.sidebar .profile i {
+    font-size: 4rem;
+    color: var(--amarelo-detalhe);
+    margin-bottom: 10px;
+}
 
         /* CORREÇÃO PARA O BACKDROP DO MODAL */
         .modal-backdrop {
@@ -703,11 +690,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <!-- SIDEBAR ADICIONADO AQUI -->
     <div class="sidebar">
-        <div class="profile">
+    <div class="profile">
+        <?php if ($foto_admin): ?>
+            <div class="profile-avatar-sidebar">
+                <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
+            </div>
+        <?php else: ?>
             <i class="fas fa-user-circle"></i>
-            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
-            <small>Administrador(a)</small>
-        </div>
+        <?php endif; ?>
+        <h5 class="admin-name"><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+        <small class="admin-email"><?php echo htmlspecialchars($_SESSION['email_admin']); ?></small>
+    </div>
+
+    <div class="list-group">
+        <!-- ... resto dos itens do menu ... -->
+    </div>
+</div>
 
         <div class="list-group">
             <a href="gerenciar_caminho.php" class="list-group-item">
