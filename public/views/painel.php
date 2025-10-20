@@ -320,6 +320,23 @@ $database->closeConnection();
             font-size: 1.2rem;
             font-weight: 600;
             text-align: center;
+
+        /* Cards de unidade */
+        .unidade-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .unidade-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--roxo-principal);
+            box-shadow: 0 5px 15px rgba(106, 13, 173, 0.3);
+        }
+
+        .progress-bar-custom {
+            height: 8px;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -466,7 +483,10 @@ $database->closeConnection();
                         <?php if (count($unidades) > 0): ?>
                             <?php foreach ($unidades as $unidade): ?>
                                 <div class="col-md-6 mb-3">
-                                    <div class="card unidade-card h-100" onclick="abrirUnidade(<?php echo $unidade["id"]; ?>, '<?php echo htmlspecialchars($unidade["nome_unidade"]); ?>', <?php echo $unidade["numero_unidade"]; ?>)">
+                                    <div class="card unidade-card h-100" 
+                                         data-unidade-id="<?php echo $unidade['id']; ?>"
+                                         data-unidade-titulo="<?php echo htmlspecialchars($unidade['nome_unidade']); ?>"
+                                         data-unidade-numero="<?php echo $unidade['numero_unidade']; ?>">
                                         <div class="card-body">
                                             <h5 class="card-title">
                                                 <i class="fas fa-book-open me-2"></i>
@@ -743,11 +763,16 @@ $database->closeConnection();
 
     // ==================== INICIALIZAÇÃO ====================
     document.addEventListener('DOMContentLoaded', function() {
+        console.log('=== INICIALIZANDO PAINEL ===');
+        
         // Inicialização dos modais
         modalBlocos = new bootstrap.Modal(document.getElementById('modalBlocos'));
         modalExercicios = new bootstrap.Modal(document.getElementById('modalExercicios'));
         modalAdicionarPalavra = new bootstrap.Modal(document.getElementById('modalAdicionarPalavra'));
         modalConfirmarExclusao = new bootstrap.Modal(document.getElementById('modalConfirmarExclusao'));
+
+        // Configurar event listeners para cards de unidades
+        configurarEventListenersUnidades();
 
         // Carrega palavras do usuário ao inicializar
         if (typeof carregarPalavras === 'function') {
@@ -779,13 +804,31 @@ $database->closeConnection();
                 const unidadeId = this.getAttribute('onclick').match(/abrirUnidade\((\d+),/)[1];
                 const titulo = this.getAttribute('onclick').match(/'([^']+)'/)[1];
                 const numero = this.getAttribute('onclick').match(/,\s*(\d+)\)/)[1];
+        console.log('Painel inicializado com sucesso');
+    });
 
+    // ==================== CONFIGURAÇÃO DOS EVENT LISTENERS ====================
+    function configurarEventListenersUnidades() {
+        const unidadeCards = document.querySelectorAll('.unidade-card');
+        console.log(`Encontrados ${unidadeCards.length} cards de unidade`);
+        
+        unidadeCards.forEach((card, index) => {
+            card.addEventListener('click', function() {
+                const unidadeId = this.getAttribute('data-unidade-id');
+                const titulo = this.getAttribute('data-unidade-titulo');
+                const numero = this.getAttribute('data-unidade-numero');
+                
+                console.log(`Clicado na unidade:`, {unidadeId, titulo, numero});
+                
                 if (unidadeId && titulo && numero) {
                     abrirUnidade(parseInt(unidadeId), titulo, parseInt(numero));
+                } else {
+                    console.error('Dados da unidade não encontrados:', {unidadeId, titulo, numero});
+                    alert('Erro: Dados da unidade não encontrados.');
                 }
             });
         });
-    });
+    }
 
     // ==================== FUNÇÕES PRINCIPAIS DE NAVEGAÇÃO ====================
 
@@ -845,7 +888,7 @@ $database->closeConnection();
             const col = document.createElement("div");
             col.className = "col-md-6 mb-3";
             col.innerHTML = `
-                <div class="card bloco-card h-100" onclick="abrirExercicios(${bloco.id}, '${bloco.nome_bloco.replace(/'/g, "\\'")}')">
+                <div class="card bloco-card h-100" onclick="abrirExercicios(${bloco.id}, '${bloco.nome_bloco.replace(/'/g, "\\'")}')" style="cursor: pointer;">
                     <div class="card-body text-center">
                         <i class="fas fa-cube bloco-icon mb-3" style="font-size: 2rem; color: #007bff;"></i>
                         <h5 class="card-title">${bloco.nome_bloco}</h5>
