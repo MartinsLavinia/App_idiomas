@@ -16,32 +16,31 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `teorias`
+-- Table structure for table `audios`
 --
 
-DROP TABLE IF EXISTS `teorias`;
+DROP TABLE IF EXISTS `audios`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `teorias` (
+CREATE TABLE `audios` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `titulo` varchar(255) NOT NULL,
-  `nivel` varchar(10) NOT NULL,
-  `ordem` int NOT NULL,
-  `conteudo` text NOT NULL,
-  `resumo` text,
-  `palavras_chave` varchar(255) DEFAULT NULL,
-  `data_criacao` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
+  `hash` varchar(32) NOT NULL,
+  `caminho_arquivo` varchar(500) NOT NULL,
+  `texto` text NOT NULL,
+  `idioma` varchar(10) NOT NULL,
+  `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `hash` (`hash`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `teorias`
+-- Dumping data for table `audios`
 --
 
-LOCK TABLES `teorias` WRITE;
-/*!40000 ALTER TABLE `teorias` DISABLE KEYS */;
-/*!40000 ALTER TABLE `teorias` ENABLE KEYS */;
+LOCK TABLES `audios` WRITE;
+/*!40000 ALTER TABLE `audios` DISABLE KEYS */;
+/*!40000 ALTER TABLE `audios` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

@@ -37,7 +37,7 @@ CREATE TABLE `exercicios` (
   KEY `fk_exercicios_bloco` (`bloco_id`),
   CONSTRAINT `exercicios_ibfk_1` FOREIGN KEY (`caminho_id`) REFERENCES `caminhos_aprendizagem` (`id`),
   CONSTRAINT `fk_exercicios_bloco` FOREIGN KEY (`bloco_id`) REFERENCES `blocos` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -46,7 +46,7 @@ CREATE TABLE `exercicios` (
 
 LOCK TABLES `exercicios` WRITE;
 /*!40000 ALTER TABLE `exercicios` DISABLE KEYS */;
-INSERT INTO `exercicios` VALUES (3,11,1,'normal','What do you need to travel to another country?','{\"explicacao\": \"A passport is an official document you need to enter another country. A bike, television, or book are not necessary for travel.\", \"alternativas\": [{\"id\": \"a\", \"texto\": \"A passport\", \"correta\": true}, {\"id\": \"b\", \"texto\": \"A bike\", \"correta\": false}, {\"id\": \"c\", \"texto\": \"A television\", \"correta\": false}, {\"id\": \"d\", \"texto\": \"A book\", \"correta\": false}]}','gramatica','medio',NULL);
+INSERT INTO `exercicios` VALUES (3,11,1,'normal','What do you need to travel to another country?','{\"explicacao\": \"A passport is an official document you need to enter another country. A bike, television, or book are not necessary for travel.\", \"alternativas\": [{\"id\": \"a\", \"texto\": \"A passport\", \"correta\": true}, {\"id\": \"b\", \"texto\": \"A bike\", \"correta\": false}, {\"id\": \"c\", \"texto\": \"A television\", \"correta\": false}, {\"id\": \"d\", \"texto\": \"A book\", \"correta\": false}]}','gramatica','medio',NULL),(5,10,1,'normal','teste','{\"frase\": \"hi, my name is amanda.\", \"nivel\": \"A1\", \"ordem\": \"1\", \"idioma\": \"Ingles\", \"opcoes\": [\"my name is amanda\", \"hi teste\", \"helo teste\", \"teste tste\"], \"bloco_id\": \"1\", \"audio_url\": \"/App_idiomas/audios/d3c8657b0b7bb63fd5c9ad241f978756.mp3\", \"tipo_exercicio\": \"listening\", \"resposta_correta\": 1}','gramatica','medio',1);
 /*!40000 ALTER TABLE `exercicios` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -59,4 +59,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-06 16:12:32
+-- Dump completed on 2025-10-20 11:22:49

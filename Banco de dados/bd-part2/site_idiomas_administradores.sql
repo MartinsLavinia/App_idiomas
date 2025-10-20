@@ -26,6 +26,7 @@ CREATE TABLE `administradores` (
   `id` int NOT NULL AUTO_INCREMENT,
   `nome_usuario` varchar(50) NOT NULL,
   `senhaadm` varchar(255) NOT NULL,
+  `foto_perfil` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `nome_usuario` (`nome_usuario`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -37,7 +38,7 @@ CREATE TABLE `administradores` (
 
 LOCK TABLES `administradores` WRITE;
 /*!40000 ALTER TABLE `administradores` DISABLE KEYS */;
-INSERT INTO `administradores` VALUES (1,'amandamesquita818@gmail.com','$2y$10$e0fY5Yd9Li.LXDKFNqiMiu1XKT.9bjb8TuqtTwSokUGC59/SB.S26');
+INSERT INTO `administradores` VALUES (1,'amandamesquita818@gmail.com','$2y$10$e0fY5Yd9Li.LXDKFNqiMiu1XKT.9bjb8TuqtTwSokUGC59/SB.S26','uploads/perfis/perfil_1_1760966339.jpg');
 /*!40000 ALTER TABLE `administradores` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -50,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-06 16:12:32
+-- Dump completed on 2025-10-20 11:22:48
