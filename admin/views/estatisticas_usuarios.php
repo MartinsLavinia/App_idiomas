@@ -12,25 +12,36 @@ $database = new Database();
 $conn = $database->conn;
 
 $id_admin = $_SESSION['id_admin'];
-$sql_foto = "SELECT foto_perfil FROM administradores WHERE id = ?";
-$stmt_foto = $conn->prepare($sql_foto);
-$stmt_foto->bind_param("i", $id_admin);
-$stmt_foto->execute();
-$resultado_foto = $stmt_foto->get_result();
-$admin_foto = $resultado_foto->fetch_assoc();
-$stmt_foto->close();
 
-$foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
+// Verificar se a coluna foto_perfil existe antes de tentar buscar
+$foto_admin = null;
+$check_column_sql = "SHOW COLUMNS FROM administradores LIKE 'foto_perfil'";
+$result_check = $conn->query($check_column_sql);
+
+if ($result_check && $result_check->num_rows > 0) {
+    // A coluna existe, podemos fazer a consulta
+    $sql_foto = "SELECT foto_perfil FROM administradores WHERE id = ?";
+    $stmt_foto = $conn->prepare($sql_foto);
+    $stmt_foto->bind_param("i", $id_admin);
+    $stmt_foto->execute();
+    $resultado_foto = $stmt_foto->get_result();
+    
+    if ($resultado_foto && $resultado_foto->num_rows > 0) {
+        $admin_foto = $resultado_foto->fetch_assoc();
+        $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
+    }
+    $stmt_foto->close();
+}
 
 // Estatísticas gerais de usuários
 $sql_total_usuarios = "SELECT COUNT(*) as total FROM usuarios";
 $result_total = $conn->query($sql_total_usuarios);
-$total_usuarios = $result_total->fetch_assoc()['total'];
+$total_usuarios = $result_total ? $result_total->fetch_assoc()['total'] : 0;
 
 // Usuários ativos (que fizeram login nos últimos 30 dias)
 $sql_usuarios_ativos = "SELECT COUNT(*) as ativos FROM usuarios WHERE ultimo_login >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
 $result_ativos = $conn->query($sql_usuarios_ativos);
-$usuarios_ativos = $result_ativos->fetch_assoc()['ativos'];
+$usuarios_ativos = $result_ativos ? $result_ativos->fetch_assoc()['ativos'] : 0;
 
 // Usuários por nível (baseado no último quiz realizado)
 $sql_usuarios_por_nivel = "
@@ -59,8 +70,10 @@ $sql_usuarios_por_nivel = "
 ";
 $result_niveis = $conn->query($sql_usuarios_por_nivel);
 $usuarios_por_nivel = [];
-while ($row = $result_niveis->fetch_assoc()) {
-    $usuarios_por_nivel[] = $row;
+if ($result_niveis) {
+    while ($row = $result_niveis->fetch_assoc()) {
+        $usuarios_por_nivel[] = $row;
+    }
 }
 
 // Idiomas mais populares (baseado nos quizzes realizados)
@@ -77,11 +90,13 @@ $sql_idiomas_populares = "
 ";
 $result_idiomas = $conn->query($sql_idiomas_populares);
 $idiomas_populares = [];
-while ($row = $result_idiomas->fetch_assoc()) {
-    $idiomas_populares[] = $row;
+if ($result_idiomas) {
+    while ($row = $result_idiomas->fetch_assoc()) {
+        $idiomas_populares[] = $row;
+    }
 }
 
-// Progresso dos usuários nos caminhos (CORRIGIDO)
+// Progresso dos usuários nos caminhos
 $sql_progresso_caminhos = "
     SELECT
         ca.idioma,
@@ -95,8 +110,10 @@ $sql_progresso_caminhos = "
 ";
 $result_progresso = $conn->query($sql_progresso_caminhos);
 $progresso_caminhos = [];
-while ($row = $result_progresso->fetch_assoc()) {
-    $progresso_caminhos[] = $row;
+if ($result_progresso) {
+    while ($row = $result_progresso->fetch_assoc()) {
+        $progresso_caminhos[] = $row;
+    }
 }
 
 // Usuários registrados por mês (últimos 12 meses)
@@ -111,8 +128,10 @@ $sql_registros_mensais = "
 ";
 $result_mensais = $conn->query($sql_registros_mensais);
 $registros_mensais = [];
-while ($row = $result_mensais->fetch_assoc()) {
-    $registros_mensais[] = $row;
+if ($result_mensais) {
+    while ($row = $result_mensais->fetch_assoc()) {
+        $registros_mensais[] = $row;
+    }
 }
 
 // Exercícios mais realizados
@@ -132,8 +151,10 @@ $sql_exercicios_populares = "
 ";
 $result_exercicios = $conn->query($sql_exercicios_populares);
 $exercicios_populares = [];
-while ($row = $result_exercicios->fetch_assoc()) {
-    $exercicios_populares[] = $row;
+if ($result_exercicios) {
+    while ($row = $result_exercicios->fetch_assoc()) {
+        $exercicios_populares[] = $row;
+    }
 }
 
 $database->closeConnection();
@@ -542,110 +563,68 @@ $database->closeConnection();
 
     /* Responsividade */
     @media (max-width: 992px) {
-             /* Menu Lateral */
-        .sidebar .profile {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-/* ADICIONE AQUI O NOVO CSS */
-.profile-avatar-sidebar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    border: 3px solid var(--amarelo-detalhe);
-    background: linear-gradient(135deg, var(--roxo-claro), var(--roxo-principal));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 15px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.profile-avatar-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-}
-
-/* Remove o ícone padrão quando há foto */
-.profile-avatar-sidebar:has(img) i {
-    display: none;
-}
-/* FIM DO NOVO CSS */
-
-.sidebar .profile h5 {
-    font-weight: 600;
-    margin-bottom: 0;
-    color: var(--branco);
-}
-
-        .sidebar .profile {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .sidebar .profile i {
-            font-size: 4rem;
-            color: var(--amarelo-detalhe);
-            margin-bottom: 10px;
-        }
-
-        .sidebar .profile h5 {
-            font-weight: 600;
-            margin-bottom: 0;
-            color: var(--branco);
-        }
-
-        .sidebar .profile small {
-            color: var(--cinza-claro);
-        }
-
-        .sidebar .list-group {
+        .sidebar {
             width: 100%;
+            height: auto;
+            position: relative;
         }
+        .main-content {
+            margin-left: 0;
+        }
+    }
 
-        .sidebar .list-group-item {
-            background-color: transparent;
-            color: var(--branco);
-            border: none;
-            padding: 15px 25px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-        }
+    /* Perfil com avatar */
+    .sidebar .profile {
+        text-align: center;
+        margin-bottom: 30px;
+    }
 
-        .sidebar .list-group-item:hover {
-            background-color: var(--roxo-escuro);
-            cursor: pointer;
-        }
+    .profile-avatar-sidebar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: 3px solid var(--amarelo-detalhe);
+        background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
 
-        .sidebar .list-group-item.active {
-            background-color: var(--roxo-escuro) !important;
-            color: var(--branco) !important;
-            font-weight: 600;
-            border-left: 4px solid var(--amarelo-detalhe);
-        }
+    .profile-avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
 
-        .sidebar .list-group-item i {
-            color: var(--amarelo-detalhe);
-        }
+    .profile-avatar-sidebar:has(img) i {
+        display: none;
+    }
 
-     .settings-icon {
-            color: var(--roxo-principal) !important;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            font-size: 1.2rem;
-        }
+    .sidebar .profile h5 {
+        font-weight: 600;
+        margin-bottom: 0;
+        color: var(--branco);
+    }
 
-        .settings-icon:hover {
-            color: var(--roxo-escuro) !important;
-            transform: rotate(90deg);
-        }
+    .sidebar .profile small {
+        color: var(--cinza-claro);
+    }
+
+    .settings-icon {
+        color: var(--roxo-principal) !important;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        font-size: 1.2rem;
+    }
+
+    .settings-icon:hover {
+        color: var(--roxo-escuro) !important;
+        transform: rotate(90deg);
+    }
     
     /* Títulos */
     .page-header {
@@ -668,29 +647,36 @@ $database->closeConnection();
         color: var(--roxo-principal);
         font-size: 1.5rem;
     }
-    
-.btn-back {
-    background: rgba(255, 255, 255, 0.2);
-    border: 2px solid var(--roxo-principal);
-    color: var(--roxo-principal);
-    padding: 0.6rem 1.5rem;
-    border-radius: 25px;
-    transition: all 0.3s ease;
-    font-weight: 600;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
 
-.btn-back:hover {
-    background-color:var(--roxo-escuro);
-    border-color: var(--branco); 
-    color: var(--branco);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
-}
+    .btn-secundary {
+        background: linear-gradient(135deg, #6c757d, #495057);
+        border: none;
+        color: var(--branco);
+        font-weight: 600;
+        padding: 10px 20px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+    }
 
+    .btn-secundary:hover {
+        background: linear-gradient(135deg, #495057, #343a40);
+        color: var(--branco);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+    }
+
+    .btn-secundary i {
+        font-size: 0.9em;
+        transition: transform 0.3s ease;
+    }
+
+    .btn-secundary:hover i {
+        transform: translateX(-4px);
+    }
     </style>
 </head>
 <body>
@@ -710,25 +696,27 @@ $database->closeConnection();
     </nav>
 
     <div class="sidebar">
-    <div class="profile">
-        <?php if ($foto_admin): ?>
-            <div class="profile-avatar-sidebar">
-                <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
-            </div>
-        <?php else: ?>
-            <i class="fas fa-user-circle"></i>
-        <?php endif; ?>
-        <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
-        <small>Administrador(a)</small>
-    </div>
+        <div class="profile">
+            <?php if ($foto_admin): ?>
+                <div class="profile-avatar-sidebar">
+                    <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
+                </div>
+            <?php else: ?>
+                <div class="profile-avatar-sidebar">
+                    <i class="fas fa-user-circle fa-3x" style="color: var(--amarelo-detalhe);"></i>
+                </div>
+            <?php endif; ?>
+            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+            <small>Administrador(a)</small>
+        </div>
 
         <div class="list-group">
             <a href="gerenciar_caminho.php" class="list-group-item">
                 <i class="fas fa-plus-circle"></i> Adicionar Caminho
             </a>
-           <a href="pagina_adicionar_idiomas.php" class="list-group-item">
-    <i class="fas fa-globe"></i> Gerenciar Idiomas
-</a>
+            <a href="pagina_adicionar_idiomas.php" class="list-group-item">
+                <i class="fas fa-globe"></i> Gerenciar Idiomas
+            </a>
             <a href="gerenciar_teorias.php" class="list-group-item">
                 <i class="fas fa-book-open"></i> Gerenciar Teorias
             </a>
@@ -751,9 +739,9 @@ $database->closeConnection();
         <div class="container-fluid mt-4">
             <div class="page-header">
                 <h2 class="mb-0"><i class="fas fa-chart-bar"></i> Estatísticas de Usuários</h2>
-                  <a href="gerenciar_caminho.php" class="btn-back">
-    <i class="fas fa-arrow-left"></i>Voltar para Caminhos
-</a>
+                <a href="gerenciar_caminho.php" class="btn btn-secundary">
+                    <i class="fas fa-arrow-left"></i>  Voltar ao Gerenciamento
+                </a>
             </div>
 
             <!-- Estatísticas Rápidas -->
@@ -846,23 +834,29 @@ $database->closeConnection();
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($progresso_caminhos as $progresso): ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($progresso['idioma']); ?></td>
-                                        <td><span class="badge bg-primary"><?php echo htmlspecialchars($progresso['nivel']); ?></span></td>
-                                        <td><?php echo number_format($progresso['usuarios_iniciaram']); ?></td>
-                                        <td>
-                                            <div class="progress">
-                                                <div class="progress-bar" role="progressbar" 
-                                                    style="width: <?php echo round($progresso['progresso_medio']); ?>%"
-                                                    aria-valuenow="<?php echo round($progresso['progresso_medio']); ?>" 
-                                                    aria-valuemin="0" aria-valuemax="100">
-                                                    <?php echo round($progresso['progresso_medio']); ?>%
+                                    <?php if (!empty($progresso_caminhos)): ?>
+                                        <?php foreach ($progresso_caminhos as $progresso): ?>
+                                        <tr>
+                                            <td><?php echo htmlspecialchars($progresso['idioma']); ?></td>
+                                            <td><span class="badge bg-primary"><?php echo htmlspecialchars($progresso['nivel']); ?></span></td>
+                                            <td><?php echo number_format($progresso['usuarios_iniciaram']); ?></td>
+                                            <td>
+                                                <div class="progress">
+                                                    <div class="progress-bar" role="progressbar" 
+                                                        style="width: <?php echo round($progresso['progresso_medio']); ?>%"
+                                                        aria-valuenow="<?php echo round($progresso['progresso_medio']); ?>" 
+                                                        aria-valuemin="0" aria-valuemax="100">
+                                                        <?php echo round($progresso['progresso_medio']); ?>%
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
+                                            </td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="4" class="text-center">Nenhum dado de progresso disponível</td>
+                                        </tr>
+                                    <?php endif; ?>
                                 </tbody>
                             </table>
                         </div>
@@ -886,23 +880,29 @@ $database->closeConnection();
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($exercicios_populares as $exercicio): ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars(substr($exercicio['pergunta'], 0, 30)) . (strlen($exercicio['pergunta']) > 30 ? '...' : ''); ?></td>
-                                        <td>
-                                            <small class="text-muted">
-                                                <?php echo htmlspecialchars($exercicio['idioma']); ?> - 
-                                                <span class="badge bg-secondary"><?php echo htmlspecialchars($exercicio['nivel']); ?></span>
-                                            </small>
-                                        </td>
-                                        <td><?php echo number_format($exercicio['total_realizacoes']); ?></td>
-                                        <td>
-                                            <span class="badge bg-<?php echo $exercicio['pontuacao_media'] >= 80 ? 'success' : ($exercicio['pontuacao_media'] >= 60 ? 'warning' : 'danger'); ?>">
-                                                <?php echo round($exercicio['pontuacao_media'], 1); ?>%
-                                            </span>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
+                                    <?php if (!empty($exercicios_populares)): ?>
+                                        <?php foreach ($exercicios_populares as $exercicio): ?>
+                                        <tr>
+                                            <td><?php echo htmlspecialchars(substr($exercicio['pergunta'], 0, 30)) . (strlen($exercicio['pergunta']) > 30 ? '...' : ''); ?></td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    <?php echo htmlspecialchars($exercicio['idioma']); ?> - 
+                                                    <span class="badge bg-secondary"><?php echo htmlspecialchars($exercicio['nivel']); ?></span>
+                                                </small>
+                                            </td>
+                                            <td><?php echo number_format($exercicio['total_realizacoes']); ?></td>
+                                            <td>
+                                                <span class="badge bg-<?php echo $exercicio['pontuacao_media'] >= 80 ? 'success' : ($exercicio['pontuacao_media'] >= 60 ? 'warning' : 'danger'); ?>">
+                                                    <?php echo round($exercicio['pontuacao_media'], 1); ?>%
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="4" class="text-center">Nenhum dado de exercícios disponível</td>
+                                        </tr>
+                                    <?php endif; ?>
                                 </tbody>
                             </table>
                         </div>
@@ -919,11 +919,11 @@ $database->closeConnection();
         const niveisChart = new Chart(niveisCtx, {
             type: 'doughnut',
             data: {
-                labels: [<?php echo implode(',', array_map(function($n) { return '"' . $n['nivel'] . '"'; }, $usuarios_por_nivel)); ?>],
+                labels: [<?php echo !empty($usuarios_por_nivel) ? implode(',', array_map(function($n) { return '"' . $n['nivel'] . '"'; }, $usuarios_por_nivel)) : ''; ?>],
                 datasets: [{
-                    data: [<?php echo implode(',', array_map(function($n) { return $n['quantidade']; }, $usuarios_por_nivel)); ?>],
+                    data: [<?php echo !empty($usuarios_por_nivel) ? implode(',', array_map(function($n) { return $n['quantidade']; }, $usuarios_por_nivel)) : ''; ?>],
                     backgroundColor: [
-                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#FF6384'
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF'
                     ]
                 }]
             },
@@ -943,11 +943,11 @@ $database->closeConnection();
         const idiomasChart = new Chart(idiomasCtx, {
             type: 'bar',
             data: {
-                labels: [<?php echo implode(',', array_map(function($i) { return '"' . $i['idioma'] . '"'; }, $idiomas_populares)); ?>],
+                labels: [<?php echo !empty($idiomas_populares) ? implode(',', array_map(function($i) { return '"' . $i['idioma'] . '"'; }, $idiomas_populares)) : ''; ?>],
                 datasets: [{
                     label: 'Usuários Únicos',
-                    data: [<?php echo implode(',', array_map(function($i) { return $i['usuarios_unicos']; }, $idiomas_populares)); ?>],
-                    backgroundColor: '#36A2EB'
+                    data: [<?php echo !empty($idiomas_populares) ? implode(',', array_map(function($i) { return $i['usuarios_unicos']; }, $idiomas_populares)) : ''; ?>],
+                    backgroundColor: '#6a0dad'
                 }]
             },
             options: {
@@ -966,12 +966,17 @@ $database->closeConnection();
         const registrosChart = new Chart(registrosCtx, {
             type: 'line',
             data: {
-                labels: [<?php echo implode(',', array_map(function($r) { return '"' . $r['mes'] . '"'; }, array_reverse($registros_mensais))); ?>],
+                labels: [<?php echo !empty($registros_mensais) ? implode(',', array_map(function($r) { 
+                    $mes = date('m/Y', strtotime($r['mes'] . '-01'));
+                    return '"' . $mes . '"'; 
+                }, array_reverse($registros_mensais))) : ''; ?>],
                 datasets: [{
                     label: 'Novos Usuários',
-                    data: [<?php echo implode(',', array_map(function($r) { return $r['novos_usuarios']; }, array_reverse($registros_mensais))); ?>],
-                    borderColor: '#4BC0C0',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    data: [<?php echo !empty($registros_mensais) ? implode(',', array_map(function($r) { 
+                        return $r['novos_usuarios']; 
+                    }, array_reverse($registros_mensais))) : ''; ?>],
+                    borderColor: '#ffd700',
+                    backgroundColor: 'rgba(255, 215, 0, 0.1)',
                     tension: 0.4,
                     fill: true
                 }]
