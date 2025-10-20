@@ -342,7 +342,7 @@ border: 0 4px 8px rgba(235, 183, 14, 0.77);
         .btn-warning:hover {
             background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
             transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
+            box-shadow: 0 6px 25px rgba(255, 217, 0, 0.66);
             color: var(--preto-texto);
         }
 
