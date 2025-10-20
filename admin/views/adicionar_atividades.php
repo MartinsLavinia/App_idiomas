@@ -1,10 +1,8 @@
 <?php
 session_start();
-include_once __DIR__ . 
-'/../../conexao.php';
-include_once __DIR__ . 
-'/../../ListeningModel.php';// INCLUIR O CONTROLLER DE LISTENING
-include_once __DIR__ . '/../../controller/listening_controller.php';
+include_once __DIR__ . '/../../conexao.php';
+include_once __DIR__ . '/../listening_model.php'; // Model de Listening
+include_once __DIR__ . '/../listening_controller.php'; // Controller de Listening
 // Ativar exibição de erros (apenas para desenvolvimento)
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -27,7 +25,7 @@ $mensagem = '';
 // Instancia a conexão com o banco de dados
 $database = new Database();
 $conn = $database->conn;
-$listeningModel = new ListeningModel(); // Instancia o modelo de listening
+$listeningModel = new ListeningModel($database); // Instancia o modelo de listening, passando a conexão
 
 // BUSCAR DADOS DO ADMINISTRADOR PARA O SIDEBAR
 $id_admin = $_SESSION['id_admin'];
@@ -42,6 +40,7 @@ $stmt_foto->close();
 $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
 
 // --- Funções de Acesso a Dados (simulando um Model) ---
+// RECOMENDAÇÃO DE REATORAÇÃO: Mover esta função para uma classe de Model (ex: UnidadeModel.php)
 function getUnidadeInfo($conn, $unidadeId) {
     $sql = "SELECT u.*, c.nome_caminho, c.nivel 
             FROM unidades u 
@@ -130,6 +129,7 @@ if (!empty($caminhos)) {
 }
 
 // Lógica para lidar com a submissão do formulário
+// RECOMENDAÇÃO DE REATORAÇÃO: Mover toda esta lógica de processamento de formulário para um arquivo de Controller (ex: AdicionarAtividadeController.php)
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $caminho_id = $_POST["caminho_id"] ?? null;
     $bloco_id = $_POST["bloco_id"] ?? null;
@@ -240,23 +240,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             
                             $resposta_correta_index = (int)($_POST['listening_resposta_correta'] ?? 0);
                             
-                            $conteudo = json_encode([
-                                'audio_url' => $audio_url,
-                                'frase_original' => $_POST['frase_listening'],
-                                'opcoes' => $opcoes,
-                                'resposta_correta_index' => $resposta_correta_index,
-                                'tipo' => 'listening',
-                                'explicacao' => $_POST['explicacao_listening'] ?? 'Ouça o áudio com atenção e selecione a opção correta.'
-                            ], JSON_UNESCAPED_UNICODE);
-                            
-                            $categoria = 'audicao';
-                            $dificuldade = $_POST['dificuldade'] ?? 'medio';
-                            if ($listeningModel->createListeningExercise($caminho_id, $bloco_id, $ordem, $pergunta, $conteudo, $categoria, $dificuldade)) {
-                                $mensagem = '<div class="alert alert-success">Exercício de listening adicionado com sucesso!</div>';
-                            } else {
-                                $mensagem = '<div class="alert alert-danger">Erro desconhecido ao salvar o exercício de listening.</div>';
-                            }
+                            $bloco_info = $listeningModel->buscarInfoBloco($bloco_id); // Buscar info do bloco
 
+                            $dados_listening = [
+                                'bloco_id' => $bloco_id,
+                                'frase' => $_POST['frase_listening'],
+                                'audio_url' => $audio_url,
+                                'opcoes' => $opcoes,
+                                'resposta_correta' => $resposta_correta_index,
+                                'idioma' => $bloco_info['idioma_unidade'] ?? ($_POST['idioma_audio'] ?? 'en-us'), // Usar idioma da unidade/bloco
+                                'nivel' => $bloco_info['nivel_caminho'] ?? 'basico', // Usar nível do caminho/bloco
+                                'ordem' => $ordem,
+                                'tipo_exercicio' => 'listening'
+                            ];
                         } catch (Exception $e) {
                             $mensagem = '<div class="alert alert-danger">Erro ao gerar áudio ou salvar: ' . $e->getMessage() . '</div>';
                         }
@@ -271,7 +267,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     } else {
                         $mensagem = '<div class="alert alert-danger">Erro ao adicionar exercício.</div>';
                     }
-                }:
+                }
+                break;
+
+            case 'especial':
                 if (empty($_POST['link_video']) || empty($_POST['pergunta_extra'])) {
                     $mensagem = '<div class="alert alert-danger">O Link do Vídeo/Áudio e a Pergunta Extra são obrigatórios para este tipo de exercício.</div>';
                 } else {
@@ -281,6 +280,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     ], JSON_UNESCAPED_UNICODE);
                 }
                 break;
+                
             case 'quiz':
                 if (empty($_POST['quiz_id'])) {
                     $mensagem = '<div class="alert alert-danger">O ID do Quiz é obrigatório para este tipo de exercício.</div>';

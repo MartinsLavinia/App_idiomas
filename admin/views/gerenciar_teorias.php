@@ -16,18 +16,25 @@ if (isset($_GET['status']) && $_GET['status'] == 'sucesso_exclusao') {
 $database = new Database();
 $conn = $database->conn;
 
-
+// Buscar foto do admin
 $id_admin = $_SESSION['id_admin'];
-$sql_foto = "SELECT foto_perfil FROM administradores WHERE id = ?";
-$stmt_foto = $conn->prepare($sql_foto);
-$stmt_foto->bind_param("i", $id_admin);
-$stmt_foto->execute();
-$resultado_foto = $stmt_foto->get_result();
-$admin_foto = $resultado_foto->fetch_assoc();
-$stmt_foto->close();
+$foto_admin = null;
+$check_column_sql = "SHOW COLUMNS FROM administradores LIKE 'foto_perfil'";
+$result_check = $conn->query($check_column_sql);
 
-$foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
-
+if ($result_check && $result_check->num_rows > 0) {
+    $sql_foto = "SELECT foto_perfil FROM administradores WHERE id = ?";
+    $stmt_foto = $conn->prepare($sql_foto);
+    $stmt_foto->bind_param("i", $id_admin);
+    $stmt_foto->execute();
+    $resultado_foto = $stmt_foto->get_result();
+    
+    if ($resultado_foto && $resultado_foto->num_rows > 0) {
+        $admin_foto = $resultado_foto->fetch_assoc();
+        $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
+    }
+    $stmt_foto->close();
+}
 
 $sql_teorias = "SELECT id, titulo, nivel, ordem, data_criacao FROM teorias ORDER BY nivel, ordem";
 $stmt_teorias = $conn->prepare($sql_teorias);
@@ -128,7 +135,7 @@ $database->closeConnection();
         letter-spacing: 0.5px;
     }
 
-    /* SIDEBAR FIXO - CORREÇÃO APLICADA */
+    /* Menu Lateral */
     .sidebar {
         position: fixed;
         top: 0;
@@ -142,28 +149,55 @@ $database->closeConnection();
         justify-content: flex-start;
         padding-top: 20px;
         box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-        z-index: 1100 !important; /* CORREÇÃO: z-index aumentado */
+        z-index: 1000;
     }
 
     .sidebar .profile {
         text-align: center;
         margin-bottom: 30px;
+        padding: 0 15px;
     }
 
-    .sidebar .profile i {
-        font-size: 4rem;
+    .profile-avatar-sidebar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        border: 3px solid var(--amarelo-detalhe);
+        background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .profile-avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .profile-avatar-sidebar:has(.profile-avatar-img) i {
+        display: none;
+    }
+
+    .profile-avatar-sidebar i {
+        font-size: 3.5rem;
         color: var(--amarelo-detalhe);
-        margin-bottom: 10px;
     }
 
     .sidebar .profile h5 {
         font-weight: 600;
-        margin-bottom: 0;
+        margin-bottom: 5px;
         color: var(--branco);
+        font-size: 1.1rem;
     }
 
     .sidebar .profile small {
         color: var(--cinza-claro);
+        font-size: 0.9rem;
     }
 
     .sidebar .list-group {
@@ -198,20 +232,6 @@ $database->closeConnection();
         color: var(--amarelo-detalhe);
     }
 
-    /* CORREÇÃO PARA O BACKDROP DO MODAL */
-    .modal-backdrop {
-        z-index: 1050; /* Backdrop abaixo do sidebar */
-    }
-
-    .modal {
-        z-index: 1060; /* Modal acima do backdrop */
-    }
-
-    body.modal-open .sidebar {
-        opacity: 1 !important;
-        visibility: visible !important;
-    }
-
     .main-content {
         margin-left: 250px;
         padding: 20px;
@@ -223,6 +243,8 @@ $database->closeConnection();
         box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
         min-width: 180px;
         border: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
     }
 
     .btn-warning:hover {
@@ -230,20 +252,6 @@ $database->closeConnection();
         transform: translateY(-2px);
         box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
         color: var(--preto-texto);
-    }
-
-    .btn-outline-warning {
-        background: transparent;
-        color: var(--preto-texto);
-        border: 2px solid var(--amarelo-botao);
-        min-width: 150px;
-    }
-
-    .btn-outline-warning:hover {
-        background: transparent;
-        color: var(--preto-texto);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
     }
 
     .btn-primary {
@@ -257,6 +265,38 @@ $database->closeConnection();
         background-color: var(--roxo-escuro);
         border-color: var(--roxo-escuro);
         transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(106, 13, 173, 0.3);
+    }
+
+    .btn-secundary {
+        background: linear-gradient(135deg, #6c757d, #495057);
+        border: none;
+        color: var(--branco);
+        font-weight: 600;
+        padding: 10px 20px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+        text-decoration: none;
+    }
+
+    .btn-secundary:hover {
+        background: linear-gradient(135deg, #495057, #343a40);
+        color: var(--branco);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+    }
+
+    .btn-secundary i {
+        font-size: 0.9em;
+        transition: transform 0.3s ease;
+    }
+
+    .btn-secundary:hover i {
+        transform: translateX(-4px);
     }
 
     .btn-secondary {
@@ -268,9 +308,11 @@ $database->closeConnection();
     }
 
     .btn-secondary:hover {
-        background-color: #c8c9cb;
+        background-color: #b8b9bdd3;
         border-color: #c8c9cb;
         transform: scale(1.05);
+        color: var(--preto-texto);
+        box-shadow: 0 4px 12px rgba(194, 192, 192, 0.53);
     }
 
     .btn-success {
@@ -363,18 +405,9 @@ $database->closeConnection();
 
     @media (max-width: 992px) {
         .sidebar {
-            width: 200px;
-        }
-        .main-content {
-            margin-left: 200px;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .sidebar {
-            position: relative;
             width: 100%;
             height: auto;
+            position: relative;
         }
         .main-content {
             margin-left: 0;
@@ -397,26 +430,24 @@ $database->closeConnection();
     }
 
     .teorias-table {
-        margin-top: 30px;
-        padding-bottom: 0;
-        border-radius: 10px;
-        overflow: hidden;
-    }
-
-    .navbar .container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+        background: var(--branco);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 5px 20px #ab4aef63;
+        border: none;
     }
 
     .settings-icon {
         color: var(--roxo-principal) !important;
         transition: all 0.3s ease;
+        text-decoration: none;
+        font-size: 1.2rem;
     }
 
     .settings-icon:hover {
-        transform: scale(1.1);
         color: var(--roxo-escuro) !important;
+        transform: rotate(90deg);
     }
 
     .empty-state {
@@ -430,40 +461,11 @@ $database->closeConnection();
         color: var(--cinza-medio);
     }
 
-    .spinner-border-sm {
-        width: 1rem;
-        height: 1rem;
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        border-radius: 0.3rem;
     }
-    /* REMOVER TODAS AS ANIMAÇÕES DO SIDEBAR */
-.sidebar,
-.sidebar *,
-.sidebar .list-group-item,
-.sidebar .list-group-item i {
-    transition: none !important;
-    animation: none !important;
-}
-
-/* Links normais - comportamento padrão sem animação */
-.sidebar .list-group-item:not([data-bs-toggle]) {
-    transition: none !important;
-}
-
-/* Links de modal - manter funcionalidade mas sem animação */
-.sidebar .list-group-item[data-bs-toggle] {
-    cursor: pointer;
-}
-
- .settings-icon {
-            color: var(--roxo-principal) !important;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            font-size: 1.2rem;
-        }
-
-        .settings-icon:hover {
-            color: var(--roxo-escuro) !important;
-            transform: rotate(90deg);
-        }
     </style>
 </head>
 <body>
@@ -481,104 +483,109 @@ $database->closeConnection();
             </div>
         </div>
     </nav>
-<div class="sidebar">
-    <div class="profile">
-        <?php if ($foto_admin): ?>
-            <div class="profile-avatar-sidebar">
-                <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
-            </div>
-        <?php else: ?>
-            <i class="fas fa-user-circle"></i>
-        <?php endif; ?>
-        <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
-        <small>Administrador(a)</small>
-    </div>
 
+    <div class="sidebar">
+        <div class="profile">
+            <?php if ($foto_admin): ?>
+                <div class="profile-avatar-sidebar">
+                    <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
+                </div>
+            <?php else: ?>
+                <div class="profile-avatar-sidebar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            <?php endif; ?>
+            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+            <small>Administrador(a)</small>
+        </div>
 
-    <div class="list-group">
-        <a href="gerenciar_caminho.php" class="list-group-item">
-            <i class="fas fa-plus-circle"></i> Adicionar Caminho
-        </a>
-        
-        <a href="pagina_adicionar_idiomas.php" class="list-group-item" >
-            <i class="fas fa-globe"></i> Gerenciar Idiomas
-        </a>
-        <a href="gerenciar_teorias.php" class="list-group-item active">
-            <i class="fas fa-book-open"></i> Gerenciar Teorias
-        </a>
-        <a href="gerenciar_unidades.php" class="list-group-item">
-            <i class="fas fa-cubes"></i> Gerenciar Unidades
-        </a>
-        <a href="gerenciar_usuarios.php" class="list-group-item">
-            <i class="fas fa-users"></i> Gerenciar Usuários
-        </a>
-        <a href="estatisticas_usuarios.php" class="list-group-item">
-            <i class="fas fa-chart-bar"></i> Estatísticas
-        </a>
-        <a href="logout.php" class="list-group-item mt-auto">
-            <i class="fas fa-sign-out-alt"></i> Sair
-        </a>
+        <div class="list-group">
+            <a href="gerenciar_caminho.php" class="list-group-item">
+                <i class="fas fa-plus-circle"></i> Adicionar Caminho
+            </a>
+            <a href="pagina_adicionar_idiomas.php" class="list-group-item">
+                <i class="fas fa-globe"></i> Gerenciar Idiomas
+            </a>
+            <a href="gerenciar_teorias.php" class="list-group-item active">
+                <i class="fas fa-book-open"></i> Gerenciar Teorias
+            </a>
+            <a href="gerenciar_unidades.php" class="list-group-item">
+                <i class="fas fa-cubes"></i> Gerenciar Unidades
+            </a>
+            <a href="gerenciar_usuarios.php" class="list-group-item">
+                <i class="fas fa-users"></i> Gerenciar Usuários
+            </a>
+            <a href="estatisticas_usuarios.php" class="list-group-item">
+                <i class="fas fa-chart-bar"></i> Estatísticas
+            </a>
+            <a href="logout.php" class="list-group-item mt-auto">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </a>
+        </div>
     </div>
-</div>
 
     <div class="main-content">
         <div class="container-fluid mt-4">
             <div class="page-header">
                 <h2 class="mb-0"><i class="fas fa-book-open"></i> Gerenciar Teorias</h2>
                 <div class="action-buttons">
-                   <a href="adicionar_teoria.php" class="btn btn-warning"><i class="fas fa-plus-circle"></i> Adicionar Nova Teoria</a>
+                    <a href="adicionar_teoria.php" class="btn btn-warning">
+                        <i class="fas fa-plus-circle"></i> Adicionar Nova Teoria
+                    </a>
                 </div>
             </div>
             
             <?php echo $mensagem; ?>
             
             <div class="teorias-table">
-                <table class="table table-striped table-hover">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Título</th>
-                            <th>Nível</th>
-                            <th>Ordem</th>
-                            <th>Data de Criação</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (!empty($teorias)): ?>
-                            <?php foreach ($teorias as $teoria): ?>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Título</th>
+                                <th>Nível</th>
+                                <th>Ordem</th>
+                                <th>Data de Criação</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($teorias)): ?>
+                                <?php foreach ($teorias as $teoria): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($teoria['id']); ?></td>
+                                        <td><?php echo htmlspecialchars($teoria['titulo']); ?></td>
+                                        <td>
+                                            <span class="badge bg-primary"><?php echo htmlspecialchars($teoria['nivel']); ?></span>
+                                        </td>
+                                        <td><?php echo htmlspecialchars($teoria['ordem']); ?></td>
+                                        <td><?php echo htmlspecialchars($teoria['data_criacao']); ?></td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="editar_teoria.php?id=<?php echo htmlspecialchars($teoria['id']); ?>" class="btn btn-primary">
+                                                    <i class="fas fa-edit"></i> Editar
+                                                </a>
+                                                <a href="eliminar_teoria.php?id=<?php echo htmlspecialchars($teoria['id']); ?>" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja excluir esta teoria?');">
+                                                    <i class="fas fa-trash"></i> Excluir
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
                                 <tr>
-                                    <td><?php echo htmlspecialchars($teoria['id']); ?></td>
-                                    <td><?php echo htmlspecialchars($teoria['titulo']); ?></td>
-                                    <td>
-                                        <span class="badge bg-primary"><?php echo htmlspecialchars($teoria['nivel']); ?></span>
-                                    </td>
-                                    <td><?php echo htmlspecialchars($teoria['ordem']); ?></td>
-                                    <td><?php echo htmlspecialchars($teoria['data_criacao']); ?></td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <a href="editar_teoria.php?id=<?php echo htmlspecialchars($teoria['id']); ?>" class="btn btn-primary">
-                                                <i class="fas fa-edit"></i> Editar
-                                            </a>
-                                            <a href="eliminar_teoria.php?id=<?php echo htmlspecialchars($teoria['id']); ?>" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja excluir esta teoria?');">
-                                                <i class="fas fa-trash"></i> Excluir
-                                            </a>
+                                    <td colspan="6" class="text-center py-4">
+                                        <div class="empty-state">
+                                            <i class="fas fa-book-open text-muted mb-3"></i>
+                                            <p class="text-muted mb-0">Nenhuma teoria encontrada.</p>
                                         </div>
                                     </td>
                                 </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="6" class="text-center py-4">
-                                    <div class="empty-state">
-                                        <i class="fas fa-book-open text-muted mb-3"></i>
-                                        <p class="text-muted mb-0">Nenhuma teoria encontrada.</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

@@ -11,17 +11,25 @@ if (!isset($_SESSION['id_admin'])) {
 $database = new Database();
 $conn = $database->conn;
 
-
+// Buscar foto do admin (igual ao outro arquivo)
 $id_admin = $_SESSION['id_admin'];
-$sql_foto = "SELECT foto_perfil FROM administradores WHERE id = ?";
-$stmt_foto = $conn->prepare($sql_foto);
-$stmt_foto->bind_param("i", $id_admin);
-$stmt_foto->execute();
-$resultado_foto = $stmt_foto->get_result();
-$admin_foto = $resultado_foto->fetch_assoc();
-$stmt_foto->close();
+$foto_admin = null;
+$check_column_sql = "SHOW COLUMNS FROM administradores LIKE 'foto_perfil'";
+$result_check = $conn->query($check_column_sql);
 
-$foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
+if ($result_check && $result_check->num_rows > 0) {
+    $sql_foto = "SELECT foto_perfil FROM administradores WHERE id = ?";
+    $stmt_foto = $conn->prepare($sql_foto);
+    $stmt_foto->bind_param("i", $id_admin);
+    $stmt_foto->execute();
+    $resultado_foto = $stmt_foto->get_result();
+    
+    if ($resultado_foto && $resultado_foto->num_rows > 0) {
+        $admin_foto = $resultado_foto->fetch_assoc();
+        $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
+    }
+    $stmt_foto->close();
+}
 
 // Filtros de pesquisa
 $filtro_nome = isset($_GET['nome']) ? trim($_GET['nome']) : '';
@@ -131,38 +139,6 @@ $database->closeConnection();
         --cinza-claro: #f8f9fa;
         --cinza-medio: #dee2e6;
     }
-    /* Animação do efeito vidro apenas no cabeçalho roxo - CONTÍNUA */
-.table-container .card-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-    animation: glassEffect 3s infinite;
-    border-radius: 10px 10px 0 0;
-    z-index: 1;
-}
-
-@keyframes glassEffect {
-    0% {
-        left: -100%;
-    }
-    50% {
-        left: 100%;
-    }
-    100% {
-        left: 100%;
-    }
-}
-
-/* Ajuste para a parte roxa ficar nas bordas */
-.table-container .card-header {
-    border-radius: 10px 10px 0 0 !important;
-    position: relative;
-    overflow: hidden;
-}
 
     /* Estilos Gerais do Corpo */
     body {
@@ -175,12 +151,7 @@ $database->closeConnection();
     }
 
     @keyframes fadeIn {
-        from {
-            opacity: 0;
-        }
-        to {
-            opacity: 1;
-        }
+        from { opacity: 0; } to { opacity: 1; }
     }
 
     /* Barra de Navegação */
@@ -222,7 +193,7 @@ $database->closeConnection();
         color: var(--cinza-texto);
     }
 
-    /* Estilos de Cartões (Cards) - MODIFICADO */
+    /* Estilos de Cartões (Cards) */
     .card {
         background: rgba(255, 255, 255, 0.95) !important;
         border: 2px solid rgba(106, 13, 173, 0.1);
@@ -233,14 +204,8 @@ $database->closeConnection();
     }
 
     @keyframes cardEntrance {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
     .card:hover {
@@ -266,7 +231,7 @@ $database->closeConnection();
         color: var(--branco) !important;
     }
 
-    /* Cartões de Estatísticas - MODIFICADO */
+    /* Cartões de Estatísticas */
     .stats-card {
         background: rgba(255, 255, 255, 0.95) !important;
         color: var(--preto-texto);
@@ -282,14 +247,8 @@ $database->closeConnection();
     }
 
     @keyframes statsCardAnimation {
-        from {
-            opacity: 0;
-            transform: translateY(30px) rotateX(-10deg);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0) rotateX(0);
-        }
+        from { opacity: 0; transform: translateY(30px) rotateX(-10deg); }
+        to { opacity: 1; transform: translateY(0) rotateX(0); }
     }
 
     .stats-card::before {
@@ -328,7 +287,142 @@ $database->closeConnection();
         color: var(--preto-texto);
     }
 
-    /* Containers para tabelas - CORRIGIDO */
+    /* Menu Lateral - ATUALIZADO com foto de perfil */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 250px;
+        height: 100%;
+        background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+        color: var(--branco);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding-top: 20px;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    }
+
+    .sidebar .profile {
+        text-align: center;
+        margin-bottom: 30px;
+        padding: 0 15px;
+    }
+
+    .profile-avatar-sidebar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        border: 3px solid var(--amarelo-detalhe);
+        background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .profile-avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .profile-avatar-sidebar:has(.profile-avatar-img) i {
+        display: none;
+    }
+
+    .profile-avatar-sidebar i {
+        font-size: 3.5rem;
+        color: var(--amarelo-detalhe);
+    }
+
+    .sidebar .profile h5 {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: var(--branco);
+        font-size: 1.1rem;
+    }
+
+    .sidebar .profile small {
+        color: var(--cinza-claro);
+        font-size: 0.9rem;
+    }
+
+    .sidebar .list-group {
+        width: 100%;
+    }
+
+    .sidebar .list-group-item {
+        background-color: transparent;
+        color: var(--branco);
+        border: none;
+        padding: 15px 25px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .sidebar .list-group-item:hover {
+        background-color: var(--roxo-escuro);
+        cursor: pointer;
+    }
+
+    .sidebar .list-group-item.active {
+        background-color: var(--roxo-escuro) !important;
+        color: var(--branco) !important;
+        font-weight: 600;
+        border-left: 4px solid var(--amarelo-detalhe);
+    }
+
+    .sidebar .list-group-item i {
+        color: var(--amarelo-detalhe);
+    }
+
+    /* Conteúdo principal */
+    .main-content {
+        margin-left: 250px;
+        padding: 20px;
+    }
+
+    /* Ajuste da logo no header */
+    .navbar-brand {
+        margin-left: auto;
+        margin-right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        width: 100%;
+    }
+    .navbar-brand .logo-header {
+        height: 70px;
+        width: auto;
+        display: block;
+    }
+
+    /* Avatar do usuário */
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--roxo-principal) 0%, var(--roxo-escuro) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+    }
+
+    .status-badge {
+        font-size: 0.8rem;
+    }
+
+    /* Containers para tabelas */
     .table-container {
         background: transparent !important;
         border: 2px solid rgba(106, 13, 173, 0.2) !important;
@@ -348,28 +442,44 @@ $database->closeConnection();
         border-bottom: none !important;
     }
 
-    /* Adicione esta nova regra para aplicar a borda apenas no card-body */
     .table-container .card-body {
-       
         border-radius: 0 0 10px 10px !important;
         background: rgba(255, 255, 255, 0.95) !important;
-        padding: 20px !important; /* Adicionado padding para não ficar colado */
+        padding: 20px !important;
     }
 
     .table-container:hover .card-body {
         border-color: rgba(106, 13, 173, 0.3) !important;
     }
 
-    /* Mantém apenas o card com cabeçalho roxo */
     .table-container .card {
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
     }
 
-    /* Remove o fundo branco do card-body */
     .table-container .card-body {
         background: transparent !important;
+    }
+
+    /* Animação do efeito vidro apenas no cabeçalho roxo - CONTÍNUA */
+    .table-container .card-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        animation: glassEffect 3s infinite;
+        border-radius: 10px 10px 0 0;
+        z-index: 1;
+    }
+
+    @keyframes glassEffect {
+        0% { left: -100%; }
+        50% { left: 100%; }
+        100% { left: 100%; }
     }
 
     /* Barras de progresso personalizadas */
@@ -413,7 +523,7 @@ $database->closeConnection();
     }
 
     .btn-secondary {
-         background: linear-gradient(135deg, #9ca3a8ff, #8e9caaff);
+        background: linear-gradient(135deg, #9ca3a8ff, #8e9caaff);
         border: none;
         color: var(--branco);
         font-weight: 600;
@@ -427,18 +537,10 @@ $database->closeConnection();
     }
 
     .btn-secondary:hover {
-      background: linear-gradient(135deg, #495057, #343a40);
+        background: linear-gradient(135deg, #495057, #343a40);
         color: var(--branco);
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
-    }
-    .btn-secundary i {
-        font-size: 0.9em;
-        transition: transform 0.3s ease;
-    }
-
-    .btn-secundary:hover i {
-        transform: translateX(-4px);
     }
 
     /* Efeito de brilho para o botão Pesquisar */
@@ -459,12 +561,7 @@ $database->closeConnection();
         left: -100%;
         width: 100%;
         height: 100%;
-        background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(255, 255, 255, 0.4),
-            transparent
-        );
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
         transition: left 0.5s ease;
     }
 
@@ -508,112 +605,16 @@ $database->closeConnection();
         background-color: rgba(106, 13, 173, 0.1);
     }
 
-    /* Menu Lateral */
-    .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 250px;
-        height: 100%;
-        background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
-        color: var(--branco);
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        padding-top: 20px;
-        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-        z-index: 1000;
-    }
-
-    .sidebar .profile {
-        text-align: center;
-        margin-bottom: 30px;
-    }
-
-    .sidebar .profile i {
-        font-size: 4rem;
-        color: var(--amarelo-detalhe);
-        margin-bottom: 10px;
-    }
-
-    .sidebar .profile h5 {
-        font-weight: 600;
-        margin-bottom: 0;
-        color: var(--branco);
-    }
-
-    .sidebar .profile small {
-        color: var(--cinza-claro);
-    }
-
-    .sidebar .list-group {
-        width: 100%;
-    }
-
-    .sidebar .list-group-item {
-        background-color: transparent;
-        color: var(--branco);
-        border: none;
-        padding: 15px 25px;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 10px;
+    .settings-icon {
+        color: var(--roxo-principal) !important;
         transition: all 0.3s ease;
+        text-decoration: none;
+        font-size: 1.2rem;
     }
 
-    .sidebar .list-group-item:hover {
-        background-color: var(--roxo-escuro);
-        cursor: pointer;
-    }
-
-    .sidebar .list-group-item.active {
-        background-color: var(--roxo-escuro) !important; /* MODIFICADO: Roxo escuro */
-        color: var(--branco) !important;
-        font-weight: 600;
-        border-left: 4px solid var(--amarelo-detalhe);
-    }
-
-    .sidebar .list-group-item i {
-        color: var(--amarelo-detalhe);
-    }
-
-    /* Conteúdo principal */
-    .main-content {
-        margin-left: 250px;
-        padding: 20px;
-    }
-
-    /* Ajuste da logo no header */
-    .navbar-brand {
-        margin-left: auto;
-        margin-right: 0;
-        display: flex;
-        align-items: center;
-        justify-content: flex-end; /* Move para o canto direito */
-        width: 100%;
-    }
-    .navbar-brand .logo-header {
-        height: 70px;
-        width: auto;
-        display: block;
-    }
-
-    /* Avatar do usuário */
-    .user-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--roxo-principal) 0%, var(--roxo-escuro) 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: bold;
-    }
-
-    .status-badge {
-        font-size: 0.8rem;
+    .settings-icon:hover {
+        color: var(--roxo-principal) !important;
+        transform: rotate(90deg);
     }
 
     /* Responsividade */
@@ -652,30 +653,8 @@ $database->closeConnection();
     .stats-card:nth-child(3) { animation-delay: 0.3s; }
     .stats-card:nth-child(4) { animation-delay: 0.4s; }
 
-   .fas.fa-search {
-    color: var(--amarelo-detalhe);
-}
-
-.fas.fa-users {
-    color: var(--amarelo-detalhe);
-}
-
-.fas .fa-search-alt {
-    color: #0000;
-
-
-}
-  .settings-icon {
-    color: var(--roxo-principal) !important;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    font-size: 1.2rem;
-}
-
-.settings-icon:hover {
-    color: var(--roxo-principal) !important;
-    transform: rotate(90deg);
-}
+    .fas.fa-search { color: var(--amarelo-detalhe); }
+    .fas.fa-users { color: var(--amarelo-detalhe); }
     </style>
 </head>
 <body>
@@ -688,42 +667,44 @@ $database->closeConnection();
                     <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
                 </a>
                 <a href="editar_perfil.php" class="settings-icon">
-    <i class="fas fa-cog fa-lg"></i>
-</a>
+                    <i class="fas fa-cog fa-lg"></i>
+                </a>
             </div>
         </div>
     </nav>
 
-     <div class="sidebar">
-    <div class="profile">
-        <?php if ($foto_admin): ?>
-            <div class="profile-avatar-sidebar">
-                <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
-            </div>
-        <?php else: ?>
-            <i class="fas fa-user-circle"></i>
-        <?php endif; ?>
-        <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
-        <small>Administrador(a)</small>
-    </div>
+    <!-- Menu Lateral ATUALIZADO com foto de perfil -->
+    <div class="sidebar">
+        <div class="profile">
+            <?php if ($foto_admin): ?>
+                <div class="profile-avatar-sidebar">
+                    <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
+                </div>
+            <?php else: ?>
+                <div class="profile-avatar-sidebar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            <?php endif; ?>
+            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+            <small>Administrador(a)</small>
+        </div>
 
         <div class="list-group">
             <a href="gerenciar_caminho.php" class="list-group-item">
                 <i class="fas fa-road"></i> Gerenciar Caminhos
             </a>
-            
             <a href="pagina_adicionar_idiomas.php" class="list-group-item">
                 <i class="fas fa-globe"></i> Gerenciar Idiomas
             </a>
             <a href="gerenciar_teorias.php" class="list-group-item">
                 <i class="fas fa-book-open"></i> Gerenciar Teorias
             </a>
-           <a href="gerenciar_unidades.php" class="list-group-item">
-    <i class="fas fa-cubes"></i> Gerenciar Unidades
-</a>
-<a href="gerenciar_usuarios.php" class="list-group-item active">
-    <i class="fas fa-users"></i> Gerenciar Usuários
-</a>
+            <a href="gerenciar_unidades.php" class="list-group-item">
+                <i class="fas fa-cubes"></i> Gerenciar Unidades
+            </a>
+            <a href="gerenciar_usuarios.php" class="list-group-item active">
+                <i class="fas fa-users"></i> Gerenciar Usuários
+            </a>
             <a href="estatisticas_usuarios.php" class="list-group-item">
                 <i class="fas fa-chart-bar"></i> Estatísticas
             </a>
@@ -733,14 +714,13 @@ $database->closeConnection();
         </div>
     </div>
 
-
     <div class="main-content">
         <div class="container-fluid mt-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="h2"><i class="fas fa-users"></i> Gerenciar Usuários</h1>
             </div>
 
-            <!-- Estatísticas Rápidas - MODIFICADO -->
+            <!-- Estatísticas Rápidas -->
             <div class="row mb-4">
                 <div class="col-md-3">
                     <div class="stats-card text-center">
@@ -808,7 +788,7 @@ $database->closeConnection();
                                 </select>
                             </div>
                             <div class="col-md-2 d-flex align-items-end">
-                                <button type="submit" class="btn btn-warning w-100 pesquisar-btn ">
+                                <button type="submit" class="btn btn-warning w-100 pesquisar-btn">
                                    <i class="fas fa-filter"></i> Pesquisar
                                 </button>
                             </div>

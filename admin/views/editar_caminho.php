@@ -8,10 +8,31 @@ if (!isset($_SESSION['id_admin'])) {
     header("Location: login_admin.php");
     exit();
 }
+
 $mensagem = '';
 $database = new Database();
 $conn = $database->conn;
 $caminhoObj = new CaminhoAprendizagem($conn);
+
+// Buscar foto do admin
+$id_admin = $_SESSION['id_admin'];
+$foto_admin = null;
+$check_column_sql = "SHOW COLUMNS FROM administradores LIKE 'foto_perfil'";
+$result_check = $conn->query($check_column_sql);
+
+if ($result_check && $result_check->num_rows > 0) {
+    $sql_foto = "SELECT foto_perfil FROM administradores WHERE id = ?";
+    $stmt_foto = $conn->prepare($sql_foto);
+    $stmt_foto->bind_param("i", $id_admin);
+    $stmt_foto->execute();
+    $resultado_foto = $stmt_foto->get_result();
+    
+    if ($resultado_foto && $resultado_foto->num_rows > 0) {
+        $admin_foto = $resultado_foto->fetch_assoc();
+        $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
+    }
+    $stmt_foto->close();
+}
 
 // 1. Bloco de processamento do formulário
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -137,112 +158,101 @@ $database->closeConnection();
         letter-spacing: 0.5px;
     }
 
-    /* SIDEBAR FIXO - CORREÇÃO APLICADA */
-          /* Menu Lateral */
-        .sidebar .profile {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-/* ADICIONE AQUI O NOVO CSS */
-.profile-avatar-sidebar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    border: 3px solid var(--amarelo-detalhe);
-    background: linear-gradient(135deg, var(--roxo-claro), var(--roxo-principal));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 15px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.profile-avatar-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-}
-
-/* Remove o ícone padrão quando há foto */
-.profile-avatar-sidebar:has(img) i {
-    display: none;
-}
-/* FIM DO NOVO CSS */
-
-.sidebar .profile h5 {
-    font-weight: 600;
-    margin-bottom: 0;
-    color: var(--branco);
-}
-
-        .sidebar .profile {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .sidebar .profile i {
-            font-size: 4rem;
-            color: var(--amarelo-detalhe);
-            margin-bottom: 10px;
-        }
-
-        .sidebar .profile h5 {
-            font-weight: 600;
-            margin-bottom: 0;
-            color: var(--branco);
-        }
-
-        .sidebar .profile small {
-            color: var(--cinza-claro);
-        }
-
-        .sidebar .list-group {
-            width: 100%;
-        }
-
-        .sidebar .list-group-item {
-            background-color: transparent;
-            color: var(--branco);
-            border: none;
-            padding: 15px 25px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar .list-group-item:hover {
-            background-color: var(--roxo-escuro);
-            cursor: pointer;
-        }
-
-        .sidebar .list-group-item.active {
-            background-color: var(--roxo-escuro) !important;
-            color: var(--branco) !important;
-            font-weight: 600;
-            border-left: 4px solid var(--amarelo-detalhe);
-        }
-
-        .sidebar .list-group-item i {
-            color: var(--amarelo-detalhe);
-        }
-
-    /* CORREÇÃO PARA O BACKDROP DO MODAL */
-    .modal-backdrop {
-        z-index: 1050; /* Backdrop abaixo do sidebar */
+    /* Menu Lateral */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 250px;
+        height: 100%;
+        background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+        color: var(--branco);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding-top: 20px;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
     }
 
-    .modal {
-        z-index: 1060; /* Modal acima do backdrop */
+    .sidebar .profile {
+        text-align: center;
+        margin-bottom: 30px;
+        padding: 0 15px;
     }
 
-    body.modal-open .sidebar {
-        opacity: 1 !important;
-        visibility: visible !important;
+    .profile-avatar-sidebar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        border: 3px solid var(--amarelo-detalhe);
+        background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .profile-avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .profile-avatar-sidebar:has(.profile-avatar-img) i {
+        display: none;
+    }
+
+    .profile-avatar-sidebar i {
+        font-size: 3.5rem;
+        color: var(--amarelo-detalhe);
+    }
+
+    .sidebar .profile h5 {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: var(--branco);
+        font-size: 1.1rem;
+    }
+
+    .sidebar .profile small {
+        color: var(--cinza-claro);
+        font-size: 0.9rem;
+    }
+
+    .sidebar .list-group {
+        width: 100%;
+    }
+
+    .sidebar .list-group-item {
+        background-color: transparent;
+        color: var(--branco);
+        border: none;
+        padding: 15px 25px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .sidebar .list-group-item:hover {
+        background-color: var(--roxo-escuro);
+        cursor: pointer;
+    }
+
+    .sidebar .list-group-item.active {
+        background-color: var(--roxo-escuro) !important;
+        color: var(--branco) !important;
+        font-weight: 600;
+        border-left: 4px solid var(--amarelo-detalhe);
+    }
+
+    .sidebar .list-group-item i {
+        color: var(--amarelo-detalhe);
     }
 
     .main-content {
@@ -256,6 +266,8 @@ $database->closeConnection();
         box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
         min-width: 180px;
         border: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
     }
 
     .btn-warning:hover {
@@ -263,20 +275,6 @@ $database->closeConnection();
         transform: translateY(-2px);
         box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
         color: var(--preto-texto);
-    }
-
-    .btn-outline-warning {
-        background: transparent;
-        color: var(--preto-texto);
-        border: 2px solid var(--amarelo-botao);
-        min-width: 150px;
-    }
-
-    .btn-outline-warning:hover {
-        background: transparent;
-        color: var(--preto-texto);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
     }
 
     .btn-primary {
@@ -293,29 +291,36 @@ $database->closeConnection();
         box-shadow: 0 4px 12px rgba(106, 13, 173, 0.3);
     }
 
-   
+    .btn-secundary {
+        background: linear-gradient(135deg, #6c757d, #495057);
+        border: none;
+        color: var(--branco);
+        font-weight: 600;
+        padding: 10px 20px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+        text-decoration: none;
+    }
 
-.btn-back {
-    background: rgba(255, 255, 255, 0.2);
-    border: 2px solid var(--roxo-principal);
-    color: var(--roxo-principal);
-    padding: 0.6rem 1.5rem;
-    border-radius: 25px;
-    transition: all 0.3s ease;
-    font-weight: 600;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
+    .btn-secundary:hover {
+        background: linear-gradient(135deg, #495057, #343a40);
+        color: var(--branco);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+    }
 
-.btn-back:hover {
-    background-color:var(--roxo-escuro);
-    border-color: var(--branco); 
-    color: var(--branco);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
-}
+    .btn-secundary i {
+        font-size: 0.9em;
+        transition: transform 0.3s ease;
+    }
+
+    .btn-secundary:hover i {
+        transform: translateX(-4px);
+    }
 
     .btn-secondary {
         background-color: var(--cinza-medio);
@@ -323,7 +328,6 @@ $database->closeConnection();
         color: var(--preto-texto);
         font-weight: 600;
         transition: all 0.3s ease;
-        gap: 10px;
     }
 
     .btn-secondary:hover {
@@ -332,32 +336,6 @@ $database->closeConnection();
         transform: scale(1.05);
         color: var(--preto-texto);
         box-shadow: 0 4px 12px rgba(194, 192, 192, 0.53);
-    }
-
-    .btn-success {
-        background-color: #28a745;
-        border-color: #28a745;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .btn-success:hover {
-        background-color: #218838;
-        border-color: #218838;
-        transform: scale(1.05);
-    }
-
-    .btn-danger {
-        background-color: #dc3545;
-        border-color: #dc3545;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .btn-danger:hover {
-        background-color: #c82333;
-        border-color: #c82333;
-        transform: scale(1.05);
     }
 
     .table {
@@ -412,6 +390,12 @@ $database->closeConnection();
         border-left: 4px solid #28a745;
     }
 
+    .alert-danger {
+        background-color: rgba(220, 53, 69, 0.15);
+        color: #721c24;
+        border-left: 4px solid #dc3545;
+    }
+
     .badge {
         font-weight: 600;
         padding: 0.5em 1em;
@@ -424,18 +408,9 @@ $database->closeConnection();
 
     @media (max-width: 992px) {
         .sidebar {
-            width: 200px;
-        }
-        .main-content {
-            margin-left: 200px;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .sidebar {
-            position: relative;
             width: 100%;
             height: auto;
+            position: relative;
         }
         .main-content {
             margin-left: 0;
@@ -464,63 +439,6 @@ $database->closeConnection();
         flex-wrap: wrap;
     }
 
-    .teorias-table {
-        margin-top: 30px;
-        padding-bottom: 0;
-        border-radius: 10px;
-        overflow: hidden;
-    }
-
-    .navbar .container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .settings-icon {
-        color: var(--roxo-principal) !important;
-        transition: all 0.3s ease;
-    }
-
-    .settings-icon:hover {
-        transform: scale(1.1);
-        color: var(--roxo-escuro) !important;
-    }
-
-    .empty-state {
-        max-width: 400px;
-        margin: 0 auto;
-        padding: 20px;
-    }
-
-    .empty-state i {
-        font-size: 2.5rem;
-        color: var(--cinza-medio);
-    }
-
-    .spinner-border-sm {
-        width: 1rem;
-        height: 1rem;
-    }
-    /* REMOVER TODAS AS ANIMAÇÕES DO SIDEBAR */
-    .sidebar,
-    .sidebar *,
-    .sidebar .list-group-item,
-    .sidebar .list-group-item i {
-        transition: none !important;
-        animation: none !important;
-    }
-
-    /* Links normais - comportamento padrão sem animação */
-    .sidebar .list-group-item:not([data-bs-toggle]) {
-        transition: none !important;
-    }
-
-    /* Links de modal - manter funcionalidade mas sem animação */
-    .sidebar .list-group-item[data-bs-toggle] {
-        cursor: pointer;
-    }
-
     .settings-icon {
         color: var(--roxo-principal) !important;
         transition: all 0.3s ease;
@@ -541,79 +459,87 @@ $database->closeConnection();
     }
 
     /* ESTILOS PROFISSIONAIS MINIMALISTAS */
-.form-control {
-    border: none;
-    border-bottom: 2px solid #e1e5e9;
-    border-radius: 0;
-    padding: 0.4rem 0;
-    font-size: 1.0rem;
-    font-weight: 400;
-    color: #2d3748;
-    background: transparent;
-    transition: all 0.2s ease;
-    width: 50%;
-}
+    .form-control {
+        border: none;
+        border-bottom: 2px solid #e1e5e9;
+        border-radius: 0;
+        padding: 0.4rem 0;
+        font-size: 1.0rem;
+        font-weight: 400;
+        color: #2d3748;
+        background: transparent;
+        transition: all 0.2s ease;
+        width: 100%;
+    }
 
-.form-control:focus {
-    border-bottom-color: var(--roxo-principal);
-    background: transparent;
-    box-shadow: none;
-    outline: none;
-}
+    .form-control:focus {
+        border-bottom-color: var(--roxo-principal);
+        background: transparent;
+        box-shadow: none;
+        outline: none;
+    }
 
-.form-control::placeholder {
-    color: #718096;
-    font-size: 0.9rem;
-}
-   /* ESTILOS PROFISSIONAIS COM EFEITOS FIXOS PARA LABELS */
-.form-label {
-    font-family: 'Poppins', sans-serif;
-    font-weight: 600;
-    font-size: 0.85rem;
-    color: var(--roxo-principal);
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    margin-bottom: 0.75rem;
-    display: block;
-    position: relative;
-    padding-left: 1rem;
-    transition: all 0.3s ease;
-    cursor: default;
-}
+    .form-control::placeholder {
+        color: #718096;
+        font-size: 0.9rem;
+    }
 
-/* Linha gradiente fixa abaixo do label */
-.form-label::before {
-    content: '';
-    position: absolute;
-    bottom: -4px;
-    left: 1rem;
-    width: 40px;
-    height: 2px;
-    background: linear-gradient(90deg, var(--roxo-principal), var(--amarelo-detalhe));
-    border-radius: 2px;
-}
+    /* ESTILOS PROFISSIONAIS COM EFEITOS FIXOS PARA LABELS */
+    .form-label {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: var(--roxo-principal);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-bottom: 0.75rem;
+        display: block;
+        position: relative;
+        padding-left: 1rem;
+        transition: all 0.3s ease;
+        cursor: default;
+    }
 
-/* Indicador lateral fixo */
-.form-label::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    width: 4px;
-    height: 20px;
-    background: var(--roxo-principal);
-    border-radius: 2px;
-    transform: translateY(-50%);
-    opacity: 1;
-}
+    /* Linha gradiente fixa abaixo do label */
+    .form-label::before {
+        content: '';
+        position: absolute;
+        bottom: -4px;
+        left: 1rem;
+        width: 40px;
+        height: 2px;
+        background: linear-gradient(90deg, var(--roxo-principal), var(--amarelo-detalhe));
+        border-radius: 2px;
+    }
 
+    /* Indicador lateral fixo */
+    .form-label::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 4px;
+        height: 20px;
+        background: var(--roxo-principal);
+        border-radius: 2px;
+        transform: translateY(-50%);
+        opacity: 1;
+    }
 
+    /* Container para melhor organização */
+    .form-group {
+        position: relative;
+        margin-bottom: 2rem;
+    }
 
-/* Container para melhor organização */
-.form-group {
-    position: relative;
-    margin-bottom: 2rem;
-} 
+    /* Container do formulário */
+    .form-container {
+        background: var(--branco);
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        margin-bottom: 2rem;
+    }
     </style>
 </head>
 <body>
@@ -634,19 +560,24 @@ $database->closeConnection();
 
     <div class="sidebar">
         <div class="profile">
-            <i class="fas fa-user-circle"></i>
+            <?php if ($foto_admin): ?>
+                <div class="profile-avatar-sidebar">
+                    <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
+                </div>
+            <?php else: ?>
+                <div class="profile-avatar-sidebar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            <?php endif; ?>
             <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
             <small>Administrador(a)</small>
         </div>
 
         <div class="list-group">
-            <a href="gerenciar_caminho.php" class="list-group-item active">
+            <a href="gerenciar_caminho.php" class="list-group-item">
                 <i class="fas fa-plus-circle"></i> Adicionar Caminho
             </a>
             <a href="pagina_adicionar_idiomas.php" class="list-group-item">
-                <i class="fas fa-language"></i> Adicionar Idioma com Quiz
-            </a>
-            <a href="pagina_adicionar_idiomas.php" class="list-group-item" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
                 <i class="fas fa-globe"></i> Gerenciar Idiomas
             </a>
             <a href="gerenciar_teorias.php" class="list-group-item">
@@ -668,43 +599,50 @@ $database->closeConnection();
     </div>
 
     <div class="main-content">
-        <div class="container mt-5">
-            <!-- Cabeçalho com título e botão de voltar -->
-            <div class="header-container">
-                <h2 class="mb-0">Editar Caminho de Aprendizagem</h2>
-                 <a href="gerenciar_caminho.php" class="btn-back">
-    <i class="fas fa-arrow-left"></i>Voltar para Caminhos
-</a>
-
+        <div class="container-fluid mt-4">
+            <div class="page-header">
+                <h2 class="mb-0"><i class="fas fa-edit"></i> Editar Caminho de Aprendizagem</h2>
+                <a href="gerenciar_caminho.php" class="btn btn-secundary">
+                    <i class="fas fa-arrow-left"></i> Voltar ao Gerenciamento
+                </a>
             </div>
             
             <?php echo $mensagem; ?>
 
-            <form action="editar_caminho.php" method="POST">
-                <input type="hidden" name="id" value="<?php echo htmlspecialchars($caminho['id']); ?>">
+            <div class="form-container">
+                <form action="editar_caminho.php" method="POST">
+                    <input type="hidden" name="id" value="<?php echo htmlspecialchars($caminho['id']); ?>">
 
-                <div class="mb-3">
-                    <label for="idioma" class="form-label">Idioma</label>
-                    <input type="text" class="form-control" id="idioma" name="idioma" value="<?php echo htmlspecialchars($caminho['idioma']); ?>" required>
-                </div>
-
-                <div class="mb-3">
-                    <label for="nome_caminho" class="form-label">Nome do Caminho</label>
-                    <input type="text" class="form-control" id="nome_caminho" name="nome_caminho" value="<?php echo htmlspecialchars($caminho['nome_caminho']); ?>" required>
-                </div>
-
-                <div class="mb-3">
-                    <label for="nivel" class="form-label">Nível</label>
-                    <input type="text" class="form-control" id="nivel" name="nivel" value="<?php echo htmlspecialchars($caminho['nivel']); ?>" required>
-                </div>
-
-                <div class="mb-3">
-                    <div class="form-buttons">
-                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-                        <a href="gerenciar_caminho.php" class="btn btn-secondary">Cancelar</a>
+                    <div class="form-group">
+                        <label for="idioma" class="form-label">Idioma</label>
+                        <input type="text" class="form-control" id="idioma" name="idioma" 
+                               value="<?php echo htmlspecialchars($caminho['idioma']); ?>" required>
                     </div>
-                </div>
-            </form>
+
+                    <div class="form-group">
+                        <label for="nome_caminho" class="form-label">Nome do Caminho</label>
+                        <input type="text" class="form-control" id="nome_caminho" name="nome_caminho" 
+                               value="<?php echo htmlspecialchars($caminho['nome_caminho']); ?>" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="nivel" class="form-label">Nível</label>
+                        <input type="text" class="form-control" id="nivel" name="nivel" 
+                               value="<?php echo htmlspecialchars($caminho['nivel']); ?>" required>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-buttons">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Salvar Alterações
+                            </button>
+                            <a href="gerenciar_caminho.php" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
