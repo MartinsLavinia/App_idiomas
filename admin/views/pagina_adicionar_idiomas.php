@@ -52,6 +52,7 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
     <link href="gerenciamento.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+     <link rel="icon" type="image/png" href="../../imagens/mini-esquilo.png">
     <style>
         :root {
             --roxo-principal: #6a0dad;
