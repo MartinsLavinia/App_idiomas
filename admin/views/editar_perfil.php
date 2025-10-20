@@ -943,22 +943,22 @@ $database->closeConnection();
         </div>
     </nav>
 
-    <div class="profile-container">
-        <!-- Breadcrumb -->
-        <div class="breadcrumb-container fade-in-left">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="gerenciar_caminho.php">
-                            <i class="fas fa-home me-1"></i>
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">
-                            <i class="fas fa-user-edit me-1"></i>Editar Perfil
-                    </li>
-                </ol>
-            </nav>
-        </div>
+  <div class="profile-container">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-container fade-in-left">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="gerenciar_caminho.php">
+                        <i class="fas fa-home me-1"></i>Home
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class="fas fa-user-edit me-1"></i>Editar Perfil
+                </li>
+            </ol>
+        </nav>
+    </div>
 
         <!-- Card Principal com Layout Horizontal -->
         <div class="card main-card fade-in-left">

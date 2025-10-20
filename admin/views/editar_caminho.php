@@ -277,11 +277,11 @@ $database->closeConnection();
         color: var(--preto-texto);
     }
 
-    .btn-primary {
+      .btn-primary {
         background-color: var(--roxo-principal);
         border-color: var(--roxo-principal);
         font-weight: 600;
-        transition: all 0.3s ease;
+        transition: all 0.3s;
     }
 
     .btn-primary:hover {
@@ -291,52 +291,38 @@ $database->closeConnection();
         box-shadow: 0 4px 12px rgba(106, 13, 173, 0.3);
     }
 
-    .btn-secundary {
-        background: linear-gradient(135deg, #6c757d, #495057);
-        border: none;
-        color: var(--branco);
-        font-weight: 600;
-        padding: 10px 20px;
-        border-radius: 8px;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
-        text-decoration: none;
-    }
+  .btn-secundary {
+    background: rgba(255, 255, 255, 0.2); /* fundo translúcido */
+    border: 2px solid var(--roxo-principal); /* mesma borda */
+    color: var(--roxo-principal); /* cor do texto */
+    padding: 0.6rem 1.5rem;
+    border-radius: 25px; /* arredondamento igual */
+    transition: all 0.3s ease;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: none; /* removendo sombra inicial */
+}
 
-    .btn-secundary:hover {
-        background: linear-gradient(135deg, #495057, #343a40);
-        color: var(--branco);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
-    }
+.btn-secundary:hover {
+    background-color: var(--roxo-escuro);
+    border-color: var(--branco);
+    color: var(--branco);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.53);
+}
 
-    .btn-secundary i {
-        font-size: 0.9em;
-        transition: transform 0.3s ease;
-    }
+.btn-secundary i {
+    font-size: 0.9em;
+    transition: transform 0.3s ease;
+}
 
-    .btn-secundary:hover i {
-        transform: translateX(-4px);
-    }
+.btn-secundary:hover i {
+    transform: translateX(-4px);
+}
 
-    .btn-secondary {
-        background-color: var(--cinza-medio);
-        border-color: var(--cinza-medio);
-        color: var(--preto-texto);
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .btn-secondary:hover {
-        background-color: #b8b9bdd3;
-        border-color: #c8c9cb;
-        transform: scale(1.05);
-        color: var(--preto-texto);
-        box-shadow: 0 4px 12px rgba(194, 192, 192, 0.53);
-    }
 
     .table {
         border-collapse: separate;
@@ -464,7 +450,7 @@ $database->closeConnection();
         border-bottom: 2px solid #e1e5e9;
         border-radius: 0;
         padding: 0.4rem 0;
-        font-size: 1.0rem;
+        font-size: 1.1rem;
         font-weight: 400;
         color: #2d3748;
         background: transparent;
@@ -484,62 +470,111 @@ $database->closeConnection();
         font-size: 0.9rem;
     }
 
-    /* ESTILOS PROFISSIONAIS COM EFEITOS FIXOS PARA LABELS */
-    .form-label {
-        font-family: 'Poppins', sans-serif;
+       /* ESTILOS PROFISSIONAIS MINIMALISTAS */
+.form-control {
+    border: none;
+    border-bottom: 2px solid #e1e5e9;
+    border-radius: 0;
+    padding: 0.4rem 0;
+    font-size: 1.0rem;
+    font-weight: 400;
+    color: #2d3748;
+    background: transparent;
+    transition: all 0.2s ease;
+    width: 50%;
+}
+
+.form-control:focus {
+    border-bottom-color: var(--roxo-principal);
+    background: transparent;
+    box-shadow: none;
+    outline: none;
+}
+
+.form-control::placeholder {
+    color: #718096;
+    font-size: 0.9rem;
+}
+   /* ESTILOS PROFISSIONAIS COM EFEITOS FIXOS PARA LABELS */
+.form-label {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--roxo-principal);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    display: block;
+    position: relative;
+    padding-left: 1rem;
+    transition: all 0.3s ease;
+    cursor: default;
+}
+
+/* Linha gradiente fixa abaixo do label */
+.form-label::before {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 1rem;
+    width: 40px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--roxo-principal), var(--amarelo-detalhe));
+    border-radius: 2px;
+}
+
+/* Indicador lateral fixo */
+.form-label::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 4px;
+    height: 20px;
+    background: var(--roxo-principal);
+    border-radius: 2px;
+    transform: translateY(-50%);
+    opacity: 1;
+}
+
+
+
+.form-group {
+    position: relative;
+    margin-bottom: 2rem;
+    margin-left: 50px; /* Move para a direita */
+}
+
+/* Ou use esta alternativa para mais controle */
+.col-md-8 {
+    margin-left: 100px; /* Move o container inteiro para a direita */
+}
+
+/* Ou esta opção para alinhamento flexível */
+.justify-content-center {
+    justify-content: flex-start !important;
+    margin-left: 80px;
+}
+
+    .btn-secondary {
+        background-color: var(--cinza-medio);
+        border-color: var(--cinza-medio);
+        color: var(--preto-texto);
         font-weight: 600;
-        font-size: 0.85rem;
-        color: var(--roxo-principal);
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-        margin-bottom: 0.75rem;
-        display: block;
-        position: relative;
-        padding-left: 1rem;
         transition: all 0.3s ease;
-        cursor: default;
+        gap: 10px;
     }
 
-    /* Linha gradiente fixa abaixo do label */
-    .form-label::before {
-        content: '';
-        position: absolute;
-        bottom: -4px;
-        left: 1rem;
-        width: 40px;
-        height: 2px;
-        background: linear-gradient(90deg, var(--roxo-principal), var(--amarelo-detalhe));
-        border-radius: 2px;
+    .btn-secondary:hover {
+        background-color: #b8b9bdd3;
+        border-color: #c8c9cb;
+        transform: scale(1.05);
+        color: var(--preto-texto);
+        box-shadow: 0 4px 12px rgba(194, 192, 192, 0.53);
     }
 
-    /* Indicador lateral fixo */
-    .form-label::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 0;
-        width: 4px;
-        height: 20px;
-        background: var(--roxo-principal);
-        border-radius: 2px;
-        transform: translateY(-50%);
-        opacity: 1;
-    }
 
-    /* Container para melhor organização */
-    .form-group {
-        position: relative;
-        margin-bottom: 2rem;
-    }
-
-    /* Container do formulário */
-    .form-container {
-        background: var(--branco);
-        border-radius: 1rem;
-        padding: 2rem;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-        margin-bottom: 2rem;
-    }
+   
     </style>
 </head>
 <body>
@@ -609,7 +644,7 @@ $database->closeConnection();
             
             <?php echo $mensagem; ?>
 
-            <div class="form-container">
+            
                 <form action="editar_caminho.php" method="POST">
                     <input type="hidden" name="id" value="<?php echo htmlspecialchars($caminho['id']); ?>">
 
@@ -639,7 +674,7 @@ $database->closeConnection();
                             <a href="gerenciar_caminho.php" class="btn btn-secondary">
                                 <i class="fas fa-times"></i> Cancelar
                             </a>
-                        </div>
+                       
                     </div>
                 </form>
             </div>

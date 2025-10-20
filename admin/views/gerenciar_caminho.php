@@ -254,53 +254,35 @@ border: 0 4px 8px rgba(235, 183, 14, 0.77);
 
 }
   
-
-        /* Menu Lateral */
-        .sidebar .profile {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-/* ADICIONE AQUI O NOVO CSS */
-.profile-avatar-sidebar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    border: 3px solid var(--amarelo-detalhe);
-    background: linear-gradient(135deg, var(--roxo-claro), var(--roxo-principal));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 15px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.profile-avatar-img {
-    width: 100%;
+/* Menu Lateral */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
     height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
+    background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+    color: var(--branco);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 20px;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
 }
-
-/* Remove o ícone padrão quando há foto */
-.profile-avatar-sidebar:has(img) i {
-    display: none;
-}
-/* FIM DO NOVO CSS */
 
 .sidebar .profile {
     text-align: center;
     margin-bottom: 30px;
+    padding: 0 15px;
 }
 
-/* ADICIONE AQUI O NOVO CSS */
 .profile-avatar-sidebar {
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
     border: 3px solid var(--amarelo-detalhe);
-    background: linear-gradient(135deg, var(--roxo-claro), var(--roxo-principal));
+    background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -316,71 +298,74 @@ border: 0 4px 8px rgba(235, 183, 14, 0.77);
     border-radius: 50%;
 }
 
-/* Remove o ícone padrão quando há foto */
-.profile-avatar-sidebar:has(img) i {
+.profile-avatar-sidebar:has(.profile-avatar-img) i {
     display: none;
 }
-/* FIM DO NOVO CSS */
+
+.profile-avatar-sidebar i {
+    font-size: 3.5rem;
+    color: var(--amarelo-detalhe);
+}
 
 .sidebar .profile h5 {
     font-weight: 600;
-    margin-bottom: 0;
+    margin-bottom: 5px;
     color: var(--branco);
+    font-size: 1.1rem;
 }
 
-        .sidebar .profile {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+.sidebar .profile small {
+    color: var(--cinza-claro);
+    font-size: 0.9rem;
+}
 
-        .sidebar .profile i {
-            font-size: 4rem;
-            color: var(--amarelo-detalhe);
-            margin-bottom: 10px;
-        }
+.sidebar .list-group {
+    width: 100%;
+}
 
-        .sidebar .profile h5 {
-            font-weight: 600;
-            margin-bottom: 0;
-            color: var(--branco);
-        }
+.sidebar .list-group-item {
+    background-color: transparent;
+    color: var(--branco);
+    border: none;
+    padding: 15px 25px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
 
-        .sidebar .profile small {
-            color: var(--cinza-claro);
-        }
+.sidebar .list-group-item:hover {
+    background-color: var(--roxo-escuro);
+    cursor: pointer;
+}
 
-        .sidebar .list-group {
-            width: 100%;
-        }
+.sidebar .list-group-item.active {
+    background-color: var(--roxo-escuro) !important;
+    color: var(--branco) !important;
+    font-weight: 600;
+    border-left: 4px solid var(--amarelo-detalhe);
+}
 
-        .sidebar .list-group-item {
-            background-color: transparent;
-            color: var(--branco);
-            border: none;
-            padding: 15px 25px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-        }
+.sidebar .list-group-item i {
+    color: var(--amarelo-detalhe);
+}
 
-        .sidebar .list-group-item:hover {
-            background-color: var(--roxo-escuro);
-            cursor: pointer;
-        }
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+}
 
-        .sidebar .list-group-item.active {
-            background-color: var(--roxo-escuro) !important;
-            color: var(--branco) !important;
-            font-weight: 600;
-            border-left: 4px solid var(--amarelo-detalhe);
-        }
-
-        .sidebar .list-group-item i {
-            color: var(--amarelo-detalhe);
-        }
-
+@media (max-width: 992px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+    .main-content {
+        margin-left: 0;
+    }
+}
 
         /* Ajuste do conteúdo principal para não ficar por baixo do sidebar */
         .main-content {
@@ -394,6 +379,7 @@ border: 0 4px 8px rgba(235, 183, 14, 0.77);
             box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
             min-width: 180px;
             border: none;
+           
         }
 
         .btn-warning:hover {

@@ -337,75 +337,134 @@ $database->closeConnection();
     .stats-card:nth-child(3) { animation-delay: 0.3s; }
     .stats-card:nth-child(4) { animation-delay: 0.4s; }
 
-    /* Menu Lateral */
+ /* Menu Lateral */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100%;
+    background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+    color: var(--branco);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 20px;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.sidebar .profile {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 0 15px;
+}
+
+.profile-avatar-sidebar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 3px solid var(--amarelo-detalhe);
+    background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.profile-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.profile-avatar-sidebar:has(.profile-avatar-img) i {
+    display: none;
+}
+
+.profile-avatar-sidebar i {
+    font-size: 3.5rem;
+    color: var(--amarelo-detalhe);
+}
+
+.sidebar .profile h5 {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--branco);
+    font-size: 1.1rem;
+}
+
+.sidebar .profile small {
+    color: var(--cinza-claro);
+    font-size: 0.9rem;
+}
+
+.sidebar .list-group {
+    width: 100%;
+}
+
+.sidebar .list-group-item {
+    background-color: transparent;
+    color: var(--branco);
+    border: none;
+    padding: 15px 25px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+.sidebar .list-group-item:hover {
+    background-color: var(--roxo-escuro);
+    cursor: pointer;
+}
+
+.sidebar .list-group-item.active {
+    background-color: var(--roxo-escuro) !important;
+    color: var(--branco) !important;
+    font-weight: 600;
+    border-left: 4px solid var(--amarelo-detalhe);
+}
+
+.sidebar .list-group-item i {
+    color: var(--amarelo-detalhe);
+}
+
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+}
+
+@media (max-width: 992px) {
     .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 250px;
-        height: 100%;
-        background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
-        color: var(--branco);
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        padding-top: 20px;
-        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-        z-index: 1000;
-    }
-
-    .sidebar .profile {
-        text-align: center;
-        margin-bottom: 30px;
-    }
-
-    .sidebar .profile i {
-        font-size: 4rem;
-        color: var(--amarelo-detalhe);
-        margin-bottom: 10px;
-    }
-
-    .sidebar .profile h5 {
-        font-weight: 600;
-        margin-bottom: 0;
-        color: var(--branco);
-    }
-
-    .sidebar .profile small {
-        color: var(--cinza-claro);
-    }
-
-    .sidebar .list-group {
         width: 100%;
+        height: auto;
+        position: relative;
     }
+    .main-content {
+        margin-left: 0;
+    }
+}
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+}
 
-    .sidebar .list-group-item {
-        background-color: transparent;
-        color: var(--branco);
-        border: none;
-        padding: 15px 25px;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        transition: all 0.3s ease;
+@media (max-width: 992px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
     }
+    .main-content {
+        margin-left: 0;
+    }
+}
 
-    .sidebar .list-group-item:hover {
-        background-color: var(--roxo-escuro);
-        cursor: pointer;
-    }
-
-    .sidebar .list-group-item.active {
-        background-color: var(--roxo-escuro) !important;
-        color: var(--branco) !important;
-        font-weight: 600;
-        border-left: 4px solid var(--amarelo-detalhe);
-    }
-
-    .sidebar .list-group-item i {
-        color: var(--amarelo-detalhe);
-    }
 
     /* Ajuste do conteúdo principal para não ficar por baixo do sidebar */
     .main-content {
@@ -573,46 +632,127 @@ $database->closeConnection();
         }
     }
 
-    /* Perfil com avatar */
-    .sidebar .profile {
-        text-align: center;
-        margin-bottom: 30px;
-    }
+/* Menu Lateral - ATUALIZADO */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100%;
+    background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+    color: var(--branco);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 20px;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
 
-    .profile-avatar-sidebar {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        border: 3px solid var(--amarelo-detalhe);
-        background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 15px;
-        overflow: hidden;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    }
+.sidebar .profile {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 0 15px;
+}
 
-    .profile-avatar-img {
+/* Container do avatar - APENAS para quando tem foto (COM círculo) */
+.profile-avatar-sidebar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 3px solid var(--amarelo-detalhe);
+    background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.profile-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Ícone quando NÃO tem foto - SEM círculo */
+.profile-icon-no-photo {
+    font-size: 4.5rem; /* Ícone grande */
+    color: var(--amarelo-detalhe);
+    margin: 0 auto 15px;
+    display: block;
+}
+
+
+
+.sidebar .list-group {
+    width: 100%;
+}
+
+.sidebar .list-group-item {
+    background-color: transparent;
+    color: var(--branco);
+    border: none;
+    padding: 15px 25px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+.sidebar .list-group-item:hover {
+    background-color: var(--roxo-escuro);
+    cursor: pointer;
+}
+
+.sidebar .list-group-item.active {
+    background-color: var(--roxo-escuro) !important;
+    color: var(--branco) !important;
+    font-weight: 600;
+    border-left: 4px solid var(--amarelo-detalhe);
+}
+
+.sidebar .list-group-item i {
+    color: var(--amarelo-detalhe);
+}
+
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+}
+
+@media (max-width: 992px) {
+    .sidebar {
         width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: 50%;
+        height: auto;
+        position: relative;
     }
+    .main-content {
+        margin-left: 0;
+    }
+}
 
-    .profile-avatar-sidebar:has(img) i {
-        display: none;
-    }
+/*--*/
 
-    .sidebar .profile h5 {
-        font-weight: 600;
-        margin-bottom: 0;
-        color: var(--branco);
-    }
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+}
 
-    .sidebar .profile small {
-        color: var(--cinza-claro);
+@media (max-width: 992px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
     }
+    .main-content {
+        margin-left: 0;
+    }
+}
+
 
     .settings-icon {
         color: var(--roxo-principal) !important;
@@ -648,35 +788,27 @@ $database->closeConnection();
         font-size: 1.5rem;
     }
 
-    .btn-secundary {
-        background: linear-gradient(135deg, #6c757d, #495057);
-        border: none;
-        color: var(--branco);
-        font-weight: 600;
-        padding: 10px 20px;
-        border-radius: 8px;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
-    }
+   .btn-back {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid var(--roxo-principal);
+    color: var(--roxo-principal);
+    padding: 0.6rem 1.5rem;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
 
-    .btn-secundary:hover {
-        background: linear-gradient(135deg, #495057, #343a40);
-        color: var(--branco);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
-    }
-
-    .btn-secundary i {
-        font-size: 0.9em;
-        transition: transform 0.3s ease;
-    }
-
-    .btn-secundary:hover i {
-        transform: translateX(-4px);
-    }
+.btn-back:hover {
+    background-color:var(--roxo-escuro);
+    border-color: var(--branco); 
+    color: var(--branco);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+}
     </style>
 </head>
 <body>
@@ -695,27 +827,27 @@ $database->closeConnection();
         </div>
     </nav>
 
-    <div class="sidebar">
-        <div class="profile">
-            <?php if ($foto_admin): ?>
-                <div class="profile-avatar-sidebar">
-                    <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
-                </div>
-            <?php else: ?>
-                <div class="profile-avatar-sidebar">
-                    <i class="fas fa-user-circle fa-3x" style="color: var(--amarelo-detalhe);"></i>
-                </div>
-            <?php endif; ?>
-            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
-            <small>Administrador(a)</small>
-        </div>
+     <div class="sidebar">
+    <div class="profile">
+        <?php if ($foto_admin): ?>
+            <!-- COM FOTO: Com círculo amarelo -->
+            <div class="profile-avatar-sidebar">
+                <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
+            </div>
+        <?php else: ?>
+            <!-- SEM FOTO: Apenas ícone grande, SEM círculo -->
+            <i class="fas fa-user-circle profile-icon-no-photo"></i>
+        <?php endif; ?>
+        <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+       <small>Administrador(a)</small>
+    </div>
 
         <div class="list-group">
-            <a href="gerenciar_caminho.php" class="list-group-item">
+            <a href="gerenciar_caminho.php" class="list-group-item ">
                 <i class="fas fa-plus-circle"></i> Adicionar Caminho
             </a>
             <a href="pagina_adicionar_idiomas.php" class="list-group-item">
-                <i class="fas fa-globe"></i> Gerenciar Idiomas
+                <i class="fas fa-language"></i> Gerenciar Idiomas
             </a>
             <a href="gerenciar_teorias.php" class="list-group-item">
                 <i class="fas fa-book-open"></i> Gerenciar Teorias
@@ -739,9 +871,9 @@ $database->closeConnection();
         <div class="container-fluid mt-4">
             <div class="page-header">
                 <h2 class="mb-0"><i class="fas fa-chart-bar"></i> Estatísticas de Usuários</h2>
-                <a href="gerenciar_caminho.php" class="btn btn-secundary">
-                    <i class="fas fa-arrow-left"></i>  Voltar ao Gerenciamento
-                </a>
+                 <a href="gerenciar_caminho.php" class="btn-back">
+    <i class="fas fa-arrow-left"></i>Voltar para Caminhos
+</a>
             </div>
 
             <!-- Estatísticas Rápidas -->
