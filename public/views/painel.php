@@ -200,6 +200,32 @@ $database->closeConnection();
             padding: 20px;
         }
 
+        /* Estilos para o Modal de Confirmação de Exclusão */
+        #modalConfirmarExclusao .modal-content {
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        #modalConfirmarExclusao .modal-header {
+            background: #dc3545; /* Vermelho de perigo */
+            color: var(--branco);
+            border-bottom: none;
+            border-radius: 1rem 1rem 0 0;
+        }
+
+        #modalConfirmarExclusao .modal-header .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+
+        #modalConfirmarExclusao .modal-body {
+            padding: 2rem;
+        }
+
+        #modalConfirmarExclusao .modal-footer {
+            background-color: var(--cinza-claro);
+            border-top: 1px solid var(--cinza-medio);
+            border-radius: 0 0 1rem 1rem;
         /* Estilos para exercícios de listening */
         .audio-player-container {
             background: #f8f9fa;
@@ -241,6 +267,60 @@ $database->closeConnection();
             background: #007bff;
             color: white;
         }
+
+        /* Estilo unificado do Flashcard (baseado em flashcard_estudo.php) */
+        .flashcard-preview {
+            perspective: 1000px;
+            height: 200px;
+            margin-bottom: 1rem;
+        }
+        
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        .flashcard-preview.flipped .flashcard-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-side {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--cinza-medio);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background: var(--branco);
+        }
+
+        .flashcard-front .flashcard-header { background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro)); }
+        .flashcard-back .flashcard-header { background: linear-gradient(135deg, var(--amarelo-detalhe), #f39c12); color: var(--preto-texto); }
+
+        .flashcard-header {
+            padding: 0.75rem 1rem;
+            color: var(--branco);
+            font-weight: 600;
+        }
+
+        .flashcard-content {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-align: center;
+        }
     </style>
 </head>
 
@@ -268,7 +348,7 @@ $database->closeConnection();
     <div class="main-content">
         <div class="container-fluid mt-4">
         <div class="row justify-content-center">
-            <div class="col-md-11">
+            <div class="col-11">
                 <?php if ($mostrar_selecao_idioma): ?>
                     <!-- Seleção de idioma para usuários sem progresso -->
                     <div class="card">
@@ -302,7 +382,7 @@ $database->closeConnection();
                             <h2>Seu Caminho de Aprendizado em <?php echo htmlspecialchars($idioma_escolhido); ?></h2>
                         </div>
                         <div class="card-body text-center">
-                            <p class="fs-4">Seu nível atual é: <span class="badge bg-success"><?php echo htmlspecialchars($nivel_usuario); ?></span></p>
+                            <p class="fs-4">Seu nível atual é: <span class="level-badge"><?php echo htmlspecialchars($nivel_usuario); ?></span></p>
                         </div>
                     </div>
 
@@ -340,35 +420,34 @@ $database->closeConnection();
                     <div class="card mb-4">
                         <div class="card-header">
                             <div class="row align-items-center">
-                                <div class="col-md-8">
+                                <div class="col-md-4">
                                     <h5 class="mb-0"> <i class="fas fa-book me-2"></i> Minhas Palavras </h5>
                                 </div>
-                                <div class="col-md-4 text-end">
-                                    <button class="btn btn-light btn-sm w-100" onclick="abrirModalAdicionarPalavra()">
+                                <div class="col-md-8 text-end">
+                                    <div class="row g-2 justify-content-end align-items-center">
+                                        <div class="col-md-4">
+                                            <select class="form-select form-select-sm form-select-dark" id="filtroPalavrasStatus" onchange="carregarPalavras()">
+                                                <option value="">Todas as palavras</option>
+                                                <option value="0">Não aprendidas</option>
+                                                <option value="1">Aprendidas</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="text" class="form-control form-control-sm form-control-dark" id="filtroPalavrasBusca" placeholder="Buscar palavra..." onkeyup="filtrarPalavrasLocal()">
+                                        </div>
+                                        <div class="col-auto">
+                                            <button class="btn btn-sm btn-light" type="button" onclick="carregarPalavras()"><i class="fas fa-search"></i></button>
+                                        </div>
+                                        <div class="col-md-auto">
+                                            <button class="btn btn-light btn-sm w-auto" onclick="abrirModalAdicionarPalavra()">
                                         <i class="fas fa-plus me-2"></i>Adicionar Palavra
                                     </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="card-body">
-                            <!-- Filtros de Palavras -->
-                            <div class="row mb-3">
-                                <div class="col-md-4">
-                                    <select class="form-select form-select-sm" id="filtroPalavrasStatus" onchange="carregarPalavras()">
-                                        <option value="">Todas as palavras</option>
-                                        <option value="0">Não aprendidas</option>
-                                        <option value="1">Aprendidas</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <input type="text" class="form-control form-control-sm" id="filtroPalavrasBusca" placeholder="Buscar palavra..." onkeyup="filtrarPalavrasLocal()">
-                                </div>
-                                <div class="col-md-4">
-                                    <button class="btn btn-outline-secondary btn-sm" onclick="carregarPalavras()">
-                                        <i class="fas fa-sync me-1"></i>Atualizar
-                                    </button>
-                                </div>
-                            </div>
                            
                             <!-- Lista de Palavras -->
                             <div id="listaPalavras" class="row">
@@ -510,12 +589,18 @@ $database->closeConnection();
                     <div class="col-md-6">
                         <label class="form-label">Preview do Flashcard</label>
                         <div class="flashcard-preview" id="palavraPreview" onclick="virarPreviewPalavra()">
-                            <div class="flashcard-inner">
-                                <div class="flashcard-front">
-                                    <div id="previewPalavraFrente">Digite o conteúdo da frente</div>
+                            <div class="flashcard-inner" id="previewInner">
+                                <div class="flashcard-side flashcard-front">
+                                    <div class="flashcard-header">
+                                        <span>Pergunta</span>
+                                    </div>
+                                    <div class="flashcard-content" id="previewPalavraFrente">Digite o conteúdo da frente</div>
                                 </div>
-                                <div class="flashcard-back">
-                                    <div id="previewPalavraVerso">Digite o conteúdo do verso</div>
+                                <div class="flashcard-side flashcard-back">
+                                    <div class="flashcard-header">
+                                        <span>Resposta</span>
+                                    </div>
+                                    <div class="flashcard-content" id="previewPalavraVerso">Digite o conteúdo do verso</div>
                                 </div>
                             </div>
                         </div>
@@ -621,6 +706,27 @@ $database->closeConnection();
         </div>
     </div>
 
+    <!-- Modal de Confirmação de Exclusão -->
+    <div class="modal fade" id="modalConfirmarExclusao" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tituloModalExclusao"><i class="fas fa-exclamation-triangle me-2"></i>Confirmar Exclusão</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="mensagemModalExclusao">Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarExclusao"><i class="fas fa-trash me-2"></i>Excluir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
     // ==================== VARIÁVEIS GLOBAIS ====================
     let modalBlocos = null;
@@ -628,6 +734,7 @@ $database->closeConnection();
     let modalAdicionarPalavra = null;
     let unidadeAtual = null;
     let blocoAtual = null;
+    let modalConfirmarExclusao = null;
     let exercicioAtual = null;
     let exerciciosLista = [];
     let exercicioIndex = 0;
@@ -640,10 +747,29 @@ $database->closeConnection();
         modalBlocos = new bootstrap.Modal(document.getElementById('modalBlocos'));
         modalExercicios = new bootstrap.Modal(document.getElementById('modalExercicios'));
         modalAdicionarPalavra = new bootstrap.Modal(document.getElementById('modalAdicionarPalavra'));
+        modalConfirmarExclusao = new bootstrap.Modal(document.getElementById('modalConfirmarExclusao'));
 
         // Carrega palavras do usuário ao inicializar
         if (typeof carregarPalavras === 'function') {
             carregarPalavras();
+        }
+
+        // Event listeners para o preview do modal de palavras
+        const palavraFrenteInput = document.getElementById('palavraFrente');
+        const palavraVersoInput = document.getElementById('palavraVerso');
+        const palavraDicaInput = document.getElementById('palavraDica');
+
+        if (palavraFrenteInput) {
+            palavraFrenteInput.addEventListener('input', atualizarPreviewPalavra);
+        }
+        if (palavraVersoInput) {
+            palavraVersoInput.addEventListener('input', atualizarPreviewPalavra);
+        }
+        if (palavraDicaInput) {
+            palavraDicaInput.addEventListener('input', atualizarPreviewPalavra);
+        }
+        if (document.getElementById('palavraDificuldade')) {
+            document.getElementById('palavraDificuldade').addEventListener('change', atualizarPreviewPalavra);
         }
 
         // Event listeners para cards de unidades
@@ -969,19 +1095,6 @@ $database->closeConnection();
             return;
         }
 
-        // Processar resposta localmente
-        processarRespostaLocal(respostaUsuario);
-    };
-
-    // Função para processar resposta localmente
-    function processarRespostaLocal(respostaUsuario) {
-        let conteudo = exercicioAtual.conteudo;
-        if (typeof conteudo === 'string' && conteudo.startsWith('{')) {
-            try {
-                conteudo = JSON.parse(conteudo);
-            } catch (e) {
-                console.error("Erro ao fazer parse do conteúdo:", e);
-                conteudo = {};
         // Enviar resposta para o servidor
         fetch('../../admin/controller/processar_exercicio.php', {
             method: 'POST',
@@ -1003,53 +1116,11 @@ $database->closeConnection();
             } else {
                 alert("Erro ao processar resposta: " + data.message);
             }
-        }
-
-        let correto = false;
-        let explicacao = '';
-        let respostaCorreta = '';
-
-        if (exercicioAtual.tipo_exercicio === "multipla_escolha") {
-            const alternativaCorreta = conteudo.alternativas?.find(alt => alt.correta);
-            respostaCorreta = alternativaCorreta ? alternativaCorreta.id : '';
-            correto = respostaUsuario === respostaCorreta;
-            explicacao = conteudo.explicacao || (correto ? 'Resposta correta!' : 'Resposta incorreta.');
-            
-        } else if (exercicioAtual.tipo_exercicio === "texto_livre") {
-            respostaCorreta = conteudo.resposta_correta || '';
-            const alternativasAceitas = conteudo.alternativas_aceitas || [respostaCorreta];
-            correto = alternativasAceitas.some(resp => 
-                respostaUsuario.toLowerCase() === resp.toLowerCase()
-            );
-            explicacao = conteudo.explicacao || (correto ? 'Resposta correta!' : `Resposta incorreta. A resposta correta é: ${respostaCorreta}`);
-            
-        } else if (exercicioAtual.tipo_exercicio === "completar") {
-            respostaCorreta = conteudo.resposta_correta || '';
-            const alternativasAceitas = conteudo.alternativas_aceitas || [respostaCorreta];
-            correto = alternativasAceitas.some(resp => 
-                respostaUsuario.toLowerCase() === resp.toLowerCase()
-            );
-            explicacao = conteudo.explicacao || (correto ? 'Resposta correta!' : `Resposta incorreta. A resposta correta é: ${respostaCorreta}`);
-            
-        } else if (exercicioAtual.tipo_exercicio === "fala") {
-            correto = true;
-            explicacao = 'Exercício de fala processado com sucesso!';
-        }
-
-        exibirFeedback({
-            correto: correto,
-            explicacao: explicacao,
-            dica: conteudo.dica || '',
-            resposta_correta: respostaCorreta
         })
         .catch(error => {
             console.error("Erro:", error);
             alert("Erro de conexão. Tente novamente.");
         });
-
-        document.getElementById("btnEnviarResposta").style.display = "none";
-        document.getElementById("btnProximoExercicio").style.display = "block";
-    }
     };
 
     // Função para exibir feedback (correto/incorreto)
@@ -1162,6 +1233,40 @@ $database->closeConnection();
         alert("Funcionalidade de gravação de fala será implementada em breve.");
     };
 
+    // Funções para o preview do modal de palavras
+    function virarPreviewPalavra() {
+        document.getElementById('palavraPreview').classList.toggle('flipped');
+    }
+
+    function atualizarPreviewPalavra() {
+        const frente = document.getElementById('palavraFrente').value || 'Digite o conteúdo da frente';
+        const verso = document.getElementById('palavraVerso').value || 'Digite o conteúdo do verso';
+        const dificuldade = document.getElementById('palavraDificuldade').value;
+        const dificuldadeTexto = {
+            'facil': 'Fácil',
+            'medio': 'Médio',
+            'dificil': 'Difícil'
+        };
+
+        document.getElementById('previewPalavraFrente').innerHTML = `<div>${frente}</div>`;
+        document.getElementById('previewPalavraVerso').innerHTML = `<div>${verso}</div>`;
+
+        // Atualiza o header do preview com a dificuldade
+        const headerFrente = document.getElementById('previewHeaderFrente');
+        if (headerFrente) {
+            headerFrente.innerHTML = `
+                <span>Pergunta</span>
+                <span class="badge bg-white bg-opacity-25 text-white">${dificuldadeTexto[dificuldade] || 'Médio'}</span>
+            `;
+        }
+        const headerVerso = document.getElementById('previewHeaderVerso');
+        if (headerVerso) {
+            headerVerso.innerHTML = `
+                <span>Resposta</span>
+                <span class="badge bg-black bg-opacity-25 text-black">${dificuldadeTexto[dificuldade] || 'Médio'}</span>
+            `;
+        }
+    }
     // ==================== FUNCIONALIDADES DE FLASHCARDS ====================
        
     // Função para abrir modal de adicionar palavra
@@ -1198,20 +1303,6 @@ $database->closeConnection();
         });
     };
        
-    // Função para carregar palavras do usuário - ADICIONE DEBUG AQUI
-window.carregarPalavras = function() {
-    const status = document.getElementById('filtroPalavrasStatus').value;
-    const container = document.getElementById('listaPalavras');
-    
-    console.log('=== CARREGAR PALAVRAS INICIADO ===');
-    console.log('Status:', status);
-    console.log('URL do controller:', 'flashcard_controller.php');
-    
-    // Mostra loading
-    container.innerHTML = `
-        <div class="col-12 text-center">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Carregando...</span>
     // Função para carregar palavras do usuário
     window.carregarPalavras = function() {
         const status = document.getElementById('filtroPalavrasStatus').value;
@@ -1229,38 +1320,6 @@ window.carregarPalavras = function() {
                 </div>
                 <p class="mt-2 text-muted">Carregando suas palavras...</p>
             </div>
-            <p class="mt-2 text-muted">Carregando suas palavras...</p>
-        </div>
-    `;
-    
-    const formData = new FormData();
-    formData.append('action', 'listar_flashcards_painel'); // CORRIGIDO: estava 'listar_flashcards'
-    if (status !== '') {
-        formData.append('status', status);
-    }
-    
-    console.log('Enviando requisição para flashcard_controller.php');
-    
-    fetch('flashcard_controller.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => {
-        console.log('Resposta recebida - Status:', response.status);
-        console.log('Resposta OK:', response.ok);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Dados recebidos:', data);
-        if (data.success) {
-            palavrasCarregadas = data.flashcards;
-            exibirPalavras(data.flashcards);
-        } else {
-            console.error('Erro do servidor:', data.message);
-            exibirErroPalavras(data.message);
         `;
         
         const formData = new FormData();
@@ -1268,13 +1327,6 @@ window.carregarPalavras = function() {
         if (status !== '') {
             formData.append('status', status);
         }
-    })
-    .catch(error => {
-        console.error('Erro na requisição:', error);
-        console.error('Detalhes do erro:', error.message);
-        exibirErroPalavras('Erro de conexão. Tente novamente. Detalhes: ' + error.message);
-    });
-};
         
         console.log('Enviando requisição para flashcard_controller.php');
         
@@ -1413,30 +1465,41 @@ window.carregarPalavras = function() {
        
     // Função para excluir palavra
     window.excluirPalavra = function(idFlashcard) {
-        if (!confirm('Tem certeza que deseja excluir esta palavra?')) {
-            return;
-        }
-       
-        const formData = new FormData();
-        formData.append('action', 'excluir_flashcard');
-        formData.append('id_flashcard', idFlashcard);
-       
-        fetch('flashcard_controller.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                carregarPalavras();
-            } else {
-                alert('Erro: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Erro:', error);
-            alert('Erro de conexão. Tente novamente.');
+        // Prepara e exibe o modal de confirmação
+        document.getElementById('mensagemModalExclusao').innerHTML = "Tem certeza que deseja excluir esta palavra? Esta ação não pode ser desfeita.";
+        
+        const btnConfirmar = document.getElementById('btnConfirmarExclusao');
+        
+        // Remove listeners antigos para evitar múltiplas execuções
+        const novoBtn = btnConfirmar.cloneNode(true);
+        btnConfirmar.parentNode.replaceChild(novoBtn, btnConfirmar);
+
+        novoBtn.addEventListener('click', function() {
+            const formData = new FormData();
+            formData.append('action', 'excluir_flashcard'); // Usando a action correta
+            formData.append('id_flashcard', idFlashcard);
+        
+            fetch('flashcard_controller.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                modalConfirmarExclusao.hide();
+                if (data.success) {
+                    carregarPalavras();
+                    // Opcional: mostrar uma mensagem de sucesso
+                } else {
+                    alert('Erro: ' + data.message);
+                }
+            })
+            .catch(error => {
+                modalConfirmarExclusao.hide();
+                console.error('Erro:', error);
+                alert('Erro de conexão. Tente novamente.');
+            });
         });
+        modalConfirmarExclusao.show();
     };
        
     // Função para exibir erro ao carregar palavras

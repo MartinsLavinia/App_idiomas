@@ -254,7 +254,7 @@ $id_deck = intval($_GET['deck'] ?? 0);
 
         .btn-response {
             padding: 0.75rem 1.5rem;
-            border-radius: 50px;
+            border-radius: 12px; /* Alinhado com o resto do site */
             font-weight: 600;
             font-size: 1rem;
             border: none;
@@ -273,23 +273,23 @@ $id_deck = intval($_GET['deck'] ?? 0);
         }
 
         .btn-again {
-            background: linear-gradient(135deg, #ff6b6b, #ee5253);
+            background: linear-gradient(135deg, #e55353, #c82333); /* Vermelho mais sóbrio */
             color: white;
         }
 
         .btn-hard {
-            background: linear-gradient(135deg, #feca57, #ff9f43);
-            color: var(--preto-texto);
+            background: linear-gradient(135deg, #8a2be2, #6a0dad); /* Roxo claro */
+            color: white;
         }
 
         .btn-good {
-            background: linear-gradient(135deg, #54a0ff, #2e86de);
+            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro)); /* Roxo principal */
             color: white;
         }
 
         .btn-easy {
-            background: linear-gradient(135deg, #1dd1a1, #10ac84);
-            color: white;
+            background: linear-gradient(135deg, var(--amarelo-detalhe), #f39c12); /* Amarelo */
+            color: var(--preto-texto);
         }
 
         /* Estatísticas */

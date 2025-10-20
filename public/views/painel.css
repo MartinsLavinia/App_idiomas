@@ -224,7 +224,7 @@ body {
 
 /* Botões pequenos */
 .btn-sm {
-    padding: 1rem 1rem;
+    padding: 0.5rem 1rem;
     font-size: 0.875rem;
     border-radius: 8px;
 }
