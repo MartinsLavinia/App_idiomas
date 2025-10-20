@@ -241,6 +241,24 @@ $database->closeConnection();
             background: #007bff;
             color: white;
         }
+
+        /* Cards de unidade */
+        .unidade-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .unidade-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--roxo-principal);
+            box-shadow: 0 5px 15px rgba(106, 13, 173, 0.3);
+        }
+
+        .progress-bar-custom {
+            height: 8px;
+            border-radius: 4px;
+        }
     </style>
 </head>
 
@@ -387,7 +405,10 @@ $database->closeConnection();
                         <?php if (count($unidades) > 0): ?>
                             <?php foreach ($unidades as $unidade): ?>
                                 <div class="col-md-6 mb-3">
-                                    <div class="card unidade-card h-100" onclick="abrirUnidade(<?php echo $unidade["id"]; ?>, '<?php echo htmlspecialchars($unidade["nome_unidade"]); ?>', <?php echo $unidade["numero_unidade"]; ?>)">
+                                    <div class="card unidade-card h-100" 
+                                         data-unidade-id="<?php echo $unidade['id']; ?>"
+                                         data-unidade-titulo="<?php echo htmlspecialchars($unidade['nome_unidade']); ?>"
+                                         data-unidade-numero="<?php echo $unidade['numero_unidade']; ?>">
                                         <div class="card-body">
                                             <h5 class="card-title">
                                                 <i class="fas fa-book-open me-2"></i>
@@ -636,30 +657,46 @@ $database->closeConnection();
 
     // ==================== INICIALIZAÇÃO ====================
     document.addEventListener('DOMContentLoaded', function() {
+        console.log('=== INICIALIZANDO PAINEL ===');
+        
         // Inicialização dos modais
         modalBlocos = new bootstrap.Modal(document.getElementById('modalBlocos'));
         modalExercicios = new bootstrap.Modal(document.getElementById('modalExercicios'));
         modalAdicionarPalavra = new bootstrap.Modal(document.getElementById('modalAdicionarPalavra'));
+
+        // Configurar event listeners para cards de unidades
+        configurarEventListenersUnidades();
 
         // Carrega palavras do usuário ao inicializar
         if (typeof carregarPalavras === 'function') {
             carregarPalavras();
         }
 
-        // Event listeners para cards de unidades
-        const unidadeCards = document.querySelectorAll('.unidade-card');
-        unidadeCards.forEach(card => {
-            card.addEventListener('click', function() {
-                const unidadeId = this.getAttribute('onclick').match(/abrirUnidade\((\d+),/)[1];
-                const titulo = this.getAttribute('onclick').match(/'([^']+)'/)[1];
-                const numero = this.getAttribute('onclick').match(/,\s*(\d+)\)/)[1];
+        console.log('Painel inicializado com sucesso');
+    });
 
+    // ==================== CONFIGURAÇÃO DOS EVENT LISTENERS ====================
+    function configurarEventListenersUnidades() {
+        const unidadeCards = document.querySelectorAll('.unidade-card');
+        console.log(`Encontrados ${unidadeCards.length} cards de unidade`);
+        
+        unidadeCards.forEach((card, index) => {
+            card.addEventListener('click', function() {
+                const unidadeId = this.getAttribute('data-unidade-id');
+                const titulo = this.getAttribute('data-unidade-titulo');
+                const numero = this.getAttribute('data-unidade-numero');
+                
+                console.log(`Clicado na unidade:`, {unidadeId, titulo, numero});
+                
                 if (unidadeId && titulo && numero) {
                     abrirUnidade(parseInt(unidadeId), titulo, parseInt(numero));
+                } else {
+                    console.error('Dados da unidade não encontrados:', {unidadeId, titulo, numero});
+                    alert('Erro: Dados da unidade não encontrados.');
                 }
             });
         });
-    });
+    }
 
     // ==================== FUNÇÕES PRINCIPAIS DE NAVEGAÇÃO ====================
 
@@ -719,7 +756,7 @@ $database->closeConnection();
             const col = document.createElement("div");
             col.className = "col-md-6 mb-3";
             col.innerHTML = `
-                <div class="card bloco-card h-100" onclick="abrirExercicios(${bloco.id}, '${bloco.nome_bloco.replace(/'/g, "\\'")}')">
+                <div class="card bloco-card h-100" onclick="abrirExercicios(${bloco.id}, '${bloco.nome_bloco.replace(/'/g, "\\'")}')" style="cursor: pointer;">
                     <div class="card-body text-center">
                         <i class="fas fa-cube bloco-icon mb-3" style="font-size: 2rem; color: #007bff;"></i>
                         <h5 class="card-title">${bloco.nome_bloco}</h5>
@@ -969,19 +1006,6 @@ $database->closeConnection();
             return;
         }
 
-        // Processar resposta localmente
-        processarRespostaLocal(respostaUsuario);
-    };
-
-    // Função para processar resposta localmente
-    function processarRespostaLocal(respostaUsuario) {
-        let conteudo = exercicioAtual.conteudo;
-        if (typeof conteudo === 'string' && conteudo.startsWith('{')) {
-            try {
-                conteudo = JSON.parse(conteudo);
-            } catch (e) {
-                console.error("Erro ao fazer parse do conteúdo:", e);
-                conteudo = {};
         // Enviar resposta para o servidor
         fetch('../../admin/controller/processar_exercicio.php', {
             method: 'POST',
@@ -1003,53 +1027,11 @@ $database->closeConnection();
             } else {
                 alert("Erro ao processar resposta: " + data.message);
             }
-        }
-
-        let correto = false;
-        let explicacao = '';
-        let respostaCorreta = '';
-
-        if (exercicioAtual.tipo_exercicio === "multipla_escolha") {
-            const alternativaCorreta = conteudo.alternativas?.find(alt => alt.correta);
-            respostaCorreta = alternativaCorreta ? alternativaCorreta.id : '';
-            correto = respostaUsuario === respostaCorreta;
-            explicacao = conteudo.explicacao || (correto ? 'Resposta correta!' : 'Resposta incorreta.');
-            
-        } else if (exercicioAtual.tipo_exercicio === "texto_livre") {
-            respostaCorreta = conteudo.resposta_correta || '';
-            const alternativasAceitas = conteudo.alternativas_aceitas || [respostaCorreta];
-            correto = alternativasAceitas.some(resp => 
-                respostaUsuario.toLowerCase() === resp.toLowerCase()
-            );
-            explicacao = conteudo.explicacao || (correto ? 'Resposta correta!' : `Resposta incorreta. A resposta correta é: ${respostaCorreta}`);
-            
-        } else if (exercicioAtual.tipo_exercicio === "completar") {
-            respostaCorreta = conteudo.resposta_correta || '';
-            const alternativasAceitas = conteudo.alternativas_aceitas || [respostaCorreta];
-            correto = alternativasAceitas.some(resp => 
-                respostaUsuario.toLowerCase() === resp.toLowerCase()
-            );
-            explicacao = conteudo.explicacao || (correto ? 'Resposta correta!' : `Resposta incorreta. A resposta correta é: ${respostaCorreta}`);
-            
-        } else if (exercicioAtual.tipo_exercicio === "fala") {
-            correto = true;
-            explicacao = 'Exercício de fala processado com sucesso!';
-        }
-
-        exibirFeedback({
-            correto: correto,
-            explicacao: explicacao,
-            dica: conteudo.dica || '',
-            resposta_correta: respostaCorreta
         })
         .catch(error => {
             console.error("Erro:", error);
             alert("Erro de conexão. Tente novamente.");
         });
-
-        document.getElementById("btnEnviarResposta").style.display = "none";
-        document.getElementById("btnProximoExercicio").style.display = "block";
-    }
     };
 
     // Função para exibir feedback (correto/incorreto)
@@ -1198,20 +1180,6 @@ $database->closeConnection();
         });
     };
        
-    // Função para carregar palavras do usuário - ADICIONE DEBUG AQUI
-window.carregarPalavras = function() {
-    const status = document.getElementById('filtroPalavrasStatus').value;
-    const container = document.getElementById('listaPalavras');
-    
-    console.log('=== CARREGAR PALAVRAS INICIADO ===');
-    console.log('Status:', status);
-    console.log('URL do controller:', 'flashcard_controller.php');
-    
-    // Mostra loading
-    container.innerHTML = `
-        <div class="col-12 text-center">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Carregando...</span>
     // Função para carregar palavras do usuário
     window.carregarPalavras = function() {
         const status = document.getElementById('filtroPalavrasStatus').value;
@@ -1229,38 +1197,6 @@ window.carregarPalavras = function() {
                 </div>
                 <p class="mt-2 text-muted">Carregando suas palavras...</p>
             </div>
-            <p class="mt-2 text-muted">Carregando suas palavras...</p>
-        </div>
-    `;
-    
-    const formData = new FormData();
-    formData.append('action', 'listar_flashcards_painel'); // CORRIGIDO: estava 'listar_flashcards'
-    if (status !== '') {
-        formData.append('status', status);
-    }
-    
-    console.log('Enviando requisição para flashcard_controller.php');
-    
-    fetch('flashcard_controller.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => {
-        console.log('Resposta recebida - Status:', response.status);
-        console.log('Resposta OK:', response.ok);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Dados recebidos:', data);
-        if (data.success) {
-            palavrasCarregadas = data.flashcards;
-            exibirPalavras(data.flashcards);
-        } else {
-            console.error('Erro do servidor:', data.message);
-            exibirErroPalavras(data.message);
         `;
         
         const formData = new FormData();
@@ -1268,13 +1204,6 @@ window.carregarPalavras = function() {
         if (status !== '') {
             formData.append('status', status);
         }
-    })
-    .catch(error => {
-        console.error('Erro na requisição:', error);
-        console.error('Detalhes do erro:', error.message);
-        exibirErroPalavras('Erro de conexão. Tente novamente. Detalhes: ' + error.message);
-    });
-};
         
         console.log('Enviando requisição para flashcard_controller.php');
         
