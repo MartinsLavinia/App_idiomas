@@ -12,6 +12,35 @@ if (!isset($_SESSION['id_admin'])) {
     exit();
 }
 
+// === ADICIONE O CÓDIGO DA FOTO AQUI ===
+// Buscar foto do admin
+$id_admin = $_SESSION['id_admin'];
+$foto_admin = null;
+
+// Cria uma nova conexão para buscar a foto
+$database_foto = new Database();
+$conn_foto = $database_foto->conn;
+
+$check_column_sql = "SHOW COLUMNS FROM administradores LIKE 'foto_perfil'";
+$result_check = $conn_foto->query($check_column_sql);
+
+if ($result_check && $result_check->num_rows > 0) {
+    $sql_foto = "SELECT foto_perfil FROM administradores WHERE id = ?";
+    $stmt_foto = $conn_foto->prepare($sql_foto);
+    $stmt_foto->bind_param("i", $id_admin);
+    $stmt_foto->execute();
+    $resultado_foto = $stmt_foto->get_result();
+    
+    if ($resultado_foto && $resultado_foto->num_rows > 0) {
+        $admin_foto = $resultado_foto->fetch_assoc();
+        $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
+    }
+    $stmt_foto->close();
+}
+
+$database_foto->closeConnection();
+// === FIM DO CÓDIGO DA FOTO ===
+
 // Verifica se o ID do caminho foi passado via URL
 if (!isset($_GET['caminho_id']) || !is_numeric($_GET['caminho_id'])) {
     header("Location: gerenciar_caminho.php");
@@ -471,42 +500,59 @@ body {
     position: fixed;
     top: 0;
     left: 0;
-    width: 280px;
+    width: 250px;
     height: 100%;
     background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
     color: var(--branco);
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    padding-top: 25px;
-    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+    padding-top: 20px;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
     z-index: 1000;
-    backdrop-filter: blur(10px);
 }
 
 .sidebar .profile {
     text-align: center;
-    margin-bottom: 35px;
-    padding: 0 20px;
+    margin-bottom: 30px;
+    padding: 0 15px;
 }
 
-.sidebar .profile i {
-    font-size: 4.5rem;
+.profile-avatar-sidebar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 3px solid var(--amarelo-detalhe);
+    background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.profile-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.profile-avatar-sidebar:has(.profile-avatar-img) i {
+    display: none;
+}
+
+.profile-avatar-sidebar i {
+    font-size: 3.5rem;
     color: var(--amarelo-detalhe);
-    margin-bottom: 15px;
-    text-shadow: 0 4px 8px rgba(255, 215, 0, 0.3);
-    transition: transform 0.3s ease;
-}
-
-.sidebar .profile:hover i {
-    transform: scale(1.1);
 }
 
 .sidebar .profile h5 {
-    font-weight: 700;
+    font-weight: 600;
     margin-bottom: 5px;
     color: var(--branco);
-    font-size: 1.2rem;
+    font-size: 1.1rem;
 }
 
 .sidebar .profile small {
@@ -522,35 +568,44 @@ body {
     background-color: transparent;
     color: var(--branco);
     border: none;
-    padding: 18px 25px;
-    font-weight: 600;
+    padding: 15px 25px;
+    font-weight: 500;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     transition: all 0.3s ease;
-    border-left: 4px solid transparent;
-    margin: 2px 0;
 }
 
 .sidebar .list-group-item:hover {
-    background: linear-gradient(135deg, rgba(106, 13, 173, 0.3), rgba(76, 8, 124, 0.3));
-    border-left-color: var(--amarelo-detalhe);
-    transform: translateX(5px);
+    background-color: var(--roxo-escuro);
+    cursor: pointer;
 }
 
 .sidebar .list-group-item.active {
-    background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro)) !important;
+    background-color: var(--roxo-escuro) !important;
     color: var(--branco) !important;
-    font-weight: 700;
+    font-weight: 600;
     border-left: 4px solid var(--amarelo-detalhe);
-    box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1);
 }
 
 .sidebar .list-group-item i {
     color: var(--amarelo-detalhe);
-    font-size: 1.1rem;
-    width: 20px;
-    text-align: center;
+}
+
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+}
+
+@media (max-width: 992px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+    .main-content {
+        margin-left: 0;
+    }
 }
 
 /* Conteúdo principal */
@@ -1176,37 +1231,45 @@ h2 {
         </div>
     </nav>
 
-    <div class="sidebar">
-        <div class="profile">
-            <i class="fas fa-user-circle"></i>
-            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
-            <small>Administrador(a)</small>
-        </div>
-
-        <div class="list-group">
-            <a href="gerenciar_caminho.php" class="list-group-item">
-                <i class="fas fa-plus-circle"></i> Adicionar Caminho
-            </a>
-            <a href="pagina_adicionar_idiomas.php" class="list-group-item">
-                <i class="fas fa-language"></i> Gerenciar Idiomas
-            </a>
-            <a href="gerenciar_teorias.php" class="list-group-item">
-                <i class="fas fa-book-open"></i> Gerenciar Teorias
-            </a>
-            <a href="gerenciar_unidades.php" class="list-group-item">
-                <i class="fas fa-cubes"></i> Gerenciar Unidades
-            </a>
-            <a href="gerenciar_usuarios.php" class="list-group-item">
-                <i class="fas fa-users"></i> Gerenciar Usuários
-            </a>
-            <a href="estatisticas_usuarios.php" class="list-group-item">
-                <i class="fas fa-chart-bar"></i> Estatísticas
-            </a>
-            <a href="logout.php" class="list-group-item mt-auto">
-                <i class="fas fa-sign-out-alt"></i> Sair
-            </a>
-        </div>
+ <div class="sidebar">
+    <div class="profile">
+        <?php if (isset($foto_admin) && $foto_admin): ?>
+            <div class="profile-avatar-sidebar">
+                <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
+            </div>
+        <?php else: ?>
+            <div class="profile-avatar-sidebar">
+                <i class="fas fa-user-circle"></i>
+            </div>
+        <?php endif; ?>
+        <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+        <small>Administrador(a)</small>
     </div>
+
+    <div class="list-group">
+        <a href="gerenciar_caminho.php" class="list-group-item">
+            <i class="fas fa-plus-circle"></i> Adicionar Caminho
+        </a>
+        <a href="pagina_adicionar_idiomas.php" class="list-group-item">
+            <i class="fas fa-globe"></i> Gerenciar Idiomas
+        </a>
+        <a href="gerenciar_teorias.php" class="list-group-item">
+            <i class="fas fa-book-open"></i> Gerenciar Teorias
+        </a>
+        <a href="gerenciar_unidades.php" class="list-group-item">
+            <i class="fas fa-cubes"></i> Gerenciar Unidades
+        </a>
+        <a href="gerenciar_usuarios.php" class="list-group-item">
+            <i class="fas fa-users"></i> Gerenciar Usuários
+        </a>
+        <a href="estatisticas_usuarios.php" class="list-group-item">
+            <i class="fas fa-chart-bar"></i> Estatísticas
+        </a>
+        <a href="logout.php" class="list-group-item mt-auto">
+            <i class="fas fa-sign-out-alt"></i> Sair
+        </a>
+    </div>
+</div>
 
     <div class="main-content">
         <div class="container-fluid mt-4">

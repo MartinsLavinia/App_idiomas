@@ -100,6 +100,7 @@
         cursor: pointer;
         font-weight: 500;
         transition: all 0.3s ease;
+        font-family: 'Inter', sans-serif;
     }
 
     .btn-primary:hover {
@@ -116,6 +117,7 @@
         cursor: pointer;
         font-weight: 500;
         transition: all 0.3s ease;
+        font-family: 'Inter', sans-serif;
     }
 
     .btn-outline:hover {
@@ -2085,7 +2087,7 @@
                 <button class="btn-primary" style="font-size: 1.0rem;" onclick="window.location.href='public/views/login.php'">
                     Entrar
                 </button>
-                <a href="public/views/login.php" class="btn-outline"
+                <a href="public/views/cadastro.php" class="btn-outline"
                     style="text-decoration: none; font-size: 14px; padding: 6px 12px;">Cadastre-se</a>
             </nav>
 
