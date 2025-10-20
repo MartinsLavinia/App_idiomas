@@ -420,35 +420,34 @@ $database->closeConnection();
                     <div class="card mb-4">
                         <div class="card-header">
                             <div class="row align-items-center">
-                                <div class="col-md-8">
+                                <div class="col-md-4">
                                     <h5 class="mb-0"> <i class="fas fa-book me-2"></i> Minhas Palavras </h5>
                                 </div>
-                                <div class="col-md-4 text-end">
-                                    <button class="btn btn-light btn-sm w-100" onclick="abrirModalAdicionarPalavra()">
+                                <div class="col-md-8 text-end">
+                                    <div class="row g-2 justify-content-end align-items-center">
+                                        <div class="col-md-4">
+                                            <select class="form-select form-select-sm form-select-dark" id="filtroPalavrasStatus" onchange="carregarPalavras()">
+                                                <option value="">Todas as palavras</option>
+                                                <option value="0">Não aprendidas</option>
+                                                <option value="1">Aprendidas</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="text" class="form-control form-control-sm form-control-dark" id="filtroPalavrasBusca" placeholder="Buscar palavra..." onkeyup="filtrarPalavrasLocal()">
+                                        </div>
+                                        <div class="col-auto">
+                                            <button class="btn btn-sm btn-light" type="button" onclick="carregarPalavras()"><i class="fas fa-search"></i></button>
+                                        </div>
+                                        <div class="col-md-auto">
+                                            <button class="btn btn-light btn-sm w-auto" onclick="abrirModalAdicionarPalavra()">
                                         <i class="fas fa-plus me-2"></i>Adicionar Palavra
                                     </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="card-body">
-                            <!-- Filtros de Palavras -->
-                            <div class="row mb-3">
-                                <div class="col-md-4">
-                                    <select class="form-select form-select-sm" id="filtroPalavrasStatus" onchange="carregarPalavras()">
-                                        <option value="">Todas as palavras</option>
-                                        <option value="0">Não aprendidas</option>
-                                        <option value="1">Aprendidas</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <input type="text" class="form-control form-control-sm" id="filtroPalavrasBusca" placeholder="Buscar palavra..." onkeyup="filtrarPalavrasLocal()">
-                                </div>
-                                <div class="col-md-4">
-                                    <button class="btn btn-outline-secondary btn-sm" onclick="carregarPalavras()">
-                                        <i class="fas fa-sync me-1"></i>Atualizar
-                                    </button>
-                                </div>
-                            </div>
                            
                             <!-- Lista de Palavras -->
                             <div id="listaPalavras" class="row">
