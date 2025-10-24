@@ -485,8 +485,10 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
         <div class="container py-4">
             <div class="row justify-content-center">
                 <div class="col-xl-10">
-                    <h2 class="mb-4">Gerenciar idiomas simples</h2>
-
+                    <h2 class="mb-4">
+    <i class="fas fa-language me-2"></i>
+    Gerenciar idiomas simples
+</h2>
                         <a href="#" class="btn btn-warning mb-4" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
                             <i class="fas fa-plus-circle me-2"></i>Gerenciar idiomas
                         </a>
