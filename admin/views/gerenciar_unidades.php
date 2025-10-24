@@ -161,9 +161,10 @@ body {
     padding: 0 15px;
 }
 
+/* Container do avatar - PARA QUANDO TEM FOTO (80x80px COM CÍRCULO) */
 .profile-avatar-sidebar {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     border: 3px solid var(--amarelo-detalhe);
     background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
@@ -182,11 +183,13 @@ body {
     border-radius: 50%;
 }
 
-.profile-icon-no-photo {
-    font-size: 4.5rem;
+/* Ícone quando NÃO tem foto - SEM CÍRCULO (apenas ícone) */
+.sidebar .profile i.fa-user-circle {
+    font-size: 4rem; /* Tamanho do ícone */
     color: var(--amarelo-detalhe);
     margin: 0 auto 15px;
     display: block;
+    /* REMOVIDO: border, background, box-shadow, width, height */
 }
 
 .sidebar .list-group {
@@ -687,13 +690,13 @@ body {
    <div class="sidebar">
     <div class="profile">
         <?php if ($foto_admin): ?>
-            <!-- COM FOTO: Com círculo amarelo -->
+            <!-- COM FOTO: Com círculo amarelo de 80x80px -->
             <div class="profile-avatar-sidebar">
                 <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
             </div>
         <?php else: ?>
-            <!-- SEM FOTO: Apenas ícone grande, SEM círculo -->
-            <i class="fas fa-user-circle profile-icon-no-photo"></i>
+            <!-- SEM FOTO: Apenas ícone, SEM círculo -->
+            <i class="fas fa-user-circle"></i>
         <?php endif; ?>
         <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
         <small>Administrador(a)</small>

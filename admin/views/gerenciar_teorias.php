@@ -159,10 +159,10 @@ $database->closeConnection();
     padding: 0 15px;
 }
 
-/* Container do avatar - APENAS para quando tem foto */
+/* Container do avatar - PARA QUANDO TEM FOTO (80x80px COM CÍRCULO) */
 .profile-avatar-sidebar {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     border: 3px solid var(--amarelo-detalhe);
     background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
@@ -181,12 +181,13 @@ $database->closeConnection();
     border-radius: 50%;
 }
 
-/* Ícone quando NÃO tem foto - SEM círculo */
+/* Ícone quando NÃO tem foto - SEM CÍRCULO (apenas ícone) */
 .sidebar .profile i.fa-user-circle {
-    font-size: 5rem; /* Tamanho maior para o ícone sozinho */
+    font-size: 4rem; /* Tamanho do ícone */
     color: var(--amarelo-detalhe);
     margin: 0 auto 15px;
     display: block;
+    /* REMOVIDO: border, background, box-shadow, width, height */
 }
 
 .sidebar .list-group {
