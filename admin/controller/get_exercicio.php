@@ -1,10 +1,16 @@
 <?php
+// Configuração de erros para ambiente de produção (registra em log, não exibe)
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+error_reporting(E_ALL);
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
 session_start();
+
 include_once __DIR__ . '/../../conexao.php';
 
 // Verificar se o usuário está logado
@@ -45,7 +51,7 @@ try {
                 e.tipo,
                 e.pergunta,
                 e.conteudo,
-                e.tipo_exercicio,
+                e.tipo,
                 e.unidade_id,
 
                 e.caminho_id,
@@ -65,7 +71,7 @@ try {
                 e.tipo,
                 e.pergunta,
                 e.conteudo,
-                e.tipo_exercicio,
+                e.tipo,
                 e.unidade_id,
 
                 e.caminho_id,
@@ -87,15 +93,17 @@ try {
             try {
                 $conteudo_decodificado = json_decode($row['conteudo'], true);
                 if (json_last_error() === JSON_ERROR_NONE) {
-                    $row['conteudo'] = $conteudo_decocificado;
-                    if (isset($conteudo_decodificado['alternativas'])) {
-                        $row['tipo_exercicio'] = 'multipla_escolha';
-                    } elseif (isset($conteudo_decodificado['frase_completar'])) {
-                        $row['tipo_exercicio'] = 'completar';
-                    } else {
-                        $row['tipo_exercicio'] = 'texto_livre';
-                    }
+                    // CORREÇÃO: A variável estava com um erro de digitação ($conteudo_decocificado)
                     $row['conteudo'] = $conteudo_decodificado;
+
+                    // Melhoria: Determinar o tipo de exercício de forma mais robusta
+                    if (isset($conteudo_decodificado['alternativas'])) {
+                        $row['tipo'] = 'multipla_escolha';
+                    } elseif (isset($conteudo_decodificado['frase_completar'])) {
+                        $row['tipo'] = 'completar';
+                    } elseif (isset($conteudo_decodificado['resposta_correta'])) {
+                        $row['tipo'] = 'texto_livre';
+                    }
                 }
             } catch (Exception $e) {
                 // Manter como string se der erro

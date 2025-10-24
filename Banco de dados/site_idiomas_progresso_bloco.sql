@@ -38,7 +38,7 @@ CREATE TABLE `progresso_bloco` (
   KEY `id_usuario` (`id_usuario`),
   KEY `id_bloco` (`id_bloco`),
   CONSTRAINT `progresso_bloco_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`),
-  CONSTRAINT `progresso_bloco_ibfk_2` FOREIGN KEY (`id_bloco`) REFERENCES `blocos_atividades` (`id`)
+  CONSTRAINT `progresso_bloco_ibfk_2` FOREIGN KEY (`id_bloco`) REFERENCES `blocos` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

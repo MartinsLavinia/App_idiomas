@@ -9,7 +9,7 @@ class ListeningModel {
     // Salvar exercício de listening
     public function salvarExercicioListening($dados) {
         $sql = "INSERT INTO exercicios_listening 
-                (bloco_id, frase, audio_url, opcoes, resposta_correta, idioma, nivel, ordem, tipo_exercicio) 
+                (bloco_id, frase, audio_url, opcoes, resposta_correta, idioma, nivel, ordem, tipo) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'listening')";
         
         $stmt = $this->conn->prepare($sql);
@@ -206,7 +206,7 @@ class ListeningModel {
     public function buscarEstatisticasBloco($bloco_id) {
         $sql = "SELECT 
                 COUNT(*) as total_exercicios,
-                SUM(CASE WHEN tipo_exercicio = 'listening' THEN 1 ELSE 0 END) as total_listening
+                SUM(CASE WHEN tipo = 'listening' THEN 1 ELSE 0 END) as total_listening
                 FROM exercicios_listening 
                 WHERE bloco_id = ?";
         

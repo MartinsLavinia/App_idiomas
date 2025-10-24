@@ -743,7 +743,7 @@ $database->closeConnection();
                     exibirBlocos(data.blocos);
                     modalBlocos.show();
                 } else {
-                    alert("Erro ao carregar blocos: " + (data.message || 'Erro desconhecido'));
+                    alert("Erro ao carregar os blocos da unidade: " + (data.message || 'Erro desconhecido.'));
                 }
             })
             .catch(error => {
@@ -824,12 +824,12 @@ $database->closeConnection();
                         alert("Nenhum exercício encontrado para este bloco.");
                     }
                 } else {
-                    alert("Erro ao carregar exercícios: " + (data.message || 'Erro desconhecido'));
+                    alert("Erro ao carregar os exercícios: " + (data.message || 'Ocorreu um erro inesperado.'));
                 }
             })
             .catch(error => {
                 console.error("Erro ao carregar exercícios:", error);
-                alert("Erro de rede ao carregar exercícios: " + error.message);
+                alert("Erro de rede ao carregar os exercícios. Verifique sua conexão e tente novamente.");
             });
     };
 
@@ -873,8 +873,8 @@ $database->closeConnection();
         let tipoExercicio = "multipla_escolha"; // padrão
         
         // Analisar o conteúdo para determinar o tipo real
-        if (conteudo.tipo_exercicio) {
-            tipoExercicio = conteudo.tipo_exercicio;
+        if (conteudo.tipo) {
+            tipoExercicio = conteudo.tipo;
         } else if (conteudo.opcoes && conteudo.audio_url) {
             tipoExercicio = "listening";
         } else if (conteudo.frase_completar) {
@@ -1056,7 +1056,7 @@ $database->closeConnection();
             body: JSON.stringify({
                 exercicio_id: exercicioAtual.id,
                 resposta: respostaUsuario,
-                tipo_exercicio: tipoExercicio
+                tipo: tipoExercicio
             })
         })
         .then(response => response.json())

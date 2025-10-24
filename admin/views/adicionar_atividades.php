@@ -25,6 +25,11 @@ $mensagem = '';
 // Instancia a conexão com o banco de dados
 $database = new Database();
 $conn = $database->conn;
+
+if (!$conn) {
+    // Se a conexão falhar, exibe um erro e interrompe
+    die('<div class="alert alert-danger">Erro ao conectar com o banco de dados. Verifique o arquivo conexao.php.</div>');
+}
 $listeningModel = new ListeningModel($database); // Instancia o modelo de listening, passando a conexão
 
 // BUSCAR DADOS DO ADMINISTRADOR PARA O SIDEBAR
@@ -39,97 +44,25 @@ $stmt_foto->close();
 
 $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
 
-// --- Funções de Acesso a Dados (simulando um Model) ---
-// RECOMENDAÇÃO DE REATORAÇÃO: Mover esta função para uma classe de Model (ex: UnidadeModel.php)
-function getUnidadeInfo($conn, $unidadeId) {
-    $sql = "SELECT u.*, c.nome_caminho, c.nivel 
-            FROM unidades u 
-            LEFT JOIN caminhos_aprendizagem c ON u.id = c.id_unidade 
-            WHERE u.id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $unidadeId);
-    $stmt->execute();
-    $result = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
-    return $result;
-}
+// Incluir os Models necessários
+include_once __DIR__ . '/../models/UnidadeModel.php';
+include_once __DIR__ . '/../models/ExercicioModel.php';
+include_once __DIR__ . '/../models/SpeechExerciseModel.php';
 
-function getCaminhosByUnidade($conn, $unidadeId) {
-    $sql = "SELECT id, nome_caminho FROM caminhos_aprendizagem WHERE id_unidade = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $unidadeId);
-    $stmt->execute();
-    $result = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-    $stmt->close();
-    return $result;
-}
-
-function getBlocosByCaminhos($conn, array $caminhoIds) {
-    if (empty($caminhoIds)) {
-        return [];
-    }
-    $placeholders = str_repeat('?,' , count($caminhoIds) - 1) . '?';
-    $sql = "SELECT id, caminho_id, nome_bloco, ordem 
-            FROM blocos 
-            WHERE caminho_id IN ($placeholders) 
-            ORDER BY caminho_id, ordem ASC";
-    $stmt = $conn->prepare($sql);
-    $types = str_repeat('i', count($caminhoIds));
-    $stmt->bind_param($types, ...$caminhoIds);
-    $stmt->execute();
-    $result = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-    $stmt->close();
-    
-    $blocosPorCaminho = [];
-    foreach ($result as $bloco) {
-        $blocosPorCaminho[$bloco["caminho_id"]][] = $bloco;
-    }
-    return $blocosPorCaminho;
-}
-
-function adicionarExercicio($conn, $caminhoId, $blocoId, $ordem, $tipo, $pergunta, $conteudo) {
-    $sql = "INSERT INTO exercicios (caminho_id, bloco_id, ordem, tipo, pergunta, conteudo) VALUES (?, ?, ?, ?, ?, ?)";
-    $stmt = $conn->prepare($sql);
-    if ($stmt) {
-        $stmt->bind_param("iiisss", $caminhoId, $blocoId, $ordem, $tipo, $pergunta, $conteudo);
-        if ($stmt->execute()) {
-            $stmt->close();
-            return true;
-        } else {
-            error_log("Erro ao adicionar exercício: " . $stmt->error);
-            $stmt->close();
-            return false;
-        }
-    } else {
-        error_log("Erro na preparação da consulta: " . $conn->error);
-        return false;
-    }
-}
-
-function getExercicioById($conn, $exercicioId) {
-    $sql = "SELECT * FROM exercicios WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $exercicioId);
-    $stmt->execute();
-    $result = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
-    return $result;
-}
-
-// --- Lógica de Processamento (ATUALIZADA COM LISTENING) ---
+$unidadeModel = new UnidadeModel($database);
+$exercicioModel = new ExercicioModel($database);
 
 // Buscar informações da unidade, caminhos e blocos
-$unidade_info = getUnidadeInfo($conn, $unidade_id);
-$caminhos = getCaminhosByUnidade($conn, $unidade_id);
+$unidade_info = $unidadeModel->getUnidadeInfo($unidade_id);
+$caminhos = $unidadeModel->getCaminhosByUnidade($unidade_id);
 
 $blocos_por_caminho = [];
 if (!empty($caminhos)) {
     $caminho_ids = array_column($caminhos, 'id');
-    $blocos_por_caminho = getBlocosByCaminhos($conn, $caminho_ids);
+    $blocos_por_caminho = $unidadeModel->getBlocosByCaminhos($caminho_ids);
 }
 
 // Lógica para lidar com a submissão do formulário
-// RECOMENDAÇÃO DE REATORAÇÃO: Mover toda esta lógica de processamento de formulário para um arquivo de Controller (ex: AdicionarAtividadeController.php)
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $caminho_id = $_POST["caminho_id"] ?? null;
     $bloco_id = $_POST["bloco_id"] ?? null;
@@ -138,12 +71,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $pergunta = $_POST["pergunta"] ?? null;
     $tipo_exercicio = $_POST["tipo_exercicio"] ?? null;
     $conteudo = null;
+    $sucesso = false;
 
-    // VERIFICAR SE É TESTE DE ÁUDIO
-    // A lógica de teste de áudio foi movida para 'gerar_audio_api.php'
-
-    if (empty($caminho_id) || empty($bloco_id) || empty($ordem) || empty($pergunta)) {
-        $mensagem = '<div class="alert alert-danger">Por favor, preencha todos os campos obrigatórios.</div>';
+    if (empty($caminho_id) || empty($bloco_id) || empty($ordem) || empty($pergunta) || empty($tipo)) {
+        $mensagem = '<div class="alert alert-danger">Erro: Todos os campos principais (Caminho, Bloco, Ordem, Pergunta, Tipo) são obrigatórios.</div>';
     } else {
         switch ($tipo) {
             case 'normal':
@@ -161,10 +92,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 ];
                             }
                         }
-                        $conteudo = json_encode([
+                        $conteudo_array = [
                             'alternativas' => $alternativas,
                             'explicacao' => $_POST['explicacao'] ?? ''
-                        ], JSON_UNESCAPED_UNICODE);
+                        ];
                     }
                 } elseif ($tipo_exercicio === 'texto_livre') {
                     if (empty($_POST['resposta_esperada'])) {
@@ -173,26 +104,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         $alternativas_aceitas = !empty($_POST['alternativas_aceitas']) ? 
                             array_map('trim', explode(',', $_POST['alternativas_aceitas'])) : 
                             [$_POST['resposta_esperada']];
-                        $conteudo = json_encode([
+                        $conteudo_array = [
                             'resposta_correta' => $_POST['resposta_esperada'],
                             'alternativas_aceitas' => $alternativas_aceitas,
                             'dica' => $_POST['dica_texto'] ?? ''
-                        ], JSON_UNESCAPED_UNICODE);
-                    }
-                } elseif ($tipo_exercicio === 'completar') {
-                    if (empty($_POST['frase_completar']) || empty($_POST['resposta_completar'])) {
-                        $mensagem = '<div class="alert alert-danger">Frase para completar e resposta são obrigatórias.</div>';
-                    } else {
-                        $alternativas_aceitas = !empty($_POST['alternativas_completar']) ? 
-                            array_map('trim', explode(',', $_POST['alternativas_completar'])) : 
-                            [$_POST['resposta_completar']];
-                        $conteudo = json_encode([
-                            'frase_completar' => $_POST['frase_completar'],
-                            'resposta_correta' => $_POST['resposta_completar'],
-                            'alternativas_aceitas' => $alternativas_aceitas,
-                            'dica' => $_POST['dica_completar'] ?? '',
-                            'placeholder' => $_POST['placeholder_completar'] ?? 'Digite sua resposta...'
-                        ], JSON_UNESCAPED_UNICODE);
+                        ];
                     }
                 } elseif ($tipo_exercicio === 'fala') {
                     if (empty($_POST['frase_esperada'])) {
@@ -201,23 +117,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         $palavras_chave = !empty($_POST['palavras_chave']) ? 
                             array_map('trim', explode(',', $_POST['palavras_chave'])) : 
                             [];
-                        $conteudo = json_encode([
+                        
+                        $conteudo_array = [
                             'frase_esperada' => $_POST['frase_esperada'],
                             'pronuncia_fonetica' => $_POST['pronuncia_fonetica'] ?? '',
                             'palavras_chave' => $palavras_chave,
                             'tolerancia_erro' => 0.8
-                        ], JSON_UNESCAPED_UNICODE);
+                        ];
                     }
                 } elseif ($tipo_exercicio === 'audicao') {
-                    $conteudo = json_encode([
+                    $conteudo_array = [
                         'audio_url' => $_POST['audio_url'] ?? '',
                         'transcricao' => $_POST['transcricao'] ?? '',
                         'resposta_correta' => $_POST['resposta_audio_correta'] ?? ''
-                    ], JSON_UNESCAPED_UNICODE);
-                } 
-                // CORREÇÃO: PROCESSAMENTO PARA LISTENING
-                elseif ($tipo_exercicio === 'listening') {
-                    // CORREÇÃO: Mudar de listening_resposta_correta para listening_alt_correta
+                    ];
+                } elseif ($tipo_exercicio === 'listening') {
                     if (empty($_POST['frase_listening']) || empty($_POST['listening_opcao1']) || empty($_POST['listening_opcao2']) || !isset($_POST['listening_alt_correta'])) {
                         $mensagem = '<div class="alert alert-danger">Frase, pelo menos 2 opções e a indicação da resposta correta são obrigatórios para listening.</div>';
                     } else {
@@ -239,45 +153,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             if (!empty($_POST['listening_opcao3'])) $opcoes[] = trim($_POST['listening_opcao3']);
                             if (!empty($_POST['listening_opcao4'])) $opcoes[] = trim($_POST['listening_opcao4']);
                             
-                            // CORREÇÃO: Mudar de listening_resposta_correta para listening_alt_correta
                             $resposta_correta_index = (int)($_POST['listening_alt_correta'] ?? 0);
                             
-                            $bloco_info = $listeningModel->buscarInfoBloco($bloco_id); // Buscar info do bloco
-
-                            $dados_listening = [
-                                'bloco_id' => $bloco_id,
-                                'frase' => $_POST['frase_listening'],
+                            $conteudo_array = [
+                                'frase_original' => $_POST['frase_listening'],
                                 'audio_url' => $audio_url,
                                 'opcoes' => $opcoes,
                                 'resposta_correta' => $resposta_correta_index,
-                                'idioma' => $bloco_info['idioma_unidade'] ?? ($_POST['idioma_audio'] ?? 'en-us'), // Usar idioma da unidade/bloco
-                                'nivel' => $bloco_info['nivel_caminho'] ?? 'basico', // Usar nível do caminho/bloco
-                                'ordem' => $ordem,
-                                'tipo_exercicio' => 'listening'
+                                'explicacao' => $_POST['explicacao_listening'] ?? ''
                             ];
-
-                            // CORREÇÃO: Inserir os dados do listening no banco
-                            $conteudo = json_encode($dados_listening, JSON_UNESCAPED_UNICODE);
-                            
-                            if (adicionarExercicio($conn, $caminho_id, $bloco_id, $ordem, $tipo, $pergunta, $conteudo)) {
-                                $mensagem = '<div class="alert alert-success">Exercício de listening adicionado com sucesso!</div>';
-                            } else {
-                                $mensagem = '<div class="alert alert-danger">Erro ao adicionar exercício de listening.</div>';
-                            }
                             
                         } catch (Exception $e) {
                             $mensagem = '<div class="alert alert-danger">Erro ao gerar áudio ou salvar: ' . $e->getMessage() . '</div>';
                         }
                     }
-                } // Fim do elseif ($tipo_exercicio === 'listening')
+                }
                 
-                // Lógica para outros tipos de exercício 'normal' que não são 'listening'
-                if ($tipo_exercicio !== 'listening' && $conteudo) {
-                    if (adicionarExercicio($conn, $caminho_id, $bloco_id, $ordem, $tipo, $pergunta, $conteudo)) {
-                        $mensagem = '<div class="alert alert-success">Exercício adicionado com sucesso!</div>';
-                    } else {
-                        $mensagem = '<div class="alert alert-danger">Erro ao adicionar exercício.</div>';
-                    }
+                if (isset($conteudo_array)) {
+                    $conteudo = json_encode($conteudo_array, JSON_UNESCAPED_UNICODE);
                 }
                 break;
 
@@ -285,10 +178,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 if (empty($_POST['link_video']) || empty($_POST['pergunta_extra'])) {
                     $mensagem = '<div class="alert alert-danger">O Link do Vídeo/Áudio e a Pergunta Extra são obrigatórios para este tipo de exercício.</div>';
                 } else {
-                    $conteudo = json_encode([
+                    $conteudo_array = [
                         'link_video' => $_POST['link_video'],
                         'pergunta_extra' => $_POST['pergunta_extra']
-                    ], JSON_UNESCAPED_UNICODE);
+                    ];
+                    $conteudo = json_encode($conteudo_array, JSON_UNESCAPED_UNICODE);
                 }
                 break;
                 
@@ -296,78 +190,94 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 if (empty($_POST['quiz_id'])) {
                     $mensagem = '<div class="alert alert-danger">O ID do Quiz é obrigatório para este tipo de exercício.</div>';
                 } else {
-                    $conteudo = json_encode([
+                    $conteudo_array = [
                         'quiz_id' => $_POST['quiz_id']
-                    ], JSON_UNESCAPED_UNICODE);
+                    ];
+                    $conteudo = json_encode($conteudo_array, JSON_UNESCAPED_UNICODE);
                 }
                 break;
         }
 
-        // CORREÇÃO: Removida a lógica duplicada de inserção
-        if (empty($mensagem) && $conteudo && $tipo_exercicio !== 'listening') {
-            // Inserir exercício na tabela exercicios apenas para tipos que não são listening
-            // (o listening já foi inserido na lógica específica acima)
-            $sql = "INSERT INTO exercicios (caminho_id, bloco_id, ordem, tipo, tipo_exercicio, pergunta, conteudo) VALUES (?, ?, ?, ?, ?, ?, ?)";
-            $stmt = $conn->prepare($sql);
-            
-            if ($stmt) {
-                $stmt->bind_param("iiissss", $caminho_id, $bloco_id, $ordem, $tipo, $tipo_exercicio, $pergunta, $conteudo);
-                
-                if ($stmt->execute()) {
-                    $mensagem = '<div class="alert alert-success">Exercício adicionado com sucesso!</div>';
-                    $_POST = array(); // Limpar campos do formulário
-                } else {
-                    $mensagem = '<div class="alert alert-danger">Erro ao adicionar exercício: ' . $stmt->error . '</div>';
-                }
-                $stmt->close();
-            } else {
-                $mensagem = '<div class="alert alert-danger">Erro na preparação da consulta: ' . $conn->error . '</div>';
+        // LÓGICA DE INSERÇÃO CORRIGIDA - USANDO OS MODELS ESPECÍFICOS
+        if (empty($mensagem) && isset($conteudo)) {
+            switch ($tipo_exercicio) {
+                case 'fala':
+                    // Usar SpeechExerciseModel para exercícios de fala
+                    $speechModel = new SpeechExerciseModel($database);
+                    if ($speechModel->create($caminho_id, $bloco_id, $ordem, $pergunta, $conteudo)) {
+                        $mensagem = '<div class="alert alert-success">Exercício de Fala adicionado com sucesso!</div>';
+                        $sucesso = true;
+                    } else {
+                        $mensagem = '<div class="alert alert-danger">Erro ao adicionar exercício de fala.</div>';
+                    }
+                    break;
+                    
+                case 'listening':
+                    // Usar ListeningModel para exercícios de listening
+                    if ($listeningModel->create($caminho_id, $bloco_id, $ordem, $pergunta, $conteudo)) {
+                        $mensagem = '<div class="alert alert-success">Exercício de Listening adicionado com sucesso!</div>';
+                        $sucesso = true;
+                    } else {
+                        $mensagem = '<div class="alert alert-danger">Erro ao adicionar exercício de listening.</div>';
+                    }
+                    break;
+                    
+                default:
+                    // Para outros tipos, usar ExercicioModel
+                    if ($exercicioModel->create($caminho_id, $bloco_id, $ordem, $tipo_exercicio, $pergunta, $conteudo)) {
+                        $mensagem = '<div class="alert alert-success">Exercício adicionado com sucesso!</div>';
+                        $sucesso = true;
+                    } else {
+                        $mensagem = '<div class="alert alert-danger">Erro ao adicionar exercício.</div>';
+                    }
+                    break;
             }
         }
     }
 }
 
-// ... (o resto do código PHP permanece igual) ...
+// Limpar campos do formulário em caso de sucesso
+$limpar_campos = $sucesso ?? false;
 
-// Variáveis para pré-preencher o formulário em caso de erro ou sucesso
-$post_caminho_id = $_POST["caminho_id"] ?? '';
-$post_bloco_id = $_POST["bloco_id"] ?? '';
-$post_ordem = $_POST["ordem"] ?? '';
-$post_tipo = $_POST["tipo"] ?? "normal";
-$post_tipo_exercicio = $_POST["tipo_exercicio"] ?? "multipla_escolha";
-$post_pergunta = $_POST["pergunta"] ?? '';
+// Variáveis para pré-preencher o formulário em caso de erro
+$post_caminho_id = $limpar_campos ? '' : ($_POST["caminho_id"] ?? '');
+$post_bloco_id = $limpar_campos ? '' : ($_POST["bloco_id"] ?? '');
+$post_ordem = $limpar_campos ? '' : ($_POST["ordem"] ?? '');
+$post_tipo = $limpar_campos ? 'normal' : ($_POST["tipo"] ?? "normal");
+$post_tipo_exercicio = $limpar_campos ? 'multipla_escolha' : ($_POST["tipo_exercicio"] ?? "multipla_escolha");
+$post_pergunta = $limpar_campos ? '' : ($_POST["pergunta"] ?? '');
 
 // CAMPOS ESPECÍFICOS PARA LISTENING
-$post_frase_listening = $_POST["frase_listening"] ?? '';
-$post_idioma_audio = $_POST["idioma_audio"] ?? 'en-us';
-$post_listening_opcao1 = $_POST["listening_opcao1"] ?? '';
-$post_listening_opcao2 = $_POST["listening_opcao2"] ?? '';
-$post_listening_opcao3 = $_POST["listening_opcao3"] ?? '';
-$post_listening_opcao4 = $_POST["listening_opcao4"] ?? '';
-$post_listening_alt_correta = $_POST['listening_alt_correta'] ?? '0';
-$post_explicacao_listening = $_POST["explicacao_listening"] ?? '';
+$post_frase_listening = $limpar_campos ? '' : ($_POST["frase_listening"] ?? '');
+$post_idioma_audio = $limpar_campos ? 'en-us' : ($_POST["idioma_audio"] ?? 'en-us');
+$post_listening_opcao1 = $limpar_campos ? '' : ($_POST["listening_opcao1"] ?? '');
+$post_listening_opcao2 = $limpar_campos ? '' : ($_POST["listening_opcao2"] ?? '');
+$post_listening_opcao3 = $limpar_campos ? '' : ($_POST["listening_opcao3"] ?? '');
+$post_listening_opcao4 = $limpar_campos ? '' : ($_POST["listening_opcao4"] ?? '');
+$post_listening_alt_correta = $limpar_campos ? '0' : ($_POST['listening_alt_correta'] ?? '0');
+$post_explicacao_listening = $limpar_campos ? '' : ($_POST["explicacao_listening"] ?? '');
 
 // Campos específicos para cada tipo de exercício
-$post_alt_texto = $_POST["alt_texto"] ?? [];
-$post_alt_correta = $_POST["alt_correta"] ?? null;
-$post_explicacao = $_POST["explicacao"] ?? '';
-$post_resposta_esperada = $_POST["resposta_esperada"] ?? '';
-$post_alternativas_aceitas = $_POST["alternativas_aceitas"] ?? '';
-$post_dica_texto = $_POST["dica_texto"] ?? '';
-$post_frase_completar = $_POST["frase_completar"] ?? '';
-$post_resposta_completar = $_POST["resposta_completar"] ?? '';
-$post_alternativas_completar = $_POST["alternativas_completar"] ?? '';
-$post_dica_completar = $_POST["dica_completar"] ?? '';
-$post_placeholder_completar = $_POST["placeholder_completar"] ?? 'Digite sua resposta...';
-$post_frase_esperada = $_POST["frase_esperada"] ?? '';
-$post_pronuncia_fonetica = $_POST["pronuncia_fonetica"] ?? '';
-$post_palavras_chave = $_POST["palavras_chave"] ?? '';
-$post_audio_url = $_POST["audio_url"] ?? '';
-$post_transcricao = $_POST["transcricao"] ?? '';
-$post_resposta_audio_correta = $_POST["resposta_audio_correta"] ?? '';
-$post_link_video = $_POST["link_video"] ?? '';
-$post_pergunta_extra = $_POST["pergunta_extra"] ?? '';
-$post_quiz_id = $_POST["quiz_id"] ?? '';
+$post_alt_texto = $limpar_campos ? [] : ($_POST["alt_texto"] ?? []);
+$post_alt_correta = $limpar_campos ? null : ($_POST["alt_correta"] ?? null);
+$post_explicacao = $limpar_campos ? '' : ($_POST["explicacao"] ?? '');
+$post_resposta_esperada = $limpar_campos ? '' : ($_POST["resposta_esperada"] ?? '');
+$post_alternativas_aceitas = $limpar_campos ? '' : ($_POST["alternativas_aceitas"] ?? '');
+$post_dica_texto = $limpar_campos ? '' : ($_POST["dica_texto"] ?? '');
+$post_frase_completar = $limpar_campos ? '' : ($_POST["frase_completar"] ?? '');
+$post_resposta_completar = $limpar_campos ? '' : ($_POST["resposta_completar"] ?? '');
+$post_alternativas_completar = $limpar_campos ? '' : ($_POST["alternativas_completar"] ?? '');
+$post_dica_completar = $limpar_campos ? '' : ($_POST["dica_completar"] ?? '');
+$post_placeholder_completar = $limpar_campos ? 'Digite sua resposta...' : ($_POST["placeholder_completar"] ?? 'Digite sua resposta...');
+$post_frase_esperada = $limpar_campos ? '' : ($_POST["frase_esperada"] ?? '');
+$post_pronuncia_fonetica = $limpar_campos ? '' : ($_POST["pronuncia_fonetica"] ?? '');
+$post_palavras_chave = $limpar_campos ? '' : ($_POST["palavras_chave"] ?? '');
+$post_audio_url = $limpar_campos ? '' : ($_POST["audio_url"] ?? '');
+$post_transcricao = $limpar_campos ? '' : ($_POST["transcricao"] ?? '');
+$post_resposta_audio_correta = $limpar_campos ? '' : ($_POST["resposta_audio_correta"] ?? '');
+$post_link_video = $limpar_campos ? '' : ($_POST["link_video"] ?? '');
+$post_pergunta_extra = $limpar_campos ? '' : ($_POST["pergunta_extra"] ?? '');
+$post_quiz_id = $limpar_campos ? '' : ($_POST["quiz_id"] ?? '');
 
 $database->closeConnection();
 ?>
