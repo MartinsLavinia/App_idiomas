@@ -311,10 +311,10 @@ $database->closeConnection();
     padding: 0 15px;
 }
 
-/* Container do avatar - APENAS para quando tem foto (COM círculo) */
+/* Container do avatar - PARA QUANDO TEM FOTO (80x80px COM CÍRCULO) */
 .profile-avatar-sidebar {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     border: 3px solid var(--amarelo-detalhe);
     background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
@@ -333,14 +333,14 @@ $database->closeConnection();
     border-radius: 50%;
 }
 
-/* Ícone quando NÃO tem foto - SEM círculo */
-.profile-icon-no-photo {
-    font-size: 4.5rem; /* Ícone grande */
+/* Ícone quando NÃO tem foto - SEM CÍRCULO (apenas ícone) */
+.sidebar .profile i.fa-user-circle {
+    font-size: 4rem; /* Tamanho do ícone */
     color: var(--amarelo-detalhe);
     margin: 0 auto 15px;
     display: block;
+    /* REMOVIDO: border, background, box-shadow, width, height */
 }
-
 
 .sidebar .list-group {
     width: 100%;
@@ -685,13 +685,13 @@ $database->closeConnection();
     <div class="sidebar">
         <div class="profile">
             <?php if ($foto_admin): ?>
-                <!-- COM FOTO: Com círculo amarelo -->
+                <!-- COM FOTO: Com círculo amarelo de 80x80px -->
                 <div class="profile-avatar-sidebar">
                     <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
                 </div>
             <?php else: ?>
-                <!-- SEM FOTO: Apenas ícone grande, SEM círculo -->
-                <i class="fas fa-user-circle profile-icon-no-photo"></i>
+                <!-- SEM FOTO: Apenas ícone, SEM círculo -->
+                <i class="fas fa-user-circle"></i>
             <?php endif; ?>
             <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
             <small>Administrador(a)</small>
@@ -699,10 +699,10 @@ $database->closeConnection();
 
         <div class="list-group">
             <a href="gerenciar_caminho.php" class="list-group-item">
-                <i class="fas fa-road"></i> Gerenciar Caminhos
+                <i class="fas fa-plus-circle"></i> Gerenciar Caminhos
             </a>
             <a href="pagina_adicionar_idiomas.php" class="list-group-item">
-                <i class="fas fa-globe"></i> Gerenciar Idiomas
+                <i class="fas fa-language"></i> Gerenciar Idiomas
             </a>
             <a href="gerenciar_teorias.php" class="list-group-item">
                 <i class="fas fa-book-open"></i> Gerenciar Teorias
@@ -725,7 +725,7 @@ $database->closeConnection();
     <div class="main-content">
         <div class="container-fluid mt-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h2"><i class="fas fa-users"></i> Gerenciar Usuários</h1>
+                <h1 class="h2"><i class="fas fa-users" style="color: black;"></i> Gerenciar Usuários</h1>
             </div>
 
             <!-- Estatísticas Rápidas -->
@@ -733,7 +733,7 @@ $database->closeConnection();
                 <div class="col-md-3">
                     <div class="stats-card text-center">
                         <h3>5</h3>
-                        <p><i class="fas fa-users"></i> Total de Usuários</p>
+                        <p><i class="fas fa-users" style="color: black;"></i> Total de Usuários</p>
                     </div>
                 </div>
                 <div class="col-md-3">

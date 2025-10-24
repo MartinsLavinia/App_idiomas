@@ -30,18 +30,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $sql_insert = "INSERT INTO teorias (titulo, nivel, ordem, conteudo, resumo, palavras_chave, data_criacao) VALUES (?, ?, ?, ?, ?, ?, NOW())";
         $stmt_insert = $conn->prepare($sql_insert);
         
-// BUSCAR DADOS DO ADMINISTRADOR PARA O SIDEBAR
-$id_admin = $_SESSION['id_admin'];
-$sql_foto = "SELECT foto_perfil FROM administradores WHERE id = ?";
-$stmt_foto = $conn->prepare($sql_foto);
-$stmt_foto->bind_param("i", $id_admin);
-$stmt_foto->execute();
-$resultado_foto = $stmt_foto->get_result();
-$admin_foto = $resultado_foto->fetch_assoc();
-$stmt_foto->close();
-
-$foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
-
         if ($stmt_insert) {
             $stmt_insert->bind_param("ssisss", $titulo, $nivel, $ordem, $conteudo, $resumo, $palavras_chave);
             
@@ -60,6 +48,32 @@ $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_
         $database->closeConnection();
     }
 }
+
+// BUSCAR DADOS DO ADMINISTRADOR PARA O SIDEBAR
+$database_foto = new Database();
+$conn_foto = $database_foto->conn;
+
+$id_admin = $_SESSION['id_admin'];
+$foto_admin = null;
+
+$check_column_sql = "SHOW COLUMNS FROM administradores LIKE 'foto_perfil'";
+$result_check = $conn_foto->query($check_column_sql);
+
+if ($result_check && $result_check->num_rows > 0) {
+    $sql_foto = "SELECT foto_perfil FROM administradores WHERE id = ?";
+    $stmt_foto = $conn_foto->prepare($sql_foto);
+    $stmt_foto->bind_param("i", $id_admin);
+    $stmt_foto->execute();
+    $resultado_foto = $stmt_foto->get_result();
+    
+    if ($resultado_foto && $resultado_foto->num_rows > 0) {
+        $admin_foto = $resultado_foto->fetch_assoc();
+        $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
+    }
+    $stmt_foto->close();
+}
+
+$database_foto->closeConnection();
 ?>
 
 <!DOCTYPE html>
@@ -76,84 +90,85 @@ $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* Estilos para validação - ADICIONAR NO FINAL DO <style> EXISTENTE */
-.is-invalid {
-    border-color: #dc3545 !important;
-    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.15) !important;
-}
+        /* Estilos para validação */
+        .is-invalid {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.15) !important;
+        }
 
-.is-valid {
-    border-color: #198754 !important;
-    box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.15) !important;
-}
+        .is-valid {
+            border-color: #198754 !important;
+            box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.15) !important;
+        }
 
-/* Loading submit - ADICIONAR NO FINAL DO <style> EXISTENTE */
-.btn-loading {
-    position: relative;
-    color: transparent !important;
-}
+        /* Loading submit */
+        .btn-loading {
+            position: relative;
+            color: transparent !important;
+        }
 
-.btn-loading::after {
-    content: '';
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    top: 50%;
-    left: 50%;
-    margin-left: -10px;
-    margin-top: -10px;
-    border: 2px solid #ffffff;
-    border-radius: 50%;
-    border-right-color: transparent;
-    animation: spin 1s linear infinite;
-}
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin-left: -10px;
+            margin-top: -10px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-right-color: transparent;
+            animation: spin 1s linear infinite;
+        }
 
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
 
-/* Melhorias para o modal de preview - ADICIONAR NO FINAL DO <style> EXISTENTE */
-.modal-content {
-    border: none;
-    border-radius: 10px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-}
+        /* Melhorias para o modal de preview */
+        .modal-content {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
 
-.modal-header {
-    background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
-    color: var(--branco);
-    border-bottom: 3px solid var(--amarelo-detalhe);
-}
+        .modal-header {
+            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+            color: var(--branco);
+            border-bottom: 3px solid var(--amarelo-detalhe);
+        }
 
-/* Botão Visualizar (Preview) - Mais bonito e moderno */
-.btn-info {
-    background-color: #0dcaf0;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    padding: 0.6rem 1.5rem;
-    font-weight: 600;
-    transition: background 0.2s, color 0.2s, border 0.2s, transform 0.2s;
-    box-shadow: none;
-}
+        /* Botão Visualizar (Preview) */
+        .btn-info {
+            background-color: #0dcaf0;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 0.6rem 1.5rem;
+            font-weight: 600;
+            transition: background 0.2s, color 0.2s, border 0.2s, transform 0.2s;
+            box-shadow: none;
+        }
 
-.btn-info:hover, .btn-info:focus {
-    background-color: #31d2f2;
-    color: #fff;
-    transform: translateY(-2px) scale(1.03);
-    outline: none;
-}
+        .btn-info:hover, .btn-info:focus {
+            background-color: #31d2f2;
+            color: #fff;
+            transform: translateY(-2px) scale(1.03);
+            outline: none;
+        }
 
-.btn-info:active {
-    background-color: #0dcaf0;
-    transform: scale(0.98);
-}
+        .btn-info:active {
+            background-color: #0dcaf0;
+            transform: scale(0.98);
+        }
 
-.btn-info i {
-    margin-right: 0.5rem;
-}
-        /* Paleta de Cores - MESMAS DO SITE */
+        .btn-info i {
+            margin-right: 0.5rem;
+        }
+
+        /* Paleta de Cores */
         :root {
             --roxo-principal: #6a0dad;
             --roxo-escuro: #4c087c;
@@ -181,34 +196,22 @@ $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_
             padding: 1rem 0;
             border-bottom: 3px solid var(--amarelo-detalhe);
             box-shadow: 0 4px 15px rgba(255, 238, 0, 0.38);
-    }
-     /* Ajuste da logo no header */
-    .navbar-brand {
-        margin-left: auto;
-        margin-right: 0;
-        display: flex;
-        align-items: center;
-        justify-content: flex-end; /* Move para o canto direito */
-        width: 100%;
-    }
-    .navbar-brand .logo-header {
-        height: 70px;
-        width: auto;
-        display: block;
-    }
-
-        .navbar::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            
         }
 
-        .logo-header {
-            height: 40px;
+        /* Ajuste da logo no header */
+        .navbar-brand {
+            margin-left: auto;
+            margin-right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            width: 100%;
+        }
+
+        .navbar-brand .logo-header {
+            height: 70px;
+            width: auto;
+            display: block;
         }
 
         .settings-icon {
@@ -223,87 +226,110 @@ $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_
             transform: rotate(90deg);
         }
 
-        /* SIDEBAR FIXO - CORREÇÃO APLICADA */
-              /* Menu Lateral */
-        .sidebar .profile {
-    text-align: center;
-    margin-bottom: 30px;
-}
+        /* SIDEBAR */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100%;
+            background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+            color: var(--branco);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
 
-/* ADICIONE AQUI O NOVO CSS */
-./* Estilos para foto de perfil no sidebar */
+        .sidebar .profile {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 0 15px;
+        }
+
+       /* Estilos para foto de perfil no sidebar */
 .profile-avatar-sidebar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    border: 3px solid var(--amarelo-detalhe);
-    background: linear-gradient(135deg, var(--roxo-claro), var(--roxo-principal));
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 15px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .profile-avatar-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--amarelo-detalhe);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-/* Remove o ícone padrão quando há foto */
-.profile-avatar-sidebar:has(img) i {
-    display: none;
+.profile-avatar-sidebar i {
+    font-size: 5rem; /* Aumentei um pouco o tamanho do ícone */
+    color: var(--amarelo-detalhe);
+    text-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-/* Estilos para nome e email com quebra de texto */
-.admin-name {
-    font-weight: 600;
-    margin-bottom: 0;
-    color: var(--branco);
-    word-wrap: break-word;
-    max-width: 200px;
-    text-align: center;
-    line-height: 1.3;
+/* Remove a borda e sombra quando há apenas o ícone */
+.profile-avatar-sidebar:not(:has(.profile-avatar-img)) {
+    border: none;
+    background: transparent;
+    box-shadow: none;
 }
 
-.admin-email {
-    color: var(--cinza-claro);
-    word-wrap: break-word;
-    max-width: 200px;
-    text-align: center;
-    font-size: 0.8rem;
-    line-height: 1.2;
-    margin-top: 5px;
-}
-
-/* Ajuste do container do profile */
 .sidebar .profile {
     text-align: center;
     margin-bottom: 30px;
-    padding: 0 10px;
+    padding: 0 15px;
 }
 
-.sidebar .profile i {
-    font-size: 4rem;
-    color: var(--amarelo-detalhe);
-    margin-bottom: 10px;
+.sidebar .profile h5 {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--branco);
+    font-size: 1.1rem;
+    text-align: center;
 }
 
-        /* CORREÇÃO PARA O BACKDROP DO MODAL */
-        .modal-backdrop {
-            z-index: 1050; /* Backdrop abaixo do sidebar */
+.sidebar .profile small {
+    color: var(--cinza-claro);
+    font-size: 0.9rem;
+    text-align: center;
+    display: block;
+}
+
+        .sidebar .list-group {
+            width: 100%;
         }
 
-        .modal {
-            z-index: 1060; /* Modal acima do backdrop */
+        .sidebar .list-group-item {
+            background-color: transparent;
+            color: var(--branco);
+            border: none;
+            padding: 15px 25px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
         }
 
-        body.modal-open .sidebar {
-            opacity: 1 !important;
-            visibility: visible !important;
+        .sidebar .list-group-item:hover {
+            background-color: var(--roxo-escuro);
+            cursor: pointer;
+        }
+
+        .sidebar .list-group-item.active {
+            background-color: var(--roxo-escuro) !important;
+            color: var(--branco) !important;
+            font-weight: 600;
+            border-left: 4px solid var(--amarelo-detalhe);
+        }
+
+        .sidebar .list-group-item i {
+            color: var(--amarelo-detalhe);
         }
 
         .main-content {
@@ -311,23 +337,15 @@ $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_
             padding: 20px;
         }
 
-        /* REMOVER TODAS AS ANIMAÇÕES DO SIDEBAR */
-        .sidebar,
-        .sidebar *,
-        .sidebar .list-group-item,
-        .sidebar .list-group-item i {
-            transition: none !important;
-            animation: none !important;
-        }
-
-        /* Links normais - comportamento padrão sem animação */
-        .sidebar .list-group-item:not([data-bs-toggle]) {
-            transition: none !important;
-        }
-
-        /* Links de modal - manter funcionalidade mas sem animação */
-        .sidebar .list-group-item[data-bs-toggle] {
-            cursor: pointer;
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .main-content {
+                margin-left: 0;
+            }
         }
 
         /* Container Principal */
@@ -337,7 +355,7 @@ $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_
             padding: 2rem;
         }
 
-        /* Cabeçalho da Página - EFEITO VIDRO ANIMADO */
+        /* Cabeçalho da Página */
         .page-header {
             background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
             color: var(--branco);
@@ -361,15 +379,9 @@ $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_
         }
 
         @keyframes glassEffect {
-            0% {
-                left: -100%;
-            }
-            50% {
-                left: 100%;
-            }
-            100% {
-                left: 100%;
-            }
+            0% { left: -100%; }
+            50% { left: 100%; }
+            100% { left: 100%; }
         }
 
         .page-header-content {
@@ -552,10 +564,8 @@ $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_
             transform: translateY(-2px);
         }
 
-
-        /* Botão Cancelar padrão (vermelho suave) */
         .btn-secondary {
-            background: rgba(33, 37, 41, 0.08); /* preto-texto com transparência */
+            background: rgba(33, 37, 41, 0.08);
             border: 1.5px solid var(--preto-texto);
             color: var(--preto-texto);
             padding: 0.75rem 2rem;
@@ -568,7 +578,6 @@ $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_
         .btn-secondary:hover, .btn-secondary:focus {
             background: rgba(33, 37, 41, 0.18);
             color: var(--preto-texto);
-
             transform: translateY(-2px) scale(1.03);
             outline: none;
         }
@@ -609,26 +618,22 @@ $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_
             border-left-color: #dc3545;
         }
 
-        /* Responsividade */
-        @media (max-width: 992px) {
-            .sidebar {
-                width: 200px;
-            }
-            .main-content {
-                margin-left: 200px;
-            }
+        .btn-warning {
+            background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
+            color: var(--preto-texto);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+            min-width: 180px;
         }
 
-        @media (max-width: 768px) {
-            .sidebar {
-                position: relative;
-                width: 100%;
-                height: auto;
-            }
-            .main-content {
-                margin-left: 0;
-            }
+        .btn-warning:hover {
+            background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
+            color: var(--preto-texto);
+        }
 
+        /* Responsividade */
+        @media (max-width: 768px) {
             .main-container {
                 padding: 1rem;
             }
@@ -654,23 +659,7 @@ $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_
                 width: 100%;
             }
         }
-
-            .btn-warning {
-                background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
-                color: var(--cinza-texto);
-                box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
-                min-width: 180px;
-            }
-
-            .btn-warning:hover {
-                background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
-                transform: translateY(-2px);
-                box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
-                color: var(--cinza-texto);
-            }
     </style>
-
-    
 </head>
 <body>
 
@@ -688,30 +677,27 @@ $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_
         </div>
     </nav>
 
-    <!-- SIDEBAR ADICIONADO AQUI -->
+    <!-- SIDEBAR -->
     <div class="sidebar">
-    <div class="profile">
-        <?php if ($foto_admin): ?>
-            <div class="profile-avatar-sidebar">
-                <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
-            </div>
-        <?php else: ?>
-            <i class="fas fa-user-circle"></i>
-        <?php endif; ?>
-        <h5 class="admin-name"><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
-        <small class="admin-email"><?php echo htmlspecialchars($_SESSION['email_admin']); ?></small>
-    </div>
-
-    <div class="list-group">
-        <!-- ... resto dos itens do menu ... -->
-    </div>
-</div>
+        <div class="profile">
+            <?php if ($foto_admin): ?>
+                <div class="profile-avatar-sidebar">
+                    <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
+                </div>
+            <?php else: ?>
+                <div class="profile-avatar-sidebar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            <?php endif; ?>
+            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+            <small>Administrador(a)</small>
+        </div>
 
         <div class="list-group">
             <a href="gerenciar_caminho.php" class="list-group-item">
                 <i class="fas fa-plus-circle"></i> Adicionar Caminho
             </a>
-            <a href="pagina_adicionar_idiomas.php" class="list-group-item" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
+            <a href="pagina_adicionar_idiomas.php" class="list-group-item">
                 <i class="fas fa-globe"></i> Gerenciar Idiomas
             </a>
             <a href="gerenciar_teorias.php" class="list-group-item active">
@@ -852,66 +838,54 @@ $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // Para usar TinyMCE, você precisa:
-        // 1. Acessar https://www.tiny.cloud/ e criar uma conta
-        // 2. Obter uma API key gratuita
-        // 3. Substituir "no-api-key" pela sua chave no script do TinyMCE
-        
-        console.log('Para usar TinyMCE, você precisa:');
-        console.log('1. Acessar https://www.tiny.cloud/ e criar uma conta');
-        console.log('2. Obter uma API key gratuita');
-        console.log('3. Substituir "no-api-key" pela sua chave no script do TinyMCE');
+        // Preview do conteúdo
+        function adicionarBotaoPreview() {
+            const grupoBotoes = document.querySelector('.btn-group-actions');
+            const botaoPreview = document.createElement('button');
+            botaoPreview.type = 'button';
+            botaoPreview.className = 'btn btn-info';
+            botaoPreview.innerHTML = '<i class="fas fa-eye me-2"></i>Visualizar';
+            botaoPreview.onclick = mostrarPreview;
+            
+            grupoBotoes.insertBefore(botaoPreview, grupoBotoes.firstChild);
+        }
 
-        // Preview do conteúdo - ADICIONAR NO FINAL DO <script> EXISTENTE
-function adicionarBotaoPreview() {
-    const grupoBotoes = document.querySelector('.btn-group-actions');
-    const botaoPreview = document.createElement('button');
-    botaoPreview.type = 'button';
-    botaoPreview.className = 'btn btn-info';
-    botaoPreview.innerHTML = '<i class="fas fa-eye me-2"></i>Visualizar';
-    botaoPreview.onclick = mostrarPreview;
-    
-    grupoBotoes.insertBefore(botaoPreview, grupoBotoes.firstChild);
-}
-
-function mostrarPreview() {
-    const titulo = document.getElementById('titulo').value || 'Sem título';
-    const conteudo = tinymce.get('conteudo') ? tinymce.get('conteudo').getContent() : document.getElementById('conteudo').value;
-    
-    const previewHTML = `
-        <div class="modal fade" id="previewModal" tabindex="-1">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Preview: ${titulo}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        ${conteudo || '<p class="text-muted">Nenhum conteúdo para visualizar.</p>'}
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        function mostrarPreview() {
+            const titulo = document.getElementById('titulo').value || 'Sem título';
+            const conteudo = document.getElementById('conteudo').value;
+            
+            const previewHTML = `
+                <div class="modal fade" id="previewModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Preview: ${titulo}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                ${conteudo || '<p class="text-muted">Nenhum conteúdo para visualizar.</p>'}
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    `;
-    
-    // Remover modal existente
-    const modalExistente = document.getElementById('previewModal');
-    if (modalExistente) {
-        modalExistente.remove();
-    }
-    
-    // Adicionar novo modal
-    document.body.insertAdjacentHTML('beforeend', previewHTML);
-    const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
-    previewModal.show();
-}
+            `;
+            
+            // Remover modal existente
+            const modalExistente = document.getElementById('previewModal');
+            if (modalExistente) {
+                modalExistente.remove();
+            }
+            
+            // Adicionar novo modal
+            document.body.insertAdjacentHTML('beforeend', previewHTML);
+            const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+            previewModal.show();
+        }
 
-document.addEventListener('DOMContentLoaded', adicionarBotaoPreview);
-
-
+        document.addEventListener('DOMContentLoaded', adicionarBotaoPreview);
     </script>
 </body>
 </html>
