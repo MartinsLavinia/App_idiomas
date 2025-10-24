@@ -733,7 +733,7 @@ $database->closeConnection();
                 <div class="col-md-3">
                     <div class="stats-card text-center">
                         <h3>5</h3>
-                        <p><i class="fas fa-users"></i> Total de Usuários</p>
+                        <p><i class="fas fa-users" style="color: black;"></i> Total de Usuários</p>
                     </div>
                 </div>
                 <div class="col-md-3">
