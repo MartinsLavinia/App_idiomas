@@ -312,15 +312,38 @@ border: 0 4px 8px rgba(235, 183, 14, 0.77);
     margin-bottom: 5px;
     color: var(--branco);
     font-size: 1.1rem;
+    word-wrap: break-word; /* Força a quebra de linha para palavras longas */
+    max-width: 200px; /* Limita a largura máxima para o texto, ajustável */
+    text-align: center; /* Centraliza o texto quebrado */
+    line-height: 1.3; /* Melhora a legibilidade do texto quebrado */
 }
 
 .sidebar .profile small {
     color: var(--cinza-claro);
     font-size: 0.9rem;
+    word-wrap: break-word; /* Força a quebra de linha para palavras longas */
+    max-width: 200px; /* Limita a largura máxima para o texto, ajustável */
+    text-align: center; /* Centraliza o texto quebrado */
+    line-height: 1.2; /* Melhora a legibilidade do texto quebrado */
+    margin-top: 5px; /* Adiciona um pequeno espaçamento se o texto quebrar */
 }
 
 .sidebar .list-group {
+    display: flex; /* Torna o list-group um container flexível */
+    flex-direction: column; /* Organiza os itens em coluna */
     width: 100%;
+}
+
+.sidebar .list-group-item.sair {
+    background-color: transparent;
+    color: var(--branco);
+    border: none;
+    padding: 15px 25px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 40px !important; /* Aumentado e forçado para garantir que o espaçamento seja visível */
 }
 
 .sidebar .list-group-item {
@@ -451,8 +474,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container d-flex justify-content-between align-items-center">
-            <div></div>
+        <div class="container-fluid d-flex justify-content-end align-items-center">
             <div class="d-flex align-items-center" style="gap: 24px;">
                 <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
                     <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
@@ -471,36 +493,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
             </div>
         <?php else: ?>
-            <i class="fas fa-user-circle" style="font-size: 4rem; color: var(--amarelo-detalhe); margin-bottom: 15px;"></i>
+            <i class="fas fa-user-circle"></i>
         <?php endif; ?>
         <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
         <small>Administrador(a)</small>
     </div>
 
-    <div class="list-group">
-        <a href="gerenciar_caminho.php" class="list-group-item">
-            <i class="fas fa-plus-circle"></i> Adicionar Caminho
-        </a>
-        <a href="pagina_adicionar_idiomas.php" class="list-group-item">
-            <i class="fas fa-globe"></i> Gerenciar Idiomas
-        </a>
-        <a href="gerenciar_teorias.php" class="list-group-item">
-            <i class="fas fa-book-open"></i> Gerenciar Teorias
-        </a>
-        <a href="gerenciar_unidades.php" class="list-group-item">
-            <i class="fas fa-cubes"></i> Gerenciar Unidades
-        </a>
-        <a href="gerenciar_usuarios.php" class="list-group-item">
-            <i class="fas fa-users"></i> Gerenciar Usuários
-        </a>
-        <a href="estatisticas_usuarios.php" class="list-group-item">
-            <i class="fas fa-chart-bar"></i> Estatísticas
-        </a>
-        <a href="logout.php" class="list-group-item mt-auto">
-            <i class="fas fa-sign-out-alt"></i> Sair
-        </a>
+        <div class="list-group" >
+            <a href="gerenciar_caminho.php" class="list-group-item active">
+                <i class="fas fa-plus-circle"></i> Adicionar Caminho
+            </a>
+            <a href="pagina_adicionar_idiomas.php" class="list-group-item">
+                <i class="fas fa-language"></i> Gerenciar Idiomas
+            </a>
+            <a href="gerenciar_teorias.php" class="list-group-item">
+                <i class="fas fa-book-open"></i> Gerenciar Teorias
+            </a>
+            <a href="gerenciar_unidades.php" class="list-group-item">
+                <i class="fas fa-cubes"></i> Gerenciar Unidades
+            </a>
+            <a href="gerenciar_usuarios.php" class="list-group-item">
+                <i class="fas fa-users"></i> Gerenciar Usuários
+            </a>
+            <a href="estatisticas_usuarios.php" class="list-group-item">
+                <i class="fas fa-chart-bar"></i> Estatísticas
+            </a>
+            <a href="logout.php" class="list-group-item sair">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </a>
+        </div>
     </div>
-</div>
 
     <div class="main-content">
         <div class="container-fluid mt-4">
