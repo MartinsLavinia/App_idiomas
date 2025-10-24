@@ -725,7 +725,7 @@ $database->closeConnection();
     <div class="main-content">
         <div class="container-fluid mt-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h2"><i class="fas fa-users"></i> Gerenciar Usuários</h1>
+                <h1 class="h2"><i class="fas fa-users" style="color: black;"></i> Gerenciar Usuários</h1>
             </div>
 
             <!-- Estatísticas Rápidas -->
