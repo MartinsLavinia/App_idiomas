@@ -461,7 +461,7 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
             <i class="fas fa-plus-circle"></i> Adicionar Caminho
         </a>
         <a href="pagina_adicionar_idiomas.php" class="list-group-item active">
-            <i class="fas fa-globe"></i> Gerenciar Idiomas
+            <i class="fas fa-language"></i> Gerenciar Idiomas
         </a>
         <a href="gerenciar_teorias.php" class="list-group-item">
             <i class="fas fa-book-open"></i> Gerenciar Teorias
