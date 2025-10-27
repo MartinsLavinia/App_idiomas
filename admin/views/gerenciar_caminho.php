@@ -125,12 +125,32 @@ $database->closeConnection();
             transform: rotate(90deg);
         }
         .table-container {
+            /* Estilos para o contêiner da tabela, mantidos como estavam */
             background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             border: 2px solid rgba(106, 13, 173, 0.1);
             transition: all 0.3s ease;
+        }
+
+        /* Estilo para o ícone de logout no cabeçalho */
+        .logout-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem; /* Tamanho igual ao settings-icon */
+        }
+        .logout-icon:hover {
+            color: var(--roxo-escuro) !important;
+            transform: scale(1.1); /* Efeito de zoom sutil */
+        }
+
+        .btn-logout:hover {
+            background-color: var(--roxo-principal);
+            color: var(--branco) !important;
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 4px 12px rgba(106, 13, 173, 0.3);
         }
 
         .card-header h5 {
@@ -507,13 +527,16 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container-fluid d-flex justify-content-end align-items-center">
-            <div class="d-flex align-items-center" style="gap: 24px;">
-                <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
-                    <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
-                </a>
-                <a href="editar_perfil.php" class="settings-icon">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <a class="navbar-brand" href="#">
+                <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
+            </a>
+            <div class="d-flex align-items-center" style="gap: 20px;">
+                <a href="editar_perfil.php" class="settings-icon" title="Configurações">
                     <i class="fas fa-cog fa-lg"></i>
+                </a>
+                <a href="logout.php" class="btn btn-logout" title="Sair">
+                    <i class="fas fa-sign-out-alt fa-lg"></i>
                 </a>
             </div>
         </div>
@@ -550,9 +573,6 @@ document.addEventListener('DOMContentLoaded', function() {
             </a>
             <a href="estatisticas_usuarios.php" class="list-group-item">
                 <i class="fas fa-chart-bar"></i> Estatísticas
-            </a>
-            <a href="logout.php" class="list-group-item sair">
-                <i class="fas fa-sign-out-alt"></i> Sair
             </a>
         </div>
     </div>
@@ -888,9 +908,6 @@ document.addEventListener('DOMContentLoaded', function() {
         </a>
         <a href="estatisticas_usuarios.php" class="bottom-nav-item">
             <i class="fas fa-chart-bar"></i>
-        </a>
-        <a href="logout.php" class="bottom-nav-item">
-            <i class="fas fa-sign-out-alt"></i>
         </a>
     </nav>
 

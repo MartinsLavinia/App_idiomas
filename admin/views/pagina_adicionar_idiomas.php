@@ -91,6 +91,12 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
             transform: rotate(90deg);
         }
 
+        .logout-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
         /* Barra de Navegação - MODIFICADA PARA TRANSPARENTE COM DECORAÇÃO AMARELA */
         .navbar {
             background-color: transparent !important;
@@ -438,6 +444,9 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
                 <a href="editar_perfil.php" class="settings-icon">
                     <i class="fas fa-cog fa-lg"></i>
                 </a>
+                <a href="logout.php" class="logout-icon" title="Sair">
+                    <i class="fas fa-sign-out-alt fa-lg"></i>
+                </a>
             </div>
         </div>
     </nav>
@@ -474,9 +483,6 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
         </a>
         <a href="estatisticas_usuarios.php" class="list-group-item">
             <i class="fas fa-chart-bar"></i> Estatísticas
-        </a>
-        <a href="logout.php" class="list-group-item mt-auto">
-            <i class="fas fa-sign-out-alt"></i> Sair
         </a>
     </div>
 </div>

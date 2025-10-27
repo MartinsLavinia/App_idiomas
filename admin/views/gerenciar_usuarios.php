@@ -155,6 +155,12 @@ $database->closeConnection();
         from { opacity: 0; } to { opacity: 1; }
     }
 
+    .logout-icon {
+        color: var(--roxo-principal) !important;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
     /* Barra de Navegação */
     .navbar {
         background: transparent !important;
@@ -699,6 +705,9 @@ $database->closeConnection();
                 <a href="editar_perfil.php" class="settings-icon">
                     <i class="fas fa-cog fa-lg"></i>
                 </a>
+                <a href="logout.php" class="logout-icon" title="Sair">
+                    <i class="fas fa-sign-out-alt fa-lg"></i>
+                </a>
             </div>
         </div>
     </nav>
@@ -737,9 +746,6 @@ $database->closeConnection();
             </a>
             <a href="estatisticas_usuarios.php" class="list-group-item">
                 <i class="fas fa-chart-bar"></i> Estatísticas
-            </a>
-            <a href="logout.php" class="list-group-item mt-auto">
-                <i class="fas fa-sign-out-alt"></i> Sair
             </a>
         </div>
     </div>
@@ -969,9 +975,6 @@ $database->closeConnection();
         </a>
         <a href="estatisticas_usuarios.php" class="bottom-nav-item">
             <i class="fas fa-chart-bar"></i>
-        </a>
-        <a href="logout.php" class="bottom-nav-item">
-            <i class="fas fa-sign-out-alt"></i>
         </a>
     </nav>
 
