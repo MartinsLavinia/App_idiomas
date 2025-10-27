@@ -495,6 +495,7 @@ body {
     transform: scale(1.05);
 }
 
+/* ========== SIDEBAR DO PRIMEIRO CÓDIGO ========== */
 /* Menu Lateral */
 .sidebar {
     position: fixed;
@@ -518,6 +519,7 @@ body {
     padding: 0 15px;
 }
 
+/* Container do avatar - APENAS para quando tem foto (COM círculo) */
 .profile-avatar-sidebar {
     width: 100px;
     height: 100px;
@@ -539,29 +541,46 @@ body {
     border-radius: 50%;
 }
 
-.profile-avatar-sidebar:has(.profile-avatar-img) i {
-    display: none;
-}
-
-.profile-avatar-sidebar i {
-    font-size: 3.5rem;
+/* Ícone quando NÃO tem foto - SEM círculo */
+.profile-icon-no-photo {
+    font-size: 4.5rem; /* Ícone grande */
     color: var(--amarelo-detalhe);
+    margin: 0 auto 15px;
+    display: block;
 }
 
 .sidebar .profile h5 {
     font-weight: 600;
     margin-bottom: 5px;
     color: var(--branco);
-    font-size: 1.1rem;
+    font-size: 1.1rem; /* Tamanho igual ao segundo código */
+    word-wrap: break-word;
+    padding: 0 5px;
 }
 
 .sidebar .profile small {
     color: var(--cinza-claro);
-    font-size: 0.9rem;
+    font-size: 0.9rem; /* Tamanho igual ao segundo código */
+    word-wrap: break-word;
+    padding: 0 5px;
 }
 
 .sidebar .list-group {
+    display: flex;
+    flex-direction: column;
     width: 100%;
+}
+
+.sidebar .list-group-item.sair {
+    background-color: transparent;
+    color: var(--branco);
+    border: none;
+    padding: 15px 25px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 40px !important;
 }
 
 .sidebar .list-group-item {
@@ -592,25 +611,90 @@ body {
     color: var(--amarelo-detalhe);
 }
 
-.main-content {
-    margin-left: 250px;
-    padding: 20px;
+/* Ajustes de layout para diferentes tamanhos de tela */
+@media (min-width: 992px) {
+    .main-content {
+        margin-left: 250px;
+        padding: 20px;
+    }
 }
 
-@media (max-width: 992px) {
-    .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-    }
+@media (max-width: 991.98px) {
     .main-content {
         margin-left: 0;
+        padding: 20px 20px 80px 20px;
+    }
+    .sidebar {
+        display: none !important;
     }
 }
+/* ========== FIM DO SIDEBAR ========== */
+/* Bottom Navigation Bar para mobile */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.15);
+    z-index: 1020;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 5px 0;
+}
+
+.bottom-nav-item {
+    flex: 1;
+    text-align: center;
+    color: var(--branco);
+    text-decoration: none;
+    padding: 8px 0;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+}
+
+.bottom-nav-item i {
+    font-size: 1.5rem;
+    display: block;
+    margin: 0 auto;
+    color: var(--amarelo-detalhe);
+}
+
+.bottom-nav-item.active {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.bottom-nav-item.active i {
+    transform: scale(1.1);
+}
+
+.bottom-nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Ajustes de layout para diferentes tamanhos de tela */
+@media (min-width: 992px) {
+    .main-content {
+        margin-left: 250px;
+        padding: 20px;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .main-content {
+        margin-left: 0;
+        padding: 20px 20px 80px 20px;
+    }
+    .sidebar {
+        display: none !important;
+    }
+}
+/* ========== FIM DO SIDEBAR ========== */
 
 /* Conteúdo principal */
 .main-content {
-    margin-left: 280px;
+    margin-left: 250px;
     padding: 25px;
     background: transparent;
 }
@@ -676,6 +760,7 @@ body {
     box-shadow: 0 12px 30px rgba(106, 13, 173, 0.6);
     color: var(--amarelo-detalhe);
 }
+
 .btn-outline-warning {
     background: var(--branco);
     color: var(--roxo-principal);
@@ -691,6 +776,8 @@ body {
     box-shadow: 0 6px 20px rgba(106, 13, 173, 0.4);
     transform: translateY(-2px);
 }
+
+/* ... (resto do CSS permanece igual) ... */
 
 /* BOTÕES DE AÇÕES RÁPIDAS - ESTILO MINIMALISTA */
 .acoes-rapidas-btn {
@@ -1071,8 +1158,8 @@ body {
 
 /* Títulos e textos */
 h2 {
-    color: var(--roxo-principal);
-    font-weight: 800;
+    color: black;
+    font-size: 1rem;
     margin-bottom: 15px;
     font-size: 2.2rem;
     text-shadow: 0 2px 4px rgba(106, 13, 173, 0.1);
@@ -1231,53 +1318,56 @@ h2 {
         </div>
     </nav>
 
- <div class="sidebar">
-    <div class="profile">
-        <?php if (isset($foto_admin) && $foto_admin): ?>
-            <div class="profile-avatar-sidebar">
-                <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
-            </div>
-        <?php else: ?>
-            <div class="profile-avatar-sidebar">
-                <i class="fas fa-user-circle"></i>
-            </div>
-        <?php endif; ?>
-        <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
-        <small>Administrador(a)</small>
-    </div>
+        <!-- ========== SIDEBAR DO PRIMEIRO CÓDIGO ========== -->
+    <div class="sidebar">
+        <div class="profile">
+            <?php if ($foto_admin): ?>
+                <!-- COM FOTO: Com círculo amarelo -->
+                <div class="profile-avatar-sidebar">
+                    <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
+                </div>
+            <?php else: ?>
+                <!-- SEM FOTO: Apenas ícone grande, SEM círculo -->
+                <i class="fas fa-user-circle profile-icon-no-photo"></i>
+            <?php endif; ?>
+            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+            <small>Administrador(a)</small>
+        </div>
 
-    <div class="list-group">
-        <a href="gerenciar_caminho.php" class="list-group-item">
-            <i class="fas fa-plus-circle"></i> Adicionar Caminho
-        </a>
-        <a href="pagina_adicionar_idiomas.php" class="list-group-item">
-            <i class="fas fa-globe"></i> Gerenciar Idiomas
-        </a>
-        <a href="gerenciar_teorias.php" class="list-group-item">
-            <i class="fas fa-book-open"></i> Gerenciar Teorias
-        </a>
-        <a href="gerenciar_unidades.php" class="list-group-item">
-            <i class="fas fa-cubes"></i> Gerenciar Unidades
-        </a>
-        <a href="gerenciar_usuarios.php" class="list-group-item">
-            <i class="fas fa-users"></i> Gerenciar Usuários
-        </a>
-        <a href="estatisticas_usuarios.php" class="list-group-item">
-            <i class="fas fa-chart-bar"></i> Estatísticas
-        </a>
-        <a href="logout.php" class="list-group-item mt-auto">
-            <i class="fas fa-sign-out-alt"></i> Sair
-        </a>
+        <div class="list-group">
+            <a href="gerenciar_caminho.php" class="list-group-item">
+                <i class="fas fa-plus-circle"></i> Adicionar Caminho
+            </a>
+            <a href="pagina_adicionar_idiomas.php" class="list-group-item">
+                <i class="fas fa-language"></i> Gerenciar Idiomas
+            </a>
+            <a href="gerenciar_teorias.php" class="list-group-item">
+                <i class="fas fa-book-open"></i> Gerenciar Teorias
+            </a>
+            <a href="gerenciar_unidades.php" class="list-group-item">
+                <i class="fas fa-cubes"></i> Gerenciar Unidades
+            </a>
+            <a href="gerenciar_usuarios.php" class="list-group-item">
+                <i class="fas fa-users"></i> Gerenciar Usuários
+            </a>
+            <a href="estatisticas_usuarios.php" class="list-group-item">
+                <i class="fas fa-chart-bar"></i> Estatísticas
+            </a>
+            <a href="logout.php" class="list-group-item sair">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </a>
+        </div>
     </div>
-</div>
+    <!-- ========== FIM DO SIDEBAR ========== -->
 
     <div class="main-content">
+        <!-- ... (resto do conteúdo permanece igual) ... -->
         <div class="container-fluid mt-4">
             <!-- Cabeçalho original mantido, apenas o botão alterado -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h2 class="mb-1">
-                        <i class="fas fa-cubes me-2"></i>Gerenciar Blocos
+                        <i class="fas fa-cubes me-2" style="color: black;"></i>Gerenciar Blocos
                     </h2>
                     <p class="text-muted mb-0">
                         Caminho: <strong><?php echo htmlspecialchars($caminho_info['nome_caminho']); ?></strong> 
@@ -1531,6 +1621,31 @@ FOREIGN KEY (bloco_id) REFERENCES blocos(id) ON DELETE SET NULL;</pre>
             </div>
         </div>
     </div>
+
+    <!-- Bottom Navigation Bar para telas pequenas -->
+    <nav class="bottom-nav d-lg-none">
+        <a href="gerenciar_caminho.php" class="bottom-nav-item">
+            <i class="fas fa-plus-circle"></i>
+        </a>
+        <a href="pagina_adicionar_idiomas.php" class="bottom-nav-item">
+            <i class="fas fa-language"></i>
+        </a>
+        <a href="gerenciar_teorias.php" class="bottom-nav-item">
+            <i class="fas fa-book-open"></i>
+        </a>
+        <a href="gerenciar_unidades.php" class="bottom-nav-item">
+            <i class="fas fa-cubes"></i>
+        </a>
+        <a href="gerenciar_usuarios.php" class="bottom-nav-item">
+            <i class="fas fa-users"></i>
+        </a>
+        <a href="estatisticas_usuarios.php" class="bottom-nav-item">
+            <i class="fas fa-chart-bar"></i>
+        </a>
+        <a href="logout.php" class="bottom-nav-item">
+            <i class="fas fa-sign-out-alt"></i>
+        </a>
+    </nav>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

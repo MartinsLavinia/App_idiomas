@@ -697,9 +697,14 @@ $database->closeConnection();
         <!-- Container dos botões com layout organizado -->
         <div class="buttons-container">
             <div class="left-buttons">
-                <a href="gerenciar_blocos.php" class="btn-voltar-blocos">
-                    <i class="fas fa-arrow-left me-2"></i>Voltar para Blocos
-                </a>
+               <a href="#" onclick="voltarParaBlocos()" class="btn-voltar-blocos">
+    <i class="fas fa-arrow-left me-2"></i>Voltar para Blocos
+</a>
+<script>
+function voltarParaBlocos() {
+    window.location.href = 'http://localhost/App_idiomas/admin/views/gerenciar_blocos.php?caminho_id=10';
+}
+</script>
             </div>
         </div>
         
