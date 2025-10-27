@@ -125,32 +125,12 @@ $database->closeConnection();
             transform: rotate(90deg);
         }
         .table-container {
-            /* Estilos para o contêiner da tabela, mantidos como estavam */
             background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             border: 2px solid rgba(106, 13, 173, 0.1);
             transition: all 0.3s ease;
-        }
-
-        /* Estilo para o ícone de logout no cabeçalho */
-        .logout-icon {
-            color: var(--roxo-principal) !important;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            font-size: 1.2rem; /* Tamanho igual ao settings-icon */
-        }
-        .logout-icon:hover {
-            color: var(--roxo-escuro) !important;
-            transform: scale(1.1); /* Efeito de zoom sutil */
-        }
-
-        .btn-logout:hover {
-            background-color: var(--roxo-principal);
-            color: var(--branco) !important;
-            transform: translateY(-2px) scale(1.05);
-            box-shadow: 0 4px 12px rgba(106, 13, 173, 0.3);
         }
 
         .card-header h5 {
@@ -394,65 +374,19 @@ border: 0 4px 8px rgba(235, 183, 14, 0.77);
     color: var(--amarelo-detalhe);
 }
 
-/* Bottom Navigation Bar para mobile */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3); /* Mesmo gradiente da sidebar */
-    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.15);
-    z-index: 1020;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 5px 0;
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
 }
 
-.bottom-nav-item {
-    flex: 1;
-    text-align: center;
-    color: var(--branco);
-    text-decoration: none;
-    padding: 8px 0;
-    transition: all 0.3s ease;
-    border-radius: 8px;
-}
-
-.bottom-nav-item i {
-    font-size: 1.5rem; /* Tamanho do ícone */
-    display: block;
-    margin: 0 auto;
-    color: var(--amarelo-detalhe);
-}
-
-.bottom-nav-item.active {
-    background-color: rgba(255, 255, 255, 0.15);
-}
-
-.bottom-nav-item.active i {
-    transform: scale(1.1);
-}
-
-.bottom-nav-item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Ajustes de layout para diferentes tamanhos de tela */
-@media (min-width: 992px) {
-    .main-content {
-        margin-left: 250px;
-        padding: 20px;
+@media (max-width: 992px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
     }
-}
-
-@media (max-width: 991.98px) {
     .main-content {
         margin-left: 0;
-        padding: 20px 20px 80px 20px; /* Adiciona padding-bottom para a bottom-nav */
-    }
-    .sidebar {
-        display: none !important; /* Esconde a sidebar desktop em telas menores */
     }
 }
 
@@ -478,6 +412,19 @@ border: 0 4px 8px rgba(235, 183, 14, 0.77);
             color: var(--preto-texto);
         }
 
+        @media (max-width: 768px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .stats-card h3 {
+                font-size: 2rem;
+            }
+        }
     </style>
 </head>
 
@@ -527,16 +474,13 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container-fluid d-flex justify-content-between align-items-center">
-            <a class="navbar-brand" href="#">
-                <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
-            </a>
-            <div class="d-flex align-items-center" style="gap: 20px;">
-                <a href="editar_perfil.php" class="settings-icon" title="Configurações">
-                    <i class="fas fa-cog fa-lg"></i>
+        <div class="container-fluid d-flex justify-content-end align-items-center">
+            <div class="d-flex align-items-center" style="gap: 24px;">
+                <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
+                    <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
                 </a>
-                <a href="logout.php" class="btn btn-logout" title="Sair">
-                    <i class="fas fa-sign-out-alt fa-lg"></i>
+                <a href="editar_perfil.php" class="settings-icon">
+                    <i class="fas fa-cog fa-lg"></i>
                 </a>
             </div>
         </div>
@@ -574,11 +518,14 @@ document.addEventListener('DOMContentLoaded', function() {
             <a href="estatisticas_usuarios.php" class="list-group-item">
                 <i class="fas fa-chart-bar"></i> Estatísticas
             </a>
+            <a href="logout.php" class="list-group-item sair">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </a>
         </div>
     </div>
 
     <div class="main-content">
-        <div class="container mt-4">
+        <div class="container-fluid mt-4">
             <?php
             if (isset($_GET["message_type"]) && isset($_GET["message_content"])) {
                 $message_type = htmlspecialchars($_GET["message_type"]);
@@ -888,28 +835,6 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         </div>
     </div>
-
-    <!-- Bottom Navigation Bar para telas pequenas -->
-    <nav class="bottom-nav d-lg-none">
-        <a href="gerenciar_caminho.php" class="bottom-nav-item active">
-            <i class="fas fa-plus-circle"></i>
-        </a>
-        <a href="pagina_adicionar_idiomas.php" class="bottom-nav-item">
-            <i class="fas fa-language"></i>
-        </a>
-        <a href="gerenciar_teorias.php" class="bottom-nav-item">
-            <i class="fas fa-book-open"></i>
-        </a>
-        <a href="gerenciar_unidades.php" class="bottom-nav-item">
-            <i class="fas fa-cubes"></i>
-        </a>
-        <a href="gerenciar_usuarios.php" class="bottom-nav-item">
-            <i class="fas fa-users"></i>
-        </a>
-        <a href="estatisticas_usuarios.php" class="bottom-nav-item">
-            <i class="fas fa-chart-bar"></i>
-        </a>
-    </nav>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
