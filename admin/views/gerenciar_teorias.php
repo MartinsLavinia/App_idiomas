@@ -222,19 +222,65 @@ $database->closeConnection();
     color: var(--amarelo-detalhe);
 }
 
-.main-content {
-    margin-left: 250px;
-    padding: 20px;
+/* Bottom Navigation Bar para mobile */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3); /* Mesmo gradiente da sidebar */
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.15);
+    z-index: 1020;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 5px 0;
 }
 
-@media (max-width: 992px) {
-    .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
+.bottom-nav-item {
+    flex: 1;
+    text-align: center;
+    color: var(--branco);
+    text-decoration: none;
+    padding: 8px 0;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+}
+
+.bottom-nav-item i {
+    font-size: 1.5rem; /* Tamanho do ícone */
+    display: block;
+    margin: 0 auto;
+    color: var(--amarelo-detalhe);
+}
+
+.bottom-nav-item.active {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.bottom-nav-item.active i {
+    transform: scale(1.1);
+}
+
+.bottom-nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Ajustes de layout para diferentes tamanhos de tela */
+@media (min-width: 992px) {
+    .main-content {
+        margin-left: 250px;
+        padding: 20px;
     }
+}
+
+@media (max-width: 991.98px) {
     .main-content {
         margin-left: 0;
+        padding: 20px 20px 80px 20px; /* Adiciona padding-bottom para a bottom-nav */
+    }
+    .sidebar {
+        display: none !important; /* Esconde a sidebar desktop em telas menores */
     }
 }
 
@@ -473,6 +519,25 @@ $database->closeConnection();
         font-size: 0.875rem;
         border-radius: 0.3rem;
     }
+
+    /* Otimização da visualização da tabela */
+    .table-teorias .col-titulo {
+        max-width: 250px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: left;
+    }
+    .table-teorias .col-data {
+        white-space: nowrap;
+    }
+
+    @media (max-width: 576px) {
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
     </style>
 </head>
 <body>
@@ -533,9 +598,9 @@ $database->closeConnection();
 </div>
 
     <div class="main-content">
-        <div class="container-fluid mt-4">
-            <div class="page-header">
-                <h2 class="mb-0"><i class="fas fa-book-open"></i> Gerenciar Teorias</h2>
+        <div class="container mt-4">
+            <div class="page-header flex-column flex-sm-row">
+                <h2 class="mb-2 mb-sm-0"><i class="fas fa-book-open"></i> Gerenciar Teorias</h2>
                 <div class="action-buttons">
                     <a href="adicionar_teoria.php" class="btn btn-warning">
                         <i class="fas fa-plus-circle"></i> Adicionar Nova Teoria
@@ -546,8 +611,8 @@ $database->closeConnection();
             <?php echo $mensagem; ?>
             
             <div class="teorias-table">
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
+                <div class="table-responsive table-responsive-sm">
+                    <table class="table table-striped table-hover table-teorias">
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -563,12 +628,12 @@ $database->closeConnection();
                                 <?php foreach ($teorias as $teoria): ?>
                                     <tr>
                                         <td><?php echo htmlspecialchars($teoria['id']); ?></td>
-                                        <td><?php echo htmlspecialchars($teoria['titulo']); ?></td>
+                                        <td class="col-titulo" title="<?php echo htmlspecialchars($teoria['titulo']); ?>"><?php echo htmlspecialchars($teoria['titulo']); ?></td>
                                         <td>
                                             <span class="badge bg-primary"><?php echo htmlspecialchars($teoria['nivel']); ?></span>
                                         </td>
                                         <td><?php echo htmlspecialchars($teoria['ordem']); ?></td>
-                                        <td><?php echo htmlspecialchars($teoria['data_criacao']); ?></td>
+                                        <td class="col-data"><?php echo htmlspecialchars(date('d/m/Y H:i', strtotime($teoria['data_criacao']))); ?></td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
                                                 <a href="editar_teoria.php?id=<?php echo htmlspecialchars($teoria['id']); ?>" class="btn btn-primary">
@@ -597,6 +662,31 @@ $database->closeConnection();
             </div>
         </div>
     </div>
+
+    <!-- Bottom Navigation Bar para telas pequenas -->
+    <nav class="bottom-nav d-lg-none">
+        <a href="gerenciar_caminho.php" class="bottom-nav-item">
+            <i class="fas fa-plus-circle"></i>
+        </a>
+        <a href="pagina_adicionar_idiomas.php" class="bottom-nav-item">
+            <i class="fas fa-language"></i>
+        </a>
+        <a href="gerenciar_teorias.php" class="bottom-nav-item active">
+            <i class="fas fa-book-open"></i>
+        </a>
+        <a href="gerenciar_unidades.php" class="bottom-nav-item">
+            <i class="fas fa-cubes"></i>
+        </a>
+        <a href="gerenciar_usuarios.php" class="bottom-nav-item">
+            <i class="fas fa-users"></i>
+        </a>
+        <a href="estatisticas_usuarios.php" class="bottom-nav-item">
+            <i class="fas fa-chart-bar"></i>
+        </a>
+        <a href="logout.php" class="bottom-nav-item">
+            <i class="fas fa-sign-out-alt"></i>
+        </a>
+    </nav>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
