@@ -99,10 +99,7 @@ $database->closeConnection();
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Scripts para exercícios interativos -->
-    <script src="../../admin/controller/exercicio_fala.js" defer></script>
-
-    <!-- link direto dos icones -->
+    
     <style>
         /* Paleta de Cores - MESMAS DO ADMIN */
         :root {
@@ -203,6 +200,79 @@ $database->closeConnection();
             padding: 20px;
         }
 
+        /* Estilos para exercícios de fala */
+        .microphone-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .microphone-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border: none;
+            color: white;
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            font-size: 2.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+            position: relative;
+            overflow: hidden;
+            margin: 20px auto;
+            display: block;
+        }
+
+        .microphone-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 35px rgba(40, 167, 69, 0.5);
+        }
+
+        .microphone-btn.listening {
+            background: linear-gradient(135deg, #dc3545, #e83e8c);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { 
+                transform: scale(1);
+                box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+            }
+            50% { 
+                transform: scale(1.1);
+                box-shadow: 0 12px 35px rgba(220, 53, 69, 0.5);
+            }
+            100% { 
+                transform: scale(1);
+                box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+            }
+        }
+
+        .speech-status {
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .speech-listening {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            border: 2px solid #ffd700;
+            color: #856404;
+        }
+
+        .speech-success {
+            background: linear-gradient(135deg, #d1edff, #b3d9ff);
+            border: 2px solid #28a745;
+            color: #004085;
+        }
+
+        .speech-error {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+
         /* Estilos para exercícios de listening */
         .audio-player-container {
             background: #f8f9fa;
@@ -261,6 +331,27 @@ $database->closeConnection();
         .progress-bar-custom {
             height: 8px;
             border-radius: 4px;
+        }
+
+        /* Estilos específicos para exercícios de fala */
+        .fala-container {
+            background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+            border: 2px solid var(--roxo-principal);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+
+        .frase-pronunciar {
+            background: white;
+            border: 2px dashed var(--roxo-principal);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--roxo-escuro);
         }
     </style>
 </head>
@@ -678,6 +769,7 @@ $database->closeConnection();
     let exercicioIndex = 0;
     let respostaSelecionada = null;
     let palavrasCarregadas = [];
+    let recognition = null;
 
     // ==================== INICIALIZAÇÃO ====================
     document.addEventListener('DOMContentLoaded', function() {
@@ -913,22 +1005,23 @@ $database->closeConnection();
             `;
         } else if (tipoExercicio === "fala") {
             htmlConteudo += `
-                <div class="text-center p-3 border rounded bg-light">
-                     <div class="mt-3 p-3 bg-light rounded">
-                        <p class="mb-1 text-muted">Repita a frase abaixo:</p>
-                        <h4 id="fraseParaFalar" class="fw-bold text-dark">"${conteudo.frase_esperada || conteudo.texto_para_falar || 'Nenhuma frase definida'}"</h4>
+                <div class="fala-container">
+                    <div class="text-center">
+                        <h6 class="mb-3"><i class="fas fa-microphone me-2"></i>Exercício de Pronúncia</h6>
+                        <div class="frase-pronunciar">
+                            <p class="mb-1 text-muted">Repita a frase abaixo:</p>
+                            <h4 id="fraseParaFalar" class="fw-bold text-dark">"${conteudo.frase_esperada || conteudo.texto_para_falar || 'Nenhuma frase definida'}"</h4>
+                        </div>
+                        <div class="microphone-section">
+                            <button id="btnMicrofone" class="microphone-btn" onclick="iniciarGravacao()">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                            <p id="statusFala" class="text-muted mt-2">Clique no microfone para começar a falar</p>
+                        </div>
+                        <div id="resultadoFala" class="mt-3"></div>
                     </div>
-                    <button id="btn-falar" class="btn btn-primary btn-lg mt-3" onclick="iniciarGravacao()">
-                        <i class="fas fa-microphone"></i> Falar
-                    </button>
-                    <p id="status-fala" class="mt-3 text-muted">Clique para começar</p>
-                </div>
-                <div id="resultado-audio" class="mt-4">
-                    <!-- O resultado da correção de áudio aparecerá aqui -->
                 </div>
             `;
-            // Inicializa o sistema de fala com o idioma correto
-            exercicioFala.inicializar(conteudo.idioma || 'en-US');
         } 
         // CASO PARA EXERCÍCIOS DE LISTENING
         else if (tipoExercicio === "listening") {
@@ -984,6 +1077,162 @@ $database->closeConnection();
         if (feedbackDiv) feedbackDiv.remove();
     }
 
+    // ==================== FUNÇÕES DE FALA ====================
+
+    // Função para iniciar gravação de fala
+    window.iniciarGravacao = function() {
+        if (!exercicioAtual || !exercicioAtual.conteudo) return;
+        
+        const btnMicrofone = document.getElementById('btnMicrofone');
+        const statusFala = document.getElementById('statusFala');
+        const resultadoFala = document.getElementById('resultadoFala');
+        
+        // Verificar suporte do navegador
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            resultadoFala.innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Seu navegador não suporta reconhecimento de voz. Use Chrome, Edge ou Safari.
+                </div>
+            `;
+            return;
+        }
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        
+        const idioma = exercicioAtual.conteudo.idioma || 'en-US';
+        recognition.lang = idioma;
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        // Atualizar UI para estado de gravação
+        btnMicrofone.classList.add('listening');
+        statusFala.innerHTML = '<i class="fas fa-circle text-danger me-2"></i>Ouvindo... Fale agora!';
+        resultadoFala.innerHTML = '';
+
+        recognition.start();
+
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            const confidence = event.results[0][0].confidence;
+            
+            // Atualizar UI com resultado
+            btnMicrofone.classList.remove('listening');
+            statusFala.innerHTML = '<i class="fas fa-check text-success me-2"></i>Fala detectada!';
+            
+            // Mostrar o que foi reconhecido
+            resultadoFala.innerHTML = `
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-comment me-2"></i>Você disse:</h6>
+                    <p class="mb-2">"${transcript}"</p>
+                    <small class="text-muted">Confiança: ${(confidence * 100).toFixed(1)}%</small>
+                </div>
+                <div class="text-center">
+                    <button class="btn btn-primary me-2" onclick="enviarRespostaFala('${transcript}')">
+                        <i class="fas fa-check me-1"></i>Enviar Resposta
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="iniciarGravacao()">
+                        <i class="fas fa-redo me-1"></i>Tentar Novamente
+                    </button>
+                </div>
+            `;
+        };
+
+        recognition.onerror = function(event) {
+            btnMicrofone.classList.remove('listening');
+            
+            let errorMessage = 'Erro desconhecido';
+            switch(event.error) {
+                case 'not-allowed':
+                case 'permission-denied':
+                    errorMessage = 'Permissão de microfone negada. Permita o acesso ao microfone.';
+                    break;
+                case 'no-speech':
+                    errorMessage = 'Nenhuma fala detectada. Tente novamente.';
+                    break;
+                case 'audio-capture':
+                    errorMessage = 'Nenhum microfone detectado. Verifique seu microfone.';
+                    break;
+                default:
+                    errorMessage = `Erro: ${event.error}`;
+            }
+            
+            statusFala.innerHTML = '<i class="fas fa-times text-danger me-2"></i>Erro ao gravar';
+            resultadoFala.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-times me-2"></i>${errorMessage}
+                </div>
+                <div class="text-center">
+                    <button class="btn btn-outline-primary" onclick="iniciarGravacao()">
+                        <i class="fas fa-redo me-1"></i>Tentar Novamente
+                    </button>
+                </div>
+            `;
+        };
+
+        recognition.onend = function() {
+            btnMicrofone.classList.remove('listening');
+        };
+    };
+
+    // Função para enviar resposta de fala
+    window.enviarRespostaFala = function(transcript) {
+        if (!exercicioAtual) return;
+
+        // Enviar resposta para o servidor
+        fetch('../../admin/controller/processar_exercicio.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                exercicio_id: exercicioAtual.id,
+                resposta: transcript,
+                tipo_exercicio: 'fala'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            const resultadoFala = document.getElementById('resultadoFala');
+            
+            if (data.success) {
+                resultadoFala.innerHTML = `
+                    <div class="alert ${data.correto ? 'alert-success' : 'alert-danger'}">
+                        <h6><i class="fas ${data.correto ? 'fa-check-circle' : 'fa-times-circle'} me-2"></i>
+                        ${data.correto ? 'Parabéns! Pronúncia correta!' : 'Precisa melhorar a pronúncia'}</h6>
+                        <p class="mb-2">${data.explicacao || 'Sem explicação disponível.'}</p>
+                        ${data.dica ? `<small><strong>Dica:</strong> ${data.dica}</small>` : ''}
+                    </div>
+                    <div class="text-center">
+                        <button class="btn btn-success" onclick="proximoExercicio()">
+                            <i class="fas fa-arrow-right me-1"></i>Próximo Exercício
+                        </button>
+                    </div>
+                `;
+                
+                document.getElementById("btnEnviarResposta").style.display = "none";
+                document.getElementById("btnProximoExercicio").style.display = "block";
+            } else {
+                resultadoFala.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-times me-2"></i>Erro ao processar resposta: ${data.message}
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error("Erro:", error);
+            const resultadoFala = document.getElementById('resultadoFala');
+            resultadoFala.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-times me-2"></i>Erro de conexão. Tente novamente.
+                </div>
+            `;
+        });
+    };
+
     // ==================== FUNÇÕES DE RESPOSTA ====================
 
     // Função para selecionar resposta (botão de múltipla escolha)
@@ -1030,7 +1279,9 @@ $database->closeConnection();
                 return;
             }
         } else if (tipoExercicio === "fala") {
-            respostaUsuario = "fala_processada";
+            // Para fala, a resposta é enviada através da função enviarRespostaFala
+            alert("Por favor, use o botão de gravação para enviar sua resposta de fala.");
+            return;
         }
         // Captura resposta para listening
         else if (tipoExercicio === "listening") {
@@ -1179,17 +1430,6 @@ $database->closeConnection();
     window.voltarParaBlocos = function() {
         modalExercicios.hide();
         modalBlocos.show();
-    };
-
-    // Função para iniciar gravação (placeholder para exercícios de fala)
-    window.iniciarGravacao = function() {
-        if (!exercicioAtual || !exercicioAtual.conteudo) return;
-        
-        const frase = exercicioAtual.conteudo.frase_esperada || exercicioAtual.conteudo.texto_para_falar;
-        const idioma = exercicioAtual.conteudo.idioma || 'en-US';
-        const exercicioId = exercicioAtual.id;
-
-        exercicioFala.iniciarReconhecimento(exercicioId, frase, idioma);
     };
 
     // ==================== FUNCIONALIDADES DE FLASHCARDS ====================
