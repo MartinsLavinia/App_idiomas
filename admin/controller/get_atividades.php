@@ -4,10 +4,6 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    exit(0);
-}
-
 session_start();
 include_once __DIR__ . '/../../conexao.php';
 
@@ -17,98 +13,154 @@ if (!isset($_SESSION['id_usuario'])) {
     exit();
 }
 
-// Verificar se o ID da unidade foi fornecido
-if (!isset($_GET['unidade_id']) || !is_numeric($_GET['unidade_id'])) {
-    echo json_encode(['success' => false, 'message' => 'ID da unidade inválido']);
+// Aceitar tanto atividade_id quanto bloco_id
+$id_busca = null;
+$tipo_busca = '';
+
+if (isset($_GET['bloco_id']) && is_numeric($_GET['bloco_id'])) {
+    $id_busca = (int)$_GET['bloco_id'];
+    $tipo_busca = 'bloco';
+} elseif (isset($_GET['atividade_id']) && is_numeric($_GET['atividade_id'])) {
+    $id_busca = (int)$_GET['atividade_id'];
+    $tipo_busca = 'atividade';
+} else {
+    echo json_encode(['success' => false, 'message' => 'ID do bloco ou atividade inválido']);
     exit();
 }
 
-$unidade_id = (int)$_GET['unidade_id'];
 $id_usuario = $_SESSION['id_usuario'];
 
 try {
     $database = new Database();
     $conn = $database->conn;
 
-    // Buscar informações da unidade
-    $sql_unidade = "SELECT u.id, u.nome_unidade, u.idioma, u.nivel, u.descricao 
-                   FROM unidades u 
-                   WHERE u.id = ?";
-    $stmt_unidade = $conn->prepare($sql_unidade);
-    $stmt_unidade->bind_param("i", $unidade_id);
-    $stmt_unidade->execute();
-    $unidade_info = $stmt_unidade->get_result()->fetch_assoc();
-    $stmt_unidade->close();
+    $exercicios = [];
+    $idioma_exercicio = null; // Variável para armazenar o idioma
 
-    if (!$unidade_info) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Unidade não encontrada'
-        ]);
-        exit();
-    }
-
-    // Buscar caminhos de aprendizagem APENAS para esta unidade específica
-    $sql_caminhos = "
-        SELECT 
-            c.id,
-            c.nome_caminho as nome,
-            CONCAT('Atividade de ', c.nome_caminho) as descricao,
-            CASE 
-                WHEN c.nome_caminho LIKE '%Comida%' OR c.nome_caminho LIKE '%food%' THEN 'fa-utensils'
-                WHEN c.nome_caminho LIKE '%Sauda%' OR c.nome_caminho LIKE '%greet%' THEN 'fa-hand-wave'
-                WHEN c.nome_caminho LIKE '%Rotina%' OR c.nome_caminho LIKE '%routine%' THEN 'fa-clock'
-                WHEN c.nome_caminho LIKE '%Viagem%' OR c.nome_caminho LIKE '%travel%' THEN 'fa-plane'
-                WHEN c.nome_caminho LIKE '%Apresenta%' OR c.nome_caminho LIKE '%introduc%' THEN 'fa-user'
-                ELSE 'fa-graduation-cap'
-            END as icone,
-            'geral' as tipo,
-            c.id as ordem,
-            '' as explicacao_teorica,
-            COUNT(e.id) as total_exercicios,
-            0 as exercicios_concluidos,
-            0 as progresso
-        FROM caminhos_aprendizagem c
-        LEFT JOIN exercicios e ON c.id = e.caminho_id
-        WHERE c.id_unidade = ?
-        GROUP BY c.id, c.nome_caminho
-        ORDER BY c.id
-    ";
-
-    $stmt_caminhos = $conn->prepare($sql_caminhos);
-    $stmt_caminhos->bind_param("i", $unidade_id);
-    $stmt_caminhos->execute();
-    $result_caminhos = $stmt_caminhos->get_result();
-    
-    $atividades = [];
-    while ($row = $result_caminhos->fetch_assoc()) {
-        $atividades[] = $row;
+    if ($tipo_busca === 'bloco') {
+        // Buscar exercícios por bloco_id
+        $sql = "
+            SELECT 
+                e.id,
+                e.ordem,
+                e.tipo,
+                e.pergunta,
+                e.conteudo, 
+                e.tipo AS tipo_exercicio,
+                e.caminho_id,
+                e.bloco_id,
+                u.idioma AS idioma_exercicio
+            FROM exercicios e
+            JOIN caminhos_aprendizagem c ON e.caminho_id = c.id
+            JOIN unidades u ON c.id_unidade = u.id
+            WHERE e.bloco_id = ?
+            ORDER BY e.ordem ASC
+        ";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $id_busca);
+    } else {
+        // Buscar exercícios por caminho_id (atividade)
+        $sql = "
+            SELECT 
+                e.id,
+                e.ordem,
+                e.tipo,
+                e.pergunta,
+                e.conteudo, 
+                e.tipo AS tipo_exercicio,
+                e.caminho_id,
+                e.bloco_id,
+                u.idioma AS idioma_exercicio
+            FROM exercicios e
+            JOIN caminhos_aprendizagem c ON e.caminho_id = c.id
+            JOIN unidades u ON c.id_unidade = u.id
+            WHERE e.caminho_id = ?
+            ORDER BY e.ordem ASC
+        ";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $id_busca);
     }
     
-    $stmt_caminhos->close();
+    $stmt->execute();
+    $result = $stmt->get_result();
     
-    // REMOVIDO: O bloco que criava atividades padrão foi completamente removido
-    // Agora só retorna atividades que estão realmente no banco de dados
-
+    while ($row = $result->fetch_assoc()) {
+        // Obter o idioma do primeiro exercício encontrado
+        if ($idioma_exercicio === null) {
+            $idioma_exercicio = $row['idioma_exercicio'];
+        }
+        unset($row['idioma_exercicio']); // Remove do array de exercício para não poluir
+        
+        // Processar o conteúdo se for JSON string
+        if ($row['conteudo'] && is_string($row['conteudo']) && ($row['conteudo'][0] === '{' || $row['conteudo'][0] === '[')) {
+            try {
+                $conteudo_decodificado = json_decode($row['conteudo'], true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $row['conteudo'] = $conteudo_decodificado;
+                    
+                    // Lógica aprimorada para determinar tipo_exercicio
+                    if ($row['tipo_exercicio'] === null || $row['tipo_exercicio'] === '') {
+                        if (isset($conteudo_decodificado['alternativas'])) {
+                            $row['tipo_exercicio'] = 'multipla_escolha';
+                        } elseif (isset($conteudo_decodificado['frase_completar'])) {
+                            $row['tipo_exercicio'] = 'completar';
+                        } elseif (isset($conteudo_decodificado['frase_esperada']) || isset($conteudo_decodificado['texto_para_falar'])) {
+                            $row['tipo_exercicio'] = 'fala';
+                        } elseif (isset($conteudo_decodificado['audio_url']) || isset($conteudo_decodificado['arquivo_audio'])) {
+                            $row['tipo_exercicio'] = 'audicao';
+                        } elseif (isset($conteudo_decodificado['texto_traduzir'])) {
+                            $row['tipo_exercicio'] = 'traducao';
+                        } else {
+                            $row['tipo_exercicio'] = 'texto_livre';
+                        }
+                    }
+                    
+                    // Adicionar metadados específicos para exercícios de fala
+                    if ($row['tipo_exercicio'] === 'fala') {
+                        // Garantir que os campos específicos de fala estejam presentes
+                        if (!isset($row['conteudo']['texto_para_falar']) && isset($row['conteudo']['frase_esperada'])) {
+                            $row['conteudo']['texto_para_falar'] = $row['conteudo']['frase_esperada'];
+                        }
+                        
+                        // Adicionar configurações padrão para exercícios de fala
+                        $row['conteudo']['config_fala'] = array_merge([
+                            'dificuldade' => 'medio',
+                            'tempo_maximo_gravacao' => 30,
+                            'tentativas_permitidas' => 3,
+                            'tolerancia_pronuncia' => 0.7,
+                            'feedback_imediato' => true
+                        ], $row['conteudo']['config_fala'] ?? []);
+                        
+                        // Adicionar idioma ao conteúdo do exercício de fala
+                        $row['conteudo']['idioma'] = $idioma_exercicio;
+                    }
+                }
+            } catch (Exception $e) {
+                // Manter como string se der erro
+                error_log("Erro ao decodificar JSON: " . $e->getMessage());
+            }
+        }
+        
+        $exercicios[] = $row;
+    }
+    
+    $stmt->close();
     $database->closeConnection();
 
     echo json_encode([
         'success' => true,
-        'unidade' => [
-            'id' => $unidade_info['id'],
-            'nome' => $unidade_info['nome_unidade'],
-            'idioma' => $unidade_info['idioma'],
-            'nivel' => $unidade_info['nivel'],
-            'descricao' => $unidade_info['descricao']
-        ],
-        'atividades' => $atividades,
-        'total_atividades' => count($atividades)
+        'tipo_busca' => $tipo_busca,
+        'id_busca' => $id_busca,
+        'total_exercicios' => count($exercicios),
+        'idioma' => $idioma_exercicio, // Adiciona o idioma
+        'exercicios' => $exercicios
     ]);
 
 } catch (Exception $e) {
+    error_log("Erro em get_exercicio.php: " . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'message' => 'Erro: ' . $e->getMessage()
+        'message' => 'Erro interno do servidor: ' . $e->getMessage()
     ]);
 }
 ?>

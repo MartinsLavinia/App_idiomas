@@ -99,6 +99,9 @@ $database->closeConnection();
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Scripts para exercícios interativos -->
+    <script src="../../admin/controller/exercicio_fala.js" defer></script>
+
     <!-- link direto dos icones -->
     <style>
         /* Paleta de Cores - MESMAS DO ADMIN */
@@ -859,30 +862,19 @@ $database->closeConnection();
         `;
 
         // Processar conteúdo do exercício
-        let conteudo = exercicioAtual.conteudo;
-        if (typeof conteudo === 'string' && conteudo.startsWith('{')) {
+        if (typeof exercicioAtual.conteudo === 'string' && exercicioAtual.conteudo.startsWith('{')) {
             try {
-                conteudo = JSON.parse(conteudo);
+                // Atualiza o conteúdo do exercício com o objeto JSON decodificado
+                exercicioAtual.conteudo = JSON.parse(exercicioAtual.conteudo);
             } catch (e) {
                 console.error("Erro ao fazer parse do conteúdo do exercício:", e);
-                conteudo = {};
+                exercicioAtual.conteudo = {};
             }
         }
+        const conteudo = exercicioAtual.conteudo || {};
 
-        // Determinar o tipo de exercício baseado no conteúdo
-        let tipoExercicio = "multipla_escolha"; // padrão
-        
-        // Analisar o conteúdo para determinar o tipo real
-        if (conteudo.tipo_exercicio) {
-            tipoExercicio = conteudo.tipo_exercicio;
-        } else if (conteudo.opcoes && conteudo.audio_url) {
-            tipoExercicio = "listening";
-        } else if (conteudo.frase_completar) {
-            tipoExercicio = "completar";
-        } else if (conteudo.alternativas) {
-            tipoExercicio = "multipla_escolha";
-        }
-
+        // Lógica simplificada para determinar o tipo de exercício
+        const tipoExercicio = exercicioAtual.tipo_exercicio || 'multipla_escolha';
         // Armazenar o tipo determinado para uso posterior
         exercicioAtual.tipoExercicioDeterminado = tipoExercicio;
 
@@ -921,15 +913,22 @@ $database->closeConnection();
             `;
         } else if (tipoExercicio === "fala") {
             htmlConteudo += `
-                <div class="text-center p-4">
-                    <i class="fas fa-microphone fa-5x text-primary mb-3" id="microfoneIcon" style="cursor: pointer;" onclick="iniciarGravacao()"></i>
-                    <p id="statusGravacao" class="text-muted fs-5">Clique no microfone para falar</p>
-                    <div class="mt-3 p-3 bg-light rounded">
-                        <p class="mb-1 text-muted">Frase para repetir:</p>
-                        <p id="fraseParaFalar" class="fs-4 fw-bold text-dark">"${conteudo.frase_esperada || 'Nenhuma frase definida'}"</p>
+                <div class="text-center p-3 border rounded bg-light">
+                     <div class="mt-3 p-3 bg-light rounded">
+                        <p class="mb-1 text-muted">Repita a frase abaixo:</p>
+                        <h4 id="fraseParaFalar" class="fw-bold text-dark">"${conteudo.frase_esperada || conteudo.texto_para_falar || 'Nenhuma frase definida'}"</h4>
                     </div>
+                    <button id="btn-falar" class="btn btn-primary btn-lg mt-3" onclick="iniciarGravacao()">
+                        <i class="fas fa-microphone"></i> Falar
+                    </button>
+                    <p id="status-fala" class="mt-3 text-muted">Clique para começar</p>
+                </div>
+                <div id="resultado-audio" class="mt-4">
+                    <!-- O resultado da correção de áudio aparecerá aqui -->
                 </div>
             `;
+            // Inicializa o sistema de fala com o idioma correto
+            exercicioFala.inicializar(conteudo.idioma || 'en-US');
         } 
         // CASO PARA EXERCÍCIOS DE LISTENING
         else if (tipoExercicio === "listening") {
@@ -1184,7 +1183,13 @@ $database->closeConnection();
 
     // Função para iniciar gravação (placeholder para exercícios de fala)
     window.iniciarGravacao = function() {
-        alert("Funcionalidade de gravação de fala será implementada em breve.");
+        if (!exercicioAtual || !exercicioAtual.conteudo) return;
+        
+        const frase = exercicioAtual.conteudo.frase_esperada || exercicioAtual.conteudo.texto_para_falar;
+        const idioma = exercicioAtual.conteudo.idioma || 'en-US';
+        const exercicioId = exercicioAtual.id;
+
+        exercicioFala.iniciarReconhecimento(exercicioId, frase, idioma);
     };
 
     // ==================== FUNCIONALIDADES DE FLASHCARDS ====================

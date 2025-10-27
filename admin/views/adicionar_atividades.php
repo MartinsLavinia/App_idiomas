@@ -1,19 +1,17 @@
 <?php
 session_start();
 include_once __DIR__ . '/../../conexao.php';
-include_once __DIR__ . '/../models/listening_model.php'; // Model de Listening
-include_once __DIR__ . '/../controller/listening_controller.php'; // Controller de Listening
-// Ativar exibição de erros (apenas para desenvolvimento)
+include_once __DIR__ . '/../models/listening_model.php';
+include_once __DIR__ . '/../controller/listening_controller.php';
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Verificação de segurança: Garante que apenas administradores logados possam acessar
 if (!isset($_SESSION['id_admin'])) {
     header("Location: login_admin.php");
     exit();
 }
 
-// Verifica se o ID da UNIDADE foi passado via URL
 if (!isset($_GET['unidade_id']) || !is_numeric($_GET['unidade_id'])) {
     header("Location: gerenciar_unidades.php");
     exit();
@@ -22,10 +20,9 @@ if (!isset($_GET['unidade_id']) || !is_numeric($_GET['unidade_id'])) {
 $unidade_id = $_GET['unidade_id'];
 $mensagem = '';
 
-// Instancia a conexão com o banco de dados
 $database = new Database();
 $conn = $database->conn;
-$listeningModel = new ListeningModel($database); // Instancia o modelo de listening, passando a conexão
+$listeningModel = new ListeningModel($database);
 
 // BUSCAR DADOS DO ADMINISTRADOR PARA O SIDEBAR
 $id_admin = $_SESSION['id_admin'];
@@ -39,8 +36,7 @@ $stmt_foto->close();
 
 $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
 
-// --- Funções de Acesso a Dados (simulando um Model) ---
-// RECOMENDAÇÃO DE REATORAÇÃO: Mover esta função para uma classe de Model (ex: UnidadeModel.php)
+// --- Funções de Acesso a Dados ---
 function getUnidadeInfo($conn, $unidadeId) {
     $sql = "SELECT u.*, c.nome_caminho, c.nivel 
             FROM unidades u 
@@ -87,11 +83,11 @@ function getBlocosByCaminhos($conn, array $caminhoIds) {
     return $blocosPorCaminho;
 }
 
-function adicionarExercicio($conn, $caminhoId, $blocoId, $ordem, $tipo, $pergunta, $conteudo) {
+function adicionarExercicio($conn, $caminhoId, $blocoId, $ordem, $tipo_exercicio, $pergunta, $conteudo) {
     $sql = "INSERT INTO exercicios (caminho_id, bloco_id, ordem, tipo, pergunta, conteudo) VALUES (?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     if ($stmt) {
-        $stmt->bind_param("iiisss", $caminhoId, $blocoId, $ordem, $tipo, $pergunta, $conteudo);
+        $stmt->bind_param("iiisss", $caminhoId, $blocoId, $ordem, $tipo_exercicio, $pergunta, $conteudo);
         if ($stmt->execute()) {
             $stmt->close();
             return true;
@@ -106,19 +102,7 @@ function adicionarExercicio($conn, $caminhoId, $blocoId, $ordem, $tipo, $pergunt
     }
 }
 
-function getExercicioById($conn, $exercicioId) {
-    $sql = "SELECT * FROM exercicios WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $exercicioId);
-    $stmt->execute();
-    $result = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
-    return $result;
-}
-
-// --- Lógica de Processamento (ATUALIZADA COM LISTENING) ---
-
-// Buscar informações da unidade, caminhos e blocos
+// --- Lógica de Processamento CORRIGIDA ---
 $unidade_info = getUnidadeInfo($conn, $unidade_id);
 $caminhos = getCaminhosByUnidade($conn, $unidade_id);
 
@@ -128,214 +112,22 @@ if (!empty($caminhos)) {
     $blocos_por_caminho = getBlocosByCaminhos($conn, $caminho_ids);
 }
 
-// Lógica para lidar com a submissão do formulário
-// RECOMENDAÇÃO DE REATORAÇÃO: Mover toda esta lógica de processamento de formulário para um arquivo de Controller (ex: AdicionarAtividadeController.php)
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $caminho_id = $_POST["caminho_id"] ?? null;
-    $bloco_id = $_POST["bloco_id"] ?? null;
-    $ordem = $_POST["ordem"] ?? null;
-    $tipo = $_POST["tipo"] ?? null;
-    $pergunta = $_POST["pergunta"] ?? null;
-    $tipo_exercicio = $_POST["tipo_exercicio"] ?? null;
-    $conteudo = null;
-
-    // VERIFICAR SE É TESTE DE ÁUDIO
-    // A lógica de teste de áudio foi movida para 'gerar_audio_api.php'
-
-    if (empty($caminho_id) || empty($bloco_id) || empty($ordem) || empty($pergunta)) {
-        $mensagem = '<div class="alert alert-danger">Por favor, preencha todos os campos obrigatórios.</div>';
-    } else {
-        switch ($tipo) {
-            case 'normal':
-                if ($tipo_exercicio === 'multipla_escolha') {
-                    if (empty($_POST['alt_texto']) || !isset($_POST['alt_correta'])) {
-                        $mensagem = '<div class="alert alert-danger">Alternativas e resposta correta são obrigatórias.</div>';
-                    } else {
-                        $alternativas = [];
-                        foreach ($_POST['alt_texto'] as $index => $texto) {
-                            if (!empty($texto)) {
-                                $alternativas[] = [
-                                    'id' => chr(97 + $index),
-                                    'texto' => $texto,
-                                    'correta' => ($index == $_POST['alt_correta']),
-                                ];
-                            }
-                        }
-                        $conteudo = json_encode([
-                            'alternativas' => $alternativas,
-                            'explicacao' => $_POST['explicacao'] ?? ''
-                        ], JSON_UNESCAPED_UNICODE);
-                    }
-                } elseif ($tipo_exercicio === 'texto_livre') {
-                    if (empty($_POST['resposta_esperada'])) {
-                        $mensagem = '<div class="alert alert-danger">Resposta esperada é obrigatória.</div>';
-                    } else {
-                        $alternativas_aceitas = !empty($_POST['alternativas_aceitas']) ? 
-                            array_map('trim', explode(',', $_POST['alternativas_aceitas'])) : 
-                            [$_POST['resposta_esperada']];
-                        $conteudo = json_encode([
-                            'resposta_correta' => $_POST['resposta_esperada'],
-                            'alternativas_aceitas' => $alternativas_aceitas,
-                            'dica' => $_POST['dica_texto'] ?? ''
-                        ], JSON_UNESCAPED_UNICODE);
-                    }
-                } elseif ($tipo_exercicio === 'completar') {
-                    if (empty($_POST['frase_completar']) || empty($_POST['resposta_completar'])) {
-                        $mensagem = '<div class="alert alert-danger">Frase para completar e resposta são obrigatórias.</div>';
-                    } else {
-                        $alternativas_aceitas = !empty($_POST['alternativas_completar']) ? 
-                            array_map('trim', explode(',', $_POST['alternativas_completar'])) : 
-                            [$_POST['resposta_completar']];
-                        $conteudo = json_encode([
-                            'frase_completar' => $_POST['frase_completar'],
-                            'resposta_correta' => $_POST['resposta_completar'],
-                            'alternativas_aceitas' => $alternativas_aceitas,
-                            'dica' => $_POST['dica_completar'] ?? '',
-                            'placeholder' => $_POST['placeholder_completar'] ?? 'Digite sua resposta...'
-                        ], JSON_UNESCAPED_UNICODE);
-                    }
-                } elseif ($tipo_exercicio === 'fala') {
-                    if (empty($_POST['frase_esperada'])) {
-                        $mensagem = '<div class="alert alert-danger">Frase esperada é obrigatória.</div>';
-                    } else {
-                        $palavras_chave = !empty($_POST['palavras_chave']) ? 
-                            array_map('trim', explode(',', $_POST['palavras_chave'])) : 
-                            [];
-                        $conteudo = json_encode([
-                            'frase_esperada' => $_POST['frase_esperada'],
-                            'pronuncia_fonetica' => $_POST['pronuncia_fonetica'] ?? '',
-                            'palavras_chave' => $palavras_chave,
-                            'tolerancia_erro' => 0.8
-                        ], JSON_UNESCAPED_UNICODE);
-                    }
-                } elseif ($tipo_exercicio === 'audicao') {
-                    $conteudo = json_encode([
-                        'audio_url' => $_POST['audio_url'] ?? '',
-                        'transcricao' => $_POST['transcricao'] ?? '',
-                        'resposta_correta' => $_POST['resposta_audio_correta'] ?? ''
-                    ], JSON_UNESCAPED_UNICODE);
-                } 
-                // CORREÇÃO: PROCESSAMENTO PARA LISTENING
-                elseif ($tipo_exercicio === 'listening') {
-                    // CORREÇÃO: Mudar de listening_resposta_correta para listening_alt_correta
-                    if (empty($_POST['frase_listening']) || empty($_POST['listening_opcao1']) || empty($_POST['listening_opcao2']) || !isset($_POST['listening_alt_correta'])) {
-                        $mensagem = '<div class="alert alert-danger">Frase, pelo menos 2 opções e a indicação da resposta correta são obrigatórios para listening.</div>';
-                    } else {
-                        try {
-                            $listeningController = new ListeningController();
-                            
-                            // Gerar áudio automaticamente
-                            $audio_url = $listeningController->gerarAudio(
-                                $_POST['frase_listening'], 
-                                $_POST['idioma_audio'] ?? 'en-us'
-                            );
-                            
-                            // Preparar opções
-                            $opcoes = [
-                                trim($_POST['listening_opcao1']),
-                                trim($_POST['listening_opcao2'])
-                            ];
-                            
-                            if (!empty($_POST['listening_opcao3'])) $opcoes[] = trim($_POST['listening_opcao3']);
-                            if (!empty($_POST['listening_opcao4'])) $opcoes[] = trim($_POST['listening_opcao4']);
-                            
-                            // CORREÇÃO: Mudar de listening_resposta_correta para listening_alt_correta
-                            $resposta_correta_index = (int)($_POST['listening_alt_correta'] ?? 0);
-                            
-                            $bloco_info = $listeningModel->buscarInfoBloco($bloco_id); // Buscar info do bloco
-
-                            $dados_listening = [
-                                'bloco_id' => $bloco_id,
-                                'frase' => $_POST['frase_listening'],
-                                'audio_url' => $audio_url,
-                                'opcoes' => $opcoes,
-                                'resposta_correta' => $resposta_correta_index,
-                                'idioma' => $bloco_info['idioma_unidade'] ?? ($_POST['idioma_audio'] ?? 'en-us'), // Usar idioma da unidade/bloco
-                                'nivel' => $bloco_info['nivel_caminho'] ?? 'basico', // Usar nível do caminho/bloco
-                                'ordem' => $ordem,
-                                'tipo_exercicio' => 'listening'
-                            ];
-
-                            // CORREÇÃO: Inserir os dados do listening no banco
-                            $conteudo = json_encode($dados_listening, JSON_UNESCAPED_UNICODE);
-                            
-                            if (adicionarExercicio($conn, $caminho_id, $bloco_id, $ordem, $tipo, $pergunta, $conteudo)) {
-                                $mensagem = '<div class="alert alert-success">Exercício de listening adicionado com sucesso!</div>';
-                            } else {
-                                $mensagem = '<div class="alert alert-danger">Erro ao adicionar exercício de listening.</div>';
-                            }
-                            
-                        } catch (Exception $e) {
-                            $mensagem = '<div class="alert alert-danger">Erro ao gerar áudio ou salvar: ' . $e->getMessage() . '</div>';
-                        }
-                    }
-                } // Fim do elseif ($tipo_exercicio === 'listening')
-                
-                // Lógica para outros tipos de exercício 'normal' que não são 'listening'
-                if ($tipo_exercicio !== 'listening' && $conteudo) {
-                    if (adicionarExercicio($conn, $caminho_id, $bloco_id, $ordem, $tipo, $pergunta, $conteudo)) {
-                        $mensagem = '<div class="alert alert-success">Exercício adicionado com sucesso!</div>';
-                    } else {
-                        $mensagem = '<div class="alert alert-danger">Erro ao adicionar exercício.</div>';
-                    }
-                }
-                break;
-
-            case 'especial':
-                if (empty($_POST['link_video']) || empty($_POST['pergunta_extra'])) {
-                    $mensagem = '<div class="alert alert-danger">O Link do Vídeo/Áudio e a Pergunta Extra são obrigatórios para este tipo de exercício.</div>';
-                } else {
-                    $conteudo = json_encode([
-                        'link_video' => $_POST['link_video'],
-                        'pergunta_extra' => $_POST['pergunta_extra']
-                    ], JSON_UNESCAPED_UNICODE);
-                }
-                break;
-                
-            case 'quiz':
-                if (empty($_POST['quiz_id'])) {
-                    $mensagem = '<div class="alert alert-danger">O ID do Quiz é obrigatório para este tipo de exercício.</div>';
-                } else {
-                    $conteudo = json_encode([
-                        'quiz_id' => $_POST['quiz_id']
-                    ], JSON_UNESCAPED_UNICODE);
-                }
-                break;
-        }
-
-        // CORREÇÃO: Removida a lógica duplicada de inserção
-        if (empty($mensagem) && $conteudo && $tipo_exercicio !== 'listening') {
-            // Inserir exercício na tabela exercicios apenas para tipos que não são listening
-            // (o listening já foi inserido na lógica específica acima)
-            $sql = "INSERT INTO exercicios (caminho_id, bloco_id, ordem, tipo, tipo_exercicio, pergunta, conteudo) VALUES (?, ?, ?, ?, ?, ?, ?)";
-            $stmt = $conn->prepare($sql);
-            
-            if ($stmt) {
-                $stmt->bind_param("iiissss", $caminho_id, $bloco_id, $ordem, $tipo, $tipo_exercicio, $pergunta, $conteudo);
-                
-                if ($stmt->execute()) {
-                    $mensagem = '<div class="alert alert-success">Exercício adicionado com sucesso!</div>';
-                    $_POST = array(); // Limpar campos do formulário
-                } else {
-                    $mensagem = '<div class="alert alert-danger">Erro ao adicionar exercício: ' . $stmt->error . '</div>';
-                }
-                $stmt->close();
-            } else {
-                $mensagem = '<div class="alert alert-danger">Erro na preparação da consulta: ' . $conn->error . '</div>';
-            }
-        }
-    }
-}
-
-// ... (o resto do código PHP permanece igual) ...
-
-// Variáveis para pré-preencher o formulário em caso de erro ou sucesso
+// Variáveis para pré-preencher o formulário
 $post_caminho_id = $_POST["caminho_id"] ?? '';
 $post_bloco_id = $_POST["bloco_id"] ?? '';
 $post_ordem = $_POST["ordem"] ?? '';
 $post_tipo = $_POST["tipo"] ?? "normal";
 $post_tipo_exercicio = $_POST["tipo_exercicio"] ?? "multipla_escolha";
 $post_pergunta = $_POST["pergunta"] ?? '';
+
+// CAMPOS ESPECÍFICOS PARA FALA
+$post_frase_esperada = $_POST["frase_esperada"] ?? '';
+$post_idioma_fala = $_POST["idioma_fala"] ?? 'en-US';
+$post_pronuncia_fonetica = $_POST["pronuncia_fonetica"] ?? '';
+$post_palavras_chave = $_POST["palavras_chave"] ?? '';
+$post_explicacao_fala = $_POST["explicacao_fala"] ?? '';
+$post_tolerancia_erro = $_POST["tolerancia_erro"] ?? '0.8';
+$post_max_tentativas = $_POST["max_tentativas"] ?? '3';
 
 // CAMPOS ESPECÍFICOS PARA LISTENING
 $post_frase_listening = $_POST["frase_listening"] ?? '';
@@ -347,7 +139,7 @@ $post_listening_opcao4 = $_POST["listening_opcao4"] ?? '';
 $post_listening_alt_correta = $_POST['listening_alt_correta'] ?? '0';
 $post_explicacao_listening = $_POST["explicacao_listening"] ?? '';
 
-// Campos específicos para cada tipo de exercício
+// Outros campos
 $post_alt_texto = $_POST["alt_texto"] ?? [];
 $post_alt_correta = $_POST["alt_correta"] ?? null;
 $post_explicacao = $_POST["explicacao"] ?? '';
@@ -359,15 +151,218 @@ $post_resposta_completar = $_POST["resposta_completar"] ?? '';
 $post_alternativas_completar = $_POST["alternativas_completar"] ?? '';
 $post_dica_completar = $_POST["dica_completar"] ?? '';
 $post_placeholder_completar = $_POST["placeholder_completar"] ?? 'Digite sua resposta...';
-$post_frase_esperada = $_POST["frase_esperada"] ?? '';
-$post_pronuncia_fonetica = $_POST["pronuncia_fonetica"] ?? '';
-$post_palavras_chave = $_POST["palavras_chave"] ?? '';
 $post_audio_url = $_POST["audio_url"] ?? '';
 $post_transcricao = $_POST["transcricao"] ?? '';
 $post_resposta_audio_correta = $_POST["resposta_audio_correta"] ?? '';
 $post_link_video = $_POST["link_video"] ?? '';
 $post_pergunta_extra = $_POST["pergunta_extra"] ?? '';
 $post_quiz_id = $_POST["quiz_id"] ?? '';
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $caminho_id = $_POST["caminho_id"] ?? null;
+    $bloco_id = $_POST["bloco_id"] ?? null;
+    $ordem = $_POST["ordem"] ?? null;
+    $tipo = $_POST["tipo"] ?? null;
+    $pergunta = $_POST["pergunta"] ?? null;
+    $tipo_exercicio = $_POST["tipo_exercicio"] ?? null;
+    $conteudo = null;
+    $sucesso_insercao = false;
+
+    if (empty($caminho_id) || empty($bloco_id) || empty($ordem) || empty($pergunta) || empty($tipo_exercicio)) {
+        $mensagem = '<div class="alert alert-danger">Por favor, preencha todos os campos obrigatórios.</div>';
+    } else {
+        switch ($tipo_exercicio) {
+            case 'multipla_escolha':
+                if (empty($_POST['alt_texto']) || !isset($_POST['alt_correta'])) {
+                    $mensagem = '<div class="alert alert-danger">Alternativas e resposta correta são obrigatórias.</div>';
+                } else {
+                    $alternativas = [];
+                    foreach ($_POST['alt_texto'] as $index => $texto) {
+                        if (!empty($texto)) {
+                            $alternativas[] = [
+                                'id' => chr(97 + $index),
+                                'texto' => $texto,
+                                'correta' => ($index == $_POST['alt_correta']),
+                            ];
+                        }
+                    }
+                    $conteudo = json_encode([
+                        'alternativas' => $alternativas,
+                        'explicacao' => $_POST['explicacao'] ?? ''
+                    ], JSON_UNESCAPED_UNICODE);
+                    $sucesso_insercao = true;
+                }
+                break;
+
+            case 'texto_livre':
+                if (empty($_POST['resposta_esperada'])) {
+                    $mensagem = '<div class="alert alert-danger">Resposta esperada é obrigatória.</div>';
+                } else {
+                    $alternativas_aceitas = !empty($_POST['alternativas_aceitas']) ? 
+                        array_map('trim', explode(',', $_POST['alternativas_aceitas'])) : 
+                        [$_POST['resposta_esperada']];
+                    $conteudo = json_encode([
+                        'resposta_correta' => $_POST['resposta_esperada'],
+                        'alternativas_aceitas' => $alternativas_aceitas,
+                        'dica' => $_POST['dica_texto'] ?? ''
+                    ], JSON_UNESCAPED_UNICODE);
+                    $sucesso_insercao = true;
+                }
+                break;
+
+            case 'completar':
+                if (empty($_POST['frase_completar']) || empty($_POST['resposta_completar'])) {
+                    $mensagem = '<div class="alert alert-danger">Frase para completar e resposta são obrigatórias.</div>';
+                } else {
+                    $alternativas_aceitas = !empty($_POST['alternativas_completar']) ? 
+                        array_map('trim', explode(',', $_POST['alternativas_completar'])) : 
+                        [$_POST['resposta_completar']];
+                    $conteudo = json_encode([
+                        'frase_completar' => $_POST['frase_completar'],
+                        'resposta_correta' => $_POST['resposta_completar'],
+                        'alternativas_aceitas' => $alternativas_aceitas,
+                        'dica' => $_POST['dica_completar'] ?? '',
+                        'placeholder' => $_POST['placeholder_completar'] ?? 'Digite sua resposta...'
+                    ], JSON_UNESCAPED_UNICODE);
+                    $sucesso_insercao = true;
+                }
+                break;
+
+            case 'fala':
+                if (empty($_POST['frase_esperada']) || empty($_POST['idioma_fala'])) {
+                    $mensagem = '<div class="alert alert-danger">Frase esperada e idioma são obrigatórios para exercícios de fala.</div>';
+                } else {
+                    $palavras_chave = !empty($_POST['palavras_chave']) ? 
+                        array_map('trim', explode(',', $_POST['palavras_chave'])) : 
+                        [];
+                    
+                    $conteudo = json_encode([
+                        'frase_esperada' => $_POST['frase_esperada'],
+                        'texto_para_falar' => $_POST['frase_esperada'],
+                        'idioma' => $_POST['idioma_fala'],
+                        'pronuncia_fonetica' => $_POST['pronuncia_fonetica'] ?? '',
+                        'palavras_chave' => $palavras_chave,
+                        'explicacao' => $_POST['explicacao_fala'] ?? '',
+                        'tolerancia_erro' => floatval($_POST['tolerancia_erro'] ?? 0.8),
+                        'max_tentativas' => intval($_POST['max_tentativas'] ?? 3),
+                        'config_fala' => [
+                            'dificuldade' => 'medio',
+                            'tempo_maximo_gravacao' => 30,
+                            'tentativas_permitidas' => intval($_POST['max_tentativas'] ?? 3),
+                            'tolerancia_pronuncia' => floatval($_POST['tolerancia_erro'] ?? 0.8),
+                            'feedback_imediato' => true
+                        ]
+                    ], JSON_UNESCAPED_UNICODE);
+                    
+                    $sucesso_insercao = true;
+                }
+                break;
+
+            case 'listening':
+                if (empty($_POST['frase_listening']) || empty($_POST['listening_opcao1']) || empty($_POST['listening_opcao2']) || !isset($_POST['listening_alt_correta'])) {
+                    $mensagem = '<div class="alert alert-danger">Frase, pelo menos 2 opções e a indicação da resposta correta são obrigatórios para listening.</div>';
+                } else {
+                    try {
+                        $listeningController = new ListeningController();
+                        
+                        $audio_url = $listeningController->gerarAudio(
+                            $_POST['frase_listening'], 
+                            $_POST['idioma_audio'] ?? 'en-us'
+                        );
+                        
+                        $opcoes = [
+                            trim($_POST['listening_opcao1']),
+                            trim($_POST['listening_opcao2'])
+                        ];
+                        
+                        if (!empty($_POST['listening_opcao3'])) $opcoes[] = trim($_POST['listening_opcao3']);
+                        if (!empty($_POST['listening_opcao4'])) $opcoes[] = trim($_POST['listening_opcao4']);
+                        
+                        $resposta_correta_index = (int)($_POST['listening_alt_correta'] ?? 0);
+                        
+                        $bloco_info = $listeningModel->buscarInfoBloco($bloco_id);
+
+                        $conteudo = json_encode([
+                            'bloco_id' => $bloco_id,
+                            'frase' => $_POST['frase_listening'],
+                            'audio_url' => $audio_url,
+                            'opcoes' => $opcoes,
+                            'resposta_correta' => $resposta_correta_index,
+                            'idioma' => $bloco_info['idioma_unidade'] ?? ($_POST['idioma_audio'] ?? 'en-us'),
+                            'nivel' => $bloco_info['nivel_caminho'] ?? 'basico',
+                            'ordem' => $ordem,
+                            'tipo_exercicio' => 'listening'
+                        ], JSON_UNESCAPED_UNICODE);
+                        
+                        $sucesso_insercao = true;
+                        
+                    } catch (Exception $e) {
+                        $mensagem = '<div class="alert alert-danger">Erro ao gerar áudio ou salvar: ' . $e->getMessage() . '</div>';
+                    }
+                }
+                break;
+
+            case 'audicao':
+                $conteudo = json_encode([
+                    'audio_url' => $_POST['audio_url'] ?? '',
+                    'transcricao' => $_POST['transcricao'] ?? '',
+                    'resposta_correta' => $_POST['resposta_audio_correta'] ?? ''
+                ], JSON_UNESCAPED_UNICODE);
+                $sucesso_insercao = true;
+                break;
+
+            case 'especial':
+                if (empty($_POST['link_video']) || empty($_POST['pergunta_extra'])) {
+                    $mensagem = '<div class="alert alert-danger">O Link do Vídeo/Áudio e a Pergunta Extra são obrigatórios para este tipo de exercício.</div>';
+                } else {
+                    $conteudo = json_encode([
+                        'link_video' => $_POST['link_video'],
+                        'pergunta_extra' => $_POST['pergunta_extra']
+                    ], JSON_UNESCAPED_UNICODE);
+                    $sucesso_insercao = true;
+                }
+                break;
+                
+            case 'quiz':
+                if (empty($_POST['quiz_id'])) {
+                    $mensagem = '<div class="alert alert-danger">O ID do Quiz é obrigatório para este tipo de exercício.</div>';
+                } else {
+                    $conteudo = json_encode([
+                        'quiz_id' => $_POST['quiz_id']
+                    ], JSON_UNESCAPED_UNICODE);
+                    $sucesso_insercao = true;
+                }
+                break;
+        }
+
+        // INSERIR NO BANCO DE DADOS - LÓGICA CORRIGIDA
+        if ($sucesso_insercao && $conteudo) {
+            if (adicionarExercicio($conn, $caminho_id, $bloco_id, $ordem, $tipo_exercicio, $pergunta, $conteudo)) {
+                $mensagem = '<div class="alert alert-success">Exercício de ' . $tipo_exercicio . ' adicionado com sucesso!</div>';
+                
+                // Limpar apenas os campos do formulário, não todos os POST
+                $_POST['pergunta'] = '';
+                $_POST['frase_esperada'] = '';
+                $_POST['frase_listening'] = '';
+                $_POST['resposta_esperada'] = '';
+                $_POST['frase_completar'] = '';
+                $_POST['resposta_completar'] = '';
+                $_POST['explicacao'] = '';
+                $_POST['explicacao_fala'] = '';
+                $_POST['explicacao_listening'] = '';
+                
+                // Manter os selects preenchidos
+                $post_caminho_id = $_POST["caminho_id"];
+                $post_bloco_id = $_POST["bloco_id"];
+                $post_ordem = $_POST["ordem"];
+                $post_tipo = $_POST["tipo"];
+                $post_tipo_exercicio = $_POST["tipo_exercicio"];
+            } else {
+                $mensagem = '<div class="alert alert-danger">Erro ao adicionar exercício no banco de dados.</div>';
+            }
+        }
+    }
+}
 
 $database->closeConnection();
 ?>
@@ -461,6 +456,7 @@ $database->closeConnection();
 
     .card-header::before {
         content: '';
+;
         position: absolute;
         top: 0;
         left: -100%;
@@ -489,7 +485,6 @@ $database->closeConnection();
         text-shadow: 0 2px 4px rgba(0,0,0,0.3);
     }
 
-    /* Cartões de Estatísticas Melhorados */
     .stats-card {
         background: var(--branco);
         color: var(--preto-texto);
@@ -563,7 +558,6 @@ $database->closeConnection();
         text-shadow: 0 4px 8px rgba(255, 215, 0, 0.3);
     }
 
-    /* Barra de Navegação */
     .navbar {
         background: transparent !important;
         border-bottom: 3px solid var(--amarelo-detalhe);
@@ -591,160 +585,147 @@ $database->closeConnection();
         transform: scale(1.05);
     }
 
-   
-        /* Menu Lateral */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 250px;
+        height: 100%;
+        background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+        color: var(--branco);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding-top: 20px;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    }
+
+    .sidebar .profile {
+        text-align: center;
+        margin-bottom: 30px;
+        padding: 0 15px;
+    }
+
+    .profile-avatar-sidebar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: 3px solid var(--amarelo-detalhe);
+        background: linear-gradient(135deg, var(--roxo-claro), var(--roxo-principal));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .profile-avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .profile-avatar-sidebar:has(img) i {
+        display: none;
+    }
+
+    .admin-name {
+        font-weight: 600;
+        margin-bottom: 0;
+        color: var(--branco);
+        word-wrap: break-word;
+        max-width: 200px;
+        text-align: center;
+        line-height: 1.3;
+        font-size: 1rem;
+    }
+
+    .admin-email {
+        color: var(--cinza-claro);
+        word-wrap: break-word;
+        max-width: 200px;
+        text-align: center;
+        font-size: 0.75rem;
+        line-height: 1.2;
+        margin-top: 5px;
+        opacity: 0.9;
+    }
+
+    .sidebar .profile i {
+        font-size: 4rem;
+        color: var(--amarelo-detalhe);
+        margin-bottom: 10px;
+    }
+
+    .sidebar .list-group {
+        width: 100%;
+    }
+
+    .sidebar .list-group-item {
+        background-color: transparent;
+        color: var(--branco);
+        border: none;
+        padding: 15px 25px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .sidebar .list-group-item:hover {
+        background-color: var(--roxo-escuro);
+        cursor: pointer;
+    }
+
+    .sidebar .list-group-item.active {
+        background-color: var(--roxo-escuro) !important;
+        color: var(--branco) !important;
+        font-weight: 600;
+        border-left: 4px solid var(--amarelo-detalhe);
+    }
+
+    .sidebar .list-group-item i {
+        color: var(--amarelo-detalhe);
+    }
+
+    .main-content {
+        margin-left: 250px;
+        padding: 20px;
+    }
+
+    .btn-warning {
+        background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
+        color: var(--preto-texto);
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        min-width: 180px;
+        border: none;
+    }
+
+    .btn-warning:hover {
+        background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
+        color: var(--preto-texto);
+    }
+
+    @media (max-width: 768px) {
         .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 250px;
-            height: 100%;
-            background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
-            color: var(--branco);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            padding-top: 20px;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-        }
-
-        .sidebar .profile {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 0 15px;
-        }
-
-        /* Estilos para foto de perfil no sidebar */
-        .profile-avatar-sidebar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            border: 3px solid var(--amarelo-detalhe);
-            background: linear-gradient(135deg, var(--roxo-claro), var(--roxo-principal));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .profile-avatar-img {
+            position: relative;
             width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
+            height: auto;
         }
-
-        /* Remove o ícone padrão quando há foto */
-        .profile-avatar-sidebar:has(img) i {
-            display: none;
-        }
-
-        /* Estilos para nome e email com quebra de texto */
-        .admin-name {
-            font-weight: 600;
-            margin-bottom: 0;
-            color: var(--branco);
-            word-wrap: break-word;
-            max-width: 200px;
-            text-align: center;
-            line-height: 1.3;
-            font-size: 1rem;
-        }
-
-        .admin-email {
-            color: var(--cinza-claro);
-            word-wrap: break-word;
-            max-width: 200px;
-            text-align: center;
-            font-size: 0.75rem;
-            line-height: 1.2;
-            margin-top: 5px;
-            opacity: 0.9;
-        }
-
-        .sidebar .profile i {
-            font-size: 4rem;
-            color: var(--amarelo-detalhe);
-            margin-bottom: 10px;
-        }
-
-        .sidebar .list-group {
-            width: 100%;
-        }
-
-        .sidebar .list-group-item {
-            background-color: transparent;
-            color: var(--branco);
-            border: none;
-            padding: 15px 25px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar .list-group-item:hover {
-            background-color: var(--roxo-escuro);
-            cursor: pointer;
-        }
-
-        .sidebar .list-group-item.active {
-            background-color: var(--roxo-escuro) !important;
-            color: var(--branco) !important;
-            font-weight: 600;
-            border-left: 4px solid var(--amarelo-detalhe);
-        }
-
-        .sidebar .list-group-item i {
-            color: var(--amarelo-detalhe);
-        }
-
-        /* Ajuste do conteúdo principal para não ficar por baixo do sidebar */
         .main-content {
-            margin-left: 250px;
-            padding: 20px;
+            margin-left: 0;
         }
-
-        .btn-warning {
-            background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
-            color: var(--preto-texto);
-            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
-            min-width: 180px;
-            border: none;
+        .stats-card h3 {
+            font-size: 2rem;
         }
+    }
 
-        .btn-warning:hover {
-            background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
-            color: var(--preto-texto);
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                position: relative;
-                width: 100%;
-                height: auto;
-            }
-            .main-content {
-                margin-left: 0;
-            }
-            .stats-card h3 {
-                font-size: 2rem;
-            }
-        }
-
-  /* Ajuste do conteúdo principal para não ficar por baixo do sidebar */
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-        }
-
-    /* Botões Melhorados */
     .btn {
         border-radius: 12px;
         padding: 12px 24px;
@@ -805,6 +786,7 @@ $database->closeConnection();
         box-shadow: 0 12px 30px rgba(106, 13, 173, 0.6);
         color: var(--amarelo-detalhe);
     }
+
     .btn-outline-warning {
         background: var(--branco);
         color: var(--roxo-principal);
@@ -820,503 +802,6 @@ $database->closeConnection();
         box-shadow: 0 6px 20px rgba(106, 13, 173, 0.4);
         transform: translateY(-2px);
     }
-
-    /* BOTÕES DE AÇÕES RÁPIDAS - ESTILO MINIMALISTA */
-    .acoes-rapidas-btn {
-        background: rgba(255, 255, 255, 0.1);
-        color: #6a0dad;
-        border: 2px solid #6a0dad;
-        border-radius: 12px;
-        padding: 12px 20px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        text-transform: none;
-        font-size: 0.9rem;
-        min-width: 200px;
-        position: relative;
-        overflow: hidden;
-        backdrop-filter: blur(10px);
-        text-decoration: none;
-        cursor: pointer;
-    }
-
-    /* Efeito hover sutil */
-    .acoes-rapidas-btn:hover {
-        background: #6a0dad;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(106, 13, 173, 0.2);
-        border-color: #6a0dad;
-    }
-
-    .acoes-rapidas-btn:active {
-        transform: translateY(0);
-        box-shadow: 0 2px 6px rgba(106, 13, 173, 0.2);
-    }
-
-    /* Botão Adicionar - Verde sutil */
-    .acoes-rapidas-btn.adicionar {
-        color: #6a0dad;
-        border-color: #6a0dad;
-        background: #6a0dad22;
-    }
-
-    .acoes-rapidas-btn.adicionar:hover {
-        background: #8212d3ff;
-        color: var(--amarelo-detalhe);
-        box-shadow: 0 4px 12px #6a0dad46;
-    }
-
-    /* Botão Ver - Azul sutil */
-    .acoes-rapidas-btn.ver {
-        color: #2563eb;
-        border-color: #2563eb;
-        background: rgba(37, 99, 235, 0.05);
-    }
-
-    .acoes-rapidas-btn.ver:hover {
-        background: #2563eb;
-        color: white;
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
-    }
-
-    /* Botão Gerenciar - Roxo sutil */
-    .acoes-rapidas-btn.gerenciar {
-        color: #7c3aed;
-        border-color: #7c3aed;
-        background: rgba(124, 58, 237, 0.05);
-    }
-
-    .acoes-rapidas-btn.gerenciar:hover {
-        background: #7c3aed;
-        color: white;
-        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
-    }
-
-    /* Estados desabilitados */
-    .acoes-rapidas-btn:disabled {
-        color: #9ca3af;
-        border-color: #d1d5db;
-        background: rgba(156, 163, 175, 0.05);
-        transform: none;
-        box-shadow: none;
-        cursor: not-allowed;
-    }
-
-    .acoes-rapidas-btn:disabled:hover {
-        transform: none;
-        box-shadow: none;
-        background: rgba(156, 163, 175, 0.05);
-        color: #9ca3af;
-        border-color: #d1d5db;
-    }
-
-    /* Ícones menores */
-    .acoes-rapidas-btn i {
-        font-size: 1rem;
-        transition: transform 0.3s ease;
-    }
-
-    .acoes-rapidas-btn:hover i {
-        transform: scale(1.1);
-    }
-
-    /* Container minimalista */
-    .acoes-rapidas-container {
-        background: rgba(255, 255, 255, 0.8);
-        border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        border: 1px solid rgba(106, 13, 173, 0.1);
-        backdrop-filter: blur(15px);
-    }
-
-    .acoes-rapidas-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
-        margin-top: 15px;
-    }
-
-    /* Dropdown minimalista */
-    .dropdown .acoes-rapidas-btn.dropdown-toggle::after {
-        margin-left: 6px;
-        transition: transform 0.3s ease;
-    }
-
-    .dropdown.show .acoes-rapidas-btn.dropdown-toggle::after {
-        transform: rotate(180deg);
-    }
-
-    .dropdown-menu {
-        border-radius: 12px;
-        border: 1px solid rgba(106, 13, 173, 0.1);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        background: rgba(255, 255, 255, 0.95);
-        padding: 8px;
-        margin-top: 5px !important;
-    }
-
-    .dropdown-item {
-        border-radius: 8px;
-        padding: 10px 12px;
-        transition: all 0.2s ease;
-        font-weight: 500;
-        color: #374151;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin: 2px 0;
-        font-size: 0.85rem;
-    }
-
-    .dropdown-item:hover {
-        background: rgba(106, 13, 173, 0.08);
-        color: #6a0dad;
-        transform: none;
-        box-shadow: none;
-    }
-
-    .dropdown-item i {
-        font-size: 0.9rem;
-        width: 16px;
-        text-align: center;
-    }
-
-    /* Responsividade */
-    @media (max-width: 768px) {
-        .acoes-rapidas-btn {
-            min-width: 100%;
-            padding: 10px 16px;
-            font-size: 0.85rem;
-        }
-        
-        .acoes-rapidas-grid {
-            grid-template-columns: 1fr;
-            gap: 12px;
-        }
-        
-        .acoes-rapidas-container {
-            padding: 16px;
-        }
-        
-        .acoes-rapidas-btn i {
-            font-size: 0.9rem;
-        }
-    }
-
-    @media (max-width: 576px) {
-        .acoes-rapidas-btn {
-            padding: 8px 14px;
-        }
-    }
-    /* Efeitos de brilho adicionais */
-    .glow-effect {
-        position: relative;
-    }
-
-    .glow-effect::after {
-        content: '';
-        position: absolute;
-        top: -2px;
-        left: -2px;
-        right: -2px;
-        bottom: -2px;
-        background: linear-gradient(45deg, var(--roxo-principal), var(--amarelo-detalhe), var(--roxo-claro));
-        border-radius: inherit;
-        z-index: -1;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .glow-effect:hover::after {
-        opacity: 0.3;
-    }
-
-    /* Efeito de profundidade */
-    .acoes-rapidas-btn {
-        position: relative;
-        z-index: 1;
-    }
-
-    .acoes-rapidas-btn:hover {
-        z-index: 2;
-    }
-    .bloco-actions {
-        opacity: 1 !important;
-        transform: translateY(0) !important;
-        display: flex;
-        gap: 5px;
-        flex-wrap: wrap;
-    }
-
-    .btn-acao {
-        border-radius: 8px;
-        padding: 6px 12px;
-        font-weight: 600;
-        font-size: 0.8rem;
-        transition: all 0.3s ease;
-        border: 2px solid transparent;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        min-width: auto;
-    }
-
-    .btn-acao.btn-sm {
-        padding: 4px 8px;
-        font-size: 0.75rem;
-    }
-
-    .btn-acao.primary {
-        background: var(--gradiente-roxo);
-        color: white;
-    }
-
-    .btn-acao.primary:hover {
-        background: linear-gradient(135deg, var(--roxo-escuro) 0%, var(--roxo-principal) 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(106, 13, 173, 0.4);
-    }
-
-    .btn-acao.warning {
-        background: var(--gradiente-amarelo);
-        color: var(--preto-texto);
-    }
-
-    .btn-acao.warning:hover {
-        background: linear-gradient(135deg, #e6c200 0%, #cc9900 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
-    }
-
-    .btn-acao.danger {
-        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-        color: white;
-    }
-
-    .btn-acao.danger:hover {
-        background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
-    }
-
-    /* Cartões de bloco melhorados */
-    .bloco-card {
-        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        border-left: 5px solid var(--roxo-principal);
-        border-radius: 15px;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-        overflow: hidden;
-        height: 100%;
-        background: var(--branco);
-        border: 2px solid rgba(106, 13, 173, 0.1);
-    }
-
-    .bloco-card:hover {
-        transform: translateY(-8px) scale(1.02);
-        box-shadow: 0 15px 35px rgba(106, 13, 173, 0.25);
-        border-left-color: var(--amarelo-detalhe);
-        border-color: rgba(106, 13, 173, 0.2);
-    }
-
-    .stats-badge {
-        font-size: 0.8rem;
-        background: var(--gradiente-roxo);
-        color: white;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-weight: 600;
-    }
-
-    /* Cards de formulário e listas */
-    .card {
-        border: none;
-        border-radius: 20px;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-        overflow: hidden;
-        background: var(--branco);
-        transition: all 0.3s ease;
-    }
-
-    .card:hover {
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-    }
-
-    /* Formulários */
-    .form-control, .form-select {
-        border-radius: 12px;
-        border: 2px solid var(--cinza-medio);
-        padding: 12px 18px;
-        transition: all 0.3s ease;
-        font-size: 0.95rem;
-    }
-
-    .form-control:focus, .form-select:focus {
-        border-color: var(--roxo-principal);
-        box-shadow: 0 0 0 0.3rem rgba(106, 13, 173, 0.2);
-        transform: translateY(-2px);
-    }
-
-    /* Alertas */
-    .alert {
-        border-radius: 15px;
-        border: none;
-        padding: 18px 22px;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-        border-left: 5px solid;
-        backdrop-filter: blur(10px);
-    }
-
-    .alert-success {
-        background: linear-gradient(135deg, rgba(40, 167, 69, 0.15), rgba(32, 201, 151, 0.1));
-        color: #155724;
-        border-left-color: #28a745;
-    }
-
-    .alert-danger {
-        background: linear-gradient(135deg, rgba(220, 53, 69, 0.15), rgba(232, 62, 140, 0.1));
-        color: #721c24;
-        border-left-color: #dc3545;
-    }
-
-    .alert-warning {
-        background: linear-gradient(135deg, rgba(255, 193, 7, 0.15), rgba(253, 126, 20, 0.1));
-        color: #856404;
-        border-left-color: #ffc107;
-    }
-
-    /* Badges */
-    .badge {
-        font-weight: 600;
-        padding: 8px 16px;
-        border-radius: 25px;
-        font-size: 0.8rem;
-    }
-
-    /* Títulos e textos */
-    h2 {
-        color: var(--roxo-principal);
-        font-weight: 800;
-        margin-bottom: 15px;
-        font-size: 2.2rem;
-        text-shadow: 0 2px 4px rgba(106, 13, 173, 0.1);
-    }
-
-    .text-muted {
-        color: #6c757d !important;
-    }
-
-    /* Dropdown */
-    .dropdown-menu {
-        border-radius: 15px;
-        border: none;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-        padding: 10px 0;
-        backdrop-filter: blur(10px);
-        background: rgba(255, 255, 255, 0.95);
-    }
-
-    .dropdown-item {
-        padding: 10px 20px;
-        transition: all 0.2s ease;
-        font-weight: 500;
-    }
-
-    .dropdown-item:hover {
-        background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
-        color: white;
-        transform: translateX(5px);
-    }
-
-    /* Animações adicionais para stats-card */
-    .stats-card:nth-child(1) { animation-delay: 0.1s; }
-    .stats-card:nth-child(2) { animation-delay: 0.2s; }
-    .stats-card:nth-child(3) { animation-delay: 0.3s; }
-    .stats-card:nth-child(4) { animation-delay: 0.4s; }
-
-    @media (max-width: 768px) {
-        .sidebar {
-            position: relative;
-            width: 100%;
-            height: auto;
-        }
-        .main-content {
-            margin-left: 0;
-            padding: 15px;
-        }
-        .stats-card h3 {
-            font-size: 2.2rem;
-        }
-        .navbar-brand .logo-header {
-            height: 60px;
-        }
-        .btn {
-            padding: 10px 20px;
-            font-size: 0.85rem;
-        }
-        .acoes-rapidas-btn {
-            min-width: 160px;
-            padding: 12px 16px;
-        }
-        .bloco-actions {
-            flex-direction: column;
-            gap: 8px;
-        }
-        .btn-acao {
-            width: 100%;
-            justify-content: center;
-        }
-    }
-
-    /* Container para ações rápidas */
-    .acoes-rapidas-container {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 249, 250, 0.8));
-        border-radius: 20px;
-        padding: 25px;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-        border: 2px solid rgba(106, 13, 173, 0.1);
-        backdrop-filter: blur(10px);
-    }
-
-    .acoes-rapidas-container .card-header {
-        background: linear-gradient(135deg, #17a2b8, #6f42c1);
-    }
-
-    .acoes-rapidas-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
-        margin-top: 15px;
-    }
-
-    /* Efeitos de brilho adicionais */
-    .glow-effect {
-        position: relative;
-    }
-
-    .glow-effect::after {
-        content: '';
-        position: absolute;
-        top: -2px;
-        left: -2px;
-        right: -2px;
-        bottom: -2px;
-        background: linear-gradient(45deg, var(--roxo-principal), var(--amarelo-detalhe), var(--roxo-claro));
-        border-radius: inherit;
-        z-index: -1;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .glow-effect:hover::after {
-        opacity: 0.3;
-    }
-
 
     .btn-back {
         background: rgba(255, 255, 255, 0.2);
@@ -1340,7 +825,6 @@ $database->closeConnection();
         box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
     }
 
-    /* Estilos específicos para o formulário de exercícios */
     .subtipo-campos {
         border: 1px solid #dee2e6;
         border-radius: 0.375rem;
@@ -1348,16 +832,101 @@ $database->closeConnection();
         margin-bottom: 1rem;
         background-color: #f8f9fa;
     }
+
     .input-group-text {
         min-width: 40px;
         justify-content: center;
     }
+
     .audio-preview {
         background: #f8f9fa;
         padding: 15px;
         border-radius: 8px;
         margin: 10px 0;
         border: 1px dashed #dee2e6;
+    }
+
+    .microphone-btn {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        border: none;
+        color: white;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .microphone-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+    }
+
+    .microphone-btn.listening {
+        background: linear-gradient(135deg, #dc3545, #e83e8c);
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    .speech-status {
+        padding: 10px;
+        border-radius: 8px;
+        margin: 10px 0;
+        text-align: center;
+    }
+
+    .speech-listening {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        color: #856404;
+    }
+
+    .speech-success {
+        background: #d1edff;
+        border: 1px solid #b3d9ff;
+        color: #004085;
+    }
+
+    .speech-error {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+    }
+
+    .microphone-permission {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 10px 0;
+    }
+
+    .microphone-permission h5 {
+        color: #856404;
+        margin-bottom: 10px;
+    }
+
+    .microphone-permission ol {
+        text-align: left;
+        margin-bottom: 10px;
+    }
+
+    .microphone-permission li {
+        margin-bottom: 5px;
+    }
+
+    .permission-granted {
+        background: #d1edff;
+        border: 1px solid #b3d9ff;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 10px 0;
+        color: #004085;
     }
     </style>
 </head>
@@ -1465,7 +1034,7 @@ $database->closeConnection();
                             </select>
                         </div>
 
-                        <!-- Campo Bloco (será carregado via AJAX) -->
+                        <!-- Campo Bloco -->
                         <div class="mb-3">
                             <label for="bloco_id" class="form-label">Selecionar Bloco *</label>
                             <select class="form-select" id="bloco_id" name="bloco_id" required>
@@ -1473,7 +1042,6 @@ $database->closeConnection();
                             </select>
                         </div>
 
-                        <!-- Se houver um caminho selecionado no POST, pré-carregar os blocos -->
                         <?php if (!empty($post_caminho_id)): ?>
                         <script>
                         document.addEventListener('DOMContentLoaded', function() {
@@ -1499,14 +1067,14 @@ $database->closeConnection();
                             </select>
                         </div>
                         
-                        <!-- Campo Subtipo - ATUALIZADO COM LISTENING -->
+                        <!-- Campo Subtipo -->
                         <div class="mb-3">
                             <label for="tipo_exercicio" class="form-label">Subtipo do Exercício</label>
                             <select class="form-select" id="tipo_exercicio" name="tipo_exercicio" required>
                                 <option value="multipla_escolha" <?php echo ($post_tipo_exercicio == "multipla_escolha") ? "selected" : ""; ?>>Múltipla Escolha</option>
                                 <option value="texto_livre" <?php echo ($post_tipo_exercicio == "texto_livre") ? "selected" : ""; ?>>Texto Livre (Completar)</option>
                                 <option value="completar" <?php echo ($post_tipo_exercicio == "completar") ? "selected" : ""; ?>>Completar Frase</option>
-                                <option value="fala" <?php echo ($post_tipo_exercicio == "fala") ? "selected" : ""; ?>>Exercício de Fala</option>
+                                <option value="fala" <?php echo ($post_tipo_exercicio == "fala") ? "selected" : ""; ?>>Exercício de Fala (Speaking)</option>
                                 <option value="listening" <?php echo ($post_tipo_exercicio == "listening") ? "selected" : ""; ?>>Exercício de Listening</option>
                                 <option value="audicao" <?php echo ($post_tipo_exercicio == "audicao") ? "selected" : ""; ?>>Exercício de Audição</option>
                             </select>
@@ -1518,7 +1086,7 @@ $database->closeConnection();
                             <textarea class="form-control" id="pergunta" name="pergunta" required><?php echo htmlspecialchars($post_pergunta); ?></textarea>
                         </div>
 
-                        <!-- Campos Dinâmicos - ADICIONADA SEÇÃO LISTENING -->
+                        <!-- Campos Dinâmicos -->
                         <div id="conteudo-campos">
                             <div id="campos-normal">
                                 <!-- Campos para Múltipla Escolha -->
@@ -1542,7 +1110,6 @@ $database->closeConnection();
                                                     </div>";
                                                 }
                                             } else {
-                                                // Adiciona uma alternativa vazia por padrão se não houver POST
                                                 echo "
                                                 <div class=\"input-group mb-2\">
                                                     <span class=\"input-group-text\">A</span>
@@ -1610,25 +1177,104 @@ $database->closeConnection();
 
                                 <!-- Campos para Exercício de Fala -->
                                 <div id="campos-fala" class="subtipo-campos">
-                                    <h5>Configuração - Exercício de Fala</h5>
-                                    <div class="mb-3">
-                                        <label for="frase_esperada" class="form-label">Frase Esperada para Fala *</label>
-                                        <textarea class="form-control" id="frase_esperada" name="frase_esperada" rows="2"><?php echo htmlspecialchars($post_frase_esperada); ?></textarea>
-                                        <div class="form-text">A frase que o usuário deve falar.</div>
+                                    <h5>Configuração - Exercício de Fala (Speaking)</h5>
+                                    
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Exercício de Pronúncia:</strong> Os alunos praticarão falando a frase e o sistema avaliará a pronúncia.
                                     </div>
+
+                                    <!-- Status da Permissão do Microfone -->
+                                    <div id="microfone-status" class="mb-3">
+                                        <div class="permission-granted">
+                                            <i class="fas fa-microphone me-2"></i>
+                                            <strong>Microfone Permitido!</strong> O sistema está pronto para testar exercícios de fala.
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="frase_esperada" class="form-label">Frase Esperada para Pronúncia *</label>
+                                        <textarea class="form-control" id="frase_esperada" name="frase_esperada" rows="3" 
+                                                  placeholder="Digite a frase que o aluno deve pronunciar"><?php echo htmlspecialchars($post_frase_esperada); ?></textarea>
+                                        <div class="form-text">A frase exata que o aluno deve falar para ser considerada correta.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="idioma_fala" class="form-label">Idioma da Pronúncia *</label>
+                                        <select class="form-select" id="idioma_fala" name="idioma_fala">
+                                            <option value="en-US" <?php echo ($post_idioma_fala == 'en-US') ? 'selected' : ''; ?>>Inglês Americano</option>
+                                            <option value="en-GB" <?php echo ($post_idioma_fala == 'en-GB') ? 'selected' : ''; ?>>Inglês Britânico</option>
+                                            <option value="es-ES" <?php echo ($post_idioma_fala == 'es-ES') ? 'selected' : ''; ?>>Espanhol</option>
+                                            <option value="fr-FR" <?php echo ($post_idioma_fala == 'fr-FR') ? 'selected' : ''; ?>>Francês</option>
+                                            <option value="de-DE" <?php echo ($post_idioma_fala == 'de-DE') ? 'selected' : ''; ?>>Alemão</option>
+                                            <option value="pt-BR" <?php echo ($post_idioma_fala == 'pt-BR') ? 'selected' : ''; ?>>Português Brasileiro</option>
+                                        </select>
+                                        <div class="form-text">Selecione o idioma para o reconhecimento de voz.</div>
+                                    </div>
+                                    
                                     <div class="mb-3">
                                         <label for="pronuncia_fonetica" class="form-label">Pronúncia Fonética (Opcional)</label>
-                                        <input type="text" class="form-control" id="pronuncia_fonetica" name="pronuncia_fonetica" value="<?php echo htmlspecialchars($post_pronuncia_fonetica); ?>">
-                                        <div class="form-text">Para ajudar na avaliação da pronúncia.</div>
+                                        <input type="text" class="form-control" id="pronuncia_fonetica" name="pronuncia_fonetica" 
+                                               placeholder="Ex: /hɛˈloʊ/ para 'Hello'" value="<?php echo htmlspecialchars($post_pronuncia_fonetica); ?>">
+                                        <div class="form-text">Transcrição fonética para referência (IPA).</div>
                                     </div>
+                                    
                                     <div class="mb-3">
-                                        <label for="palavras_chave" class="form-label">Palavras-chave (separadas por vírgula, opcional)</label>
-                                        <input type="text" class="form-control" id="palavras_chave" name="palavras_chave" value="<?php echo htmlspecialchars($post_palavras_chave); ?>">
-                                        <div class="form-text">Palavras importantes para a correção.</div>
+                                        <label for="palavras_chave" class="form-label">Palavras-Chave Importantes (Opcional)</label>
+                                        <input type="text" class="form-control" id="palavras_chave" name="palavras_chave" 
+                                               placeholder="palavra1, palavra2, palavra3" value="<?php echo htmlspecialchars($post_palavras_chave); ?>">
+                                        <div class="form-text">Separe por vírgula as palavras mais importantes para a avaliação.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="explicacao_fala" class="form-label">Explicação e Dicas de Pronúncia</label>
+                                        <textarea class="form-control" id="explicacao_fala" name="explicacao_fala" rows="3" 
+                                                  placeholder="Dicas para melhorar a pronúncia..."><?php echo htmlspecialchars($post_explicacao_fala); ?></textarea>
+                                        <div class="form-text">Explicação que aparecerá após o aluno completar o exercício.</div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="tolerancia_erro" class="form-label">Tolerância de Erro</label>
+                                                <select class="form-select" id="tolerancia_erro" name="tolerancia_erro">
+                                                    <option value="0.9" <?php echo ($post_tolerancia_erro == '0.9') ? 'selected' : ''; ?>>Alta (90%) - Mais fácil</option>
+                                                    <option value="0.8" <?php echo ($post_tolerancia_erro == '0.8') ? 'selected' : ''; ?>>Média (80%)</option>
+                                                    <option value="0.7" <?php echo ($post_tolerancia_erro == '0.7') ? 'selected' : ''; ?>>Baixa (70%) - Mais difícil</option>
+                                                </select>
+                                                <div class="form-text">Quão precisa a pronúncia precisa ser.</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="max_tentativas" class="form-label">Máximo de Tentativas</label>
+                                                <select class="form-select" id="max_tentativas" name="max_tentativas">
+                                                    <option value="1" <?php echo ($post_max_tentativas == '1') ? 'selected' : ''; ?>>1 tentativa</option>
+                                                    <option value="3" <?php echo ($post_max_tentativas == '3') ? 'selected' : ''; ?>>3 tentativas</option>
+                                                    <option value="5" <?php echo ($post_max_tentativas == '5') ? 'selected' : ''; ?>>5 tentativas</option>
+                                                    <option value="999" <?php echo ($post_max_tentativas == '999') ? 'selected' : ''; ?>>Ilimitado</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Preview do Exercício de Fala -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Prévia do Exercício de Fala</label>
+                                        <div class="card bg-light">
+                                            <div class="card-body">
+                                                <div id="previewFala" class="text-center">
+                                                    <p class="text-muted">Digite uma frase acima para ver a prévia</p>
+                                                </div>
+                                                <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="testarReconhecimentoFala()">
+                                                    <i class="fas fa-microphone me-1"></i>Testar Reconhecimento de Voz
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <!-- NOVO: Campos para Listening -->
+                                <!-- Campos para Listening -->
                                 <div id="campos-listening" class="subtipo-campos">
                                     <h5>Configuração - Exercício de Listening</h5>
                                     
@@ -1756,7 +1402,7 @@ $database->closeConnection();
 
     function carregarBlocos(caminhoId, blocoSelecionado = null) {
         const selectBloco = document.getElementById("bloco_id");
-        selectBloco.innerHTML = '<option value="">-- Selecione um bloco --</option>'; // Limpa as opções anteriores
+        selectBloco.innerHTML = '<option value="">-- Selecione um bloco --</option>';
 
         const blocos = blocosPorCaminho[caminhoId] || [];
 
@@ -1777,7 +1423,7 @@ $database->closeConnection();
         }
     }
     
-    // JavaScript ATUALIZADO para incluir listening
+    // JavaScript para gerenciar os campos dinâmicos
     document.addEventListener("DOMContentLoaded", function() {
         const tipoSelect = document.getElementById("tipo");
         const tipoExercicioSelect = document.getElementById("tipo_exercicio");
@@ -1785,13 +1431,27 @@ $database->closeConnection();
         const camposEspecial = document.getElementById("campos-especial");
         const camposQuiz = document.getElementById("campos-quiz");
         
-        // Adicionar referência aos campos de listening
         const camposMultipla = document.getElementById("campos-multipla");
         const camposTexto = document.getElementById("campos-texto");
         const camposCompletar = document.getElementById("campos-completar");
         const camposFala = document.getElementById("campos-fala");
         const camposAudicao = document.getElementById("campos-audicao");
         const camposListening = document.getElementById("campos-listening");
+
+        // Função para gerenciar o atributo 'required'
+        function setRequired(element, isRequired) {
+            if (element) {
+                element.required = isRequired;
+            }
+        }
+
+        function setMultipleRequired(selector, isRequired) {
+            document.querySelectorAll(selector).forEach(el => {
+                if (el) {
+                    el.required = isRequired;
+                }
+            });
+        }
 
         function atualizarCampos() {
             // Esconder todos os campos principais
@@ -1807,32 +1467,61 @@ $database->closeConnection();
             camposAudicao.style.display = "none";
             camposListening.style.display = "none";
 
+            // Resetar todos os 'required'
+            setRequired(document.getElementById('resposta_esperada'), false);
+            setRequired(document.getElementById('frase_completar'), false);
+            setRequired(document.getElementById('resposta_completar'), false);
+            setRequired(document.getElementById('frase_esperada'), false);
+            setRequired(document.getElementById('idioma_fala'), false);
+            setRequired(document.getElementById('frase_listening'), false);
+            setRequired(document.querySelector('input[name="listening_opcao1"]'), false);
+            setRequired(document.querySelector('input[name="listening_opcao2"]'), false);
+            setRequired(document.getElementById('audio_url'), false);
+            setRequired(document.getElementById('resposta_audio_correta'), false);
+            setRequired(document.getElementById('link_video'), false);
+            setRequired(document.getElementById('pergunta_extra'), false);
+
             if (tipoSelect.value === "normal") {
                 camposNormal.style.display = "block";
                 
-                // Mostrar subcampo baseado no tipo de exercício
                 switch (tipoExercicioSelect.value) {
                     case "multipla_escolha":
                         camposMultipla.style.display = "block";
                         break;
                     case "texto_livre":
                         camposTexto.style.display = "block";
+                        setRequired(document.getElementById('resposta_esperada'), true);
                         break;
                     case "completar":
                         camposCompletar.style.display = "block";
+                        setRequired(document.getElementById('frase_completar'), true);
+                        setRequired(document.getElementById('resposta_completar'), true);
                         break;
                     case "fala":
                         camposFala.style.display = "block";
+                        setRequired(document.getElementById('frase_esperada'), true);
+                        setRequired(document.getElementById('idioma_fala'), true);
+                        // Verificar permissão quando mostrar campos de fala
+                        setTimeout(() => {
+                            verificarPermissaoMicrofoneAuto();
+                        }, 500);
                         break;
                     case "listening":
                         camposListening.style.display = "block";
+                        setRequired(document.getElementById('frase_listening'), true);
+                        setRequired(document.querySelector('input[name="listening_opcao1"]'), true);
+                        setRequired(document.querySelector('input[name="listening_opcao2"]'), true);
                         break;
                     case "audicao":
                         camposAudicao.style.display = "block";
+                        setRequired(document.getElementById('audio_url'), true);
+                        setRequired(document.getElementById('resposta_audio_correta'), true);
                         break;
                 }
             } else if (tipoSelect.value === "especial") {
                 camposEspecial.style.display = "block";
+                setRequired(document.getElementById('link_video'), true);
+                setRequired(document.getElementById('pergunta_extra'), true);
             } else if (tipoSelect.value === "quiz") {
                 camposQuiz.style.display = "block";
             }
@@ -1841,14 +1530,40 @@ $database->closeConnection();
         tipoSelect.addEventListener("change", atualizarCampos);
         tipoExercicioSelect.addEventListener("change", atualizarCampos);
         
-        // Inicializar
         atualizarCampos();
 
-        // Carregar blocos se um caminho já estiver selecionado (útil após POST com erro)
         const initialCaminhoId = document.getElementById('caminho_id').value;
         if (initialCaminhoId) {
             carregarBlocos(initialCaminhoId, <?php echo !empty($post_bloco_id) ? $post_bloco_id : 'null'; ?>);
         }
+
+        // Preview automático para fala
+        const fraseFalaInput = document.getElementById('frase_esperada');
+        if (fraseFalaInput) {
+            fraseFalaInput.addEventListener('input', function() {
+                const preview = document.getElementById('previewFala');
+                if (this.value) {
+                    preview.innerHTML = `
+                        <div class="alert alert-light">
+                            <strong>Exercício:</strong> Pronuncie a frase abaixo
+                            <br><em>"${this.value}"</em>
+                        </div>
+                        <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="testarReconhecimentoFala()">
+                            <i class="fas fa-microphone me-1"></i>Testar Reconhecimento de Voz
+                        </button>
+                    `;
+                } else {
+                    preview.innerHTML = '<p class="text-muted">Digite uma frase acima para ver a prévia</p>';
+                }
+            });
+        }
+
+        // Verificar permissão automaticamente ao carregar a página
+        setTimeout(() => {
+            if (document.getElementById('campos-fala').style.display !== 'none') {
+                verificarPermissaoMicrofoneAuto();
+            }
+        }, 1000);
     });
     
     function adicionarAlternativa() {
@@ -1860,15 +1575,284 @@ $database->closeConnection();
         novaAlternativa.innerHTML = `
             <span class="input-group-text">${letra}</span>
             <input type="text" class="form-control" name="alt_texto[]" placeholder="Texto da alternativa">
-            <div class=\"input-group-text\">
-                <input type=\"radio\" name=\"alt_correta\" value=\"${index}\" title=\"Marcar como correta\">
+            <div class="input-group-text">
+                <input type="radio" name="alt_correta" value="${index}" title="Marcar como correta">
             </div>
-            <button type=\"button\" class=\"btn btn-outline-danger\" onclick=\"this.parentElement.remove()\">×</button>
+            <button type="button" class="btn btn-outline-danger" onclick="this.parentElement.remove()">×</button>
         `;
         container.appendChild(novaAlternativa);
     }
 
-    // Função para testar áudio
+    // Função para verificar e solicitar permissão do microfone automaticamente
+    async function verificarPermissaoMicrofoneAuto() {
+        try {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                console.warn('Navegador não suporta acesso ao microfone');
+                atualizarStatusMicrofone('not-supported');
+                return false;
+            }
+            
+            // Tenta acessar o microfone silenciosamente
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                }
+            });
+            
+            // Libera o stream imediatamente
+            stream.getTracks().forEach(track => track.stop());
+            
+            console.log('Permissão do microfone concedida');
+            atualizarStatusMicrofone('granted');
+            return true;
+            
+        } catch (error) {
+            console.log('Permissão do microfone necessária:', error.name);
+            
+            if (error.name === 'NotAllowedError') {
+                atualizarStatusMicrofone('denied');
+            } else {
+                atualizarStatusMicrofone('error', error.message);
+            }
+            return false;
+        }
+    }
+
+    // Função para atualizar o status visual da permissão
+    function atualizarStatusMicrofone(status, mensagem = '') {
+        const statusElement = document.getElementById('microfone-status');
+        if (!statusElement) return;
+
+        switch(status) {
+            case 'granted':
+                statusElement.innerHTML = `
+                    <div class="permission-granted">
+                        <i class="fas fa-microphone me-2"></i>
+                        <strong>Microfone Permitido!</strong> O sistema está pronto para testar exercícios de fala.
+                    </div>
+                `;
+                break;
+            case 'denied':
+                statusElement.innerHTML = `
+                    <div class="microphone-permission">
+                        <h5><i class="fas fa-microphone-slash me-2"></i>Permissão do Microfone Necessária</h5>
+                        <p>Para usar exercícios de fala, você precisa permitir o acesso ao microfone:</p>
+                        <ol>
+                            <li>Clique no ícone de <strong>cadeado</strong> 🔒 ou <strong>câmera</strong> 📷 na barra de endereços</li>
+                            <li>Procure por "Microfone" ou "Microphone"</li>
+                            <li>Mude para <strong>"Permitir"</strong> ou <strong>"Allow"</strong></li>
+                            <li>Recarregue a página ou <button type="button" class="btn btn-sm btn-outline-primary" onclick="window.location.reload()">Clique aqui para recarregar</button></li>
+                        </ol>
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-warning btn-sm" onclick="solicitarPermissaoMicrofone()">
+                                <i class="fas fa-microphone me-1"></i>Tentar Novamente
+                            </button>
+                        </div>
+                    </div>
+                `;
+                break;
+            case 'not-supported':
+                statusElement.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Navegador Não Suportado</strong>
+                        <p>Seu navegador não suporta acesso ao microfone. Use Chrome, Edge ou Safari.</p>
+                    </div>
+                `;
+                break;
+            case 'error':
+                statusElement.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-times me-2"></i>
+                        <strong>Erro no Microfone</strong>
+                        <p>${mensagem}</p>
+                    </div>
+                `;
+                break;
+        }
+    }
+
+    // Função para solicitar permissão explicitamente
+    async function solicitarPermissaoMicrofone() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            stream.getTracks().forEach(track => track.stop());
+            
+            // Sucesso - recarrega a página
+            window.location.reload();
+        } catch (error) {
+            console.error('Falha ao obter permissão:', error);
+            atualizarStatusMicrofone('denied');
+        }
+    }
+
+    // Função corrigida para testar reconhecimento de fala
+    async function testarReconhecimentoFala() {
+        const frase = document.getElementById('frase_esperada').value;
+        const idioma = document.getElementById('idioma_fala').value;
+        
+        if (!frase) {
+            alert('Digite uma frase primeiro para testar');
+            return;
+        }
+        
+        // Verifica permissão primeiro
+        const temPermissao = await verificarPermissaoMicrofoneAuto();
+        if (!temPermissao) {
+            return;
+        }
+        
+        const preview = document.getElementById('previewFala');
+        if (!preview) return;
+        
+        preview.innerHTML = `
+            <div class="alert alert-success">
+                <i class="fas fa-microphone me-2"></i>
+                <strong>Microfone Permitido!</strong> Teste de reconhecimento pronto.
+                <br><small>Frase: "${frase}" | Idioma: ${idioma}</small>
+            </div>
+            <p class="text-muted">Clique no botão abaixo e tente falar a frase</p>
+            <button type="button" class="btn btn-success btn-sm" onclick="iniciarReconhecimentoTeste()">
+                <i class="fas fa-play me-1"></i>Iniciar Teste de Voz
+            </button>
+            <div id="resultadoTeste" class="mt-2"></div>
+        `;
+    }
+
+    let recognitionTeste = null;
+
+    function iniciarReconhecimentoTeste() {
+        const fraseEsperada = document.getElementById('frase_esperada').value;
+        const idioma = document.getElementById('idioma_fala').value;
+        const resultadoDiv = document.getElementById('resultadoTeste');
+        
+        if (!resultadoDiv) return;
+        
+        // Verificar suporte do navegador
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            resultadoDiv.innerHTML = '<div class="alert alert-warning">Seu navegador não suporta reconhecimento de voz. Use Chrome, Edge ou Safari.</div>';
+            return;
+        }
+        
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognitionTeste = new SpeechRecognition();
+        
+        recognitionTeste.lang = idioma;
+        recognitionTeste.continuous = false;
+        recognitionTeste.interimResults = false;
+        recognitionTeste.maxAlternatives = 1;
+        
+        resultadoDiv.innerHTML = `
+            <div class="speech-status speech-listening">
+                <i class="fas fa-microphone me-2"></i>Ouvindo... Fale agora!
+                <br><small>Frase esperada: "${fraseEsperada}"</small>
+            </div>
+            <button type="button" class="btn btn-danger btn-sm mt-2" onclick="pararReconhecimentoTeste()">
+                <i class="fas fa-stop me-1"></i>Parar
+            </button>
+        `;
+        
+        recognitionTeste.start();
+        
+        recognitionTeste.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            const confidence = event.results[0][0].confidence;
+            
+            const isCorrect = transcript.toLowerCase().trim() === fraseEsperada.toLowerCase().trim();
+            const similarity = calcularSimilaridade(transcript.toLowerCase(), fraseEsperada.toLowerCase());
+            
+            resultadoDiv.innerHTML = `
+                <div class="speech-status ${isCorrect ? 'speech-success' : 'speech-error'}">
+                    <i class="fas ${isCorrect ? 'fa-check' : 'fa-times'} me-2"></i>
+                    <strong>${isCorrect ? 'Correto!' : 'Precisa melhorar'}</strong>
+                    <br>Você disse: "${transcript}"
+                    <br>Confiança: ${(confidence * 100).toFixed(1)}%
+                    <br>Similaridade: ${(similarity * 100).toFixed(1)}%
+                    ${!isCorrect ? `<br>Esperado: "${fraseEsperada}"` : ''}
+                </div>
+                <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="testarReconhecimentoFala()">
+                    <i class="fas fa-redo me-1"></i>Testar Novamente
+                </button>
+            `;
+        };
+        
+        recognitionTeste.onerror = function(event) {
+            let errorMessage = 'Erro desconhecido';
+            switch(event.error) {
+                case 'not-allowed':
+                    errorMessage = 'Permissão de microfone negada. Permita o acesso ao microfone.';
+                    break;
+                case 'no-speech':
+                    errorMessage = 'Nenhuma fala detectada. Tente novamente.';
+                    break;
+                case 'audio-capture':
+                    errorMessage = 'Nenhum microfone detectado.';
+                    break;
+                case 'network':
+                    errorMessage = 'Erro de rede. Tente novamente.';
+                    break;
+                default:
+                    errorMessage = `Erro: ${event.error}`;
+            }
+            
+            resultadoDiv.innerHTML = `
+                <div class="speech-status speech-error">${errorMessage}</div>
+                <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="testarReconhecimentoFala()">
+                    <i class="fas fa-redo me-1"></i>Tentar Novamente
+                </button>
+            `;
+        };
+        
+        recognitionTeste.onend = function() {
+            console.log('Reconhecimento finalizado');
+        };
+    }
+
+    function pararReconhecimentoTeste() {
+        if (recognitionTeste) {
+            recognitionTeste.stop();
+        }
+    }
+
+    // Função auxiliar para calcular similaridade entre strings
+    function calcularSimilaridade(str1, str2) {
+        const longer = str1.length > str2.length ? str1 : str2;
+        const shorter = str1.length > str2.length ? str2 : str1;
+        
+        if (longer.length === 0) return 1.0;
+        
+        return (longer.length - calcularDistancia(longer, shorter)) / parseFloat(longer.length);
+    }
+
+    function calcularDistancia(s1, s2) {
+        s1 = s1.toLowerCase();
+        s2 = s2.toLowerCase();
+
+        const costs = [];
+        for (let i = 0; i <= s1.length; i++) {
+            let lastValue = i;
+            for (let j = 0; j <= s2.length; j++) {
+                if (i === 0) {
+                    costs[j] = j;
+                } else {
+                    if (j > 0) {
+                        let newValue = costs[j - 1];
+                        if (s1.charAt(i - 1) !== s2.charAt(j - 1)) {
+                            newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+                        }
+                        costs[j - 1] = lastValue;
+                        lastValue = newValue;
+                    }
+                }
+            }
+            if (i > 0) costs[s2.length] = lastValue;
+        }
+        return costs[s2.length];
+    }
+
+    // Função para testar áudio do listening
     async function testarAudio() {
         const frase = document.getElementById('frase_listening').value;
         const idioma = document.getElementById('idioma_audio').value;
@@ -1879,16 +1863,16 @@ $database->closeConnection();
         }
         
         const preview = document.getElementById('audioPreview');
+        if (!preview) return;
+        
         preview.innerHTML = '<div class="spinner-border text-primary" role="status"></div><p>Gerando áudio...</p>';
         
         try {
             const formData = new FormData();
-            formData.append('frase', frase);
-            formData.append('idioma', idioma);
-            formData.append('testar_audio', 'true');
+            formData.append('frase', frase.trim());
+            formData.append('idioma', idioma.trim());
             
-            // CORREÇÃO: Chamar o novo endpoint dedicado
-            const response = await fetch('../controller/gerar_audio_api.php', {
+            const response = await fetch('../controller/gerar_audio_api.php', { // Corrigido para usar fetch
                 method: 'POST',
                 body: formData
             });
@@ -1896,68 +1880,107 @@ $database->closeConnection();
             const data = await response.json();
             
             if (data.success) {
-                // Adiciona um timestamp para evitar problemas de cache do navegador
                 preview.innerHTML = `
-                    <audio controls autoplay class="w-100">
+                    <audio controls autoplay class="w-100" oncanplay="this.volume=0.5">
                         <source src="${data.audio_url}?t=${new Date().getTime()}" type="audio/mpeg">
                         Seu navegador não suporta o elemento de áudio.
                     </audio>
                     <p class="mt-2 text-success"><small><i class="fas fa-check me-1"></i>Áudio gerado com sucesso!</small></p>
                 `;
             } else {
-                preview.innerHTML = `<p class="text-danger"><i class="fas fa-times me-1"></i>Não foi possível gerar o áudio. Tente novamente. (${data.message})</p>`;
+                preview.innerHTML = `<p class="text-danger"><i class="fas fa-times me-1"></i>Não foi possível gerar o áudio. Tente novamente.</p>`;
+                console.error('API Error:', data.message);
             }
         } catch (error) {
+            console.error('Erro ao testar áudio:', error);
             preview.innerHTML = `<p class="text-danger"><i class="fas fa-times me-1"></i>Erro de comunicação ao gerar áudio.</p>`;
         }
     }
 
-    // Gerar áudio automaticamente quando a frase for alterada
-    let timeoutId;
-    document.getElementById('frase_listening')?.addEventListener('input', function() {
-         clearTimeout(timeoutId);
-        timeoutId = setTimeout( () => {
-            if (this.value.length > 5) {
-                testarAudio();
-            }
-        }, 1500);
-    });
-
-    // Debug helper para verificar se os campos estão sendo preenchidos
-    function debugListening() {
-        const frase = document.getElementById('frase_listening').value;
-        const opcao1 = document.querySelector('input[name="listening_opcao1"]').value;
-        const opcao2 = document.querySelector('input[name="listening_opcao2"]').value;
-        const respostaCorreta = document.querySelector('input[name="listening_alt_correta"]:checked');
-        
-        console.log('Debug Listening:');
-        console.log('Frase:', frase);
-        console.log('Opção 1:', opcao1);
-        console.log('Opção 2:', opcao2);
-        console.log('Resposta Correta selecionada:', respostaCorreta ? respostaCorreta.value : 'Nenhuma');
-        
-        // Verificar todas as opções de resposta
-        const todasOpcoes = document.querySelectorAll('input[name="listening_alt_correta"]');
-        todasOpcoes.forEach((opcao, index) => {
-            console.log(`Opção ${index}:`, opcao.checked ? '✓' : '✗', '- Valor:', opcao.value);
-        });
-    }
-
-    // Adicionar evento de debug ao formulário (opcional)
+    // Validação do formulário antes do envio
     document.querySelector('form').addEventListener('submit', function(e) {
-        if (document.getElementById('tipo_exercicio').value === 'listening') {
-            debugListening();
-        }
-    });
+        console.log('Form submission initiated.'); // Linha de depuração: verifica se o evento de submit está sendo acionado
+        const tipoExercicio = document.getElementById('tipo_exercicio').value;
+        let isValid = true;
+        let errorMessage = '';
 
-    // Garantir que pelo menos uma opção esteja selecionada
-    document.addEventListener('DOMContentLoaded', function() {
-        const radios = document.querySelectorAll('input[name="listening_alt_correta"]');
-        radios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                console.log('Opção selecionada:', this.value);
-            });
-        });
+        // Validações específicas por tipo de exercício
+        switch(tipoExercicio) {
+            case 'multipla_escolha':
+                const alternativas = document.querySelectorAll('input[name="alt_texto[]"]');
+                const temAlternativaCorreta = document.querySelector('input[name="alt_correta"]:checked');
+                let temAlternativasPreenchidas = false;
+                
+                alternativas.forEach(alt => {
+                    if (alt.value.trim() !== '') {
+                        temAlternativasPreenchidas = true;
+                    }
+                });
+                
+                if (!temAlternativasPreenchidas) {
+                    isValid = false;
+                    errorMessage = 'É necessário preencher pelo menos uma alternativa para múltipla escolha.';
+                } else if (!temAlternativaCorreta) {
+                    isValid = false;
+                    errorMessage = 'É necessário marcar uma alternativa como correta.';
+                }
+                break;
+
+            case 'texto_livre':
+                const respostaEsperada = document.getElementById('resposta_esperada').value;
+                if (!respostaEsperada.trim()) {
+                    isValid = false;
+                    errorMessage = 'A resposta esperada é obrigatória para texto livre.';
+                }
+                break;
+
+            case 'completar':
+                const fraseCompletar = document.getElementById('frase_completar').value;
+                const respostaCompletar = document.getElementById('resposta_completar').value;
+                if (!fraseCompletar.trim() || !respostaCompletar.trim()) {
+                    isValid = false;
+                    errorMessage = 'A frase para completar e a resposta são obrigatórias.';
+                }
+                break;
+
+            case 'fala':
+                const fraseEsperada = document.getElementById('frase_esperada').value;
+                const idiomaFala = document.getElementById('idioma_fala').value; // Adiciona a verificação do idioma
+                if (!fraseEsperada.trim() || !idiomaFala.trim()) {
+                    isValid = false;
+                    errorMessage = 'A frase esperada e o idioma são obrigatórios para exercícios de fala.'; // Mensagem de erro mais específica
+                }
+                break;
+
+            case 'listening':
+                const fraseListening = document.getElementById('frase_listening').value;
+                const opcao1 = document.querySelector('input[name="listening_opcao1"]').value;
+                const opcao2 = document.querySelector('input[name="listening_opcao2"]').value;
+                const temOpcaoCorreta = document.querySelector('input[name="listening_alt_correta"]:checked');
+                
+                if (!fraseListening.trim()) {
+                    isValid = false;
+                    errorMessage = 'A frase para gerar áudio é obrigatória para listening.';
+                } else if (!opcao1.trim() || !opcao2.trim()) {
+                    isValid = false;
+                    errorMessage = 'É necessário preencher pelo menos duas opções para listening.';
+                } else if (!temOpcaoCorreta) {
+                    isValid = false;
+                    errorMessage = 'É necessário marcar uma opção como correta para listening.';
+                }
+                break;
+        }
+
+        if (!isValid) {
+            e.preventDefault();
+            alert('Erro no formulário: ' + errorMessage);
+            
+            // Rolar até o campo com problema
+            const camposDiv = document.getElementById('conteudo-campos');
+            if (camposDiv) {
+                camposDiv.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
     });
 
     </script>
