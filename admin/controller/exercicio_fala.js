@@ -1,141 +1,210 @@
-// Sistema de Exercícios de Fala com Correção de Áudio
+// Sistema de Exercícios de Fala com Correção de Áudio (Usando Web Speech API)
 class ExercicioFala {
     constructor() {
-        this.mediaRecorder = null;
-        this.audioChunks = [];
-        this.isRecording = false;
-        this.audioContext = null;
-        this.analyser = null;
-        this.dataArray = null;
-        this.animationId = null;
+        this.recognition = null;
+        this.isListening = false;
+        this.exercicioId = null;
+        this.fraseEsperada = null;
+        this.idioma = 'en-US';
+        
+        // Verificar suporte de forma mais robusta
+        this.suporteReconhecimento = this.verificarSuporte();
+        
+        if (this.suporteReconhecimento) {
+            this.inicializarReconhecimento();
+        } else {
+            this.mostrarErro('Seu navegador não suporta reconhecimento de voz. Use Chrome, Edge ou Safari.');
+        }
     }
 
-    // Inicializar o sistema de áudio
-    async inicializar() {
+    // Método para verificar suporte
+    verificarSuporte() {
+        return ('webkitSpeechRecognition' in window) || ('SpeechRecognition' in window);
+    }
+
+    // Inicializar reconhecimento com tratamento de erro melhorado
+    inicializarReconhecimento() {
         try {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            this.recognition = new SpeechRecognition();
+            
+            this.recognition.continuous = false;
+            this.recognition.lang = this.idioma;
+            this.recognition.interimResults = false;
+            this.recognition.maxAlternatives = 1;
+
+            this.setupRecognitionEvents();
+            return true;
+        } catch (error) {
+            console.error('Erro ao inicializar reconhecimento:', error);
+            this.mostrarErro('Erro ao inicializar sistema de voz: ' + error.message);
+            return false;
+        }
+    }
+
+    // Inicializar o sistema de reconhecimento
+    async inicializar(idioma) {
+        if (!this.suporteReconhecimento) return false;
+        
+        // Tenta obter o idioma da sessão ou do exercício
+        if (idioma) {
+            this.idioma = idioma;
+            if (this.recognition) {
+                this.recognition.lang = idioma;
+            }
+        }
+
+        // Verificar permissão do microfone
+        const temPermissao = await this.verificarPermissaoMicrofone();
+        if (!temPermissao) {
+            this.mostrarErro('Permissão de microfone necessária para exercícios de fala.');
+            return false;
+        }
+
+        this.atualizarInterface('pronto');
+        return true;
+    }
+
+    // Verificar permissão do microfone
+    async verificarPermissaoMicrofone() {
+        try {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error('Navegador não suporta acesso ao microfone');
+            }
+            
             const stream = await navigator.mediaDevices.getUserMedia({ 
                 audio: {
                     echoCancellation: true,
                     noiseSuppression: true,
                     autoGainControl: true
-                } 
+                }
             });
             
-            this.mediaRecorder = new MediaRecorder(stream, {
-                mimeType: 'audio/webm;codecs=opus'
-            });
-            
-            this.setupAudioVisualization(stream);
-            this.setupRecorderEvents();
-            
+            // Liberar stream imediatamente após verificação
+            stream.getTracks().forEach(track => track.stop());
             return true;
         } catch (error) {
-            console.error('Erro ao acessar microfone:', error);
-            this.mostrarErro('Não foi possível acessar o microfone. Verifique as permissões.');
+            console.error('Erro de permissão do microfone:', error);
             return false;
         }
     }
 
-    // Configurar visualização de áudio
-    setupAudioVisualization(stream) {
-        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        this.analyser = this.audioContext.createAnalyser();
-        const source = this.audioContext.createMediaStreamSource(stream);
-        
-        source.connect(this.analyser);
-        this.analyser.fftSize = 256;
-        
-        const bufferLength = this.analyser.frequencyBinCount;
-        this.dataArray = new Uint8Array(bufferLength);
-    }
+    // Configurar eventos do reconhecimento
+    setupRecognitionEvents() {
+        this.recognition.onresult = (event) => {
+            this.isListening = false;
+            const transcricao = event.results[0][0].transcript;
+            const confidence = event.results[0][0].confidence;
+            
+            console.log('Transcrição:', transcricao, 'Confiança:', confidence);
+            
+            // Envia a transcrição para o backend para correção
+            this.enviarParaCorrecao(transcricao);
+        };
 
-    // Configurar eventos do gravador
-    setupRecorderEvents() {
-        this.mediaRecorder.ondataavailable = (event) => {
-            if (event.data.size > 0) {
-                this.audioChunks.push(event.data);
+        this.recognition.onspeechend = () => {
+            if (this.isListening) {
+                this.isListening = false;
+                this.atualizarInterface('processando');
             }
         };
 
-        this.mediaRecorder.onstop = () => {
-            this.processarAudio();
+        this.recognition.onerror = (event) => {
+            this.isListening = false;
+            this.tratarErroReconhecimento(event);
+        };
+        
+        this.recognition.onstart = () => {
+            this.atualizarInterface('ouvindo');
+        };
+
+        this.recognition.onend = () => {
+            if (!this.isListening) {
+                this.atualizarInterface('pronto');
+            }
         };
     }
 
-    // Iniciar gravação
-    iniciarGravacao(exercicioId, fraseEsperada) {
-        if (!this.mediaRecorder) {
-            this.mostrarErro('Sistema de áudio não inicializado');
+    // Tratamento melhorado de erros
+    tratarErroReconhecimento(erro) {
+        let mensagem = 'Erro desconhecido no reconhecimento de voz';
+        
+        switch(erro.name || erro.error) {
+            case 'NotAllowedError':
+            case 'PermissionDeniedError':
+                mensagem = 'Permissão de microfone negada. Clique no ícone de cadeado na barra de endereços e permita o microfone.';
+                break;
+            case 'NotSupportedError':
+                mensagem = 'Navegador não suporta reconhecimento de voz. Use Chrome, Edge ou Safari.';
+                break;
+            case 'NoSpeechError':
+                mensagem = 'Nenhuma fala detectada. Tente novamente.';
+                break;
+            case 'AudioCaptureError':
+                mensagem = 'Nenhum microfone detectado. Verifique seu dispositivo.';
+                break;
+            default:
+                mensagem = `Erro: ${erro.message || erro}`;
+        }
+        
+        this.mostrarErro(mensagem);
+        this.atualizarInterface('pronto');
+    }
+
+    // Iniciar reconhecimento de fala
+    async iniciarReconhecimento(exercicioId, fraseEsperada, idioma) {
+        // Verificar permissões primeiro
+        if (!await this.verificarPermissaoMicrofone()) {
+            this.mostrarErro('Permissão de microfone negada. Por favor, permita o acesso ao microfone.');
             return;
         }
 
-        this.audioChunks = [];
+        if (!this.recognition) {
+            this.mostrarErro('Sistema de reconhecimento de fala não disponível.');
+            return;
+        }
+        
         this.exercicioId = exercicioId;
         this.fraseEsperada = fraseEsperada;
         
-        this.mediaRecorder.start();
-        this.isRecording = true;
-        
-        this.atualizarInterface('gravando');
-        this.iniciarVisualizacao();
-        
-        // Auto-parar após 10 segundos
-        setTimeout(() => {
-            if (this.isRecording) {
-                this.pararGravacao();
-            }
-        }, 10000);
+        // Atualiza o idioma se fornecido
+        if (idioma) {
+            this.idioma = idioma;
+            this.recognition.lang = idioma;
+        }
+
+        try {
+            this.recognition.start();
+            this.isListening = true;
+            this.atualizarInterface('ouvindo');
+        } catch (e) {
+            console.error('Erro ao iniciar reconhecimento:', e);
+            this.tratarErroReconhecimento(e);
+        }
     }
 
-    // Parar gravação
-    pararGravacao() {
-        if (this.mediaRecorder && this.isRecording) {
-            this.mediaRecorder.stop();
-            this.isRecording = false;
-            this.pararVisualizacao();
+    // Parar reconhecimento (se necessário)
+    pararReconhecimento() {
+        if (this.recognition && this.isListening) {
+            this.recognition.stop();
+            this.isListening = false;
             this.atualizarInterface('processando');
         }
     }
 
-    // Processar áudio gravado
-    async processarAudio() {
+    // Enviar transcrição para correção no backend
+    async enviarParaCorrecao(transcricao) {
+        this.atualizarInterface('processando');
         try {
-            const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
-            const audioBase64 = await this.blobToBase64(audioBlob);
-            
-            await this.enviarParaCorrecao(audioBase64);
-            
-        } catch (error) {
-            console.error('Erro ao processar áudio:', error);
-            this.mostrarErro('Erro ao processar o áudio gravado');
-        }
-    }
-
-    // Converter blob para base64
-    blobToBase64(blob) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-                const base64 = reader.result.split(',')[1];
-                resolve(base64);
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-        });
-    }
-
-    // Enviar áudio para correção
-    async enviarParaCorrecao(audioBase64) {
-        try {
-            const response = await fetch('admin/controller/correcao_audio.php', {
+            const response = await fetch('../../admin/controller/processar_exercicio.php', { 
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     exercicio_id: this.exercicioId,
-                    audio_data: audioBase64,
-                    frase_esperada: this.fraseEsperada
+                    resposta: transcricao, // O backend espera a transcrição no campo 'resposta'
+                    tipo_exercicio: 'fala' // Adiciona o tipo para o backend saber como processar
                 })
             });
 
@@ -144,12 +213,13 @@ class ExercicioFala {
             if (resultado.success) {
                 this.mostrarResultado(resultado.resultado);
             } else {
-                this.mostrarErro(resultado.message || 'Erro ao analisar áudio');
+                this.mostrarErro(resultado.message || 'Erro ao analisar fala');
             }
             
         } catch (error) {
-            console.error('Erro ao enviar áudio:', error);
-            this.mostrarErro('Erro de conexão ao enviar áudio');
+            console.error('Erro ao enviar transcrição:', error);
+            this.mostrarErro('Erro de conexão ao enviar transcrição');
+            this.atualizarInterface('pronto');
         }
     }
 
@@ -180,19 +250,23 @@ class ExercicioFala {
                 statusTexto = 'Precisa praticar mais';
                 icone = '❌';
                 break;
+            default:
+                statusClass = 'resultado-errado';
+                statusTexto = 'Erro de Correção';
+                icone = '❌';
+                break;
         }
 
         let html = `
             <div class="resultado-feedback ${statusClass}">
                 <div class="resultado-header">
                     <span class="resultado-icone">${icone}</span>
-                    <h3>${statusTexto}</h3>
-                    <div class="pontuacao">${pontuacao_percentual}%</div>
+                    <h3>${statusTexto} - ${pontuacao_percentual}%</h3>
                 </div>
                 
                 <div class="transcricao-comparacao">
                     <div class="frase-esperada">
-                        <strong>Esperado:</strong> "${feedback_detalhado.frase_esperada}"
+                        <strong>Frase Esperada:</strong> "${feedback_detalhado.frase_esperada}"
                     </div>
                     <div class="frase-transcrita">
                         <strong>Você disse:</strong> "${feedback_detalhado.frase_transcrita}"
@@ -201,7 +275,7 @@ class ExercicioFala {
         `;
 
         // Mostrar palavras corretas e incorretas
-        if (feedback_detalhado.palavras_corretas.length > 0) {
+        if (feedback_detalhado.palavras_corretas && feedback_detalhado.palavras_corretas.length > 0) {
             html += `
                 <div class="palavras-corretas">
                     <strong>✅ Palavras corretas:</strong> 
@@ -210,7 +284,7 @@ class ExercicioFala {
             `;
         }
 
-        if (feedback_detalhado.palavras_incorretas.length > 0) {
+        if (feedback_detalhado.palavras_incorretas && feedback_detalhado.palavras_incorretas.length > 0) {
             html += `<div class="palavras-incorretas">
                 <strong>❌ Palavras para melhorar:</strong>
                 <ul>`;
@@ -229,7 +303,7 @@ class ExercicioFala {
         }
 
         // Mostrar sugestões
-        if (feedback_detalhado.sugestoes.length > 0) {
+        if (feedback_detalhado.sugestoes && feedback_detalhado.sugestoes.length > 0) {
             html += `
                 <div class="sugestoes">
                     <strong>💡 Sugestões:</strong>
@@ -243,27 +317,23 @@ class ExercicioFala {
             html += `</ul></div>`;
         }
 
-        // Mostrar pontos de melhoria
-        if (feedback_detalhado.pontos_melhoria.length > 0) {
+        // Mostrar pontos de melhoria (Explicação da resposta)
+        if (feedback_detalhado.explicacao) {
             html += `
-                <div class="pontos-melhoria">
-                    <strong>🎯 Pontos para melhorar:</strong>
-                    <ul>
+                <div class="explicacao-gramatical">
+                    <strong>📚 Explicação:</strong>
+                    <p>${feedback_detalhado.explicacao}</p>
+                </div>
             `;
-            
-            feedback_detalhado.pontos_melhoria.forEach(ponto => {
-                html += `<li>${ponto}</li>`;
-            });
-            
-            html += `</ul></div>`;
         }
-
+        
+        // Botões de ação
         html += `
                 <div class="acoes-resultado">
                     <button onclick="exercicioFala.tentarNovamente()" class="btn-tentar-novamente">
                         🔄 Tentar Novamente
                     </button>
-                    <button onclick="exercicioFala.proximoExercicio()" class="btn-proximo">
+                    <button onclick="exercicioFala.avancarExercicio()" class="btn-proximo">
                         ➡️ Próximo Exercício
                     </button>
                 </div>
@@ -276,171 +346,116 @@ class ExercicioFala {
 
     // Atualizar interface baseada no estado
     atualizarInterface(estado) {
-        const btnGravar = document.getElementById('btn-gravar');
-        const btnParar = document.getElementById('btn-parar');
-        const statusGravacao = document.getElementById('status-gravacao');
-        const visualizador = document.getElementById('visualizador-audio');
+        const btnFalar = document.getElementById('btn-falar');
+        const statusFala = document.getElementById('status-fala');
+        const resultadoContainer = document.getElementById('resultado-audio');
+        
+        if (!btnFalar || !statusFala || !resultadoContainer) return;
 
-        if (!btnGravar || !btnParar || !statusGravacao) return;
+        // Limpa o resultado apenas se estiver voltando ao estado pronto
+        if (estado === 'pronto') {
+            resultadoContainer.innerHTML = ''; 
+        }
 
         switch (estado) {
             case 'pronto':
-                btnGravar.disabled = false;
-                btnGravar.textContent = '🎤 Gravar';
-                btnParar.disabled = true;
-                statusGravacao.textContent = 'Clique em gravar e fale a frase';
-                statusGravacao.className = 'status-pronto';
-                if (visualizador) visualizador.style.display = 'none';
+                btnFalar.disabled = false;
+                btnFalar.innerHTML = '<i class="fas fa-microphone"></i> Falar';
+                statusFala.textContent = 'Clique para começar a falar a frase.';
+                statusFala.className = 'status-pronto';
                 break;
                 
-            case 'gravando':
-                btnGravar.disabled = true;
-                btnParar.disabled = false;
-                statusGravacao.textContent = '🔴 Gravando... Fale agora!';
-                statusGravacao.className = 'status-gravando';
-                if (visualizador) visualizador.style.display = 'block';
+            case 'ouvindo':
+                btnFalar.disabled = true;
+                btnFalar.innerHTML = '<i class="fas fa-volume-up"></i> Ouvindo...';
+                statusFala.textContent = '🔴 Falando... Diga a frase agora!';
+                statusFala.className = 'status-ouvindo';
                 break;
                 
             case 'processando':
-                btnGravar.disabled = true;
-                btnParar.disabled = true;
-                statusGravacao.textContent = '⏳ Analisando sua pronúncia...';
-                statusGravacao.className = 'status-processando';
-                if (visualizador) visualizador.style.display = 'none';
+                btnFalar.disabled = true;
+                btnFalar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+                statusFala.textContent = 'Aguarde a correção...';
+                statusFala.className = 'status-processando';
                 break;
-                
+
             case 'resultado':
-                btnGravar.disabled = false;
-                btnGravar.textContent = '🎤 Gravar Novamente';
-                btnParar.disabled = true;
-                statusGravacao.textContent = 'Resultado da análise:';
-                statusGravacao.className = 'status-resultado';
+                btnFalar.disabled = true;
+                btnFalar.innerHTML = '<i class="fas fa-microphone"></i> Falar';
+                statusFala.textContent = 'Resultado da correção.';
+                statusFala.className = 'status-resultado';
                 break;
         }
     }
 
-    // Iniciar visualização de áudio
-    iniciarVisualizacao() {
-        const canvas = document.getElementById('canvas-visualizacao');
-        if (!canvas || !this.analyser) return;
-
-        const ctx = canvas.getContext('2d');
-        const WIDTH = canvas.width;
-        const HEIGHT = canvas.height;
-
-        const draw = () => {
-            if (!this.isRecording) return;
-
-            this.animationId = requestAnimationFrame(draw);
-
-            this.analyser.getByteFrequencyData(this.dataArray);
-
-            ctx.fillStyle = 'rgb(240, 240, 240)';
-            ctx.fillRect(0, 0, WIDTH, HEIGHT);
-
-            const barWidth = (WIDTH / this.dataArray.length) * 2.5;
-            let barHeight;
-            let x = 0;
-
-            for (let i = 0; i < this.dataArray.length; i++) {
-                barHeight = (this.dataArray[i] / 255) * HEIGHT;
-
-                ctx.fillStyle = `rgb(${barHeight + 100}, 50, 50)`;
-                ctx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight);
-
-                x += barWidth + 1;
-            }
-        };
-
-        draw();
-    }
-
-    // Parar visualização
-    pararVisualizacao() {
-        if (this.animationId) {
-            cancelAnimationFrame(this.animationId);
-            this.animationId = null;
-        }
-    }
-
-    // Tentar novamente
-    tentarNovamente() {
-        document.getElementById('resultado-audio').innerHTML = '';
-        this.atualizarInterface('pronto');
-    }
-
-    // Próximo exercício
-    proximoExercicio() {
-        // Implementar navegação para próximo exercício
-        if (typeof proximoExercicio === 'function') {
-            proximoExercicio();
-        }
-    }
-
-    // Mostrar erro
+    // Mostrar erro na interface
     mostrarErro(mensagem) {
         const container = document.getElementById('resultado-audio');
-        if (container) {
-            container.innerHTML = `
-                <div class="erro-audio">
-                    <span class="erro-icone">❌</span>
-                    <p>${mensagem}</p>
-                    <button onclick="exercicioFala.tentarNovamente()" class="btn-tentar-novamente">
-                        Tentar Novamente
-                    </button>
-                </div>
-            `;
+        if (!container) return;
+        container.innerHTML = `
+            <div class="erro-audio">
+                <span class="erro-icone">⚠️</span>
+                <p><strong>Erro:</strong> ${mensagem}</p>
+                ${mensagem.includes('microfone') ? `
+                    <div class="mt-2">
+                        <small>
+                            <strong>Como permitir o microfone:</strong><br>
+                            1. Clique no ícone de cadeado/câmera na barra de endereços<br>
+                            2. Encontre "Microfone" e mude para "Permitir"<br>
+                            3. Recarregue a página
+                        </small>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+        this.atualizarInterface('pronto');
+    }
+
+    // Ações do usuário
+    tentarNovamente() {
+        // Limpa o resultado e volta ao estado pronto
+        const resultadoContainer = document.getElementById('resultado-audio');
+        if (resultadoContainer) {
+            resultadoContainer.innerHTML = '';
         }
         this.atualizarInterface('pronto');
     }
-}
 
-// Instância global
-const exercicioFala = new ExercicioFala();
-
-// Funções para integração com o sistema existente
-async function iniciarExercicioFala(exercicioId, fraseEsperada) {
-    const sucesso = await exercicioFala.inicializar();
-    if (sucesso) {
-        exercicioFala.exercicioId = exercicioId;
-        exercicioFala.fraseEsperada = fraseEsperada;
-        exercicioFala.atualizarInterface('pronto');
+    // Função para avançar o exercício (será definida no painel.php)
+    avancarExercicio() {
+        if (typeof window.proximoExercicio === 'function') {
+            window.proximoExercicio();
+        } else {
+            alert('Função de próximo exercício não definida.');
+        }
     }
 }
 
-function gravarAudio() {
-    if (!exercicioFala.isRecording) {
-        exercicioFala.iniciarGravacao(exercicioFala.exercicioId, exercicioFala.fraseEsperada);
-    }
-}
-
-function pararGravacao() {
-    exercicioFala.pararGravacao();
-}
-
-// CSS para os estilos (adicionar ao head da página)
+// Estilos para o componente
 const estilosAudio = `
-<style>
+<style id="estilos-audio">
 .resultado-feedback {
-    border-radius: 10px;
     padding: 20px;
+    border-radius: 10px;
     margin: 20px 0;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 .resultado-correto {
-    background: linear-gradient(135deg, #d4edda, #c3e6cb);
-    border: 2px solid #28a745;
+    background: #d4edda;
+    border: 2px solid #c3e6cb;
+    color: #155724;
 }
 
 .resultado-meio-correto {
-    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
-    border: 2px solid #ffc107;
+    background: #fff3cd;
+    border: 2px solid #ffeeba;
+    color: #856404;
 }
 
 .resultado-errado {
-    background: linear-gradient(135deg, #f8d7da, #f5c6cb);
-    border: 2px solid #dc3545;
+    background: #f8d7da;
+    border: 2px solid #f5c6cb;
+    color: #721c24;
 }
 
 .resultado-header {
@@ -448,55 +463,57 @@ const estilosAudio = `
     align-items: center;
     gap: 15px;
     margin-bottom: 15px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding-bottom: 10px;
 }
 
 .resultado-icone {
-    font-size: 2em;
+    font-size: 2.5rem;
+}
+
+.resultado-header h3 {
+    margin: 0;
+    font-weight: 600;
 }
 
 .pontuacao {
-    background: rgba(255,255,255,0.8);
-    padding: 5px 15px;
-    border-radius: 20px;
-    font-weight: bold;
     margin-left: auto;
+    font-size: 1.5rem;
+    font-weight: bold;
 }
 
 .transcricao-comparacao {
-    background: rgba(255,255,255,0.5);
-    padding: 15px;
-    border-radius: 8px;
-    margin: 15px 0;
+    margin-bottom: 15px;
+    padding: 10px;
+    border-left: 3px solid #007bff;
+    background-color: #f7f9fc;
 }
 
-.frase-esperada, .frase-transcrita {
-    margin: 5px 0;
-}
-
-.palavras-corretas {
-    color: #155724;
-    margin: 10px 0;
+.palavras-incorretas, .sugestoes, .explicacao-gramatical {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 5px;
 }
 
 .palavras-incorretas {
-    color: #721c24;
-    margin: 10px 0;
+    background-color: #fce4e4;
+    border: 1px solid #f0b8b8;
 }
 
-.palavras-incorretas ul {
-    margin: 5px 0 0 20px;
+.sugestoes {
+    background-color: #e6f7ff;
+    border: 1px solid #b3e0ff;
 }
 
-.palavras-incorretas li {
-    margin: 5px 0;
+.explicacao-gramatical {
+    background-color: #e8f5e9;
+    border: 1px solid #c8e6c9;
 }
 
-.sugestoes, .pontos-melhoria {
-    margin: 15px 0;
-}
-
-.sugestoes ul, .pontos-melhoria ul {
-    margin: 5px 0 0 20px;
+.palavras-incorretas ul, .sugestoes ul {
+    list-style-type: disc;
+    padding-left: 20px;
+    margin-top: 5px;
 }
 
 .acoes-resultado {
@@ -532,7 +549,7 @@ const estilosAudio = `
     background: #0056b3;
 }
 
-.status-gravando {
+.status-ouvindo {
     color: #dc3545;
     font-weight: bold;
     animation: pulse 1s infinite;
@@ -573,24 +590,39 @@ const estilosAudio = `
     margin-bottom: 10px;
 }
 
-#visualizador-audio {
-    margin: 15px 0;
-    text-align: center;
+.microphone-permission {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px 0;
 }
 
-#canvas-visualizacao {
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background: #f8f9fa;
+.microphone-permission h5 {
+    color: #856404;
+    margin-bottom: 10px;
+}
+
+.microphone-permission ol {
+    text-align: left;
+    margin-bottom: 10px;
+}
+
+.microphone-permission li {
+    margin-bottom: 5px;
 }
 </style>
 `;
 
 // Adicionar estilos ao head se não existirem
 if (!document.getElementById('estilos-audio')) {
-    const styleElement = document.createElement('div');
-    styleElement.id = 'estilos-audio';
-    styleElement.innerHTML = estilosAudio;
-    document.head.appendChild(styleElement);
+    document.head.insertAdjacentHTML('beforeend', estilosAudio);
 }
 
+// Instancia global para uso no painel.php
+const exercicioFala = new ExercicioFala();
+
+// Inicializa quando o DOM estiver pronto
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Sistema de exercícios de fala carregado');
+});

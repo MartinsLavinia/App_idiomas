@@ -50,7 +50,7 @@ try {
     $conn = $database->conn;
 
     // Buscar dados do exercício
-    $sql = "SELECT conteudo, tipo_exercicio FROM exercicios WHERE id = ?";
+    $sql = "SELECT conteudo, tipo, bloco_id FROM exercicios WHERE id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $exercicio_id);
     $stmt->execute();
@@ -65,6 +65,9 @@ try {
     // Processar resposta baseado no tipo
     $conteudo = json_decode($exercicio['conteudo'], true);
     $resultado = processarResposta($resposta_usuario, $conteudo, $tipo_exercicio);
+
+    // Registrar resposta do usuário
+    registrarRespostaUsuario($conn, $id_usuario, $exercicio_id, $resultado['correto'], $resposta_usuario);
 
     // Registrar progresso do usuário
     registrarProgresso($conn, $id_usuario, $exercicio_id, $resultado['correto'], $resultado['pontuacao'] ?? 0);
@@ -93,21 +96,25 @@ function processarResposta($resposta_usuario, $conteudo, $tipo_exercicio) {
         case 'completar':
             return processarCompletar($resposta_usuario, $conteudo);
         case 'listening':
+        case 'audicao':
             return processarListening($resposta_usuario, $conteudo);
         default:
-            return ['correto' => false, 'explicacao' => 'Tipo de exercício não suportado.'];
-            return ['success' => false, 'correto' => false, 'explicacao' => 'Tipo de exercício não suportado.'];
+            return [
+                'success' => false, 
+                'correto' => false, 
+                'explicacao' => 'Tipo de exercício não suportado.',
+                'pontuacao' => 0
+            ];
     }
 }
 
-function processarCompletar($resposta_usuario, $conteudo) {
-// FUNÇÃO CORRIGIDA: Processar exercício de listening
 function processarListening($resposta_usuario, $conteudo) {
     if (!isset($conteudo['resposta_correta']) || !isset($conteudo['opcoes'])) {
         return [
             'success' => false,
             'correto' => false,
-            'explicacao' => 'Exercício de listening mal configurado.'
+            'explicacao' => 'Exercício de listening mal configurado.',
+            'pontuacao' => 0
         ];
     }
 
@@ -133,7 +140,12 @@ function processarListening($resposta_usuario, $conteudo) {
 
 function processarMultiplaEscolha($resposta_usuario, $conteudo) {
     if (!isset($conteudo['alternativas'])) {
-        return ['success' => false, 'correto' => false, 'explicacao' => 'Exercício mal configurado.'];
+        return [
+            'success' => false, 
+            'correto' => false, 
+            'explicacao' => 'Exercício mal configurado.',
+            'pontuacao' => 0
+        ];
     }
 
     $resposta_correta = null;
@@ -155,6 +167,7 @@ function processarMultiplaEscolha($resposta_usuario, $conteudo) {
         'correto' => $correto,
         'explicacao' => $conteudo['explicacao'] ?? ($correto ? 'Correto!' : 'Resposta incorreta.'),
         'dica' => $correto ? null : ($conteudo['dica'] ?? null),
+        'resposta_correta' => $resposta_correta,
         'pontuacao' => $correto ? 100 : 0
     ];
 }
@@ -202,103 +215,68 @@ function processarTextoLivre($resposta_usuario, $conteudo) {
         'dica' => $correto ? null : ($conteudo['dica'] ?? "Tente novamente. Resposta esperada: '$resposta_encontrada'"),
         'pontuacao' => $correto ? 100 : ($melhor_similaridade * 100),
         'similaridade' => $melhor_similaridade,
-        'resposta_correta' => $resposta_encontrada,
-        'success' => true
         'resposta_correta' => $resposta_encontrada
     ];
 }
 
-function processarMultiplaEscolha($resposta_usuario, $conteudo) {
-    if (!isset($conteudo['alternativas'])) {
-        return ['correto' => false, 'explicacao' => 'Exercício mal configurado.'];
-    }
-
-    $resposta_correta = null;
-    foreach ($conteudo['alternativas'] as $alt) {
-        if (isset($alt['correta']) && $alt['correta']) {
-            $resposta_correta = $alt['id'] ?? $alt['texto'];
-            break;
-        }
-    }
-
-    if (!$resposta_correta && isset($conteudo['resposta_correta'])) {
-        $resposta_correta = $conteudo['resposta_correta'];
-    }
-
-    $correto = strtolower($resposta_usuario) === strtolower($resposta_correta);
-
-    return [
-        'correto' => $correto,
-        'explicacao' => $conteudo['explicacao'] ?? ($correto ? 'Correto!' : 'Resposta incorreta.'),
-        'dica' => $correto ? null : ($conteudo['dica'] ?? null),
-        'pontuacao' => $correto ? 100 : 0,
-        'success' => true
-    ];
-}
-
-function processarTextoLivre($resposta_usuario, $conteudo) {
 function processarCompletar($resposta_usuario, $conteudo) {
-    $resposta_correta = $conteudo['resposta_correta'] ?? '';
-    $alternativas_aceitas = $conteudo['alternativas_aceitas'] ?? [$resposta_correta];
-
-    // Limpar e normalizar a resposta do usuário
-    $resposta_limpa = trim(strtolower($resposta_usuario));
-    
-    $correto = false;
-    $melhor_similaridade = 0;
-    $resposta_encontrada = '';
-    
-    foreach ($alternativas_aceitas as $alternativa) {
-        // Limpar e normalizar alternativa
-        $alt_limpa = trim(strtolower($alternativa));
-        
-        // Verificar correspondência exata
-        if ($resposta_limpa === $alt_limpa) {
-            $correto = true;
-            $melhor_similaridade = 1.0;
-            $resposta_encontrada = $alternativa;
-            break;
-        }
-        
-        // Calcular similaridade
-        $similaridade = calcularSimilaridade($resposta_limpa, $alt_limpa);
-        if ($similaridade > $melhor_similaridade) {
-            $melhor_similaridade = $similaridade;
-            $resposta_encontrada = $alternativa;
-        }
-    }
-    
-    // Considerar correto se similaridade >= 80%
-    if (!$correto && $melhor_similaridade >= 0.8) {
-        $correto = true;
-    }
-
-    return [
-        'success' => true,
-        'correto' => $correto,
-        'explicacao' => $conteudo['explicacao'] ?? ($correto ? 'Correto!' : "Resposta incorreta. Esperado: '$resposta_encontrada'"),
-        'dica' => $correto ? null : ($conteudo['dica'] ?? "Tente novamente. Resposta esperada: '$resposta_encontrada'"),
-        'pontuacao' => $correto ? 100 : ($melhor_similaridade * 100),
-        'similaridade' => $melhor_similaridade,
-        'resposta_correta' => $resposta_encontrada,
-        'success' => true
-        'resposta_correta' => $resposta_encontrada
-    ];
+    // Reutiliza a mesma lógica do texto livre
+    return processarTextoLivre($resposta_usuario, $conteudo);
 }
 
 function processarFala($resposta_usuario, $conteudo) {
-    // Simulação de processamento de fala
-    // Em uma implementação real, aqui seria feita a análise do áudio
-    $correto = $resposta_usuario === 'fala_processada';
+    // Para exercícios de fala, a resposta pode ser um texto transcrito ou um arquivo de áudio
+    // Se for um arquivo de áudio (base64), precisaríamos processar em outro endpoint
+    // Aqui assumimos que é texto transcrito ou um identificador de áudio processado
+    
+    if (isset($conteudo['processar_audio']) && $conteudo['processar_audio']) {
+        // Se precisa processar áudio, redirecionar para endpoint específico
+        return [
+            'success' => false,
+            'correto' => false,
+            'explicacao' => 'Exercício de fala requer processamento de áudio específico.',
+            'processar_audio' => true,
+            'pontuacao' => 0
+        ];
+    }
+    
+    // Processamento simplificado para texto transcrito
+    $resposta_correta = $conteudo['resposta_correta'] ?? '';
+    $alternativas_aceitas = $conteudo['alternativas_aceitas'] ?? [$resposta_correta];
+    
+    // Limpar e normalizar
+    $resposta_limpa = trim(strtolower($resposta_usuario));
+    $correto = false;
+    
+    foreach ($alternativas_aceitas as $alternativa) {
+        $alt_limpa = trim(strtolower($alternativa));
+        if ($resposta_limpa === $alt_limpa) {
+            $correto = true;
+            break;
+        }
+    }
+    
+    // Se não encontrou exato, calcular similaridade
+    if (!$correto) {
+        $melhor_similaridade = 0;
+        foreach ($alternativas_aceitas as $alternativa) {
+            $alt_limpa = trim(strtolower($alternativa));
+            $similaridade = calcularSimilaridade($resposta_limpa, $alt_limpa);
+            if ($similaridade > $melhor_similaridade) {
+                $melhor_similaridade = $similaridade;
+            }
+        }
+        $correto = ($melhor_similaridade >= 0.7); // Threshold mais baixo para fala
+    }
 
     return [
         'success' => true,
         'correto' => $correto,
         'explicacao' => $correto ? 'Excelente pronúncia!' : 'Tente novamente, prestando atenção à pronúncia.',
         'dica' => $correto ? null : 'Ouça o áudio de exemplo e pratique devagar.',
-        'pontuacao' => $correto ? 100 : 0,
-        'success' => true
-        'pontuacao' => $correto ? 100 : 0
+        'feedback_pronuncia' => $correto ? 'Pronúncia muito boa!' : 'Pratique a entonação e clareza das palavras.',
+        'pontuacao' => $correto ? 100 : 50, // Pontuação parcial mesmo quando erra
+        'tipo_processamento' => 'texto_transcrito'
     ];
 }
 
@@ -313,8 +291,7 @@ function processarArrastarSoltar($resposta_usuario, $conteudo) {
         'correto' => $correto,
         'explicacao' => $conteudo['explicacao'] ?? ($correto ? 'Correto!' : 'Verifique as posições dos elementos.'),
         'dica' => $correto ? null : ($conteudo['dica'] ?? 'Leia as categorias com atenção.'),
-        'pontuacao' => $correto ? 100 : 0,
-        'success' => true
+        'resposta_correta' => $resposta_correta,
         'pontuacao' => $correto ? 100 : 0
     ];
 }
@@ -342,16 +319,44 @@ function calcularSimilaridade($str1, $str2) {
     return 1 - ($distancia / $max_length);
 }
 
+function registrarRespostaUsuario($conn, $id_usuario, $exercicio_id, $acertou, $resposta_usuario) {
+    try {
+        $sql_salvar = "INSERT INTO site_idiomas_respostas_exercicios (id_usuario, exercicio_id, acertou, resposta_usuario, data_resposta) VALUES (?, ?, ?, ?, NOW())";
+        $stmt_salvar = $conn->prepare($sql_salvar);
+        $acertou_int = $acertou ? 1 : 0;
+        $stmt_salvar->bind_param("iiis", $id_usuario, $exercicio_id, $acertou_int, $resposta_usuario);
+        $stmt_salvar->execute();
+        $stmt_salvar->close();
+        return true;
+    } catch (Exception $e) {
+        error_log("Erro ao registrar resposta: " . $e->getMessage());
+        return false;
+    }
+}
+
 function registrarProgresso($conn, $id_usuario, $exercicio_id, $acertou, $pontuacao) {
-    // Buscar informações do exercício para saber a qual bloco pertence
-    $sql_exercicio = "SELECT bloco_id FROM exercicios WHERE id = ?";
+    // Buscar o bloco_id da tabela 'exercicios' (que referencia a tabela 'blocos')
+    $sql_exercicio = "SELECT e.bloco_id, c.id_unidade 
+                      FROM exercicios e
+                      JOIN caminhos_aprendizagem c ON e.caminho_id = c.id
+                      WHERE e.id = ?";
     $stmt_exercicio = $conn->prepare($sql_exercicio);
     $stmt_exercicio->bind_param("i", $exercicio_id);
     $stmt_exercicio->execute();
     $exercicio_info = $stmt_exercicio->get_result()->fetch_assoc();
     $stmt_exercicio->close();
     
-    $bloco_id = $exercicio_info['bloco_id'] ?? null;
+    $bloco_id_original = $exercicio_info['bloco_id'] ?? null;
+    $unidade_id_original = $exercicio_info['id_unidade'] ?? null;
+
+    // A tabela 'progresso_bloco' referencia 'blocos_atividades'. 
+    // Precisamos encontrar o ID correspondente em 'blocos_atividades' baseado na unidade.
+    // Assumindo que há uma correspondência de 1 para 1 entre a unidade e o bloco de atividades.
+    $sql_bloco_atividades = "SELECT id FROM blocos_atividades WHERE id_unidade = ? LIMIT 1";
+    $stmt_bloco_atividades = $conn->prepare($sql_bloco_atividades);
+    $stmt_bloco_atividades->bind_param("i", $unidade_id_original);
+    $stmt_bloco_atividades->execute();
+    $bloco_id = $stmt_bloco_atividades->get_result()->fetch_assoc()['id'] ?? null;
     
     if (!$bloco_id) {
         return; // Se não tem bloco, não registra progresso
@@ -385,7 +390,7 @@ function registrarProgresso($conn, $id_usuario, $exercicio_id, $acertou, $pontua
                       pontos_obtidos = ?,
                       progresso_percentual = ?,
                       concluido = ?,
-                      data_atualizacao = NOW()
+                      data_conclusao = NOW()
                       WHERE id_usuario = ? AND id_bloco = ?";
         $stmt_update = $conn->prepare($sql_update);
         $stmt_update->bind_param("iiiiii", $novas_concluidas, $novos_pontos, $novo_progresso, $concluido, $id_usuario, $bloco_id);
@@ -398,12 +403,12 @@ function registrarProgresso($conn, $id_usuario, $exercicio_id, $acertou, $pontua
         $progresso_percentual = $total_exercicios > 0 ? round(($atividades_concluidas / $total_exercicios) * 100) : 0;
         $concluido = false;
 
-        $sql_insert = "INSERT INTO progresso_bloco 
-                      (id_usuario, id_bloco, atividades_concluidas, total_atividades, pontos_obtidos, total_pontos, progresso_percentual, concluido, data_criacao, data_atualizacao) 
-                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+        $sql_insert = "INSERT INTO progresso_bloco
+                      (id_usuario, id_bloco, atividades_concluidas, total_atividades, pontos_obtidos, total_pontos, progresso_percentual, concluido, data_conclusao)
+                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
         $stmt_insert = $conn->prepare($sql_insert);
         $total_pontos = $total_exercicios * 10;
-        $stmt_insert->bind_param("iiiiiiii", $id_usuario, $bloco_id, $atividades_concluidas, $total_exercicios, $pontos_obtidos, $total_pontos, $progresso_percentual, $concluido);
+        $stmt_insert->bind_param("iiiiiiid", $id_usuario, $bloco_id, $atividades_concluidas, $total_exercicios, $pontos_obtidos, $total_pontos, $progresso_percentual, $concluido);
         $stmt_insert->execute();
         $stmt_insert->close();
     }
