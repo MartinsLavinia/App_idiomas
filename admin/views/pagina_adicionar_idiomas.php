@@ -42,6 +42,20 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
 // Se necessário, inclua arquivos de configuração, autenticação, etc.
 // include_once '../../config.php';
 // include_once '../../auth.php';
+
+// Buscar idiomas existentes para o modal
+$query_idiomas = "SELECT nome_idioma FROM idiomas ORDER BY nome_idioma";
+$stmt_idiomas = $conn->prepare($query_idiomas);
+if ($stmt_idiomas) {
+    $stmt_idiomas->execute();
+    $result_idiomas = $stmt_idiomas->get_result();
+    $idiomas_db = $result_idiomas->fetch_all(MYSQLI_ASSOC);
+    $stmt_idiomas->close();
+} else {
+    // Tratar erro de preparação da query, se necessário
+    $idiomas_db = [];
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -514,7 +528,7 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
 
                                 <h5>Perguntas do Quiz de Nivelamento (Total: 20 perguntas)</h5>
                                 
-                                <p class="text-muted">A resposta correta para cada pergunta deve ser "A", "B" ou "C".</p>
+                                <p class="text-muted">A resposta correta para cada pergunta deve ser "A", "B", "C" ou "D".</p>
                                 
                                 <?php for ($i = $offset_inicial; $i < $offset_inicial + $limit && $i <= $total_perguntas; $i++): ?>
                                 <div class="card mb-3">
@@ -525,17 +539,21 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
                                             <textarea class="form-control" id="pergunta_<?php echo $i; ?>" name="pergunta_<?php echo $i; ?>" rows="2" required></textarea>
                                         </div>
                                         <div class="row">
-                                            <div class="col-md-4 mb-3">
+                                            <div class="col-md-3 mb-3">
                                                 <label for="opcao_a_<?php echo $i; ?>" class="form-label">Opção A</label>
                                                 <input type="text" class="form-control" id="opcao_a_<?php echo $i; ?>" name="opcao_a_<?php echo $i; ?>" required>
                                             </div>
-                                            <div class="col-md-4 mb-3">
+                                            <div class="col-md-3 mb-3">
                                                 <label for="opcao_b_<?php echo $i; ?>" class="form-label">Opção B</label>
                                                 <input type="text" class="form-control" id="opcao_b_<?php echo $i; ?>" name="opcao_b_<?php echo $i; ?>" required>
                                             </div>
-                                            <div class="col-md-4 mb-3">
+                                            <div class="col-md-3 mb-3">
                                                 <label for="opcao_c_<?php echo $i; ?>" class="form-label">Opção C</label>
                                                 <input type="text" class="form-control" id="opcao_c_<?php echo $i; ?>" name="opcao_c_<?php echo $i; ?>" required>
+                                            </div>
+                                            <div class="col-md-3 mb-3">
+                                                <label for="opcao_d_<?php echo $i; ?>" class="form-label">Opção D</label>
+                                                <input type="text" class="form-control" id="opcao_d_<?php echo $i; ?>" name="opcao_d_<?php echo $i; ?>" required>
                                             </div>
                                         </div>
                                         <div class="mb-3">
@@ -545,6 +563,7 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
                                                 <option value="A">Opção A</option>
                                                 <option value="B">Opção B</option>
                                                 <option value="C">Opção C</option>
+                                                <option value="D">Opção D</option>
                                             </select>
                                         </div>
                                     </div>
@@ -617,11 +636,11 @@ $offset_inicial = ($pagina_atual - 1) * $limit + 1;
                             <?php if (!empty($idiomas_db)): ?>
                             <?php foreach ($idiomas_db as $idioma): ?>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span><?php echo htmlspecialchars($idioma['idioma']); ?></span>
+                                <span><?php echo htmlspecialchars($idioma['nome_idioma']); ?></span>
                                 <div>
-                                    <a href="gerenciador_quiz_nivelamento.php?idioma=<?php echo urlencode($idioma['idioma']); ?>" class="btn btn-info btn-sm me-2">Gerenciar Quiz</a>
+                                    <a href="gerenciador_quiz_nivelamento.php?idioma=<?php echo urlencode($idioma['nome_idioma']); ?>" class="btn btn-info btn-sm me-2">Gerenciar Quiz</a>
                                     <button type="button" class="btn btn-danger btn-sm delete-btn" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal"
-                                        data-id="<?php echo urlencode($idioma['idioma']); ?>" data-nome="<?php echo htmlspecialchars($idioma['idioma']); ?>" data-tipo="idioma" data-action="excluir_idioma.php">
+                                        data-id="<?php echo urlencode($idioma['nome_idioma']); ?>" data-nome="<?php echo htmlspecialchars($idioma['nome_idioma']); ?>" data-tipo="idioma" data-action="excluir_idioma.php">
                                         Excluir
                                     </button>
                                 </div>

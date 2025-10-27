@@ -60,13 +60,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'opcao_a' => trim($_POST["opcao_a_$i"]),
                 'opcao_b' => trim($_POST["opcao_b_$i"]),
                 'opcao_c' => trim($_POST["opcao_c_$i"]),
+                'opcao_d' => trim($_POST["opcao_d_$i"]),
                 'resposta_correta' => trim($_POST["resposta_correta_$i"]),
             ];
 
             // Validação simples
             if (empty($_SESSION['quiz_data'][$i]['pergunta']) || 
                 empty($_SESSION['quiz_data'][$i]['resposta_correta']) || 
-                !in_array($_SESSION['quiz_data'][$i]['resposta_correta'], ['A', 'B', 'C'])) 
+                !in_array($_SESSION['quiz_data'][$i]['resposta_correta'], ['A', 'B', 'C', 'D'])) 
             {
                 $_SESSION['error'] = "Pergunta #$i ou resposta correta inválida.";
                 header("Location: pagina_adicionar_idiomas.php?page=$pagina_atual");
@@ -127,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             foreach ($_SESSION['quiz_data'] as $data) {
-                $stmt_quiz->bind_param("sssssss", $nome_idioma, $data['pergunta'], $data['opcao_a'], $data['opcao_b'], $data['opcao_c'], $alternativa_d_vazia, $data['resposta_correta']);
+                $stmt_quiz->bind_param("sssssss", $nome_idioma, $data['pergunta'], $data['opcao_a'], $data['opcao_b'], $data['opcao_c'], $data['opcao_d'], $data['resposta_correta']);
                 $stmt_quiz->execute();
             }
 

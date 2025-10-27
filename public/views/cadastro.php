@@ -8,6 +8,21 @@ session_start();
 // Variável para armazenar a mensagem de erro, se houver.
 $erro_cadastro = "";
 
+// --- BUSCAR IDIOMAS PARA O DROPDOWN ---
+$database_idiomas = new Database();
+$conn_idiomas = $database_idiomas->conn;
+
+$idiomas = [];
+$sql_idiomas = "SELECT nome_idioma FROM idiomas ORDER BY nome_idioma ASC";
+$result_idiomas = $conn_idiomas->query($sql_idiomas);
+if ($result_idiomas && $result_idiomas->num_rows > 0) {
+    while ($row = $result_idiomas->fetch_assoc()) {
+        $idiomas[] = $row;
+    }
+}
+$database_idiomas->closeConnection();
+// --- FIM DA BUSCA DE IDIOMAS ---
+
 // Lógica de cadastro
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
@@ -124,8 +139,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <label for="idioma" style="display:none;">Escolha seu primeiro idioma</label>
                 <select class="form-select" id="idioma" name="idioma" required>
                     <option value="" disabled selected>Selecione seu primeiro idioma</option>
-                    <option value="Ingles">Inglês</option>
-                    <option value="Japones">Japonês</option>
+                    <?php foreach ($idiomas as $idioma_item): ?>
+                        <option value="<?php echo htmlspecialchars($idioma_item['nome_idioma']); ?>">
+                            <?php echo htmlspecialchars($idioma_item['nome_idioma']); ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
             </div>
 
