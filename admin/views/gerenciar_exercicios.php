@@ -207,7 +207,7 @@ $database->closeConnection();
             box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
         }
 
-      /* ESTILOS ESPECÍFICOS PARA OS BOTÕES SOLICITADOS */
+/* ESTILOS ESPECÍFICOS PARA OS BOTÕES SOLICITADOS */
 .btn-voltar-blocos {
     background-color: transparent;
     border: 2px solid var(--roxo-principal);
@@ -225,8 +225,9 @@ $database->closeConnection();
     backdrop-filter: blur(10px);
     position: relative;
     overflow: hidden;
+    /* Removido float: left e adicionado: */
+    align-self: flex-start;
 }
-
 
 .btn-voltar-blocos::before {
     content: '';
@@ -361,23 +362,24 @@ $database->closeConnection();
             font-weight: 500;
         }
 
-        /* LAYOUT DOS BOTÕES - BOTÃO DIREITO ALINHADO À DIREITA */
-        .buttons-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
+   /* CORREÇÃO DO CONTAINER DOS BOTÕES */
+.buttons-container {
+    display: flex;
+    justify-content: flex-start; /* Alinha tudo à esquerda */
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
+}
 
-        .left-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-      
+.left-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    width: 100%;
+}
 
         /* ESTADO VAZIO */
         .empty-state {
@@ -465,142 +467,142 @@ $database->closeConnection();
             width: auto;
             display: block;
         }
+ 
+/* Menu Lateral */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100%;
+    background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+    color: var(--branco);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 20px;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
 
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 250px;
-            height: 100%;
-            background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
-            color: var(--branco);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            padding-top: 20px;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-        }
+.sidebar .profile {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 0 15px;
+}
 
-        .sidebar .profile {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 0 15px;
-        }
+.profile-avatar-sidebar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 3px solid var(--amarelo-detalhe);
+    background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
 
-        .profile-avatar-sidebar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            border: 3px solid var(--amarelo-detalhe);
-            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
+.profile-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
 
-        .profile-avatar-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-        }
+.profile-avatar-sidebar:has(.profile-avatar-img) i {
+    display: none;
+}
 
-        .profile-avatar-sidebar:has(.profile-avatar-img) i {
-            display: none;
-        }
+.profile-avatar-sidebar i {
+    font-size: 3.5rem;
+    color: var(--amarelo-detalhe);
+}
 
-        .profile-avatar-sidebar i {
-            font-size: 3.5rem;
-            color: var(--amarelo-detalhe);
-        }
+.sidebar .profile h5 {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--branco);
+    font-size: 1.1rem;
+    word-wrap: break-word; /* Força a quebra de linha para palavras longas */
+    max-width: 200px; /* Limita a largura máxima para o texto, ajustável */
+    text-align: center; /* Centraliza o texto quebrado */
+    line-height: 1.3; /* Melhora a legibilidade do texto quebrado */
+}
 
-        .sidebar .profile h5 {
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: var(--branco);
-            font-size: 1.1rem;
-            word-wrap: break-word;
-            max-width: 200px;
-            text-align: center;
-            line-height: 1.3;
-        }
+.sidebar .profile small {
+    color: var(--cinza-claro);
+    font-size: 0.9rem;
+    word-wrap: break-word; /* Força a quebra de linha para palavras longas */
+    max-width: 200px; /* Limita a largura máxima para o texto, ajustável */
+    text-align: center; /* Centraliza o texto quebrado */
+    line-height: 1.2; /* Melhora a legibilidade do texto quebrado */
+    margin-top: 5px; /* Adiciona um pequeno espaçamento se o texto quebrar */
+}
 
-        .sidebar .profile small {
-            color: var(--cinza-claro);
-            font-size: 0.9rem;
-            word-wrap: break-word;
-            max-width: 200px;
-            text-align: center;
-            line-height: 1.2;
-            margin-top: 5px;
-        }
+.sidebar .list-group {
+    display: flex; /* Torna o list-group um container flexível */
+    flex-direction: column; /* Organiza os itens em coluna */
+    width: 100%;
+}
 
-        .sidebar .list-group {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-        }
+.sidebar .list-group-item.sair {
+    background-color: transparent;
+    color: var(--branco);
+    border: none;
+    padding: 15px 25px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 40px !important; /* Aumentado e forçado para garantir que o espaçamento seja visível */
+}
 
-        .sidebar .list-group-item.sair {
-            background-color: transparent;
-            color: var(--branco);
-            border: none;
-            padding: 15px 25px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 40px !important;
-        }
+.sidebar .list-group-item {
+    background-color: transparent;
+    color: var(--branco);
+    border: none;
+    padding: 15px 25px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
 
-        .sidebar .list-group-item {
-            background-color: transparent;
-            color: var(--branco);
-            border: none;
-            padding: 15px 25px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-        }
+.sidebar .list-group-item:hover {
+    background-color: var(--roxo-escuro);
+    cursor: pointer;
+}
 
-        .sidebar .list-group-item:hover {
-            background-color: var(--roxo-escuro);
-            cursor: pointer;
-        }
+.sidebar .list-group-item.active {
+    background-color: var(--roxo-escuro) !important;
+    color: var(--branco) !important;
+    font-weight: 600;
+    border-left: 4px solid var(--amarelo-detalhe);
+}
 
-        .sidebar .list-group-item.active {
-            background-color: var(--roxo-escuro) !important;
-            color: var(--branco) !important;
-            font-weight: 600;
-            border-left: 4px solid var(--amarelo-detalhe);
-        }
+.sidebar .list-group-item i {
+    color: var(--amarelo-detalhe);
+}
 
-        .sidebar .list-group-item i {
-            color: var(--amarelo-detalhe);
-        }
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+}
 
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-        }
-
-        @media (max-width: 992px) {
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-            }
-            .main-content {
-                margin-left: 0;
-            }
-        }
-
+@media (max-width: 992px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+    .main-content {
+        margin-left: 0;
+    }
+}
         /* ESTADO VAZIO MODERNO - ESTILO DA IMAGEM */
 .empty-state-modern {
     text-align: center;
@@ -630,7 +632,7 @@ $database->closeConnection();
 </head>
 
 <body>
-    <!-- Barra de Navegação Superior (mantida original) -->
+    <!-- Barra de Navegação Superior -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid d-flex justify-content-end align-items-center">
             <div class="d-flex align-items-center" style="gap: 24px;">
@@ -644,24 +646,21 @@ $database->closeConnection();
         </div>
     </nav>
 
-    <!-- Menu Lateral (mantido original) -->
     <div class="sidebar">
-        <div class="profile">
-            <?php if ($foto_admin): ?>
-                <div class="profile-avatar-sidebar">
-                    <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
-                </div>
-            <?php else: ?>
-                <div class="profile-avatar-sidebar">
-                    <i class="fas fa-user-circle"></i>
-                </div>
-            <?php endif; ?>
-            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
-            <small>Administrador(a)</small>
-        </div>
+    <div class="profile">
+        <?php if ($foto_admin): ?>
+            <div class="profile-avatar-sidebar">
+                <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
+            </div>
+        <?php else: ?>
+            <i class="fas fa-user-circle"></i>
+        <?php endif; ?>
+        <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+        <small>Administrador(a)</small>
+    </div>
 
-        <div class="list-group">
-            <a href="gerenciar_caminho.php" class="list-group-item active" >
+        <div class="list-group" >
+            <a href="gerenciar_caminho.php" class="list-group-item active">
                 <i class="fas fa-plus-circle"></i> Adicionar Caminho
             </a>
             <a href="pagina_adicionar_idiomas.php" class="list-group-item">
@@ -696,11 +695,11 @@ $database->closeConnection();
         </div>
         
         <!-- Container dos botões com layout organizado -->
-        <div class="buttons-container">
-            <div class="left-buttons">
-               <a href="#" onclick="voltarParaBlocos()" class="btn-voltar-blocos">
-    <i class="fas fa-arrow-left me-2"></i>Voltar para Blocos
-</a>
+       <div class="buttons-container">
+    <div class="left-buttons">
+        <a href="gerenciar_blocos.php?caminho_id=<?php echo htmlspecialchars($caminho_id); ?>" class="btn-voltar-blocos">
+            <i class="fas fa-arrow-left me-2"></i>Voltar para Blocos
+        </a>
 <script>
 function voltarParaBlocos() {
     window.location.href = 'http://localhost/App_idiomas/admin/views/gerenciar_blocos.php?caminho_id=10';
