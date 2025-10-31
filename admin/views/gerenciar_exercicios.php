@@ -209,7 +209,7 @@ $database->closeConnection();
 
       /* ESTILOS ESPECÍFICOS PARA OS BOTÕES SOLICITADOS */
 .btn-voltar-blocos {
-    background: #4c087c28;
+    background-color: transparent;
     border: 2px solid var(--roxo-principal);
     color: var(--roxo-principal);
     border-radius: 25px;
@@ -226,6 +226,7 @@ $database->closeConnection();
     position: relative;
     overflow: hidden;
 }
+
 
 .btn-voltar-blocos::before {
     content: '';
