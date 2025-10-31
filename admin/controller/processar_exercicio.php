@@ -11,6 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 session_start();
+// Assumindo que a classe Database está em um caminho acessível
 include_once __DIR__ . '/../../conexao.php';
 
 // Verificar se o usuário está logado
@@ -50,11 +51,13 @@ try {
     $conn = $database->conn;
 
     // Buscar dados do exercício
+    // Incluir o campo 'bloco_id' para uso futuro no registro de progresso
     $sql = "SELECT conteudo, tipo, bloco_id FROM exercicios WHERE id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $exercicio_id);
     $stmt->execute();
-    $exercicio = $stmt->get_result()->fetch_assoc();
+    $result = $stmt->get_result();
+    $exercicio = $result->fetch_assoc();
     $stmt->close();
 
     if (!$exercicio) {
@@ -77,14 +80,25 @@ try {
     echo json_encode($resultado);
 
 } catch (Exception $e) {
+    // Fechar conexão em caso de erro
+    if (isset($database) && isset($database->conn)) {
+        $database->closeConnection();
+    }
     echo json_encode([
         'success' => false,
         'message' => 'Erro interno do servidor: ' . $e->getMessage()
     ]);
 }
 
+// =================================================================================
+// Funções de Processamento
+// =================================================================================
+
 function processarResposta($resposta_usuario, $conteudo, $tipo_exercicio) {
-    switch ($tipo_exercicio) {
+    // Normalizar tipo para garantir compatibilidade
+    $tipo_normalizado = normalizarTipoExercicio($tipo_exercicio);
+    
+    switch ($tipo_normalizado) {
         case 'multipla_escolha':
             return processarMultiplaEscolha($resposta_usuario, $conteudo);
         case 'texto_livre':
@@ -99,13 +113,38 @@ function processarResposta($resposta_usuario, $conteudo, $tipo_exercicio) {
         case 'audicao':
             return processarListening($resposta_usuario, $conteudo);
         default:
-            return [
-                'success' => false, 
-                'correto' => false, 
-                'explicacao' => 'Tipo de exercício não suportado.',
-                'pontuacao' => 0
-            ];
+            // Fallback para texto_livre para tipos não reconhecidos
+            return processarTextoLivre($resposta_usuario, $conteudo);
     }
+}
+
+function normalizarTipoExercicio($tipo) {
+    $tipo = strtolower(trim($tipo));
+    
+    $mapeamento = [
+        'normal' => 'texto_livre',
+        'texto' => 'texto_livre',
+        'text_input' => 'texto_livre',
+        'input' => 'texto_livre',
+        'multiple_choice' => 'multipla_escolha',
+        'multipla escolha' => 'multipla_escolha',
+        'escolha_multipla' => 'multipla_escolha',
+        'drag_drop' => 'arrastar_soltar',
+        'drag' => 'arrastar_soltar',
+        'arrastar' => 'arrastar_soltar',
+        'speech' => 'fala',
+        'pronuncia' => 'fala',
+        'fala' => 'fala',
+        'complete' => 'completar',
+        'completion' => 'completar',
+        'completar' => 'completar',
+        'audio' => 'listening',
+        'audicao' => 'listening',
+        'listening' => 'listening',
+        'escuta' => 'listening'
+    ];
+    
+    return $mapeamento[$tipo] ?? $tipo;
 }
 
 function processarListening($resposta_usuario, $conteudo) {
@@ -158,6 +197,15 @@ function processarMultiplaEscolha($resposta_usuario, $conteudo) {
 
     if (!$resposta_correta && isset($conteudo['resposta_correta'])) {
         $resposta_correta = $conteudo['resposta_correta'];
+    }
+
+    if (!$resposta_correta) {
+        return [
+            'success' => false, 
+            'correto' => false, 
+            'explicacao' => 'Resposta correta não encontrada no exercício.',
+            'pontuacao' => 0
+        ];
     }
 
     $correto = strtolower($resposta_usuario) === strtolower($resposta_correta);
@@ -213,7 +261,7 @@ function processarTextoLivre($resposta_usuario, $conteudo) {
         'correto' => $correto,
         'explicacao' => $conteudo['explicacao'] ?? ($correto ? 'Correto!' : "Resposta incorreta. Esperado: '$resposta_encontrada'"),
         'dica' => $correto ? null : ($conteudo['dica'] ?? "Tente novamente. Resposta esperada: '$resposta_encontrada'"),
-        'pontuacao' => $correto ? 100 : ($melhor_similaridade * 100),
+        'pontuacao' => $correto ? 100 : intval($melhor_similaridade * 100),
         'similaridade' => $melhor_similaridade,
         'resposta_correta' => $resposta_encontrada
     ];
@@ -225,63 +273,76 @@ function processarCompletar($resposta_usuario, $conteudo) {
 }
 
 function processarFala($resposta_usuario, $conteudo) {
-    // Para exercícios de fala, a resposta pode ser um texto transcrito ou um arquivo de áudio
-    // Se for um arquivo de áudio (base64), precisaríamos processar em outro endpoint
-    // Aqui assumimos que é texto transcrito ou um identificador de áudio processado
-    
-    if (isset($conteudo['processar_audio']) && $conteudo['processar_audio']) {
-        // Se precisa processar áudio, redirecionar para endpoint específico
-        return [
-            'success' => false,
-            'correto' => false,
-            'explicacao' => 'Exercício de fala requer processamento de áudio específico.',
-            'processar_audio' => true,
-            'pontuacao' => 0
-        ];
-    }
-    
-    // Processamento simplificado para texto transcrito
-    $resposta_correta = $conteudo['resposta_correta'] ?? '';
-    $alternativas_aceitas = $conteudo['alternativas_aceitas'] ?? [$resposta_correta];
+    // A resposta do usuário é a transcrição de texto
+    $frase_esperada = $conteudo['frase_esperada'] ?? $conteudo['texto_para_falar'] ?? '';
+    $alternativas_aceitas = $conteudo['alternativas_aceitas'] ?? [$frase_esperada];
     
     // Limpar e normalizar
     $resposta_limpa = trim(strtolower($resposta_usuario));
     $correto = false;
+    $melhor_similaridade = 0;
     
     foreach ($alternativas_aceitas as $alternativa) {
         $alt_limpa = trim(strtolower($alternativa));
+        
+        // Verificar correspondência exata
         if ($resposta_limpa === $alt_limpa) {
             $correto = true;
+            $melhor_similaridade = 1.0;
             break;
+        }
+        
+        // Calcular similaridade
+        $similaridade = calcularSimilaridade($resposta_limpa, $alt_limpa);
+        if ($similaridade > $melhor_similaridade) {
+            $melhor_similaridade = $similaridade;
         }
     }
     
-    // Se não encontrou exato, calcular similaridade
-    if (!$correto) {
-        $melhor_similaridade = 0;
-        foreach ($alternativas_aceitas as $alternativa) {
-            $alt_limpa = trim(strtolower($alternativa));
-            $similaridade = calcularSimilaridade($resposta_limpa, $alt_limpa);
-            if ($similaridade > $melhor_similaridade) {
-                $melhor_similaridade = $similaridade;
-            }
-        }
-        $correto = ($melhor_similaridade >= 0.7); // Threshold mais baixo para fala
+    // Considerar correto se similaridade >= 70% (Threshold mais baixo para fala)
+    if (!$correto && $melhor_similaridade >= 0.7) {
+        $correto = true;
+    }
+    
+    // Determinar o status de feedback
+    $status = 'errado';
+    if ($correto) {
+        $status = 'correto';
+    } elseif ($melhor_similaridade >= 0.5) {
+        $status = 'meio_correto';
     }
 
     return [
         'success' => true,
         'correto' => $correto,
+        'pontuacao' => $correto ? 100 : intval($melhor_similaridade * 100),
         'explicacao' => $correto ? 'Excelente pronúncia!' : 'Tente novamente, prestando atenção à pronúncia.',
-        'dica' => $correto ? null : 'Ouça o áudio de exemplo e pratique devagar.',
-        'feedback_pronuncia' => $correto ? 'Pronúncia muito boa!' : 'Pratique a entonação e clareza das palavras.',
-        'pontuacao' => $correto ? 100 : 50, // Pontuação parcial mesmo quando erra
-        'tipo_processamento' => 'texto_transcrito'
+        'resultado' => [
+            'status' => $status,
+            'pontuacao_percentual' => intval($melhor_similaridade * 100),
+            'feedback_detalhado' => [
+                'frase_esperada' => $frase_esperada,
+                'frase_transcrita' => $resposta_usuario,
+                'palavras_corretas' => $correto ? explode(' ', $frase_esperada) : [],
+                'palavras_incorretas' => $correto ? [] : ['verifique', 'sua', 'pronúncia'],
+                'dica_pronuncia' => $correto ? 'Excelente!' : 'Tente focar na clareza das palavras.'
+            ]
+        ]
     ];
 }
 
 function processarArrastarSoltar($resposta_usuario, $conteudo) {
     $resposta_correta = $conteudo['resposta_correta'] ?? [];
+    
+    // Verificar se as respostas são arrays válidos
+    if (!is_array($resposta_usuario) || !is_array($resposta_correta)) {
+        return [
+            'success' => false,
+            'correto' => false,
+            'explicacao' => 'Formato de resposta inválido para arrastar e soltar.',
+            'pontuacao' => 0
+        ];
+    }
     
     // Comparar arrays de resposta
     $correto = json_encode($resposta_usuario) === json_encode($resposta_correta);
@@ -321,6 +382,11 @@ function calcularSimilaridade($str1, $str2) {
 
 function registrarRespostaUsuario($conn, $id_usuario, $exercicio_id, $acertou, $resposta_usuario) {
     try {
+        // Converter resposta para string se for array
+        if (is_array($resposta_usuario)) {
+            $resposta_usuario = json_encode($resposta_usuario);
+        }
+        
         $sql_salvar = "INSERT INTO site_idiomas_respostas_exercicios (id_usuario, exercicio_id, acertou, resposta_usuario, data_resposta) VALUES (?, ?, ?, ?, NOW())";
         $stmt_salvar = $conn->prepare($sql_salvar);
         $acertou_int = $acertou ? 1 : 0;
@@ -335,82 +401,102 @@ function registrarRespostaUsuario($conn, $id_usuario, $exercicio_id, $acertou, $
 }
 
 function registrarProgresso($conn, $id_usuario, $exercicio_id, $acertou, $pontuacao) {
-    // Buscar o bloco_id da tabela 'exercicios' (que referencia a tabela 'blocos')
-    $sql_exercicio = "SELECT e.bloco_id, c.id_unidade 
-                      FROM exercicios e
-                      JOIN caminhos_aprendizagem c ON e.caminho_id = c.id
-                      WHERE e.id = ?";
-    $stmt_exercicio = $conn->prepare($sql_exercicio);
-    $stmt_exercicio->bind_param("i", $exercicio_id);
-    $stmt_exercicio->execute();
-    $exercicio_info = $stmt_exercicio->get_result()->fetch_assoc();
-    $stmt_exercicio->close();
-    
-    $bloco_id_original = $exercicio_info['bloco_id'] ?? null;
-    $unidade_id_original = $exercicio_info['id_unidade'] ?? null;
+    try {
+        // Buscar informações do exercício
+        $sql_exercicio = "SELECT e.bloco_id, c.id_unidade 
+                          FROM exercicios e
+                          LEFT JOIN caminhos_aprendizagem c ON e.caminho_id = c.id
+                          WHERE e.id = ?";
+        $stmt_exercicio = $conn->prepare($sql_exercicio);
+        $stmt_exercicio->bind_param("i", $exercicio_id);
+        $stmt_exercicio->execute();
+        $result = $stmt_exercicio->get_result();
+        $exercicio_info = $result->fetch_assoc();
+        $stmt_exercicio->close();
+        
+        $bloco_id_original = $exercicio_info['bloco_id'] ?? null;
+        $unidade_id_original = $exercicio_info['id_unidade'] ?? null;
 
-    // A tabela 'progresso_bloco' referencia 'blocos_atividades'. 
-    // Precisamos encontrar o ID correspondente em 'blocos_atividades' baseado na unidade.
-    // Assumindo que há uma correspondência de 1 para 1 entre a unidade e o bloco de atividades.
-    $sql_bloco_atividades = "SELECT id FROM blocos_atividades WHERE id_unidade = ? LIMIT 1";
-    $stmt_bloco_atividades = $conn->prepare($sql_bloco_atividades);
-    $stmt_bloco_atividades->bind_param("i", $unidade_id_original);
-    $stmt_bloco_atividades->execute();
-    $bloco_id = $stmt_bloco_atividades->get_result()->fetch_assoc()['id'] ?? null;
-    
-    if (!$bloco_id) {
-        return; // Se não tem bloco, não registra progresso
-    }
-    
-    // Verificar se já existe progresso para este bloco
-    $sql_check = "SELECT * FROM progresso_bloco WHERE id_usuario = ? AND id_bloco = ?";
-    $stmt_check = $conn->prepare($sql_check);
-    $stmt_check->bind_param("ii", $id_usuario, $bloco_id);
-    $stmt_check->execute();
-    $progresso_existente = $stmt_check->get_result()->fetch_assoc();
-    $stmt_check->close();
+        if (!$bloco_id_original && !$unidade_id_original) {
+            return false;
+        }
 
-    // Buscar total de exercícios no bloco
-    $sql_total = "SELECT COUNT(*) as total FROM exercicios WHERE bloco_id = ?";
-    $stmt_total = $conn->prepare($sql_total);
-    $stmt_total->bind_param("i", $bloco_id);
-    $stmt_total->execute();
-    $total_exercicios = $stmt_total->get_result()->fetch_assoc()['total'] ?? 0;
-    $stmt_total->close();
+        // Buscar o bloco de atividades correspondente
+        $bloco_id = null;
+        if ($unidade_id_original) {
+            $sql_bloco_atividades = "SELECT id FROM blocos_atividades WHERE id_unidade = ? LIMIT 1";
+            $stmt_bloco_atividades = $conn->prepare($sql_bloco_atividades);
+            $stmt_bloco_atividades->bind_param("i", $unidade_id_original);
+            $stmt_bloco_atividades->execute();
+            $result = $stmt_bloco_atividades->get_result();
+            $bloco_row = $result->fetch_assoc();
+            $bloco_id = $bloco_row['id'] ?? null;
+            $stmt_bloco_atividades->close();
+        }
 
-    if ($progresso_existente) {
-        // Atualizar progresso existente
-        $novas_concluidas = $progresso_existente['atividades_concluidas'] + 1;
-        $novos_pontos = $progresso_existente['pontos_obtidos'] + ($acertou ? 10 : 0);
-        $novo_progresso = $total_exercicios > 0 ? round(($novas_concluidas / $total_exercicios) * 100) : 0;
-        $concluido = ($novas_concluidas >= $total_exercicios) && ($total_exercicios > 0);
+        if (!$bloco_id) {
+            return false;
+        }
+        
+        // Buscar total de exercícios no bloco
+        $sql_total = "SELECT COUNT(*) as total FROM exercicios WHERE bloco_id = ?";
+        $stmt_total = $conn->prepare($sql_total);
+        $stmt_total->bind_param("i", $bloco_id_original);
+        $stmt_total->execute();
+        $result = $stmt_total->get_result();
+        $total_exercicios = $result->fetch_assoc()['total'] ?? 0;
+        $stmt_total->close();
 
-        $sql_update = "UPDATE progresso_bloco SET 
-                      atividades_concluidas = ?, 
-                      pontos_obtidos = ?,
-                      progresso_percentual = ?,
-                      concluido = ?,
-                      data_conclusao = NOW()
-                      WHERE id_usuario = ? AND id_bloco = ?";
-        $stmt_update = $conn->prepare($sql_update);
-        $stmt_update->bind_param("iiiiii", $novas_concluidas, $novos_pontos, $novo_progresso, $concluido, $id_usuario, $bloco_id);
-        $stmt_update->execute();
-        $stmt_update->close();
-    } else {
-        // Criar novo registro de progresso
-        $atividades_concluidas = 1;
-        $pontos_obtidos = $acertou ? 10 : 0;
-        $progresso_percentual = $total_exercicios > 0 ? round(($atividades_concluidas / $total_exercicios) * 100) : 0;
-        $concluido = false;
+        // Verificar se já existe progresso para este bloco
+        $sql_check = "SELECT * FROM progresso_bloco WHERE id_usuario = ? AND id_bloco = ?";
+        $stmt_check = $conn->prepare($sql_check);
+        $stmt_check->bind_param("ii", $id_usuario, $bloco_id);
+        $stmt_check->execute();
+        $result = $stmt_check->get_result();
+        $progresso_existente = $result->fetch_assoc();
+        $stmt_check->close();
 
-        $sql_insert = "INSERT INTO progresso_bloco
-                      (id_usuario, id_bloco, atividades_concluidas, total_atividades, pontos_obtidos, total_pontos, progresso_percentual, concluido, data_conclusao)
-                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
-        $stmt_insert = $conn->prepare($sql_insert);
-        $total_pontos = $total_exercicios * 10;
-        $stmt_insert->bind_param("iiiiiiid", $id_usuario, $bloco_id, $atividades_concluidas, $total_exercicios, $pontos_obtidos, $total_pontos, $progresso_percentual, $concluido);
-        $stmt_insert->execute();
-        $stmt_insert->close();
+        if ($progresso_existente) {
+            // Atualizar progresso existente
+            $novas_concluidas = $progresso_existente['atividades_concluidas'] + 1;
+            $novos_pontos = $progresso_existente['pontos_obtidos'] + ($acertou ? 10 : 0);
+            $novo_progresso = $total_exercicios > 0 ? round(($novas_concluidas / $total_exercicios) * 100) : 0;
+            $concluido = ($novas_concluidas >= $total_exercicios) && ($total_exercicios > 0);
+
+            $sql_update = "UPDATE progresso_bloco SET 
+                          atividades_concluidas = ?, 
+                          pontos_obtidos = ?,
+                          progresso_percentual = ?,
+                          concluido = ?,
+                          data_conclusao = " . ($concluido ? "NOW()" : "NULL") . "
+                          WHERE id_usuario = ? AND id_bloco = ?";
+            $stmt_update = $conn->prepare($sql_update);
+            $concluido_int = $concluido ? 1 : 0;
+            $stmt_update->bind_param("iiiiii", $novas_concluidas, $novos_pontos, $novo_progresso, $concluido_int, $id_usuario, $bloco_id);
+            $stmt_update->execute();
+            $stmt_update->close();
+        } else {
+            // Criar novo registro de progresso
+            $atividades_concluidas = 1;
+            $pontos_obtidos = $acertou ? 10 : 0;
+            $progresso_percentual = $total_exercicios > 0 ? round(($atividades_concluidas / $total_exercicios) * 100) : 0;
+            $concluido = ($atividades_concluidas >= $total_exercicios) && ($total_exercicios > 0);
+
+            $sql_insert = "INSERT INTO progresso_bloco
+                          (id_usuario, id_bloco, atividades_concluidas, total_atividades, pontos_obtidos, total_pontos, progresso_percentual, concluido, data_conclusao)
+                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, " . ($concluido ? "NOW()" : "NULL") . ")";
+            $stmt_insert = $conn->prepare($sql_insert);
+            $total_pontos = $total_exercicios * 10;
+            $concluido_int = $concluido ? 1 : 0;
+            $stmt_insert->bind_param("iiiiiiid", $id_usuario, $bloco_id, $atividades_concluidas, $total_exercicios, $pontos_obtidos, $total_pontos, $progresso_percentual, $concluido_int);
+            $stmt_insert->execute();
+            $stmt_insert->close();
+        }
+        
+        return true;
+    } catch (Exception $e) {
+        error_log("Erro ao registrar progresso: " . $e->getMessage());
+        return false;
     }
 }
 ?>
