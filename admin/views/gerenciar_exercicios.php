@@ -23,34 +23,57 @@ $database = new Database();
 $conn = $database->conn;
 
 $id_admin = $_SESSION['id_admin'];
-$sql_foto = "SELECT foto_perfil FROM administradores WHERE id = ?";
-$stmt_foto = $conn->prepare($sql_foto);
-$stmt_foto->bind_param("i", $id_admin);
-$stmt_foto->execute();
-$resultado_foto = $stmt_foto->get_result();
-$admin_foto = $resultado_foto->fetch_assoc();
-$stmt_foto->close();
 
-$foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
+// Verificar se a coluna foto_perfil existe
+$foto_admin = null;
+try {
+    $check_column = $conn->query("SHOW COLUMNS FROM administradores LIKE 'foto_perfil'");
+    if ($check_column && $check_column->num_rows > 0) {
+        $sql_foto = "SELECT foto_perfil FROM administradores WHERE id = ?";
+        $stmt_foto = $conn->prepare($sql_foto);
+        if ($stmt_foto) {
+            $stmt_foto->bind_param("i", $id_admin);
+            $stmt_foto->execute();
+            $resultado_foto = $stmt_foto->get_result();
+            $admin_foto = $resultado_foto->fetch_assoc();
+            $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
+            $stmt_foto->close();
+        }
+    }
+} catch (Exception $e) {
+    $foto_admin = null;
+}
 
+// Consulta para obter informações do caminho
+$caminho_info = null;
 $sql_caminho = "SELECT nome_caminho, nivel FROM caminhos_aprendizagem WHERE id = ?";
 $stmt_caminho = $conn->prepare($sql_caminho);
-$stmt_caminho->bind_param("i", $caminho_id);
-$stmt_caminho->execute();
-$caminho_info = $stmt_caminho->get_result()->fetch_assoc();
-$stmt_caminho->close();
+
+if ($stmt_caminho) {
+    $stmt_caminho->bind_param("i", $caminho_id);
+    $stmt_caminho->execute();
+    $result_caminho = $stmt_caminho->get_result();
+    $caminho_info = $result_caminho->fetch_assoc();
+    $stmt_caminho->close();
+}
 
 if (!$caminho_info) {
     header("Location: gerenciar_caminho.php");
     exit();
 }
 
+// Consulta para obter exercícios
+$exercicios = [];
 $sql_exercicios = "SELECT id, ordem, tipo, pergunta FROM exercicios WHERE caminho_id = ? ORDER BY ordem";
 $stmt_exercicios = $conn->prepare($sql_exercicios);
-$stmt_exercicios->bind_param("i", $caminho_id);
-$stmt_exercicios->execute();
-$exercicios = $stmt_exercicios->get_result()->fetch_all(MYSQLI_ASSOC);
-$stmt_exercicios->close();
+
+if ($stmt_exercicios) {
+    $stmt_exercicios->bind_param("i", $caminho_id);
+    $stmt_exercicios->execute();
+    $result_exercicios = $stmt_exercicios->get_result();
+    $exercicios = $result_exercicios->fetch_all(MYSQLI_ASSOC);
+    $stmt_exercicios->close();
+}
 
 $database->closeConnection();
 ?>
@@ -169,8 +192,6 @@ $database->closeConnection();
             border-left: 3px solid transparent;
         }
 
-       
-
         /* CORES DAS CÉLULAS */
         .modern-table td:nth-child(1) { /* ID */
             color: rgba(177, 183, 187, 1);
@@ -207,114 +228,112 @@ $database->closeConnection();
             box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
         }
 
-/* ESTILOS ESPECÍFICOS PARA OS BOTÕES SOLICITADOS */
-.btn-voltar-blocos {
-    background-color: transparent;
-    border: 2px solid var(--roxo-principal);
-    color: var(--roxo-principal);
-    border-radius: 25px;
-    padding: 0.8rem 1.8rem;
-    font-weight: 600;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(106, 13, 173, 0.2);
-    font-size: 0.95rem;
-    backdrop-filter: blur(10px);
-    position: relative;
-    overflow: hidden;
-    /* Removido float: left e adicionado: */
-    align-self: flex-start;
-}
+        /* ESTILOS ESPECÍFICOS PARA OS BOTÕES SOLICITADOS */
+        .btn-voltar-blocos {
+            background-color: transparent;
+            border: 2px solid var(--roxo-principal);
+            color: var(--roxo-principal);
+            border-radius: 25px;
+            padding: 0.8rem 1.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(106, 13, 173, 0.2);
+            font-size: 0.95rem;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+            align-self: flex-start;
+        }
 
-.btn-voltar-blocos::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-    transition: left 0.5s ease;
-}
+        .btn-voltar-blocos::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s ease;
+        }
 
-.btn-voltar-blocos:hover {
-    background: var(--roxo-principal);
-    color: var(--branco);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(106, 13, 173, 0.4);
-    border-color: var(--roxo-principal);
-}
+        .btn-voltar-blocos:hover {
+            background: var(--roxo-principal);
+            color: var(--branco);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(106, 13, 173, 0.4);
+            border-color: var(--roxo-principal);
+        }
 
-.btn-voltar-blocos:hover::before {
-    left: 100%;
-}
+        .btn-voltar-blocos:hover::before {
+            left: 100%;
+        }
 
-.btn-criar-exercicio-stack {
-    background: linear-gradient(135deg, var(--amarelo-detalhe) 0%, #f39c12 100%);
-    color: var(--preto-texto);
-    border: none;
-    border-radius: 12px;
-    padding: 20px 30px;
-    font-weight: 600;
-    text-decoration: none;
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s ease;
-    font-family: 'Poppins', sans-serif;
-    min-width: 180px;
-    
-    /* Novos efeitos */
-    box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
-    position: relative;
-    overflow: hidden;
-}
+        .btn-criar-exercicio-stack {
+            background: linear-gradient(135deg, var(--amarelo-detalhe) 0%, #f39c12 100%);
+            color: var(--preto-texto);
+            border: none;
+            border-radius: 12px;
+            padding: 20px 30px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            min-width: 180px;
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
 
-.btn-criar-exercicio-stack::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    transition: left 0.5s ease;
-}
+        .btn-criar-exercicio-stack::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s ease;
+        }
 
-.btn-criar-exercicio-stack:hover::before {
-    left: 100%;
-}
+        .btn-criar-exercicio-stack:hover::before {
+            left: 100%;
+        }
 
-.btn-criar-exercicio-stack:hover {
-    background: linear-gradient(135deg, var(--amarelo-detalhe) 0%, #f39c12 100%);
-    color: var(--preto-texto);
-    transform: translateY(-3px);
-    text-decoration: none;
-    box-shadow: 0 8px 25px rgba(243, 156, 18, 0.4);
-}
+        .btn-criar-exercicio-stack:hover {
+            background: linear-gradient(135deg, var(--amarelo-detalhe) 0%, #f39c12 100%);
+            color: var(--preto-texto);
+            transform: translateY(-3px);
+            text-decoration: none;
+            box-shadow: 0 8px 25px rgba(243, 156, 18, 0.4);
+        }
 
-.btn-icon {
-    font-size: 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+        .btn-icon {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-.btn-text {
-    font-size: 14px;
-    font-weight: 600;
-    text-align: center;
-}
+        .btn-text {
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+        }
 
-/* Container especial para o botão */
-.text-center.mt-4 {
-    margin-top: 2rem !important;
-    padding: 1rem 0;
-}
+        /* Container especial para o botão */
+        .text-center.mt-4 {
+            margin-top: 2rem !important;
+            padding: 1rem 0;
+        }
+
         /* BOTÕES DE AÇÃO NA TABELA */
         .btn-action {
             width: 36px;
@@ -350,7 +369,6 @@ $database->closeConnection();
             color: black;
             font-size: 2rem;
             margin-bottom: 1.5rem;
-            
         }
 
         .alert-success {
@@ -362,24 +380,24 @@ $database->closeConnection();
             font-weight: 500;
         }
 
-   /* CORREÇÃO DO CONTAINER DOS BOTÕES */
-.buttons-container {
-    display: flex;
-    justify-content: flex-start; /* Alinha tudo à esquerda */
-    align-items: center;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap;
-    gap: 10px;
-    width: 100%;
-}
+        /* CORREÇÃO DO CONTAINER DOS BOTÕES */
+        .buttons-container {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 10px;
+            width: 100%;
+        }
 
-.left-buttons {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    width: 100%;
-}
+        .left-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            width: 100%;
+        }
 
         /* ESTADO VAZIO */
         .empty-state {
@@ -407,11 +425,6 @@ $database->closeConnection();
             
             .modern-table {
                 min-width: 600px;
-            }
-            
-            .btn-modern {
-                padding: 8px 16px;
-                font-size: 0.8rem;
             }
             
             .btn-action {
@@ -446,7 +459,7 @@ $database->closeConnection();
             animation: slideIn 0.5s ease-out;
         }
 
-        /* SIDEBAR E NAVBAR (MANTIDOS ORIGINAIS) */
+        /* SIDEBAR E NAVBAR */
         .navbar {
             background-color: transparent !important;
             border-bottom: 3px solid var(--amarelo-detalhe);
@@ -467,167 +480,177 @@ $database->closeConnection();
             width: auto;
             display: block;
         }
- 
-/* Menu Lateral */
-.sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 250px;
-    height: 100%;
-    background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
-    color: var(--branco);
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    padding-top: 20px;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-}
+        
+        /* Menu Lateral */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100%;
+            background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+            color: var(--branco);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
 
-.sidebar .profile {
-    text-align: center;
-    margin-bottom: 30px;
-    padding: 0 15px;
-}
+        /* CORREÇÃO DEFINITIVA DO PERFIL - SEM BORDA AMARELA E SEM FUNDO ROXO */
+        .sidebar .profile {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: transparent !important;
+            border: none !important;
+        }
 
-.profile-avatar-sidebar {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    border: 3px solid var(--amarelo-detalhe);
-    background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 15px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
+        .profile-avatar-sidebar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            background: transparent !important;
+            border: none !important;
+        }
 
-.profile-avatar-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-}
+        .profile-avatar-sidebar.has-photo {
+            background: transparent !important;
+            border: none !important;
+        }
 
-.profile-avatar-sidebar:has(.profile-avatar-img) i {
-    display: none;
-}
+        .profile-avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            border: none !important;
+            background: transparent !important;
+        }
 
-.profile-avatar-sidebar i {
-    font-size: 3.5rem;
-    color: var(--amarelo-detalhe);
-}
+        .profile-avatar-sidebar i {
+            font-size: 3.5rem;
+            color: var(--amarelo-detalhe);
+            background: transparent !important;
+        }
 
-.sidebar .profile h5 {
-    font-weight: 600;
-    margin-bottom: 5px;
-    color: var(--branco);
-    font-size: 1.1rem;
-    word-wrap: break-word; /* Força a quebra de linha para palavras longas */
-    max-width: 200px; /* Limita a largura máxima para o texto, ajustável */
-    text-align: center; /* Centraliza o texto quebrado */
-    line-height: 1.3; /* Melhora a legibilidade do texto quebrado */
-}
+        .sidebar .profile h5 {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--branco);
+            font-size: 1.1rem;
+            word-wrap: break-word;
+            max-width: 200px;
+            text-align: center;
+            line-height: 1.3;
+            background: transparent !important;
+        }
 
-.sidebar .profile small {
-    color: var(--cinza-claro);
-    font-size: 0.9rem;
-    word-wrap: break-word; /* Força a quebra de linha para palavras longas */
-    max-width: 200px; /* Limita a largura máxima para o texto, ajustável */
-    text-align: center; /* Centraliza o texto quebrado */
-    line-height: 1.2; /* Melhora a legibilidade do texto quebrado */
-    margin-top: 5px; /* Adiciona um pequeno espaçamento se o texto quebrar */
-}
+        .sidebar .profile small {
+            color: var(--cinza-claro);
+            font-size: 0.9rem;
+            word-wrap: break-word;
+            max-width: 200px;
+            text-align: center;
+            line-height: 1.2;
+            margin-top: 5px;
+            background: transparent !important;
+        }
 
-.sidebar .list-group {
-    display: flex; /* Torna o list-group um container flexível */
-    flex-direction: column; /* Organiza os itens em coluna */
-    width: 100%;
-}
+        .sidebar .list-group {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
 
-.sidebar .list-group-item.sair {
-    background-color: transparent;
-    color: var(--branco);
-    border: none;
-    padding: 15px 25px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 40px !important; /* Aumentado e forçado para garantir que o espaçamento seja visível */
-}
+        .sidebar .list-group-item.sair {
+            background-color: transparent;
+            color: var(--branco);
+            border: none;
+            padding: 15px 25px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 40px !important;
+        }
 
-.sidebar .list-group-item {
-    background-color: transparent;
-    color: var(--branco);
-    border: none;
-    padding: 15px 25px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.3s ease;
-}
+        .sidebar .list-group-item {
+            background-color: transparent;
+            color: var(--branco);
+            border: none;
+            padding: 15px 25px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
 
-.sidebar .list-group-item:hover {
-    background-color: var(--roxo-escuro);
-    cursor: pointer;
-}
+        .sidebar .list-group-item:hover {
+            background-color: var(--roxo-escuro);
+            cursor: pointer;
+        }
 
-.sidebar .list-group-item.active {
-    background-color: var(--roxo-escuro) !important;
-    color: var(--branco) !important;
-    font-weight: 600;
-    border-left: 4px solid var(--amarelo-detalhe);
-}
+        .sidebar .list-group-item.active {
+            background-color: var(--roxo-escuro) !important;
+            color: var(--branco) !important;
+            font-weight: 600;
+            border-left: 4px solid var(--amarelo-detalhe);
+        }
 
-.sidebar .list-group-item i {
-    color: var(--amarelo-detalhe);
-}
+        .sidebar .list-group-item i {
+            color: var(--amarelo-detalhe);
+        }
 
-.main-content {
-    margin-left: 250px;
-    padding: 20px;
-}
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
 
-@media (max-width: 992px) {
-    .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-    }
-    .main-content {
-        margin-left: 0;
-    }
-}
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
         /* ESTADO VAZIO MODERNO - ESTILO DA IMAGEM */
-.empty-state-modern {
-    text-align: center;
-    padding: 3rem 2rem;
-}
+        .empty-state-modern {
+            text-align: center;
+            padding: 3rem 2rem;
+        }
 
-.empty-icon {
-    font-size: 3rem;
-    color: #6c757d;
-    margin-bottom: 1rem;
-    opacity: 0.5;
-}
+        .empty-icon {
+            font-size: 3rem;
+            color: #6c757d;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
 
-.empty-state-modern h3 {
-    color: var(--cinza-escuro);
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    font-size: 1.25rem;
-}
+        .empty-state-modern h3 {
+            color: var(--cinza-escuro);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 1.25rem;
+        }
 
-.empty-state-modern p {
-    color: #6c757d;
-    margin-bottom: 1.5rem;
-    font-size: 0.9rem;
-}
+        .empty-state-modern p {
+            color: #6c757d;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 
@@ -644,130 +667,134 @@ $database->closeConnection();
                 </a>
             </div>
         </div>
+        
     </nav>
 
+    <!-- Sidebar Corrigido -->
     <div class="sidebar">
-    <div class="profile">
-        <?php if ($foto_admin): ?>
-            <div class="profile-avatar-sidebar">
-                <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
-            </div>
-        <?php else: ?>
-            <i class="fas fa-user-circle"></i>
-        <?php endif; ?>
-        <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
-        <small>Administrador(a)</small>
-    </div>
+        <div class="profile">
+            <?php if ($foto_admin): ?>
+                <div class="profile-avatar-sidebar has-photo">
+                    <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
+                </div>
+            <?php else: ?>
+                <div class="profile-avatar-sidebar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            <?php endif; ?>
+            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+            <small>Administrador(a)</small>
+        </div>
 
-        <div class="list-group" >
+        <div class="list-group">
+            <!-- Itens SEM checkboxes conforme a imagem -->
             <a href="gerenciar_caminho.php" class="list-group-item active">
                 <i class="fas fa-plus-circle"></i> Adicionar Caminho
             </a>
+            
             <a href="pagina_adicionar_idiomas.php" class="list-group-item">
                 <i class="fas fa-language"></i> Gerenciar Idiomas
             </a>
+            
             <a href="gerenciar_teorias.php" class="list-group-item">
                 <i class="fas fa-book-open"></i> Gerenciar Teorias
             </a>
+            
             <a href="gerenciar_unidades.php" class="list-group-item">
                 <i class="fas fa-cubes"></i> Gerenciar Unidades
             </a>
+            
             <a href="gerenciar_usuarios.php" class="list-group-item">
                 <i class="fas fa-users"></i> Gerenciar Usuários
             </a>
+            
             <a href="estatisticas_usuarios.php" class="list-group-item">
                 <i class="fas fa-chart-bar"></i> Estatísticas
-            </a>
-            <a href="logout.php" class="list-group-item sair">
-                <i class="fas fa-sign-out-alt"></i> Sair
             </a>
         </div>
     </div>
 
     <!-- Conteúdo Principal -->
-<div class="main-content">
-    <div class="container mt-4">
-        <div class="page-header">
-            <h2 class="mb-4">
-                <i class="fas fa-tasks me-2"></i>
-                Exercícios do Caminho: <?php echo htmlspecialchars($caminho_info['nome_caminho']) . ' (' . htmlspecialchars($caminho_info['nivel']) . ')'; ?>
-            </h2>
-        </div>
-        
-        <!-- Container dos botões com layout organizado -->
-       <div class="buttons-container">
-    <div class="left-buttons">
-        <a href="gerenciar_blocos.php?caminho_id=<?php echo htmlspecialchars($caminho_id); ?>" class="btn-voltar-blocos">
-            <i class="fas fa-arrow-left me-2"></i>Voltar para Blocos
-        </a>
-<script>
-function voltarParaBlocos() {
-    window.location.href = 'http://localhost/App_idiomas/admin/views/gerenciar_blocos.php?caminho_id=10';
-}
-</script>
+    <div class="main-content">
+        <div class="container mt-4">
+            <div class="page-header">
+                <h2 class="mb-4">
+                    <i class="fas fa-tasks me-2"></i>
+                    Exercícios do Caminho: <?php echo htmlspecialchars($caminho_info['nome_caminho']) . ' (' . htmlspecialchars($caminho_info['nivel']) . ')'; ?>
+                </h2>
             </div>
-        </div>
-        
-        <?php echo $mensagem; ?>
-
-        <!-- Tabela Moderna (novo estilo) -->
-        <div class="modern-table-container">
-            <table class="modern-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Ordem</th>
-                        <th>Tipo</th>
-                        <th>Pergunta</th>
-                        <th>Ações</th>
-                    </tr>
-    <tbody>
-    <?php if (!empty($exercicios)): ?>
-        <?php foreach ($exercicios as $exercicio): ?>
-            <tr>
-                <td><?php echo htmlspecialchars($exercicio['id']); ?></td>
-                <td><?php echo htmlspecialchars($exercicio['ordem']); ?></td>
-                <td>
-                    <span class="badge-modern"><?php echo htmlspecialchars($exercicio['tipo']); ?></span>
-                </td>
-                <td title="<?php echo htmlspecialchars($exercicio['pergunta']); ?>">
-                    <?php echo htmlspecialchars(substr($exercicio['pergunta'], 0, 50)) . '...'; ?>
-                </td>
-                <td>
-                    <div class="d-flex justify-content-start">
-                        <a href="editar_exercicio.php?id=<?php echo htmlspecialchars($exercicio['id']); ?>" class="btn-action btn-edit" title="Editar">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        <a href="eliminar_exercicio.php?id=<?php echo htmlspecialchars($exercicio['id']); ?>" class="btn-action btn-delete" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir este exercício?');">
-                            <i class="fas fa-trash"></i>
-                        </a>
-                    </div>
-                </td>
-            </tr>
-        <?php endforeach; ?>
-    <?php else: ?>
-        <tr>
-            <td colspan="5">
-                <div class="empty-state-modern">
-                    <div class="empty-icon">
-                        <i class="fas fa-inbox"></i>
-                    </div>
-                    <h3>Nenhum exercício encontrado</h3>
-                    <p>Gerencie exercícios ou ajuste atividades.</p>
-                    <a href="adicionar_atividades.php?caminho_id=<?php echo htmlspecialchars($caminho_id); ?>" class="btn-criar-exercicio-stack">
-                        <div class="btn-icon">
-                            <i class="fas fa-plus"></i>
-                        </div>
-                        <div class="btn-text">Adicionar Exercício</div>
+            
+            <!-- Container dos botões com layout organizado -->
+            <div class="buttons-container">
+                <div class="left-buttons">
+                    <a href="gerenciar_blocos.php?caminho_id=<?php echo htmlspecialchars($caminho_id); ?>" class="btn-voltar-blocos">
+                        <i class="fas fa-arrow-left me-2"></i>Voltar para Blocos
                     </a>
                 </div>
-            </td>
-        </tr>
-    <?php endif; ?>
-</tbody>
-            </table>
-        </div>
+            </div>
+            
+            <?php echo $mensagem; ?>
 
+            <!-- Tabela Moderna (novo estilo) -->
+            <div class="modern-table-container">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Ordem</th>
+                            <th>Tipo</th>
+                            <th>Pergunta</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($exercicios)): ?>
+                            <?php foreach ($exercicios as $exercicio): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($exercicio['id']); ?></td>
+                                    <td><?php echo htmlspecialchars($exercicio['ordem']); ?></td>
+                                    <td>
+                                        <span class="badge-modern"><?php echo htmlspecialchars($exercicio['tipo']); ?></span>
+                                    </td>
+                                    <td title="<?php echo htmlspecialchars($exercicio['pergunta']); ?>">
+                                        <?php echo htmlspecialchars(substr($exercicio['pergunta'], 0, 50)) . '...'; ?>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-start">
+                                            <a href="editar_exercicio.php?id=<?php echo htmlspecialchars($exercicio['id']); ?>" class="btn-action btn-edit" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="eliminar_exercicio.php?id=<?php echo htmlspecialchars($exercicio['id']); ?>" class="btn-action btn-delete" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir este exercício?');">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="5">
+                                    <div class="empty-state-modern">
+                                        <div class="empty-icon">
+                                            <i class="fas fa-inbox"></i>
+                                        </div>
+                                        <h3>Nenhum exercício encontrado</h3>
+                                        <p>Gerencie exercícios ou ajuste atividades.</p>
+                                        <a href="adicionar_atividades.php?caminho_id=<?php echo htmlspecialchars($caminho_id); ?>" class="btn-criar-exercicio-stack">
+                                            <div class="btn-icon">
+                                                <i class="fas fa-plus"></i>
+                                            </div>
+                                            <div class="btn-text">Adicionar Exercício</div>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
