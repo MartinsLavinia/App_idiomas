@@ -1,5 +1,6 @@
 <?php
 session_start();
+// Corrigir o caminho da conexão
 include_once __DIR__ . '/../../conexao.php';
 
 if (!isset($_SESSION['id_admin'])) {
@@ -10,26 +11,124 @@ if (!isset($_SESSION['id_admin'])) {
 $database = new Database();
 $conn = $database->conn;
 
-// Buscar foto do admin
-$id_admin = $_SESSION['id_admin'];
-$foto_admin = null;
-$check_column_sql = "SHOW COLUMNS FROM administradores LIKE 'foto_perfil'";
-$result_check = $conn->query($check_column_sql);
+// Lógica para buscar os idiomas únicos do banco de dados das tabelas caminhos_aprendizagem e quiz_nivelamento
+$sql_idiomas = "(SELECT DISTINCT idioma FROM caminhos_aprendizagem) UNION (SELECT DISTINCT idioma FROM quiz_nivelamento) ORDER BY idioma";
+$stmt_idiomas = $conn->prepare($sql_idiomas);
+$stmt_idiomas->execute();
+$idiomas_db = $stmt_idiomas->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt_idiomas->close();
 
-if ($result_check && $result_check->num_rows > 0) {
-    $sql_foto = "SELECT foto_perfil FROM administradores WHERE id = ?";
-    $stmt_foto = $conn->prepare($sql_foto);
-    $stmt_foto->bind_param("i", $id_admin);
-    $stmt_foto->execute();
-    $resultado_foto = $stmt_foto->get_result();
+$id_admin = $_SESSION['id_admin'];
+$sql_foto = "SELECT foto_perfil FROM administradores WHERE id = ?";
+$stmt_foto = $conn->prepare($sql_foto);
+$stmt_foto->bind_param("i", $id_admin);
+$stmt_foto->execute();
+$resultado_foto = $stmt_foto->get_result();
+$admin_foto = $resultado_foto->fetch_assoc();
+$stmt_foto->close();
+
+$foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
+
+
+// Processar ações (adicionar, editar, eliminar)
+$action = $_GET['action'] ?? '';
+$unidade_id = $_GET['id'] ?? '';
+
+// Eliminar unidade
+if ($action === 'delete' && $unidade_id) {
+    // Verificar se existem teorias associadas a esta unidade
+    $sql_check_teorias = "SELECT COUNT(*) as total FROM teorias WHERE id_unidade = ?";
+    $stmt_check = $conn->prepare($sql_check_teorias);
+    $stmt_check->bind_param("i", $unidade_id);
+    $stmt_check->execute();
+    $result_check = $stmt_check->get_result();
+    $row_check = $result_check->fetch_assoc();
     
-    if ($resultado_foto && $resultado_foto->num_rows > 0) {
-        $admin_foto = $resultado_foto->fetch_assoc();
-        $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
+    if ($row_check['total'] > 0) {
+        $_SESSION['error'] = "Não é possível eliminar a unidade porque existem teorias associadas a ela.";
+    } else {
+        // Eliminar a unidade
+        $sql_delete = "DELETE FROM unidades WHERE id = ?";
+        $stmt_delete = $conn->prepare($sql_delete);
+        $stmt_delete->bind_param("i", $unidade_id);
+        
+        if ($stmt_delete->execute()) {
+            $_SESSION['success'] = "Unidade eliminada com sucesso!";
+        } else {
+            $_SESSION['error'] = "Erro ao eliminar a unidade: " . $conn->error;
+        }
+        $stmt_delete->close();
     }
-    $stmt_foto->close();
+    $stmt_check->close();
+    
+    header("Location: gerenciar_unidades.php");
+    exit();
 }
 
+// Buscar dados para edição
+$unidade_edit = null;
+if ($action === 'edit' && $unidade_id) {
+    $sql_edit = "SELECT * FROM unidades WHERE id = ?";
+    $stmt_edit = $conn->prepare($sql_edit);
+    $stmt_edit->bind_param("i", $unidade_id);
+    $stmt_edit->execute();
+    $result_edit = $stmt_edit->get_result();
+    
+    if ($result_edit->num_rows > 0) {
+        $unidade_edit = $result_edit->fetch_assoc();
+    }
+    $stmt_edit->close();
+}
+
+// Processar formulário (adicionar/editar)
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nome_unidade = $_POST['nome_unidade'] ?? '';
+    $descricao = $_POST['descricao'] ?? '';
+    $nivel = $_POST['nivel'] ?? '';
+    $numero_unidade = $_POST['numero_unidade'] ?? '';
+    $id_idioma = $_POST['id_idioma'] ?? '';
+    
+    if ($action === 'edit' && $unidade_id) {
+        // Atualizar unidade existente
+        $sql_update = "UPDATE unidades SET nome_unidade = ?, descricao = ?, nivel = ?, numero_unidade = ?, id_idioma = ? WHERE id = ?";
+        $stmt_update = $conn->prepare($sql_update);
+        $stmt_update->bind_param("sssiii", $nome_unidade, $descricao, $nivel, $numero_unidade, $id_idioma, $unidade_id);
+        
+        if ($stmt_update->execute()) {
+            $_SESSION['success'] = "Unidade atualizada com sucesso!";
+        } else {
+            $_SESSION['error'] = "Erro ao atualizar a unidade: " . $conn->error;
+        }
+        $stmt_update->close();
+    } else {
+        // Adicionar nova unidade
+        $sql_insert = "INSERT INTO unidades (nome_unidade, descricao, nivel, numero_unidade, id_idioma) VALUES (?, ?, ?, ?, ?)";
+        $stmt_insert = $conn->prepare($sql_insert);
+        $stmt_insert->bind_param("sssii", $nome_unidade, $descricao, $nivel, $numero_unidade, $id_idioma);
+        
+        if ($stmt_insert->execute()) {
+            $_SESSION['success'] = "Unidade adicionada com sucesso!";
+        } else {
+            $_SESSION['error'] = "Erro ao adicionar a unidade: " . $conn->error;
+        }
+        $stmt_insert->close();
+    }
+    
+    header("Location: gerenciar_unidades.php");
+    exit();
+}
+
+// Buscar idiomas para o formulário
+$idiomas = [];
+$sql_idiomas = "SELECT id, nome_idioma FROM idiomas ORDER BY nome_idioma";
+$result_idiomas = $conn->query($sql_idiomas);
+if ($result_idiomas->num_rows > 0) {
+    while ($row = $result_idiomas->fetch_assoc()) {
+        $idiomas[] = $row;
+    }
+}
+
+// Buscar unidades para a tabela
 $unidades = [];
 $sql_unidades = "SELECT u.id, u.nome_unidade, u.descricao, u.nivel, u.numero_unidade, i.nome_idioma 
                  FROM unidades u 
@@ -57,9 +156,9 @@ $database->closeConnection();
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-     <link rel="icon" type="image/png" href="../../imagens/mini-esquilo.png">
+    <link rel="icon" type="image/png" href="../imagens/mini-esquilo.png">
     <style>
- :root {
+:root {
     --roxo-principal: #6a0dad;
     --roxo-escuro: #4c087c;
     --amarelo-detalhe: #ffd700;
@@ -447,8 +546,6 @@ body {
                 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-
-
 /* Ícones nos headers */
 .table thead th i {
     margin-right: 6px;
@@ -797,12 +894,15 @@ body {
 </div>
 
     <div class="main-content">
-        <div class="container mt-4">            <div class="page-header flex-column flex-sm-row">
+        <div class="container mt-4">
+            <div class="page-header flex-column flex-sm-row">
                 <h2 class="mb-0"><i class="fas fa-cubes"></i> Gerenciar Unidades</h2>
                 <div class="action-buttons">
-                    <a href="adicionar_unidade.php" class="btn btn-warning">
-                        <i class="fas fa-plus-circle"></i> Adicionar Nova Unidade
-                    </a>
+                    <?php if ($action === 'edit'): ?>
+                        <a href="gerenciar_unidades.php" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar Edição
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -821,6 +921,69 @@ body {
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             <?php endif; ?>
+            
+            <!-- Formulário de Adicionar/Editar Unidade -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="fas <?= $action === 'edit' ? 'fa-edit' : 'fa-plus-circle' ?> me-2"></i>
+                        <?= $action === 'edit' ? 'Editar Unidade' : 'Adicionar Nova Unidade' ?>
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="gerenciar_unidades.php?action=<?= $action ?>&id=<?= $unidade_id ?>">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="nome_unidade" class="form-label">Nome da Unidade *</label>
+                                <input type="text" class="form-control" id="nome_unidade" name="nome_unidade" 
+                                       value="<?= htmlspecialchars($unidade_edit['nome_unidade'] ?? '') ?>" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_idioma" class="form-label">Idioma *</label>
+                                <select class="form-select" id="id_idioma" name="id_idioma" required>
+                                    <option value="">Selecione um idioma</option>
+                                    <?php foreach ($idiomas as $idioma): ?>
+                                        <option value="<?= $idioma['id'] ?>" 
+                                            <?= isset($unidade_edit['id_idioma']) && $unidade_edit['id_idioma'] == $idioma['id'] ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($idioma['nome_idioma']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label for="nivel" class="form-label">Nível</label>
+                                <input type="text" class="form-control" id="nivel" name="nivel" 
+                                       value="<?= htmlspecialchars($unidade_edit['nivel'] ?? '') ?>">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="numero_unidade" class="form-label">Número da Unidade</label>
+                                <input type="number" class="form-control" id="numero_unidade" name="numero_unidade" 
+                                       value="<?= htmlspecialchars($unidade_edit['numero_unidade'] ?? '') ?>">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="descricao" class="form-label">Descrição</label>
+                                <textarea class="form-control" id="descricao" name="descricao" rows="3"><?= htmlspecialchars($unidade_edit['descricao'] ?? '') ?></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas <?= $action === 'edit' ? 'fa-save' : 'fa-plus-circle' ?> me-2"></i>
+                                <?= $action === 'edit' ? 'Atualizar Unidade' : 'Adicionar Unidade' ?>
+                            </button>
+                            
+                            <?php if ($action === 'edit'): ?>
+                                <a href="gerenciar_unidades.php" class="btn btn-secondary">
+                                    <i class="fas fa-times me-2"></i> Cancelar
+                                </a>
+                            <?php endif; ?>
+                        </div>
+                    </form>
+                </div>
+            </div>
             
             <div class="unidades-table">
                 <div class="table-responsive table-responsive-sm">
@@ -860,17 +1023,19 @@ body {
                                         <?php else: ?>
                                             <span class="text-muted">-</span>
                                         <?php endif; ?>
-                                    </td>                                    <td class="col-descricao" title="<?= htmlspecialchars($unidade['descricao']); ?>">
+                                    </td>
+                                    <td class="col-descricao" title="<?= htmlspecialchars($unidade['descricao']); ?>">
                                         <small class="text-muted">
                                             <?= htmlspecialchars(substr($unidade['descricao'], 0, 50)) . (strlen($unidade['descricao']) > 50 ? '...' : ''); ?>
                                         </small>
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
-                                            <a href="editar_unidade.php?id=<?= $unidade['id']; ?>" class="btn btn-primary">
+                                            <a href="gerenciar_unidades.php?action=edit&id=<?= $unidade['id']; ?>" class="btn btn-primary">
                                                 <i class="fas fa-edit"></i> Editar
                                             </a>
-                                            <a href="eliminar_unidade.php?id=<?= $unidade['id']; ?>" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja eliminar esta unidade?');">
+                                            <a href="gerenciar_unidades.php?action=delete&id=<?= $unidade['id']; ?>" class="btn btn-danger" 
+                                               onclick="return confirmDelete(event);">
                                                 <i class="fas fa-trash"></i> Eliminar
                                             </a>
                                         </div>
@@ -928,7 +1093,44 @@ body {
                     bsAlert.close();
                 }, 5000);
             });
+            
+            // Scroll para o formulário quando estiver editando
+            <?php if ($action === 'edit'): ?>
+                const formCard = document.querySelector('.card');
+                if (formCard) {
+                    formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            <?php endif; ?>
+            
+            // Validação do formulário
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const nomeUnidade = document.getElementById('nome_unidade').value.trim();
+                    const idIdioma = document.getElementById('id_idioma').value;
+                    
+                    if (!nomeUnidade) {
+                        e.preventDefault();
+                        alert('Por favor, preencha o nome da unidade.');
+                        document.getElementById('nome_unidade').focus();
+                        return false;
+                    }
+                    
+                    if (!idIdioma) {
+                        e.preventDefault();
+                        alert('Por favor, selecione um idioma.');
+                        document.getElementById('id_idioma').focus();
+                        return false;
+                    }
+                });
+            }
         });
+
+        // Função para confirmar eliminação com mais detalhes
+        function confirmDelete(event) {
+            const unitName = event.target.closest('tr').querySelector('.col-nome-unidade').textContent.trim();
+            return confirm(`Tem certeza que deseja eliminar a unidade "${unitName}"? Esta ação não pode ser desfeita.`);
+        }
     </script>
 </body>
 </html>

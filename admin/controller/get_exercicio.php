@@ -1,4 +1,5 @@
 <?php
+// get_exercicio.php - VERSÃO CORRIGIDA
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
@@ -35,10 +36,10 @@ try {
     $conn = $database->conn;
 
     $exercicios = [];
-    $idioma_exercicio = null; // Variável para armazenar o idioma
+    $idioma_exercicio = null;
 
     if ($tipo_busca === 'bloco') {
-        // Buscar exercícios por bloco_id
+        // Buscar exercícios por bloco_id - QUERY CORRIGIDA
         $sql = "
             SELECT 
                 e.id,
@@ -89,57 +90,10 @@ try {
         if ($idioma_exercicio === null) {
             $idioma_exercicio = $row['idioma_exercicio'];
         }
-        unset($row['idioma_exercicio']); // Remove do array de exercício para não poluir
+        unset($row['idioma_exercicio']);
         
-        // Processar o conteúdo se for JSON string
-        if ($row['conteudo'] && is_string($row['conteudo']) && ($row['conteudo'][0] === '{' || $row['conteudo'][0] === '[')) {
-            try {
-                $conteudo_decodificado = json_decode($row['conteudo'], true);
-                if (json_last_error() === JSON_ERROR_NONE) {
-                    $row['conteudo'] = $conteudo_decodificado;
-                    
-                    // Lógica aprimorada para determinar tipo_exercicio
-                    if ($row['tipo_exercicio'] === null || $row['tipo_exercicio'] === '') {
-                        if (isset($conteudo_decodificado['alternativas'])) {
-                            $row['tipo_exercicio'] = 'multipla_escolha';
-                        } elseif (isset($conteudo_decodificado['frase_completar'])) {
-                            $row['tipo_exercicio'] = 'completar';
-                        } elseif (isset($conteudo_decodificado['frase_esperada']) || isset($conteudo_decodificado['texto_para_falar'])) {
-                            $row['tipo_exercicio'] = 'fala';
-                        } elseif (isset($conteudo_decodificado['audio_url']) || isset($conteudo_decodificado['arquivo_audio'])) {
-                            $row['tipo_exercicio'] = 'audicao';
-                        } elseif (isset($conteudo_decodificado['texto_traduzir'])) {
-                            $row['tipo_exercicio'] = 'traducao';
-                        } else {
-                            $row['tipo_exercicio'] = 'texto_livre';
-                        }
-                    }
-                    
-                    // Adicionar metadados específicos para exercícios de fala
-                    if ($row['tipo_exercicio'] === 'fala') {
-                        // Garantir que os campos específicos de fala estejam presentes
-                        if (!isset($row['conteudo']['texto_para_falar']) && isset($row['conteudo']['frase_esperada'])) {
-                            $row['conteudo']['texto_para_falar'] = $row['conteudo']['frase_esperada'];
-                        }
-                        
-                        // Adicionar configurações padrão para exercícios de fala
-                        $row['conteudo']['config_fala'] = array_merge([
-                            'dificuldade' => 'medio',
-                            'tempo_maximo_gravacao' => 30,
-                            'tentativas_permitidas' => 3,
-                            'tolerancia_pronuncia' => 0.7,
-                            'feedback_imediato' => true
-                        ], $row['conteudo']['config_fala'] ?? []);
-                        
-                        // Adicionar idioma ao conteúdo do exercício de fala
-                        $row['conteudo']['idioma'] = $idioma_exercicio;
-                    }
-                }
-            } catch (Exception $e) {
-                // Manter como string se der erro
-                error_log("Erro ao decodificar JSON: " . $e->getMessage());
-            }
-        }
+        // CORREÇÃO PRINCIPAL: Processar o conteúdo de forma mais robusta
+        $row = processarConteudoExercicio($row, $idioma_exercicio);
         
         $exercicios[] = $row;
     }
@@ -152,7 +106,7 @@ try {
         'tipo_busca' => $tipo_busca,
         'id_busca' => $id_busca,
         'total_exercicios' => count($exercicios),
-        'idioma' => $idioma_exercicio, // Adiciona o idioma
+        'idioma' => $idioma_exercicio,
         'exercicios' => $exercicios
     ]);
 
@@ -162,5 +116,129 @@ try {
         'success' => false,
         'message' => 'Erro interno do servidor: ' . $e->getMessage()
     ]);
+}
+
+// FUNÇÃO NOVA PARA PROCESSAR CONTEÚDO DOS EXERCÍCIOS
+function processarConteudoExercicio($row, $idioma_exercicio) {
+    $conteudo = $row['conteudo'];
+    
+    // Se o conteúdo for uma string JSON, decodificar
+    if ($conteudo && is_string($conteudo)) {
+        try {
+            $conteudo_decodificado = json_decode($conteudo, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $row['conteudo'] = $conteudo_decodificado;
+                $conteudo = $conteudo_decodificado;
+            }
+        } catch (Exception $e) {
+            error_log("Erro ao decodificar JSON do exercício {$row['id']}: " . $e->getMessage());
+        }
+    }
+    
+    // DETERMINAR TIPO DE EXERCÍCIO DE FORMA MAIS PRECISA
+    $tipo_determinado = determinarTipoExercicio($row, $conteudo);
+    $row['tipo_exercicio'] = $tipo_determinado;
+    
+    // CONFIGURAR EXERCÍCIOS DE FALA ESPECIFICAMENTE
+    if ($tipo_determinado === 'fala') {
+        $row['conteudo'] = configurarExercicioFala($row['conteudo'], $idioma_exercicio);
+    }
+    
+    // CONFIGURAR EXERCÍCIOS DE LISTENING
+    if ($tipo_determinado === 'listening') {
+        $row['conteudo'] = configurarExercicioListening($row['conteudo']);
+    }
+    
+    return $row;
+}
+
+// FUNÇÃO PARA DETERMINAR TIPO DE EXERCÍCIO
+function determinarTipoExercicio($row, $conteudo) {
+    // Primeiro, verificar se já tem um tipo definido
+    if (!empty($row['tipo_exercicio'])) {
+        return $row['tipo_exercicio'];
+    }
+    
+    // Se não tem tipo definido, analisar o conteúdo
+    if (is_array($conteudo)) {
+        if (isset($conteudo['alternativas']) && is_array($conteudo['alternativas'])) {
+            return 'multipla_escolha';
+        } elseif (isset($conteudo['frase_completar'])) {
+            return 'completar';
+        } elseif (isset($conteudo['frase_esperada']) || isset($conteudo['texto_para_falar'])) {
+            return 'fala';
+        } elseif (isset($conteudo['audio_url']) || isset($conteudo['arquivo_audio'])) {
+            return 'listening';
+        } elseif (isset($conteudo['texto_traduzir'])) {
+            return 'traducao';
+        } elseif (isset($conteudo['arrastar_soltar'])) {
+            return 'arrastar_soltar';
+        }
+    }
+    
+    // Fallback para o campo 'tipo' original ou padrão
+    return $row['tipo'] ?? 'texto_livre';
+}
+
+// FUNÇÃO PARA CONFIGURAR EXERCÍCIOS DE FALA
+function configurarExercicioFala($conteudo, $idioma) {
+    if (!is_array($conteudo)) {
+        $conteudo = [];
+    }
+    
+    // Garantir campos essenciais para fala
+    if (!isset($conteudo['texto_para_falar']) && isset($conteudo['frase_esperada'])) {
+        $conteudo['texto_para_falar'] = $conteudo['frase_esperada'];
+    }
+    
+    // Configurações padrão para exercícios de fala
+    $conteudo['config_fala'] = array_merge([
+        'dificuldade' => 'medio',
+        'tempo_maximo_gravacao' => 30,
+        'tentativas_permitidas' => 3,
+        'tolerancia_pronuncia' => 0.7,
+        'feedback_imediato' => true,
+        'idioma' => $idioma
+    ], $conteudo['config_fala'] ?? []);
+    
+    // Idioma específico para reconhecimento de voz
+    $conteudo['idioma_reconhecimento'] = mapIdiomaParaReconhecimento($idioma);
+    
+    return $conteudo;
+}
+
+// FUNÇÃO PARA CONFIGURAR EXERCÍCIOS DE LISTENING
+function configurarExercicioListening($conteudo) {
+    if (!is_array($conteudo)) {
+        $conteudo = [];
+    }
+    
+    // Garantir que opções sejam um array
+    if (isset($conteudo['opcoes']) && is_string($conteudo['opcoes'])) {
+        $conteudo['opcoes'] = json_decode($conteudo['opcoes'], true) ?? [];
+    }
+    
+    return $conteudo;
+}
+
+// MAPEAR IDIOMA PARA CÓDIGO DE RECONHECIMENTO
+function mapIdiomaParaReconhecimento($idioma) {
+    $mapa = [
+        'Ingles' => 'en-US',
+        'Inglês' => 'en-US',
+        'English' => 'en-US',
+        'Japones' => 'ja-JP',
+        'Japonês' => 'ja-JP',
+        'Japanese' => 'ja-JP',
+        'Coreano' => 'ko-KR',
+        'Korean' => 'ko-KR',
+        'Portugues' => 'pt-BR',
+        'Português' => 'pt-BR',
+        'Portuguese' => 'pt-BR',
+        'Espanhol' => 'es-ES',
+        'Spanish' => 'es-ES'
+    ];
+    
+    return $mapa[$idioma] ?? 'en-US';
 }
 ?>
