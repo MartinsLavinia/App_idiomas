@@ -86,8 +86,6 @@ $database->closeConnection();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
    <link rel="icon" type="image/png" href="../../imagens/mini-esquilo.png">
 
-
-
     <style>
         :root {
             --roxo-principal: #6a0dad;
@@ -124,6 +122,7 @@ $database->closeConnection();
             color: var(--roxo-escuro) !important;
             transform: rotate(90deg);
         }
+
         .table-container {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
@@ -248,152 +247,234 @@ $database->closeConnection();
         }
 
        .btn-outline-warning:hover {
-
-background-color: var(--amarelo-detalhe);
-border: 0 4px 8px rgba(235, 183, 14, 0.77);
-
-}
+            background-color: var(--amarelo-detalhe);
+            border: 0 4px 8px rgba(235, 183, 14, 0.77);
+        }
   
-/* Menu Lateral */
-.sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 250px;
-    height: 100%;
-    background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
-    color: var(--branco);
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    padding-top: 20px;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-}
+        /* Menu Lateral */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100%;
+            background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+            color: var(--branco);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
 
-.sidebar .profile {
-    text-align: center;
-    margin-bottom: 30px;
-    padding: 0 15px;
-}
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
 
-.profile-avatar-sidebar {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    border: 3px solid var(--amarelo-detalhe);
-    background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 15px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
+        .sidebar .profile {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 0 15px;
+        }
 
-.profile-avatar-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-}
+        .profile-avatar-sidebar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid var(--amarelo-detalhe);
+            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
 
-.profile-avatar-sidebar:has(.profile-avatar-img) i {
-    display: none;
-}
+        .profile-avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
 
-.profile-avatar-sidebar i {
-    font-size: 3.5rem;
-    color: var(--amarelo-detalhe);
-}
+        .profile-avatar-sidebar:has(.profile-avatar-img) i {
+            display: none;
+        }
 
-.sidebar .profile h5 {
-    font-weight: 600;
-    margin-bottom: 5px;
-    color: var(--branco);
-    font-size: 1.1rem;
-    word-wrap: break-word; /* Força a quebra de linha para palavras longas */
-    max-width: 200px; /* Limita a largura máxima para o texto, ajustável */
-    text-align: center; /* Centraliza o texto quebrado */
-    line-height: 1.3; /* Melhora a legibilidade do texto quebrado */
-}
+        .profile-avatar-sidebar i {
+            font-size: 3.5rem;
+            color: var(--amarelo-detalhe);
+        }
 
-.sidebar .profile small {
-    color: var(--cinza-claro);
-    font-size: 0.9rem;
-    word-wrap: break-word; /* Força a quebra de linha para palavras longas */
-    max-width: 200px; /* Limita a largura máxima para o texto, ajustável */
-    text-align: center; /* Centraliza o texto quebrado */
-    line-height: 1.2; /* Melhora a legibilidade do texto quebrado */
-    margin-top: 5px; /* Adiciona um pequeno espaçamento se o texto quebrar */
-}
+        .sidebar .profile h5 {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--branco);
+            font-size: 1.1rem;
+            word-wrap: break-word;
+            max-width: 200px;
+            text-align: center;
+            line-height: 1.3;
+        }
 
-.sidebar .list-group {
-    display: flex; /* Torna o list-group um container flexível */
-    flex-direction: column; /* Organiza os itens em coluna */
-    width: 100%;
-}
+        .sidebar .profile small {
+            color: var(--cinza-claro);
+            font-size: 0.9rem;
+            word-wrap: break-word;
+            max-width: 200px;
+            text-align: center;
+            line-height: 1.2;
+            margin-top: 5px;
+        }
 
-.sidebar .list-group-item.sair {
-    background-color: transparent;
-    color: var(--branco);
-    border: none;
-    padding: 15px 25px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 40px !important; /* Aumentado e forçado para garantir que o espaçamento seja visível */
-}
+        .sidebar .list-group {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
 
-.sidebar .list-group-item {
-    background-color: transparent;
-    color: var(--branco);
-    border: none;
-    padding: 15px 25px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.3s ease;
-}
+        .sidebar .list-group-item.sair {
+            background-color: transparent;
+            color: var(--branco);
+            border: none;
+            padding: 15px 25px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 40px !important;
+        }
 
-.sidebar .list-group-item:hover {
-    background-color: var(--roxo-escuro);
-    cursor: pointer;
-}
+        .sidebar .list-group-item {
+            background-color: transparent;
+            color: var(--branco);
+            border: none;
+            padding: 15px 25px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
 
-.sidebar .list-group-item.active {
-    background-color: var(--roxo-escuro) !important;
-    color: var(--branco) !important;
-    font-weight: 600;
-    border-left: 4px solid var(--amarelo-detalhe);
-}
+        .sidebar .list-group-item:hover {
+            background-color: var(--roxo-escuro);
+            cursor: pointer;
+        }
 
-.sidebar .list-group-item i {
-    color: var(--amarelo-detalhe);
-}
+        .sidebar .list-group-item.active {
+            background-color: var(--roxo-escuro) !important;
+            color: var(--branco) !important;
+            font-weight: 600;
+            border-left: 4px solid var(--amarelo-detalhe);
+        }
 
-.main-content {
-    margin-left: 250px;
-    padding: 20px;
-}
+        .sidebar .list-group-item i {
+            color: var(--amarelo-detalhe);
+        }
 
-@media (max-width: 992px) {
-    .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-    }
-    .main-content {
-        margin-left: 0;
-    }
-}
-
-        /* Ajuste do conteúdo principal para não ficar por baixo do sidebar */
         .main-content {
             margin-left: 250px;
             padding: 20px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        /* Botão hamburguer */
+        .hamburger-btn {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1100;
+            background: var(--roxo-principal);
+            border: none;
+            color: white;
+            border-radius: 5px;
+            padding: 8px 12px;
+            font-size: 1.2rem;
+            display: none;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-btn:hover {
+            background: var(--roxo-escuro);
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 250px;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .hamburger-btn {
+                display: block;
+            }
+
+            .navbar-brand {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+            }
+
+            .stats-card h3 {
+                font-size: 2rem;
+            }
+
+            .table-responsive {
+                font-size: 0.9rem;
+            }
+
+            .btn-acoes {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .btn-acoes .btn {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 10px;
+            }
+
+            .card-header h5 {
+                font-size: 1.1rem;
+            }
+
+            .stats-card {
+                padding: 15px;
+            }
+
+            .stats-card h3 {
+                font-size: 1.8rem;
+            }
+
+            .stats-card p {
+                font-size: 1rem;
+            }
         }
 
         .btn-warning {
@@ -402,7 +483,6 @@ border: 0 4px 8px rgba(235, 183, 14, 0.77);
             box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
             min-width: 180px;
             border: none;
-           
         }
 
         .btn-warning:hover {
@@ -410,20 +490,6 @@ border: 0 4px 8px rgba(235, 183, 14, 0.77);
             transform: translateY(-2px);
             box-shadow: 0 6px 25px rgba(255, 217, 0, 0.66);
             color: var(--preto-texto);
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                position: relative;
-                width: 100%;
-                height: auto;
-            }
-            .main-content {
-                margin-left: 0;
-            }
-            .stats-card h3 {
-                font-size: 2rem;
-            }
         }
     </style>
 </head>
@@ -470,8 +536,44 @@ document.addEventListener('DOMContentLoaded', function() {
         // Ativar também ao passar o mouse
         pesquisarCard.parentElement.addEventListener('mouseenter', ativarBrilho);
     }
+
+    // Menu hamburguer functionality
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+
+    if (hamburgerBtn && sidebar) {
+        hamburgerBtn.addEventListener('click', function() {
+            sidebar.classList.toggle('show');
+            mainContent.classList.toggle('expanded');
+        });
+    }
+
+    // Fechar menu ao clicar em um link (em dispositivos móveis)
+    const sidebarLinks = document.querySelectorAll('.sidebar .list-group-item');
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            if (window.innerWidth <= 992) {
+                sidebar.classList.remove('show');
+                mainContent.classList.remove('expanded');
+            }
+        });
+    });
+
+    // Fechar menu ao redimensionar a janela para tamanho maior
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 992) {
+            sidebar.classList.remove('show');
+            mainContent.classList.remove('expanded');
+        }
+    });
 });
 </script>
+
+    <!-- Botão Hamburguer -->
+    <button class="hamburger-btn" id="hamburgerBtn">
+        <i class="fas fa-bars"></i>
+    </button>
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid d-flex justify-content-end align-items-center">
@@ -486,20 +588,20 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </nav>
 
-    <div class="sidebar">
-    <div class="profile">
-        <?php if ($foto_admin): ?>
-            <div class="profile-avatar-sidebar">
-                <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
-            </div>
-        <?php else: ?>
-            <i class="fas fa-user-circle"></i>
-        <?php endif; ?>
-        <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
-        <small>Administrador(a)</small>
-    </div>
+    <div class="sidebar" id="sidebar">
+        <div class="profile">
+            <?php if ($foto_admin): ?>
+                <div class="profile-avatar-sidebar">
+                    <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
+                </div>
+            <?php else: ?>
+                <i class="fas fa-user-circle"></i>
+            <?php endif; ?>
+            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+            <small>Administrador(a)</small>
+        </div>
 
-        <div class="list-group" >
+        <div class="list-group">
             <a href="gerenciar_caminho.php" class="list-group-item active">
                 <i class="fas fa-plus-circle"></i> Adicionar Caminho
             </a>
@@ -524,7 +626,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 
-    <div class="main-content">
+    <div class="main-content" id="mainContent">
         <div class="container-fluid mt-4">
             <?php
             if (isset($_GET["message_type"]) && isset($_GET["message_content"])) {
@@ -600,52 +702,54 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>
 
-            <table class="table table-container table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Idioma</th>
-                        <th>Caminho</th>
-                        <th>Nível</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (!empty($caminhos)): ?>
-                    <?php foreach ($caminhos as $caminho): ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($caminho['id']); ?></td>
-                        <td><?php echo htmlspecialchars($caminho['idioma']); ?></td>
-                        <td><?php echo htmlspecialchars($caminho['nome_caminho']); ?></td>
-                        <td><?php echo htmlspecialchars($caminho['nivel']); ?></td>
-                        <td class="btn-acoes">
-                            <a href="gerenciar_blocos.php?caminho_id=<?php echo htmlspecialchars($caminho['id']); ?>"
-                                class="btn btn-sm btn-info btn-blocos">
-                                <i class="fas fa-eye"></i> Ver Blocos
-                            </a>
-                            
-                            <a href="editar_caminho.php?id=<?php echo htmlspecialchars($caminho['id']); ?>"
-                                class="btn btn-sm btn-primary btn-editar">
-                                <i class="fas fa-pen"></i> Editar
-                            </a>
-                            
-                            <button type="button" class="btn btn-sm btn-danger delete-btn btn-eliminar" data-bs-toggle="modal"
-                                data-bs-target="#confirmDeleteModal"
-                                data-id="<?php echo htmlspecialchars($caminho['id']); ?>"
-                                data-nome="<?php echo htmlspecialchars($caminho['nome_caminho']); ?>"
-                                data-tipo="caminho" data-action="eliminar_caminho.php">
-                                <i class="fas fa-trash"></i> Eliminar
-                            </button>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                    <?php else: ?>
-                    <tr>
-                        <td colspan="5" class="text-center">Nenhum caminho de aprendizado encontrado.</td>
-                    </tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table table-container table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Idioma</th>
+                            <th>Caminho</th>
+                            <th>Nível</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($caminhos)): ?>
+                        <?php foreach ($caminhos as $caminho): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($caminho['id']); ?></td>
+                            <td><?php echo htmlspecialchars($caminho['idioma']); ?></td>
+                            <td><?php echo htmlspecialchars($caminho['nome_caminho']); ?></td>
+                            <td><?php echo htmlspecialchars($caminho['nivel']); ?></td>
+                            <td class="btn-acoes">
+                                <a href="gerenciar_blocos.php?caminho_id=<?php echo htmlspecialchars($caminho['id']); ?>"
+                                    class="btn btn-sm btn-info btn-blocos">
+                                    <i class="fas fa-eye"></i> Ver Blocos
+                                </a>
+                                
+                                <a href="editar_caminho.php?id=<?php echo htmlspecialchars($caminho['id']); ?>"
+                                    class="btn btn-sm btn-primary btn-editar">
+                                    <i class="fas fa-pen"></i> Editar
+                                </a>
+                                
+                                <button type="button" class="btn btn-sm btn-danger delete-btn btn-eliminar" data-bs-toggle="modal"
+                                    data-bs-target="#confirmDeleteModal"
+                                    data-id="<?php echo htmlspecialchars($caminho['id']); ?>"
+                                    data-nome="<?php echo htmlspecialchars($caminho['nome_caminho']); ?>"
+                                    data-tipo="caminho" data-action="eliminar_caminho.php">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                        <?php else: ?>
+                        <tr>
+                            <td colspan="5" class="text-center">Nenhum caminho de aprendizado encontrado.</td>
+                        </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
 
             <!-- Estatísticas - MANTIDAS COMO ESTAVAM ANTES (EMBAIXO) -->
             <div class="row mb-4">
@@ -778,57 +882,45 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     <span><?php echo htmlspecialchars($idioma['idioma']); ?></span>
                                     <div>
-                                        <a href="gerenciador_quiz_nivelamento.php?idioma=<?php echo urlencode($idioma['idioma']); ?>" class="btn btn-info btn-sm me-2">Gerenciar Quiz</a>
-                                        <button type="button" class="btn btn-danger btn-sm delete-btn" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal"
-                                            data-id="<?php echo urlencode($idioma['idioma']); ?>" data-nome="<?php echo htmlspecialchars($idioma['idioma']); ?>" data-tipo="idioma" data-action="excluir_idioma.php">
-                                            Excluir
-                                        </button>
+                                        <a href="gerenciador_quiz_nivelamento.php?idioma=<?php echo urlencode($idioma['idioma']); ?>" class="btn btn-sm btn-outline-primary me-1">
+                                            <i class="fas fa-edit"></i> Quiz
+                                        </a>
+                                        <a href="eliminar_idioma.php?idioma=<?php echo urlencode($idioma['idioma']); ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza que deseja eliminar este idioma? Esta ação não pode ser desfeita.')">
+                                            <i class="fas fa-trash"></i> Eliminar
+                                        </a>
                                     </div>
                                 </li>
                                 <?php endforeach; ?>
                                 <?php else: ?>
-                                <li class="list-group-item text-center">Nenhum idioma encontrado.</li>
+                                <li class="list-group-item text-center">Nenhum idioma cadastrado.</li>
                                 <?php endif; ?>
-                                </ul>
+                            </ul>
                         </div>
                         <div class="modal-footer">
+                            <a href="pagina_adicionar_idiomas.php" class="btn btn-warning">
+                                <i class="fas fa-plus-circle me-2"></i>Adicionar Novo Idioma com Quiz
+                            </a>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Modal de Confirmação de Exclusão -->
+            <!-- Modal de Confirmação de Eliminação -->
             <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmação de Exclusão</h5>
+                            <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminação</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div class="modal-body" id="confirmDeleteModalBody"></div>
+                        <div class="modal-body">
+                            <p>Tem certeza que deseja eliminar este item?</p>
+                            <p><strong id="itemNome"></strong></p>
+                        </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <form id="deleteForm" method="POST" action="">
-                                <input type="hidden" name="id" id="deleteItemId">
-                                <button type="submit" class="btn btn-danger">Excluir</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Modal de Notificação -->
-            <div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="notificationModalLabel">Notificação</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body" id="notificationModalBody"></div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                            <a href="#" id="confirmDeleteBtn" class="btn btn-danger">Eliminar</a>
                         </div>
                     </div>
                 </div>
@@ -837,136 +929,62 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Lógica para o modal de confirmação de exclusão
-        const confirmDeleteModal = document.getElementById('confirmDeleteModal');
-        if (confirmDeleteModal) {
-            confirmDeleteModal.addEventListener('show.bs.modal', function(event) {
-                const button = event.relatedTarget;
-                const itemId = button.getAttribute('data-id');
-                const itemName = button.getAttribute('data-nome');
-                const itemType = button.getAttribute('data-tipo');
-                const formAction = button.getAttribute('data-action');
-
-                const modalBody = confirmDeleteModal.querySelector('#confirmDeleteModalBody');
-                const modalForm = confirmDeleteModal.querySelector('#deleteForm');
-                const hiddenInput = confirmDeleteModal.querySelector('#deleteItemId');
-
-                let message = '';
-                if (itemType === 'idioma') {
-                    message = `Tem certeza que deseja excluir o idioma '<strong>${itemName}</strong>'? Isso excluirá todos os caminhos, exercícios e quizzes associados a ele.`;
-                } else {
-                    message = `Tem certeza que deseja excluir o caminho '<strong>${itemName}</strong>'?`;
-                }
-
-                modalBody.innerHTML = `<p>${message}</p>`;
-                modalForm.action = formAction;
-                hiddenInput.value = itemId;
-            });
-        }
-
-        // Lógica para o modal de notificação
-        const urlParams = new URLSearchParams(window.location.search);
-        const status = urlParams.get('status');
-        const message = urlParams.get('message');
-
-        if (status && message) {
-            const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
-            const modalBody = document.getElementById('notificationModalBody');
-
-            modalBody.textContent = decodeURIComponent(message.replace(/\+/g, ' '));
-
-            const modalTitle = document.getElementById('notificationModalLabel');
-            if (status === 'success') {
-                modalTitle.textContent = 'Sucesso';
-            } else if (status === 'error') {
-                modalTitle.textContent = 'Erro';
-            }
-
-            notificationModal.show();
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-
-        // AJAX para adicionar caminho
-        const formAddCaminho = document.getElementById('formAddCaminho');
-        if (formAddCaminho) {
-            const btnAddCaminho = document.getElementById('btnAddCaminho');
-            const alertCaminho = document.getElementById('alertCaminho');
-            const spinner = btnAddCaminho.querySelector('.spinner-border');
-
-            formAddCaminho.addEventListener('submit', function(e) {
+        // Função para adicionar caminho via AJAX
+        $(document).ready(function() {
+            $('#formAddCaminho').on('submit', function(e) {
                 e.preventDefault();
-                
-                // Mostrar loading
-                btnAddCaminho.disabled = true;
-                spinner.classList.remove('d-none');
-                
-                // Coletar dados do formulário
-                const formData = new FormData(this);
-                
-                // Adicionar header para identificar como AJAX
-                const headers = new Headers();
-                headers.append('X-Requested-With', 'XMLHttpRequest');
-                
-                // Enviar via AJAX
-                fetch('adicionar_caminho.php', {
-                    method: 'POST',
-                    headers: headers,
-                    body: formData
-                })
-                .then(response => {
-                    // Primeiro verificar se a resposta é JSON
-                    const contentType = response.headers.get('content-type');
-                    if (contentType && contentType.includes('application/json')) {
-                        return response.json();
-                    } else {
-                        // Se não for JSON, retornar o texto para debug
-                        return response.text().then(text => {
-                            throw new Error('Resposta não é JSON: ' + text.substring(0, 100));
-                        });
+                var formData = $(this).serialize();
+                var btn = $('#btnAddCaminho');
+                var spinner = btn.find('.spinner-border');
+                var alertDiv = $('#alertCaminho');
+
+                btn.prop('disabled', true);
+                spinner.removeClass('d-none');
+
+                $.ajax({
+                    type: 'POST',
+                    url: 'adicionar_caminho.php',
+                    data: formData,
+                    success: function(response) {
+                        try {
+                            var result = JSON.parse(response);
+                            if (result.success) {
+                                alertDiv.html('<div class="alert alert-success">' + result.message + '</div>');
+                                $('#formAddCaminho')[0].reset();
+                                setTimeout(function() {
+                                    location.reload();
+                                }, 1500);
+                            } else {
+                                alertDiv.html('<div class="alert alert-danger">' + result.message + '</div>');
+                            }
+                        } catch (e) {
+                            alertDiv.html('<div class="alert alert-danger">Erro ao processar resposta do servidor.</div>');
+                        }
+                    },
+                    error: function() {
+                        alertDiv.html('<div class="alert alert-danger">Erro ao adicionar caminho. Tente novamente.</div>');
+                    },
+                    complete: function() {
+                        btn.prop('disabled', false);
+                        spinner.addClass('d-none');
                     }
-                })
-                .then(data => {
-                    if (data.success) {
-                        // Sucesso
-                        alertCaminho.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
-                        
-                        // Limpar formulário
-                        formAddCaminho.reset();
-                        
-                        // Recarregar a página após 1.5 segundos para mostrar o novo caminho
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1500);
-                    } else {
-                        // Erro
-                        alertCaminho.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro completo:', error);
-                    alertCaminho.innerHTML = `<div class="alert alert-danger">Erro ao adicionar caminho: ${error.message}</div>`;
-                })
-                .finally(() => {
-                    // Esconder loading
-                    btnAddCaminho.disabled = false;
-                    spinner.classList.add('d-none');
                 });
             });
 
-            // Limpar alerta quando o modal for fechado
-            const addCaminhoModal = document.getElementById('addCaminhoModal');
-            if (addCaminhoModal) {
-                addCaminhoModal.addEventListener('hidden.bs.modal', function() {
-                    if (alertCaminho) {
-                        alertCaminho.innerHTML = '';
-                    }
-                    formAddCaminho.reset();
-                });
-            }
-        }
-    });
+            // Modal de confirmação de eliminação
+            $('.delete-btn').on('click', function() {
+                var id = $(this).data('id');
+                var nome = $(this).data('nome');
+                var action = $(this).data('action');
+                var tipo = $(this).data('tipo');
+
+                $('#itemNome').text(nome);
+                $('#confirmDeleteBtn').attr('href', action + '?id=' + id + '&tipo=' + tipo);
+            });
+        });
     </script>
 </body>
 </html>

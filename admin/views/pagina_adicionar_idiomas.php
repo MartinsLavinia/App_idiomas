@@ -61,6 +61,7 @@ if ($stmt_idiomas) {
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Adicionar Idioma Completo - Página <?php echo $pagina_atual; ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="gerenciamento.css" rel="stylesheet">
@@ -145,115 +146,194 @@ if ($stmt_idiomas) {
             box-shadow: 0 4px 8px rgba(235, 183, 14, 0.77);
         }
 
-/* Menu Lateral */
-.sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 250px;
-    height: 100%;
-    background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
-    color: var(--branco);
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    padding-top: 20px;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-}
+        /* Menu Lateral */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100%;
+            background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+            color: var(--branco);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
 
-.sidebar .profile {
-    text-align: center;
-    margin-bottom: 30px;
-    padding: 0 15px;
-}
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
 
-.profile-avatar-sidebar {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    border: 3px solid var(--amarelo-detalhe);
-    background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 15px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
+        .sidebar.show {
+            transform: translateX(0);
+        }
 
-.profile-avatar-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-}
+        .sidebar .profile {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 0 15px;
+        }
 
-.profile-avatar-sidebar:has(.profile-avatar-img) i {
-    display: none;
-}
+        .profile-avatar-sidebar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid var(--amarelo-detalhe);
+            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
 
-.profile-avatar-sidebar i {
-    font-size: 3.5rem;
-    color: var(--amarelo-detalhe);
-}
+        .profile-avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
 
-.sidebar .list-group {
-    width: 100%;
-}
+        .profile-avatar-sidebar:has(.profile-avatar-img) i {
+            display: none;
+        }
 
-.sidebar .list-group-item {
-    background-color: transparent;
-    color: var(--branco);
-    border: none;
-    padding: 15px 25px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.3s ease;
-}
+        .profile-avatar-sidebar i {
+            font-size: 3.5rem;
+            color: var(--amarelo-detalhe);
+        }
 
-.sidebar .list-group-item:hover {
-    background-color: var(--roxo-escuro);
-    cursor: pointer;
-}
+        .sidebar .list-group {
+            width: 100%;
+        }
 
-.sidebar .list-group-item.active {
-    background-color: var(--roxo-escuro) !important;
-    color: var(--branco) !important;
-    font-weight: 600;
-    border-left: 4px solid var(--amarelo-detalhe);
-}
+        .sidebar .list-group-item {
+            background-color: transparent;
+            color: var(--branco);
+            border: none;
+            padding: 15px 25px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
 
-.sidebar .list-group-item i {
-    color: var(--amarelo-detalhe);
-}
+        .sidebar .list-group-item:hover {
+            background-color: var(--roxo-escuro);
+            cursor: pointer;
+        }
 
+        .sidebar .list-group-item.active {
+            background-color: var(--roxo-escuro) !important;
+            color: var(--branco) !important;
+            font-weight: 600;
+            border-left: 4px solid var(--amarelo-detalhe);
+        }
 
-/*-- */
+        .sidebar .list-group-item i {
+            color: var(--amarelo-detalhe);
+        }
 
-.main-content {
-    margin-left: 250px;
-    padding: 20px;
-}
+        /* Botão Hamburguer */
+        .hamburger-btn {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1100;
+            background: var(--roxo-principal);
+            border: none;
+            color: white;
+            border-radius: 5px;
+            padding: 8px 12px;
+            font-size: 1.2rem;
+            display: none;
+            transition: all 0.3s ease;
+        }
 
-@media (max-width: 992px) {
-    .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-    }
-    .main-content {
-        margin-left: 0;
-    }
-}
-        /* Ajuste do conteúdo principal para não ficar por baixo do sidebar */
+        .hamburger-btn:hover {
+            background: var(--roxo-escuro);
+            transform: scale(1.05);
+        }
+
         .main-content {
             margin-left: 250px;
             padding: 20px;
+            transition: margin-left 0.3s ease;
         }
 
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 250px;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .hamburger-btn {
+                display: block !important;
+            }
+
+            .navbar-brand {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 15px;
+            }
+
+            .card-header {
+                padding: 1rem;
+            }
+
+            .card-header h2 {
+                font-size: 1.3rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 10px;
+            }
+
+            .btn-warning {
+                min-width: auto;
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .container.py-4 {
+                padding: 10px !important;
+            }
+
+            .col-xl-10 {
+                padding: 0;
+            }
+        }
+
+        /* Ajuste do conteúdo principal para não ficar por baixo do sidebar */
         .btn-warning {
             background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
             color: var(--preto-texto);
@@ -434,21 +514,72 @@ if ($stmt_idiomas) {
             opacity: 0.7;
         }
 
+        /* Responsividade para formulários de quiz */
         @media (max-width: 768px) {
-            .sidebar {
-                position: relative;
-                width: 100%;
-                height: auto;
+            .row .col-md-3 {
+                margin-bottom: 10px;
             }
-            .main-content {
-                margin-left: 0;
+            
+            .card.mb-3 .card-body {
+                padding: 1rem;
             }
+            
+            .pagination {
+                flex-wrap: wrap;
+            }
+            
+            .pagination .page-item {
+                margin-bottom: 5px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .card-body {
+                padding: 1rem;
+            }
+            
+            h5.card-title {
+                font-size: 1.1rem;
+            }
+            
+            .form-control, .form-select {
+                font-size: 16px; /* Previne zoom no iOS */
+            }
+            
+            .btn-sm {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+            }
+        }
+
+        /* Overlay para menu mobile */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
         }
     </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <!-- Botão Hamburguer -->
+    <button class="hamburger-btn" id="hamburgerBtn">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Overlay para fechar menu -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container d-flex justify-content-between align-items-center">
             <div></div>
             <div class="d-flex align-items-center" style="gap: 24px;">
@@ -466,7 +597,7 @@ if ($stmt_idiomas) {
     </nav>
 
     
-<div class="sidebar">
+<div class="sidebar" id="sidebar">
     <div class="profile">
         <?php if ($foto_admin): ?>
             <div class="profile-avatar-sidebar">
@@ -501,7 +632,7 @@ if ($stmt_idiomas) {
     </div>
 </div>
 
-    <div class="main-content">
+    <div class="main-content" id="mainContent">
         <div class="container py-4">
             <div class="row justify-content-center">
                 <div class="col-xl-10">
@@ -694,6 +825,102 @@ if ($stmt_idiomas) {
             </div>
         </div>
 
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Menu hamburguer functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const hamburgerBtn = document.getElementById('hamburgerBtn');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+            if (hamburgerBtn && sidebar) {
+                hamburgerBtn.addEventListener('click', function() {
+                    sidebar.classList.toggle('show');
+                    mainContent.classList.toggle('expanded');
+                    sidebarOverlay.classList.toggle('show');
+                });
+
+                // Fechar menu ao clicar no overlay
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('show');
+                    mainContent.classList.remove('expanded');
+                    sidebarOverlay.classList.remove('show');
+                });
+
+                // Fechar menu ao clicar em um link (em dispositivos móveis)
+                const sidebarLinks = document.querySelectorAll('.sidebar .list-group-item');
+                sidebarLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        if (window.innerWidth <= 992) {
+                            sidebar.classList.remove('show');
+                            mainContent.classList.remove('expanded');
+                            sidebarOverlay.classList.remove('show');
+                        }
+                    });
+                });
+
+                // Fechar menu ao redimensionar a janela para tamanho maior
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth > 992) {
+                        sidebar.classList.remove('show');
+                        mainContent.classList.remove('expanded');
+                        sidebarOverlay.classList.remove('show');
+                    }
+                });
+            }
+
+            // Lógica para o modal de confirmação de exclusão
+            const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+            if (confirmDeleteModal) {
+                confirmDeleteModal.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget;
+                    const itemId = button.getAttribute('data-id');
+                    const itemName = button.getAttribute('data-nome');
+                    const itemType = button.getAttribute('data-tipo');
+                    const formAction = button.getAttribute('data-action');
+
+                    const modalBody = confirmDeleteModal.querySelector('#confirmDeleteModalBody');
+                    const modalForm = confirmDeleteModal.querySelector('#deleteForm');
+                    const hiddenInput = confirmDeleteModal.querySelector('#deleteItemId');
+
+                    let message = '';
+                    if (itemType === 'idioma') {
+                        message = `Tem certeza que deseja excluir o idioma '<strong>${itemName}</strong>'? Isso excluirá todos os caminhos, exercícios e quizzes associados a ele.`;
+                    } else {
+                        message = `Tem certeza que deseja excluir o caminho '<strong>${itemName}</strong>'?`;
+                    }
+
+                    modalBody.innerHTML = `<p>${message}</p>`;
+                    modalForm.action = formAction;
+                    hiddenInput.value = itemId;
+                });
+            }
+
+            // Lógica para o modal de notificação
+            const urlParams = new URLSearchParams(window.location.search);
+            const status = urlParams.get('status');
+            const message = urlParams.get('message');
+
+            if (status && message) {
+                const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
+                const modalBody = document.getElementById('notificationModalBody');
+
+                modalBody.textContent = decodeURIComponent(message.replace(/\+/g, ' '));
+
+                const modalTitle = document.getElementById('notificationModalLabel');
+                if (status === 'success') {
+                    modalTitle.textContent = 'Sucesso';
+                } else if (status === 'error') {
+                    modalTitle.textContent = 'Erro';
+                }
+
+                notificationModal.show();
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        });
+    </script>
 </body>
 </html>
