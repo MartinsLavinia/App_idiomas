@@ -156,7 +156,7 @@ $database->closeConnection();
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/png" href="../imagens/mini-esquilo.png">
+    <link rel="icon" type="image/png" href="../../imagens/mini-esquilo.png">
     <style>
 :root {
     --roxo-principal: #6a0dad;
@@ -834,6 +834,18 @@ body {
 
 @media (max-width: 576px) {
     .page-header { flex-direction: column; align-items: flex-start; }
+}
+
+.card {
+   
+    background: var(--branco);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 5px 20px #ab4aef63;
+    border: none;
+
+
 }
     </style>
 </head>

@@ -495,7 +495,6 @@ body {
     transform: scale(1.05);
 }
 
-/* ========== SIDEBAR DO PRIMEIRO CÓDIGO ========== */
 /* Menu Lateral */
 .sidebar {
     position: fixed;
@@ -519,10 +518,10 @@ body {
     padding: 0 15px;
 }
 
-/* Container do avatar - APENAS para quando tem foto (COM círculo) */
+/* Container do avatar - PARA QUANDO TEM FOTO (80x80px COM CÍRCULO) */
 .profile-avatar-sidebar {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     border: 3px solid var(--amarelo-detalhe);
     background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
@@ -541,46 +540,17 @@ body {
     border-radius: 50%;
 }
 
-/* Ícone quando NÃO tem foto - SEM círculo */
-.profile-icon-no-photo {
-    font-size: 4.5rem; /* Ícone grande */
+/* Ícone quando NÃO tem foto - SEM CÍRCULO (apenas ícone) */
+.sidebar .profile i.fa-user-circle {
+    font-size: 4rem; /* Tamanho do ícone */
     color: var(--amarelo-detalhe);
     margin: 0 auto 15px;
     display: block;
-}
-
-.sidebar .profile h5 {
-    font-weight: 600;
-    margin-bottom: 5px;
-    color: var(--branco);
-    font-size: 1.1rem; /* Tamanho igual ao segundo código */
-    word-wrap: break-word;
-    padding: 0 5px;
-}
-
-.sidebar .profile small {
-    color: var(--cinza-claro);
-    font-size: 0.9rem; /* Tamanho igual ao segundo código */
-    word-wrap: break-word;
-    padding: 0 5px;
+    /* REMOVIDO: border, background, box-shadow, width, height */
 }
 
 .sidebar .list-group {
-    display: flex;
-    flex-direction: column;
     width: 100%;
-}
-
-.sidebar .list-group-item.sair {
-    background-color: transparent;
-    color: var(--branco);
-    border: none;
-    padding: 15px 25px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 40px !important;
 }
 
 .sidebar .list-group-item {
@@ -611,23 +581,6 @@ body {
     color: var(--amarelo-detalhe);
 }
 
-/* Ajustes de layout para diferentes tamanhos de tela */
-@media (min-width: 992px) {
-    .main-content {
-        margin-left: 250px;
-        padding: 20px;
-    }
-}
-
-@media (max-width: 991.98px) {
-    .main-content {
-        margin-left: 0;
-        padding: 20px 20px 80px 20px;
-    }
-    .sidebar {
-        display: none !important;
-    }
-}
 /* ========== FIM DO SIDEBAR ========== */
 /* Bottom Navigation Bar para mobile */
 .bottom-nav {
@@ -1318,47 +1271,44 @@ h2 {
         </div>
     </nav>
 
-        <!-- ========== SIDEBAR DO PRIMEIRO CÓDIGO ========== -->
-    <div class="sidebar">
-        <div class="profile">
-            <?php if ($foto_admin): ?>
-                <!-- COM FOTO: Com círculo amarelo -->
-                <div class="profile-avatar-sidebar">
-                    <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
-                </div>
-            <?php else: ?>
-                <!-- SEM FOTO: Apenas ícone grande, SEM círculo -->
-                <i class="fas fa-user-circle profile-icon-no-photo"></i>
-            <?php endif; ?>
-            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
-            <small>Administrador(a)</small>
-        </div>
-
-        <div class="list-group">
-            <a href="gerenciar_caminho.php" class="list-group-item">
-                <i class="fas fa-plus-circle"></i> Adicionar Caminho
-            </a>
-            <a href="pagina_adicionar_idiomas.php" class="list-group-item">
-                <i class="fas fa-language"></i> Gerenciar Idiomas
-            </a>
-            <a href="gerenciar_teorias.php" class="list-group-item">
-                <i class="fas fa-book-open"></i> Gerenciar Teorias
-            </a>
-            <a href="gerenciar_unidades.php" class="list-group-item">
-                <i class="fas fa-cubes"></i> Gerenciar Unidades
-            </a>
-            <a href="gerenciar_usuarios.php" class="list-group-item">
-                <i class="fas fa-users"></i> Gerenciar Usuários
-            </a>
-            <a href="estatisticas_usuarios.php" class="list-group-item">
-                <i class="fas fa-chart-bar"></i> Estatísticas
-            </a>
-            <a href="logout.php" class="list-group-item sair">
-                <i class="fas fa-sign-out-alt"></i> Sair
-            </a>
-        </div>
+     
+   <div class="sidebar">
+    <div class="profile">
+        <?php if ($foto_admin): ?>
+            <!-- COM FOTO: Com círculo amarelo de 80x80px -->
+            <div class="profile-avatar-sidebar">
+                <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
+            </div>
+        <?php else: ?>
+            <!-- SEM FOTO: Apenas ícone, SEM círculo -->
+            <i class="fas fa-user-circle"></i>
+        <?php endif; ?>
+        <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+        <small>Administrador(a)</small>
     </div>
-    <!-- ========== FIM DO SIDEBAR ========== -->
+
+    <div class="list-group">
+        <a href="gerenciar_caminho.php" class="list-group-item">
+            <i class="fas fa-plus-circle"></i> Adicionar Caminho
+        </a>
+        <a href="pagina_adicionar_idiomas.php" class="list-group-item">
+            <i class="fas fa-language"></i> Gerenciar Idiomas
+        </a>
+        <a href="gerenciar_teorias.php" class="list-group-item">
+            <i class="fas fa-book-open"></i> Gerenciar Teorias
+        </a>
+        <a href="gerenciar_unidades.php" class="list-group-item active">
+            <i class="fas fa-cubes"></i> Gerenciar Unidades
+        </a>
+        <a href="gerenciar_usuarios.php" class="list-group-item">
+            <i class="fas fa-users"></i> Gerenciar Usuários
+        </a>
+        <a href="estatisticas_usuarios.php" class="list-group-item">
+            <i class="fas fa-chart-bar"></i> Estatísticas
+        </a>
+    </div>
+</div>
+
 
     <div class="main-content">
         <!-- ... (resto do conteúdo permanece igual) ... -->

@@ -481,134 +481,92 @@ $database->closeConnection();
             display: block;
         }
         
-        /* Menu Lateral */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 250px;
-            height: 100%;
-            background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
-            color: var(--branco);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            padding-top: 20px;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-        }
+     
+/* Menu Lateral */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100%;
+    background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+    color: var(--branco);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 20px;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
 
-        /* CORREÇÃO DEFINITIVA DO PERFIL - SEM BORDA AMARELA E SEM FUNDO ROXO */
-        .sidebar .profile {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 15px;
-            background: transparent !important;
-            border: none !important;
-        }
+.sidebar .profile {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 0 15px;
+}
 
-        .profile-avatar-sidebar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            background: transparent !important;
-            border: none !important;
-        }
+/* Container do avatar - PARA QUANDO TEM FOTO (80x80px COM CÍRCULO) */
+.profile-avatar-sidebar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid var(--amarelo-detalhe);
+    background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
 
-        .profile-avatar-sidebar.has-photo {
-            background: transparent !important;
-            border: none !important;
-        }
+.profile-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
 
-        .profile-avatar-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-            border: none !important;
-            background: transparent !important;
-        }
+/* Ícone quando NÃO tem foto - SEM CÍRCULO (apenas ícone) */
+.sidebar .profile i.fa-user-circle {
+    font-size: 4rem; /* Tamanho do ícone */
+    color: var(--amarelo-detalhe);
+    margin: 0 auto 15px;
+    display: block;
+    /* REMOVIDO: border, background, box-shadow, width, height */
+}
 
-        .profile-avatar-sidebar i {
-            font-size: 3.5rem;
-            color: var(--amarelo-detalhe);
-            background: transparent !important;
-        }
+.sidebar .list-group {
+    width: 100%;
+}
 
-        .sidebar .profile h5 {
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: var(--branco);
-            font-size: 1.1rem;
-            word-wrap: break-word;
-            max-width: 200px;
-            text-align: center;
-            line-height: 1.3;
-            background: transparent !important;
-        }
+.sidebar .list-group-item {
+    background-color: transparent;
+    color: var(--branco);
+    border: none;
+    padding: 15px 25px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
 
-        .sidebar .profile small {
-            color: var(--cinza-claro);
-            font-size: 0.9rem;
-            word-wrap: break-word;
-            max-width: 200px;
-            text-align: center;
-            line-height: 1.2;
-            margin-top: 5px;
-            background: transparent !important;
-        }
+.sidebar .list-group-item:hover {
+    background-color: var(--roxo-escuro);
+    cursor: pointer;
+}
 
-        .sidebar .list-group {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-        }
+.sidebar .list-group-item.active {
+    background-color: var(--roxo-escuro) !important;
+    color: var(--branco) !important;
+    font-weight: 600;
+    border-left: 4px solid var(--amarelo-detalhe);
+}
 
-        .sidebar .list-group-item.sair {
-            background-color: transparent;
-            color: var(--branco);
-            border: none;
-            padding: 15px 25px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 40px !important;
-        }
-
-        .sidebar .list-group-item {
-            background-color: transparent;
-            color: var(--branco);
-            border: none;
-            padding: 15px 25px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar .list-group-item:hover {
-            background-color: var(--roxo-escuro);
-            cursor: pointer;
-        }
-
-        .sidebar .list-group-item.active {
-            background-color: var(--roxo-escuro) !important;
-            color: var(--branco) !important;
-            font-weight: 600;
-            border-left: 4px solid var(--amarelo-detalhe);
-        }
-
-        .sidebar .list-group-item i {
-            color: var(--amarelo-detalhe);
-        }
+.sidebar .list-group-item i {
+    color: var(--amarelo-detalhe);
+}
 
         .main-content {
             margin-left: 250px;
@@ -671,48 +629,44 @@ $database->closeConnection();
     </nav>
 
     <!-- Sidebar Corrigido -->
-    <div class="sidebar">
-        <div class="profile">
-            <?php if ($foto_admin): ?>
-                <div class="profile-avatar-sidebar has-photo">
-                    <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
-                </div>
-            <?php else: ?>
-                <div class="profile-avatar-sidebar">
-                    <i class="fas fa-user-circle"></i>
-                </div>
-            <?php endif; ?>
-            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
-            <small>Administrador(a)</small>
-        </div>
-
-        <div class="list-group">
-            <!-- Itens SEM checkboxes conforme a imagem -->
-            <a href="gerenciar_caminho.php" class="list-group-item active">
-                <i class="fas fa-plus-circle"></i> Adicionar Caminho
-            </a>
-            
-            <a href="pagina_adicionar_idiomas.php" class="list-group-item">
-                <i class="fas fa-language"></i> Gerenciar Idiomas
-            </a>
-            
-            <a href="gerenciar_teorias.php" class="list-group-item">
-                <i class="fas fa-book-open"></i> Gerenciar Teorias
-            </a>
-            
-            <a href="gerenciar_unidades.php" class="list-group-item">
-                <i class="fas fa-cubes"></i> Gerenciar Unidades
-            </a>
-            
-            <a href="gerenciar_usuarios.php" class="list-group-item">
-                <i class="fas fa-users"></i> Gerenciar Usuários
-            </a>
-            
-            <a href="estatisticas_usuarios.php" class="list-group-item">
-                <i class="fas fa-chart-bar"></i> Estatísticas
-            </a>
-        </div>
+    
+   <div class="sidebar">
+    <div class="profile">
+        <?php if ($foto_admin): ?>
+            <!-- COM FOTO: Com círculo amarelo de 80x80px -->
+            <div class="profile-avatar-sidebar">
+                <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
+            </div>
+        <?php else: ?>
+            <!-- SEM FOTO: Apenas ícone, SEM círculo -->
+            <i class="fas fa-user-circle"></i>
+        <?php endif; ?>
+        <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+        <small>Administrador(a)</small>
     </div>
+
+    <div class="list-group">
+        <a href="gerenciar_caminho.php" class="list-group-item">
+            <i class="fas fa-plus-circle"></i> Adicionar Caminho
+        </a>
+        <a href="pagina_adicionar_idiomas.php" class="list-group-item">
+            <i class="fas fa-language"></i> Gerenciar Idiomas
+        </a>
+        <a href="gerenciar_teorias.php" class="list-group-item">
+            <i class="fas fa-book-open"></i> Gerenciar Teorias
+        </a>
+        <a href="gerenciar_unidades.php" class="list-group-item active">
+            <i class="fas fa-cubes"></i> Gerenciar Unidades
+        </a>
+        <a href="gerenciar_usuarios.php" class="list-group-item">
+            <i class="fas fa-users"></i> Gerenciar Usuários
+        </a>
+        <a href="estatisticas_usuarios.php" class="list-group-item">
+            <i class="fas fa-chart-bar"></i> Estatísticas
+        </a>
+    </div>
+</div>
+
 
     <!-- Conteúdo Principal -->
     <div class="main-content">
