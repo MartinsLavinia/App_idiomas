@@ -917,39 +917,41 @@ document.addEventListener('DOMContentLoaded', function() {
     </nav>
 
     <div class="sidebar" id="sidebar">
-        <div class="profile">
-            <?php if ($foto_admin): ?>
-                <div class="profile-avatar-sidebar">
-                    <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
-                </div>
-            <?php else: ?>
-                <i class="fas fa-user-circle"></i>
-            <?php endif; ?>
-            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
-            <small>Administrador(a)</small>
-        </div>
-
-        <div class="list-group">
-            <a href="gerenciar_caminho.php" class="list-group-item">
-                <i class="fas fa-plus-circle"></i> Adicionar Caminho
-            </a>
-            <a href="pagina_adicionar_idiomas.php" class="list-group-item">
-                <i class="fas fa-language"></i> Gerenciar Idiomas
-            </a>
-            <a href="gerenciar_teorias.php" class="list-group-item">
-                <i class="fas fa-book-open"></i> Gerenciar Teorias
-            </a>
-            <a href="gerenciar_unidades.php" class="list-group-item active">
-                <i class="fas fa-cubes"></i> Gerenciar Unidades
-            </a>
-            <a href="gerenciar_usuarios.php" class="list-group-item">
-                <i class="fas fa-users"></i> Gerenciar Usuários
-            </a>
-            <a href="estatisticas_usuarios.php" class="list-group-item">
-                <i class="fas fa-chart-bar"></i> Estatísticas
-            </a>
-        </div>
+    <div class="profile">
+        <?php if ($foto_admin): ?>
+            <div class="profile-avatar-sidebar">
+                <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
+            </div>
+        <?php else: ?>
+            <div class="profile-avatar-sidebar">
+                <i class="fa-solid fa-user" style="color: var(--amarelo-detalhe); font-size: 3.5rem;"></i>
+            </div>
+        <?php endif; ?>
+        <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+        <small>Administrador(a)</small>
     </div>
+
+    <div class="list-group">
+        <a href="gerenciar_caminho.php" class="list-group-item ">
+            <i class="fas fa-plus-circle"></i> Adicionar Caminho
+        </a>
+        <a href="pagina_adicionar_idiomas.php" class="list-group-item">
+            <i class="fas fa-language"></i> Gerenciar Idiomas
+        </a>
+        <a href="gerenciar_teorias.php" class="list-group-item">
+            <i class="fas fa-book-open"></i> Gerenciar Teorias
+        </a>
+        <a href="gerenciar_unidades.php" class="list-group-item active">
+            <i class="fas fa-cubes"></i> Gerenciar Unidades
+        </a>
+        <a href="gerenciar_usuarios.php" class="list-group-item">
+            <i class="fas fa-users"></i> Gerenciar Usuários
+        </a>
+        <a href="estatisticas_usuarios.php" class="list-group-item">
+            <i class="fas fa-chart-bar"></i> Estatísticas
+        </a>
+    </div>
+</div>
 
     <div class="main-content">
         <div class="container-fluid mt-4">

@@ -69,6 +69,18 @@ if ($stmt_idiomas) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
      <link rel="icon" type="image/png" href="../../imagens/mini-esquilo.png">
     <style>
+   <!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adicionar Idioma Completo - Página <?php echo $pagina_atual; ?></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="gerenciamento.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="../../imagens/mini-esquilo.png">
+    <style>
         :root {
             --roxo-principal: #6a0dad;
             --roxo-escuro: #4c087c;
@@ -112,7 +124,7 @@ if ($stmt_idiomas) {
             text-decoration: none;
         }
 
-        /* Barra de Navegação - MODIFICADA PARA TRANSPARENTE COM DECORAÇÃO AMARELA */
+        /* Barra de Navegação */
         .navbar {
             background-color: transparent !important;
             border-bottom: 3px solid var(--amarelo-detalhe);
@@ -170,6 +182,7 @@ if ($stmt_idiomas) {
     padding: 0 15px;
 }
 
+/* CONTAINER DA FOTO DO PERFIL - APENAS QUANDO HÁ FOTO */
 .profile-avatar-sidebar {
     width: 100px;
     height: 100px;
@@ -184,6 +197,7 @@ if ($stmt_idiomas) {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
+/* IMAGEM DO PERFIL - CIRCULAR */
 .profile-avatar-img {
     width: 100%;
     height: 100%;
@@ -191,13 +205,12 @@ if ($stmt_idiomas) {
     border-radius: 50%;
 }
 
-.profile-avatar-sidebar:has(.profile-avatar-img) i {
-    display: none;
-}
-
-.profile-avatar-sidebar i {
+/* ÍCONE PADRÃO (QUANDO NÃO HÁ FOTO) - SEM CÍRCULO */
+.profile-icon-sidebar {
     font-size: 3.5rem;
     color: var(--amarelo-detalhe);
+    margin: 0 auto 15px;
+    display: block;
 }
 
 .sidebar .profile h5 {
@@ -353,7 +366,6 @@ body:has(.sidebar.active) .menu-toggle:hover,
         padding: 20px 10px;
     }
 }
-
         .btn-warning {
             background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
             color: var(--preto-texto);
@@ -693,7 +705,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-    <!-- Menu Hamburguer -->
+       <!-- Menu Hamburguer -->
     <button class="menu-toggle" id="menuToggle">
         <i class="fas fa-bars"></i>
     </button>
@@ -717,21 +729,23 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </nav>
 
-    <div class="sidebar" id="sidebar">
+<div class="sidebar" id="sidebar">
     <div class="profile">
         <?php if ($foto_admin): ?>
             <div class="profile-avatar-sidebar">
                 <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
             </div>
         <?php else: ?>
-            <i class="fas fa-user-circle"></i>
+            <div class="profile-avatar-sidebar">
+                <i class="fa-solid fa-user" style="color: var(--amarelo-detalhe); font-size: 3.5rem;"></i>
+            </div>
         <?php endif; ?>
         <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
         <small>Administrador(a)</small>
     </div>
 
     <div class="list-group">
-        <a href="gerenciar_caminho.php" class="list-group-item">
+        <a href="gerenciar_caminho.php" class="list-group-item ">
             <i class="fas fa-plus-circle"></i> Adicionar Caminho
         </a>
         <a href="pagina_adicionar_idiomas.php" class="list-group-item active">

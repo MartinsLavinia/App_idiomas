@@ -16,25 +16,17 @@ if (isset($_GET['status']) && $_GET['status'] == 'sucesso_exclusao') {
 $database = new Database();
 $conn = $database->conn;
 
-// Buscar foto do admin
+// Buscar foto do admin (CÓDIGO CORRIGIDO - igual ao gerenciar_caminho.php)
 $id_admin = $_SESSION['id_admin'];
-$foto_admin = null;
-$check_column_sql = "SHOW COLUMNS FROM administradores LIKE 'foto_perfil'";
-$result_check = $conn->query($check_column_sql);
+$sql_foto = "SELECT foto_perfil FROM administradores WHERE id = ?";
+$stmt_foto = $conn->prepare($sql_foto);
+$stmt_foto->bind_param("i", $id_admin);
+$stmt_foto->execute();
+$resultado_foto = $stmt_foto->get_result();
+$admin_foto = $resultado_foto->fetch_assoc();
+$stmt_foto->close();
 
-if ($result_check && $result_check->num_rows > 0) {
-    $sql_foto = "SELECT foto_perfil FROM administradores WHERE id = ?";
-    $stmt_foto = $conn->prepare($sql_foto);
-    $stmt_foto->bind_param("i", $id_admin);
-    $stmt_foto->execute();
-    $resultado_foto = $stmt_foto->get_result();
-    
-    if ($resultado_foto && $resultado_foto->num_rows > 0) {
-        $admin_foto = $resultado_foto->fetch_assoc();
-        $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
-    }
-    $stmt_foto->close();
-}
+$foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
 
 $sql_teorias = "SELECT id, titulo, nivel, ordem, data_criacao FROM teorias ORDER BY nivel, ordem";
 $stmt_teorias = $conn->prepare($sql_teorias);
@@ -78,18 +70,6 @@ $database->closeConnection();
 
     @keyframes fadeIn {
         from { opacity: 0; } to { opacity: 1; }
-    }
-
-    .settings-icon {
-        color: var(--roxo-principal) !important;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        font-size: 1.2rem;
-    }
-
-    .settings-icon:hover {
-        color: var(--roxo-escuro) !important;
-        transform: rotate(90deg);
     }
 
     .table-container {
@@ -635,30 +615,50 @@ $database->closeConnection();
         }
     }
 
-    .settings-icon {
-            color: var(--roxo-principal) !important;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            font-size: 1.2rem;
-        }
+    /* ESTILO PARA O BOTÃO LOGOUT */
+    .logout-icon {
+        color: var(--roxo-principal) !important;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        font-size: 1.2rem;
+    }
 
-        .settings-icon:hover {
-            color: var(--roxo-escuro) !important;
-            transform: rotate(90deg);
-        }
+    .logout-icon:hover {
+        color: var(--roxo-escuro) !important;
+        transform: translateY(-2px);
+    }
 
-        /* ESTILO PARA O BOTÃO LOGOUT - ADICIONAR */
-        .logout-icon {
-            color: var(--roxo-principal) !important;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            font-size: 1.2rem;
-        }
+    /* Estilo para a foto do perfil no header */
+    .profile-icon-header {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 2px solid var(--amarelo-detalhe);
+        object-fit: cover;
+        transition: all 0.3s ease;
+    }
 
-        .logout-icon:hover {
-            color: var(--roxo-escuro) !important;
-            transform: translateY(-2px);
-        }
+    .profile-icon-header:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+
+    .profile-icon-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+        border: 2px solid var(--amarelo-detalhe);
+        overflow: hidden;
+    }
+
+    .profile-icon-container i {
+        color: var(--amarelo-detalhe);
+        font-size: 1.2rem;
+    }
     </style>
 </head>
 <body>
@@ -715,8 +715,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
                     <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
                 </a>
-                <a href="editar_perfil.php" class="settings-icon">
-                    <i class="fas fa-cog fa-lg"></i>
+                <!-- Foto do perfil no header -->
+                <a href="editar_perfil.php">
+                    <?php if ($foto_admin): ?>
+                        <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-icon-header">
+                    <?php else: ?>
+                        <div class="profile-icon-container">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    <?php endif; ?>
                 </a>
                 <a href="logout.php" class="logout-icon" title="Sair">
                     <i class="fas fa-sign-out-alt fa-lg"></i>
@@ -726,39 +733,41 @@ document.addEventListener('DOMContentLoaded', function() {
     </nav>
 
     <div class="sidebar" id="sidebar">
-        <div class="profile">
-            <?php if ($foto_admin): ?>
-                <div class="profile-avatar-sidebar">
-                    <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
-                </div>
-            <?php else: ?>
-                <i class="fas fa-user-circle"></i>
-            <?php endif; ?>
-            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
-            <small>Administrador(a)</small>
-        </div>
-
-        <div class="list-group">
-            <a href="gerenciar_caminho.php" class="list-group-item">
-                <i class="fas fa-plus-circle"></i> Adicionar Caminho
-            </a>
-            <a href="pagina_adicionar_idiomas.php" class="list-group-item">
-                <i class="fas fa-language"></i> Gerenciar Idiomas
-            </a>
-            <a href="gerenciar_teorias.php" class="list-group-item active">
-                <i class="fas fa-book-open"></i> Gerenciar Teorias
-            </a>
-            <a href="gerenciar_unidades.php" class="list-group-item">
-                <i class="fas fa-cubes"></i> Gerenciar Unidades
-            </a>
-            <a href="gerenciar_usuarios.php" class="list-group-item">
-                <i class="fas fa-users"></i> Gerenciar Usuários
-            </a>
-            <a href="estatisticas_usuarios.php" class="list-group-item">
-                <i class="fas fa-chart-bar"></i> Estatísticas
-            </a>
-        </div>
+    <div class="profile">
+        <?php if ($foto_admin): ?>
+            <div class="profile-avatar-sidebar">
+                <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
+            </div>
+        <?php else: ?>
+            <div class="profile-avatar-sidebar">
+                <i class="fa-solid fa-user" style="color: var(--amarelo-detalhe); font-size: 3.5rem;"></i>
+            </div>
+        <?php endif; ?>
+        <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+        <small>Administrador(a)</small>
     </div>
+
+    <div class="list-group">
+        <a href="gerenciar_caminho.php" class="list-group-item">
+            <i class="fas fa-plus-circle"></i> Adicionar Caminho
+        </a>
+        <a href="pagina_adicionar_idiomas.php" class="list-group-item">
+            <i class="fas fa-language"></i> Gerenciar Idiomas
+        </a>
+        <a href="gerenciar_teorias.php" class="list-group-item active">
+            <i class="fas fa-book-open"></i> Gerenciar Teorias
+        </a>
+        <a href="gerenciar_unidades.php" class="list-group-item">
+            <i class="fas fa-cubes"></i> Gerenciar Unidades
+        </a>
+        <a href="gerenciar_usuarios.php" class="list-group-item">
+            <i class="fas fa-users"></i> Gerenciar Usuários
+        </a>
+        <a href="estatisticas_usuarios.php" class="list-group-item">
+            <i class="fas fa-chart-bar"></i> Estatísticas
+        </a>
+    </div>
+</div>
 
     <div class="main-content">
         <div class="container-fluid mt-4">
