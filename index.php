@@ -2414,7 +2414,7 @@
                         <li><button onclick="scrollToSection('welcome')" style="font-size: 16px;">Início</button></li>
                         <li><button onclick="scrollToSection('main')" style="font-size: 16px;">Sobre Nós</button></li>
                         <li><button style="font-size: 16px;">Termos de Serviço</button></li>
-                        <li><button style="font-size: 16px;">Política de Privacidade</button></li>
+                        <li><a href="politica_de_privacidade.php" style="font-size: 16px; background: none; border: none; color: #c4b5fd; cursor: pointer; padding: 0; text-align: left;">Política de Privacidade</a></li>
                     </ul>
                 </div>
 
@@ -2429,11 +2429,14 @@
             </div>
 
             <div class="footer-bottom">
-                <p>&copy; 2025 SpeakNut. Todos os direitos reservados.</p>
+                <p>&copy; 2024 SpeakNut. Todos os direitos reservados.</p>
             </div>
         </div>
     </footer>
 
+    <?php
+    include 'cookie_banner.php';
+    ?>
 </body>
 
 </html>

@@ -7,6 +7,12 @@ session_start();
 
 // Lógica de cadastro
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    // Validação do checkbox da Política de Privacidade
+    if (!isset($_POST['termos'])) {
+        $erro_cadastro = "Você deve aceitar a Política de Privacidade para se cadastrar.";
+    } else {
+        // O resto do código de cadastro só executa se os termos forem aceitos
     
     // Crie uma instância da classe Database para obter a conexão
     $database = new Database();
@@ -53,6 +59,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
     // Feche a conexão usando o método da classe
     $database->closeConnection();
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -96,6 +103,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     <option value="Japones">Japonês</option>
                                 </select>
                             </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="termos" name="termos" required>
+                                <label class="form-check-label" for="termos">
+                                    Eu li e aceito a <a href="politica_de_privacidade.php" target="_blank">Política de Privacidade</a>.
+                                </label>
+                            </div>
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-primary">Cadastrar e Começar Quiz</button>
                             </div>
@@ -106,5 +119,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <?php
+    include 'cookie_banner.php';
+    ?>
 </body>
 </html>
