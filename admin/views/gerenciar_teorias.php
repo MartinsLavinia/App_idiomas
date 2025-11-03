@@ -80,12 +80,113 @@ $database->closeConnection();
         from { opacity: 0; } to { opacity: 1; }
     }
 
-    .logout-icon {
+    .settings-icon {
         color: var(--roxo-principal) !important;
         transition: all 0.3s ease;
         text-decoration: none;
+        font-size: 1.2rem;
     }
 
+    .settings-icon:hover {
+        color: var(--roxo-escuro) !important;
+        transform: rotate(90deg);
+    }
+
+    .table-container {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        border: 2px solid rgba(106, 13, 173, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .card-header h5 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: white;
+    }
+
+    .card-header h5 i {
+        color: var(--amarelo-detalhe);
+    }
+
+    /* Cartões de Estatísticas - MESMO ESTILO DO PRIMEIRO CÓDIGO */
+    .stats-card {
+        background: rgba(255, 255, 255, 0.95) !important;
+        color: var(--preto-texto);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        border: 2px solid rgba(106, 13, 173, 0.1);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        animation: statsCardAnimation 0.8s ease-out;
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+    }
+
+    @keyframes statsCardAnimation {
+        from {
+            opacity: 0;
+            transform: translateY(30px) rotateX(-10deg);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) rotateX(0);
+        }
+    }
+
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(106, 13, 173, 0.1), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .stats-card:hover::before {
+        left: 100%;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-8px) scale(1.03);
+        box-shadow: 0 15px 30px rgba(106, 13, 173, 0.25);
+        border-color: rgba(106, 13, 173, 0.3);
+    }
+
+    .stats-card h3 {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: var(--roxo-principal);
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .stats-card p {
+        margin-bottom: 0;
+        opacity: 0.9;
+        font-size: 1.1rem;
+        color: var(--preto-texto);
+    }
+
+    .stats-card i {
+        font-size: 2rem;
+        color: var(--amarelo-detalhe);
+        margin-bottom: 1rem;
+    }
+
+    /* Animações adicionais para stats-card */
+    .stats-card:nth-child(1) { animation-delay: 0.1s; }
+    .stats-card:nth-child(2) { animation-delay: 0.2s; }
+    .stats-card:nth-child(3) { animation-delay: 0.3s; }
+    .stats-card:nth-child(4) { animation-delay: 0.4s; }
+
+    /* Barra de Navegação - MODIFICADA PARA TRANSPARENTE */
     .navbar {
         background-color: transparent !important;
         border-bottom: 3px solid var(--amarelo-detalhe);
@@ -107,11 +208,6 @@ $database->closeConnection();
         display: block;
     }
 
-    .navbar {
-        display: flex;
-        align-items: center;
-    }
-
     .btn-outline-light {
         color: var(--amarelo-detalhe);
         border-color: var(--amarelo-detalhe);
@@ -119,8 +215,256 @@ $database->closeConnection();
         transition: all 0.3s ease;
     }
 
-    .btn-outline-light:hover {
+   .btn-outline-warning:hover {
         background-color: var(--amarelo-detalhe);
+        border: 0 4px 8px rgba(235, 183, 14, 0.77);
+    }
+
+    /* Menu Lateral */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 250px;
+        height: 100%;
+        background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+        color: var(--branco);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding-top: 20px;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .sidebar .profile {
+        text-align: center;
+        margin-bottom: 30px;
+        padding: 0 15px;
+    }
+
+    .profile-avatar-sidebar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        border: 3px solid var(--amarelo-detalhe);
+        background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .profile-avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .profile-avatar-sidebar:has(.profile-avatar-img) i {
+        display: none;
+    }
+
+    .profile-avatar-sidebar i {
+        font-size: 3.5rem;
+        color: var(--amarelo-detalhe);
+    }
+
+    .sidebar .profile h5 {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: var(--branco);
+        font-size: 1.1rem;
+        word-wrap: break-word;
+        max-width: 200px;
+        text-align: center;
+        line-height: 1.3;
+    }
+
+    .sidebar .profile small {
+        color: var(--cinza-claro);
+        font-size: 0.9rem;
+        word-wrap: break-word;
+        max-width: 200px;
+        text-align: center;
+        line-height: 1.2;
+        margin-top: 5px;
+    }
+
+    .sidebar .list-group {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .sidebar .list-group-item.sair {
+        background-color: transparent;
+        color: var(--branco);
+        border: none;
+        padding: 15px 25px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 40px !important;
+    }
+
+    .sidebar .list-group-item {
+        background-color: transparent;
+        color: var(--branco);
+        border: none;
+        padding: 15px 25px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .sidebar .list-group-item:hover {
+        background-color: var(--roxo-escuro);
+        cursor: pointer;
+    }
+
+    .sidebar .list-group-item.active {
+        background-color: var(--roxo-escuro) !important;
+        color: var(--branco) !important;
+        font-weight: 600;
+        border-left: 4px solid var(--amarelo-detalhe);
+    }
+
+    .sidebar .list-group-item i {
+        color: var(--amarelo-detalhe);
+    }
+
+    .main-content {
+        margin-left: 250px;
+        padding: 20px;
+        transition: margin-left 0.3s ease-in-out;
+    }
+
+    /* Menu Hamburguer */
+    .menu-toggle {
+        display: none;
+        background: none;
+        border: none;
+        color: var(--roxo-principal) !important;
+        font-size: 1.5rem;
+        cursor: pointer;
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 1100;
+        transition: all 0.3s ease;
+    }
+
+    .menu-toggle:hover {
+        color: var(--roxo-escuro) !important;
+        transform: scale(1.1);
+    }
+
+    /* CORREÇÃO: Quando a sidebar está ativa */
+    body:has(.sidebar.active) .menu-toggle,
+    .sidebar.active ~ .menu-toggle {
+        color: var(--amarelo-detalhe) !important;
+    }
+
+    body:has(.sidebar.active) .menu-toggle:hover,
+    .sidebar.active ~ .menu-toggle:hover {
+        color: var(--amarelo-hover) !important;
+    }
+
+    /* Overlay para mobile */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+
+    @media (max-width: 992px) {
+        .menu-toggle {
+            display: block;
+        }
+        
+        .sidebar {
+            transform: translateX(-100%);
+        }
+        
+        .sidebar.active {
+            transform: translateX(0);
+        }
+        
+        .main-content {
+            margin-left: 0;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 280px;
+        }
+        
+        .stats-card h3 {
+            font-size: 2rem;
+        }
+        
+        .table-responsive {
+            font-size: 0.9rem;
+        }
+        
+        .btn-sm {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .main-content {
+            padding: 15px 10px;
+        }
+        
+        .stats-card {
+            padding: 15px;
+        }
+        
+        .stats-card h3 {
+            font-size: 1.8rem;
+        }
+        
+        .card-body {
+            padding: 1rem;
+        }
+        
+        .table-container {
+            padding: 15px;
+        }
+    }
+
+    .btn-warning {
+        background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
+        color: var(--preto-texto);
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        min-width: 180px;
+        border: none;
+    }
+
+    .btn-warning:hover {
+        background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(255, 217, 0, 0.66);
         color: var(--preto-texto);
     }
 
@@ -142,177 +486,6 @@ $database->closeConnection();
         letter-spacing: 0.5px;
     }
 
-/* Menu Lateral */
-.sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 250px;
-    height: 100%;
-    background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
-    color: var(--branco);
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    padding-top: 20px;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-}
-
-.sidebar .profile {
-    text-align: center;
-    margin-bottom: 30px;
-    padding: 0 15px;
-}
-
-/* Container do avatar - PARA QUANDO TEM FOTO (80x80px COM CÍRCULO) */
-.profile-avatar-sidebar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    border: 3px solid var(--amarelo-detalhe);
-    background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 15px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.profile-avatar-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-}
-
-/* Ícone quando NÃO tem foto - SEM CÍRCULO (apenas ícone) */
-.sidebar .profile i.fa-user-circle {
-    font-size: 4rem; /* Tamanho do ícone */
-    color: var(--amarelo-detalhe);
-    margin: 0 auto 15px;
-    display: block;
-    /* REMOVIDO: border, background, box-shadow, width, height */
-}
-
-.sidebar .list-group {
-    width: 100%;
-}
-
-.sidebar .list-group-item {
-    background-color: transparent;
-    color: var(--branco);
-    border: none;
-    padding: 15px 25px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.3s ease;
-}
-
-.sidebar .list-group-item:hover {
-    background-color: var(--roxo-escuro);
-    cursor: pointer;
-}
-
-.sidebar .list-group-item.active {
-    background-color: var(--roxo-escuro) !important;
-    color: var(--branco) !important;
-    font-weight: 600;
-    border-left: 4px solid var(--amarelo-detalhe);
-}
-
-.sidebar .list-group-item i {
-    color: var(--amarelo-detalhe);
-}
-
-/* Bottom Navigation Bar para mobile */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3); /* Mesmo gradiente da sidebar */
-    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.15);
-    z-index: 1020;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 5px 0;
-}
-
-.bottom-nav-item {
-    flex: 1;
-    text-align: center;
-    color: var(--branco);
-    text-decoration: none;
-    padding: 8px 0;
-    transition: all 0.3s ease;
-    border-radius: 8px;
-}
-
-.bottom-nav-item i {
-    font-size: 1.5rem; /* Tamanho do ícone */
-    display: block;
-    margin: 0 auto;
-    color: var(--amarelo-detalhe);
-}
-
-.bottom-nav-item.active {
-    background-color: rgba(255, 255, 255, 0.15);
-}
-
-.bottom-nav-item.active i {
-    transform: scale(1.1);
-}
-
-.bottom-nav-item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Ajustes de layout para diferentes tamanhos de tela */
-@media (min-width: 992px) {
-    .main-content {
-        margin-left: 250px;
-        padding: 20px;
-    }
-}
-
-@media (max-width: 991.98px) {
-    .main-content {
-        margin-left: 0;
-        padding: 20px 20px 80px 20px; /* Adiciona padding-bottom para a bottom-nav */
-    }
-    .sidebar {
-        display: none !important; /* Esconde a sidebar desktop em telas menores */
-    }
-}
-
-    /*-- */
-
-    .main-content {
-        margin-left: 250px;
-        padding: 20px;
-    }
-
-    .btn-warning {
-        background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
-        color: var(--preto-texto);
-        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
-        min-width: 180px;
-        border: none;
-        transition: all 0.3s ease;
-    }
-
-    .btn-warning:hover {
-        background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
-        color: var(--preto-texto);
-    }
-
     .btn-primary {
         background-color: var(--roxo-principal);
         border-color: var(--roxo-principal);
@@ -325,66 +498,6 @@ $database->closeConnection();
         border-color: var(--roxo-escuro);
         transform: scale(1.05);
         box-shadow: 0 4px 12px rgba(106, 13, 173, 0.3);
-    }
-
-    .btn-secundary {
-        background: linear-gradient(135deg, #6c757d, #495057);
-        border: none;
-        color: var(--branco);
-        font-weight: 600;
-        padding: 10px 20px;
-        border-radius: 8px;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
-        text-decoration: none;
-    }
-
-    .btn-secundary:hover {
-        background: linear-gradient(135deg, #495057, #343a40);
-        color: var(--branco);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
-    }
-
-    .btn-secundary i {
-        font-size: 0.9em;
-        transition: transform 0.3s ease;
-    }
-
-    .btn-secundary:hover i {
-        transform: translateX(-4px);
-    }
-
-    .btn-secondary {
-        background-color: var(--cinza-medio);
-        border-color: var(--cinza-medio);
-        color: var(--preto-texto);
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .btn-secondary:hover {
-        background-color: #b8b9bdd3;
-        border-color: #c8c9cb;
-        transform: scale(1.05);
-        color: var(--preto-texto);
-        box-shadow: 0 4px 12px rgba(194, 192, 192, 0.53);
-    }
-
-    .btn-success {
-        background-color: #28a745;
-        border-color: #28a745;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .btn-success:hover {
-        background-color: #218838;
-        border-color: #218838;
-        transform: scale(1.05);
     }
 
     .btn-danger {
@@ -462,17 +575,6 @@ $database->closeConnection();
         background-color: var(--roxo-principal) !important;
     }
 
-    @media (max-width: 992px) {
-        .sidebar {
-            width: 100%;
-            height: auto;
-            position: relative;
-        }
-        .main-content {
-            margin-left: 0;
-        }
-    }
-
     .page-header {
         display: flex;
         justify-content: space-between;
@@ -495,18 +597,6 @@ $database->closeConnection();
         margin-bottom: 1.5rem;
         box-shadow: 0 5px 20px #ab4aef63;
         border: none;
-    }
-
-    .settings-icon {
-        color: var(--roxo-principal) !important;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        font-size: 1.2rem;
-    }
-
-    .settings-icon:hover {
-        color: var(--roxo-escuro) !important;
-        transform: rotate(90deg);
     }
 
     .empty-state {
@@ -544,13 +634,83 @@ $database->closeConnection();
             align-items: flex-start;
         }
     }
+
+    .settings-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .settings-icon:hover {
+            color: var(--roxo-escuro) !important;
+            transform: rotate(90deg);
+        }
+
+        /* ESTILO PARA O BOTÃO LOGOUT - ADICIONAR */
+        .logout-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .logout-icon:hover {
+            color: var(--roxo-escuro) !important;
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container d-flex justify-content-between align-items-center">
-            <div></div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Menu Hamburguer Functionality
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+            if (sidebarOverlay) {
+                sidebarOverlay.classList.toggle('active');
+            }
+        });
+        
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+        }
+        
+        // Fechar menu ao clicar em um link (mobile)
+        const sidebarLinks = sidebar.querySelectorAll('.list-group-item');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 992) {
+                    sidebar.classList.remove('active');
+                    if (sidebarOverlay) {
+                        sidebarOverlay.classList.remove('active');
+                    }
+                }
+            });
+        });
+    }
+});
+</script>
+
+    <!-- Menu Hamburguer -->
+    <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Overlay para mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid d-flex justify-content-end align-items-center">
             <div class="d-flex align-items-center" style="gap: 24px;">
                 <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
                     <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
@@ -565,46 +725,43 @@ $database->closeConnection();
         </div>
     </nav>
 
-    
-<div class="sidebar">
-    <div class="profile">
-        <?php if ($foto_admin): ?>
-            <!-- COM FOTO: Com círculo amarelo -->
-            <div class="profile-avatar-sidebar">
-                <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
-            </div>
-        <?php else: ?>
-            <!-- SEM FOTO: Apenas ícone, SEM círculo -->
-            <i class="fas fa-user-circle"></i>
-        <?php endif; ?>
-        <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
-        <small>Administrador(a)</small>
-    </div>
+    <div class="sidebar" id="sidebar">
+        <div class="profile">
+            <?php if ($foto_admin): ?>
+                <div class="profile-avatar-sidebar">
+                    <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
+                </div>
+            <?php else: ?>
+                <i class="fas fa-user-circle"></i>
+            <?php endif; ?>
+            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+            <small>Administrador(a)</small>
+        </div>
 
-    <div class="list-group">
-        <a href="gerenciar_caminho.php" class="list-group-item">
-            <i class="fas fa-plus-circle"></i> Adicionar Caminho
-        </a>
-        <a href="pagina_adicionar_idiomas.php" class="list-group-item">
-            <i class="fas fa-language"></i> Gerenciar Idiomas
-        </a>
-        <a href="gerenciar_teorias.php" class="list-group-item active">
-            <i class="fas fa-book-open"></i> Gerenciar Teorias
-        </a>
-        <a href="gerenciar_unidades.php" class="list-group-item">
-            <i class="fas fa-cubes"></i> Gerenciar Unidades
-        </a>
-        <a href="gerenciar_usuarios.php" class="list-group-item">
-            <i class="fas fa-users"></i> Gerenciar Usuários
-        </a>
-        <a href="estatisticas_usuarios.php" class="list-group-item">
-            <i class="fas fa-chart-bar"></i> Estatísticas
-        </a>
+        <div class="list-group">
+            <a href="gerenciar_caminho.php" class="list-group-item">
+                <i class="fas fa-plus-circle"></i> Adicionar Caminho
+            </a>
+            <a href="pagina_adicionar_idiomas.php" class="list-group-item">
+                <i class="fas fa-language"></i> Gerenciar Idiomas
+            </a>
+            <a href="gerenciar_teorias.php" class="list-group-item active">
+                <i class="fas fa-book-open"></i> Gerenciar Teorias
+            </a>
+            <a href="gerenciar_unidades.php" class="list-group-item">
+                <i class="fas fa-cubes"></i> Gerenciar Unidades
+            </a>
+            <a href="gerenciar_usuarios.php" class="list-group-item">
+                <i class="fas fa-users"></i> Gerenciar Usuários
+            </a>
+            <a href="estatisticas_usuarios.php" class="list-group-item">
+                <i class="fas fa-chart-bar"></i> Estatísticas
+            </a>
+        </div>
     </div>
-</div>
 
     <div class="main-content">
-        <div class="container mt-4">
+        <div class="container-fluid mt-4">
             <div class="page-header flex-column flex-sm-row">
                 <h2 class="mb-2 mb-sm-0"><i class="fas fa-book-open"></i> Gerenciar Teorias</h2>
                 <div class="action-buttons">
@@ -645,9 +802,12 @@ $database->closeConnection();
                                                 <a href="editar_teoria.php?id=<?php echo htmlspecialchars($teoria['id']); ?>" class="btn btn-primary">
                                                     <i class="fas fa-edit"></i> Editar
                                                 </a>
-                                                <a href="eliminar_teoria.php?id=<?php echo htmlspecialchars($teoria['id']); ?>" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja excluir esta teoria?');">
+                                                <button type="button" class="btn btn-danger delete-btn" 
+                                                        data-bs-toggle="modal" data-bs-target="#confirmDeleteModal"
+                                                        data-id="<?php echo htmlspecialchars($teoria['id']); ?>"
+                                                        data-nome="<?php echo htmlspecialchars($teoria['titulo']); ?>">
                                                     <i class="fas fa-trash"></i> Excluir
-                                                </a>
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -669,28 +829,42 @@ $database->closeConnection();
         </div>
     </div>
 
-    <!-- Bottom Navigation Bar para telas pequenas -->
-    <nav class="bottom-nav d-lg-none">
-        <a href="gerenciar_caminho.php" class="bottom-nav-item">
-            <i class="fas fa-plus-circle"></i>
-        </a>
-        <a href="pagina_adicionar_idiomas.php" class="bottom-nav-item">
-            <i class="fas fa-language"></i>
-        </a>
-        <a href="gerenciar_teorias.php" class="bottom-nav-item active">
-            <i class="fas fa-book-open"></i>
-        </a>
-        <a href="gerenciar_unidades.php" class="bottom-nav-item">
-            <i class="fas fa-cubes"></i>
-        </a>
-        <a href="gerenciar_usuarios.php" class="bottom-nav-item">
-            <i class="fas fa-users"></i>
-        </a>
-        <a href="estatisticas_usuarios.php" class="bottom-nav-item">
-            <i class="fas fa-chart-bar"></i>
-        </a>
-    </nav>
+    <!-- Modal de Confirmação de Exclusão -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Exclusão</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Tem certeza que deseja excluir o item <strong id="itemNome"></strong>?</p>
+                    <p class="text-danger"><strong>Atenção:</strong> Esta ação não pode ser desfeita!</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <a href="#" id="confirmDeleteBtn" class="btn btn-danger">Excluir</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const deleteButtons = document.querySelectorAll('.delete-btn');
+            const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+            const itemNome = document.getElementById('itemNome');
+
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const nome = this.getAttribute('data-nome');
+                    itemNome.textContent = `"${nome}"`;
+                    confirmDeleteBtn.href = `eliminar_teoria.php?id=${id}`;
+                });
+            });
+        });
+    </script>
 </body>
 </html>

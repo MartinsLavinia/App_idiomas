@@ -61,6 +61,7 @@ if ($stmt_idiomas) {
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Adicionar Idioma Completo - Página <?php echo $pagina_atual; ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="gerenciamento.css" rel="stylesheet">
@@ -160,6 +161,7 @@ if ($stmt_idiomas) {
     padding-top: 20px;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
     z-index: 1000;
+    transition: transform 0.3s ease-in-out;
 }
 
 .sidebar .profile {
@@ -198,8 +200,43 @@ if ($stmt_idiomas) {
     color: var(--amarelo-detalhe);
 }
 
+.sidebar .profile h5 {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--branco);
+    font-size: 1.1rem;
+    word-wrap: break-word;
+    max-width: 200px;
+    text-align: center;
+    line-height: 1.3;
+}
+
+.sidebar .profile small {
+    color: var(--cinza-claro);
+    font-size: 0.9rem;
+    word-wrap: break-word;
+    max-width: 200px;
+    text-align: center;
+    line-height: 1.2;
+    margin-top: 5px;
+}
+
 .sidebar .list-group {
+    display: flex;
+    flex-direction: column;
     width: 100%;
+}
+
+.sidebar .list-group-item.sair {
+    background-color: transparent;
+    color: var(--branco);
+    border: none;
+    padding: 15px 25px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 40px !important;
 }
 
 .sidebar .list-group-item {
@@ -230,29 +267,92 @@ if ($stmt_idiomas) {
     color: var(--amarelo-detalhe);
 }
 
+/* Menu Hamburguer */
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--roxo-principal) !important;
+    font-size: 1.5rem;
+    cursor: pointer;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1100;
+    transition: all 0.3s ease;
+}
 
-/*-- */
+.menu-toggle:hover {
+    color: var(--roxo-escuro) !important;
+    transform: scale(1.1);
+}
+
+/* Quando a sidebar está ativa */
+body:has(.sidebar.active) .menu-toggle,
+.sidebar.active ~ .menu-toggle {
+    color: var(--amarelo-detalhe) !important;
+}
+
+body:has(.sidebar.active) .menu-toggle:hover,
+.sidebar.active ~ .menu-toggle:hover {
+    color: var(--amarelo-hover) !important;
+}
+
+/* Overlay para mobile */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
 
 .main-content {
     margin-left: 250px;
     padding: 20px;
+    transition: margin-left 0.3s ease-in-out;
 }
 
 @media (max-width: 992px) {
-    .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
+    .menu-toggle {
+        display: block;
     }
+    
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    
     .main-content {
         margin-left: 0;
     }
+    
+    .sidebar-overlay.active {
+        display: block;
+    }
 }
-        /* Ajuste do conteúdo principal para não ficar por baixo do sidebar */
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-        }
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 280px;
+    }
+    
+    .main-content {
+        padding: 20px 15px;
+    }
+}
+
+@media (max-width: 576px) {
+    .main-content {
+        padding: 20px 10px;
+    }
+}
 
         .btn-warning {
             background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
@@ -434,23 +534,175 @@ if ($stmt_idiomas) {
             opacity: 0.7;
         }
 
+        /* Responsividade para formulários */
         @media (max-width: 768px) {
-            .sidebar {
-                position: relative;
-                width: 100%;
-                height: auto;
+            .card-body {
+                padding: 1rem;
             }
-            .main-content {
-                margin-left: 0;
+            
+            .row .col-md-3 {
+                margin-bottom: 1rem;
             }
+            
+            .pagination {
+                --bs-pagination-padding-x: 0.6rem;
+                --bs-pagination-padding-y: 0.4rem;
+                --bs-pagination-font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            h2 {
+                font-size: 1.5rem;
+            }
+            
+            .card-header h5 {
+                font-size: 1.1rem;
+            }
+            
+            .form-control, .form-select {
+                font-size: 0.9rem;
+                padding: 0.5rem 0.75rem;
+            }
+            
+            label {
+                font-size: 0.8rem;
+            }
+            
+            .btn {
+                font-size: 0.9rem;
+                padding: 0.5rem 1rem;
+            }
+        }
+
+        .settings-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .settings-icon:hover {
+            color: var(--roxo-escuro) !important;
+            transform: rotate(90deg);
+        }
+
+        /* ESTILO PARA O BOTÃO LOGOUT - ADICIONAR */
+        .logout-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .logout-icon:hover {
+            color: var(--roxo-escuro) !important;
+            transform: translateY(-2px);
         }
     </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container d-flex justify-content-between align-items-center">
-            <div></div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Menu Hamburguer Functionality
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+            if (sidebarOverlay) {
+                sidebarOverlay.classList.toggle('active');
+            }
+            // REMOVIDO: Código que mudava o ícone para X
+        });
+        
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+                // REMOVIDO: Código que voltava o ícone para hamburguer
+            });
+        }
+        
+        // Fechar menu ao clicar em um link (mobile)
+        const sidebarLinks = sidebar.querySelectorAll('.list-group-item');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 992) {
+                    sidebar.classList.remove('active');
+                    if (sidebarOverlay) {
+                        sidebarOverlay.classList.remove('active');
+                    }
+                    // REMOVIDO: Código que voltava o ícone para hamburguer
+                }
+            });
+        });
+    }
+
+    // Lógica para o modal de confirmação de exclusão
+    const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+    if (confirmDeleteModal) {
+        confirmDeleteModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const itemId = button.getAttribute('data-id');
+            const itemName = button.getAttribute('data-nome');
+            const itemType = button.getAttribute('data-tipo');
+            const formAction = button.getAttribute('data-action');
+
+            const modalBody = confirmDeleteModal.querySelector('#confirmDeleteModalBody');
+            const modalForm = confirmDeleteModal.querySelector('#deleteForm');
+            const hiddenInput = confirmDeleteModal.querySelector('#deleteItemId');
+
+            let message = '';
+            if (itemType === 'idioma') {
+                message = `Tem certeza que deseja excluir o idioma '<strong>${itemName}</strong>'? Isso excluirá todos os caminhos, exercícios e quizzes associados a ele.`;
+            } else {
+                message = `Tem certeza que deseja excluir o item '<strong>${itemName}</strong>'?`;
+            }
+
+            modalBody.innerHTML = `<p>${message}</p>`;
+            modalForm.action = formAction;
+            hiddenInput.value = itemId;
+        });
+    }
+
+    // Lógica para o modal de notificação
+    const urlParams = new URLSearchParams(window.location.search);
+    const status = urlParams.get('status');
+    const message = urlParams.get('message');
+
+    if (status && message) {
+        const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
+        const modalBody = document.getElementById('notificationModalBody');
+
+        modalBody.textContent = decodeURIComponent(message.replace(/\+/g, ' '));
+
+        const modalTitle = document.getElementById('notificationModalLabel');
+        if (status === 'success') {
+            modalTitle.textContent = 'Sucesso';
+        } else if (status === 'error') {
+            modalTitle.textContent = 'Erro';
+        }
+
+        notificationModal.show();
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+});
+</script>
+
+    <!-- Menu Hamburguer -->
+    <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Overlay para mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid d-flex justify-content-end align-items-center">
             <div class="d-flex align-items-center" style="gap: 24px;">
                 <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
                     <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
@@ -465,8 +717,7 @@ if ($stmt_idiomas) {
         </div>
     </nav>
 
-    
-<div class="sidebar">
+    <div class="sidebar" id="sidebar">
     <div class="profile">
         <?php if ($foto_admin): ?>
             <div class="profile-avatar-sidebar">
@@ -502,100 +753,123 @@ if ($stmt_idiomas) {
 </div>
 
     <div class="main-content">
-        <div class="container py-4">
-            <div class="row justify-content-center">
-                <div class="col-xl-10">
-                    <h2 class="mb-4">
-    <i class="fas fa-language me-2"></i>
-    Gerenciar idiomas simples
-</h2>
-                        <a href="#" class="btn btn-warning mb-4" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
-                            <i class="fas fa-plus-circle me-2"></i>Gerenciar idiomas
-                        </a>
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Adicionar Novo Idioma com Quiz (Página <?php echo $pagina_atual . ' de ' . $total_paginas; ?>)</h5>
-                        </div>
-                        <div class="card-body">
-                            <form action="adicionar_idioma_completo.php?page=<?php echo $pagina_atual + 1; ?>" method="POST">
-                                <?php if ($pagina_atual === 1): ?>
-                                <div class="mb-3">
-                                    <label for="idioma_novo_completo" class="form-label">Nome do Idioma</label>
-                                    <input type="text" class="form-control" id="idioma_novo_completo" name="idioma" placeholder="Ex: Espanhol" required>
-                                </div>
-                                <hr>
-                                <?php endif; ?>
+        <div class="container-fluid mt-4">
+            <?php
+            if (isset($_GET["message_type"]) && isset($_GET["message_content"])) {
+                $message_type = htmlspecialchars($_GET["message_type"]);
+                $message_content = htmlspecialchars(urldecode($_GET["message_content"]));
+                echo '<div class="alert alert-' . ($message_type == 'success' ? 'success' : 'danger') . ' mt-3">' . $message_content . '</div>';
+            }
+            ?>
 
-                                <h5>Perguntas do Quiz de Nivelamento (Total: 20 perguntas)</h5>
-                                
-                                <p class="text-muted">A resposta correta para cada pergunta deve ser "A", "B", "C" ou "D".</p>
-                                
-                                <?php for ($i = $offset_inicial; $i < $offset_inicial + $limit && $i <= $total_perguntas; $i++): ?>
-                                <div class="card mb-3">
-                                    <div class="card-header">Pergunta #<?php echo $i; ?></div>
-                                    <div class="card-body">
-                                        <div class="mb-3">
-                                            <label for="pergunta_<?php echo $i; ?>" class="form-label">Pergunta</label>
-                                            <textarea class="form-control" id="pergunta_<?php echo $i; ?>" name="pergunta_<?php echo $i; ?>" rows="2" required></textarea>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-3 mb-3">
-                                                <label for="opcao_a_<?php echo $i; ?>" class="form-label">Opção A</label>
-                                                <input type="text" class="form-control" id="opcao_a_<?php echo $i; ?>" name="opcao_a_<?php echo $i; ?>" required>
-                                            </div>
-                                            <div class="col-md-3 mb-3">
-                                                <label for="opcao_b_<?php echo $i; ?>" class="form-label">Opção B</label>
-                                                <input type="text" class="form-control" id="opcao_b_<?php echo $i; ?>" name="opcao_b_<?php echo $i; ?>" required>
-                                            </div>
-                                            <div class="col-md-3 mb-3">
-                                                <label for="opcao_c_<?php echo $i; ?>" class="form-label">Opção C</label>
-                                                <input type="text" class="form-control" id="opcao_c_<?php echo $i; ?>" name="opcao_c_<?php echo $i; ?>" required>
-                                            </div>
-                                            <div class="col-md-3 mb-3">
-                                                <label for="opcao_d_<?php echo $i; ?>" class="form-label">Opção D</label>
-                                                <input type="text" class="form-control" id="opcao_d_<?php echo $i; ?>" name="opcao_d_<?php echo $i; ?>" required>
-                                            </div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="resposta_correta_<?php echo $i; ?>" class="form-label">Resposta Correta</label>
-                                            <select id="resposta_correta_<?php echo $i; ?>" name="resposta_correta_<?php echo $i; ?>" class="form-select" required>
-                                                <option value="">Selecione a resposta correta</option>
-                                                <option value="A">Opção A</option>
-                                                <option value="B">Opção B</option>
-                                                <option value="C">Opção C</option>
-                                                <option value="D">Opção D</option>
-                                            </select>
-                                        </div>
+            <h2 class="mb-4">
+                <i class="fas fa-language me-2"></i>
+                Gerenciar idiomas simples
+            </h2>
+
+            <a href="#" class="btn btn-warning mb-4" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
+                <i class="fas fa-plus-circle me-2"></i>Gerenciar idiomas
+            </a>
+
+            <!-- Notificações -->
+            <?php if (isset($_SESSION['success'])): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle"></i> <?php echo htmlspecialchars($_SESSION['success']); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <?php unset($_SESSION['success']); ?>
+            <?php endif; ?>
+
+            <?php if (isset($_SESSION['error'])): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle"></i> <?php echo htmlspecialchars($_SESSION['error']); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <?php unset($_SESSION['error']); ?>
+            <?php endif; ?>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Adicionar Novo Idioma com Quiz (Página <?php echo $pagina_atual . ' de ' . $total_paginas; ?>)</h5>
+                </div>
+                <div class="card-body">
+                    <form action="adicionar_idioma_completo.php?page=<?php echo $pagina_atual + 1; ?>" method="POST">
+                        <?php if ($pagina_atual === 1): ?>
+                        <div class="mb-3">
+                            <label for="idioma_novo_completo" class="form-label">Nome do Idioma</label>
+                            <input type="text" class="form-control" id="idioma_novo_completo" name="idioma" placeholder="Ex: Espanhol" required>
+                        </div>
+                        <hr>
+                        <?php endif; ?>
+
+                        <h5>Perguntas do Quiz de Nivelamento (Total: 20 perguntas)</h5>
+                        
+                        <p class="text-muted">A resposta correta para cada pergunta deve ser "A", "B", "C" ou "D".</p>
+                        
+                        <?php for ($i = $offset_inicial; $i < $offset_inicial + $limit && $i <= $total_perguntas; $i++): ?>
+                        <div class="card mb-3">
+                            <div class="card-header">Pergunta #<?php echo $i; ?></div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="pergunta_<?php echo $i; ?>" class="form-label">Pergunta</label>
+                                    <textarea class="form-control" id="pergunta_<?php echo $i; ?>" name="pergunta_<?php echo $i; ?>" rows="2" required></textarea>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3 mb-3">
+                                        <label for="opcao_a_<?php echo $i; ?>" class="form-label">Opção A</label>
+                                        <input type="text" class="form-control" id="opcao_a_<?php echo $i; ?>" name="opcao_a_<?php echo $i; ?>" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label for="opcao_b_<?php echo $i; ?>" class="form-label">Opção B</label>
+                                        <input type="text" class="form-control" id="opcao_b_<?php echo $i; ?>" name="opcao_b_<?php echo $i; ?>" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label for="opcao_c_<?php echo $i; ?>" class="form-label">Opção C</label>
+                                        <input type="text" class="form-control" id="opcao_c_<?php echo $i; ?>" name="opcao_c_<?php echo $i; ?>" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label for="opcao_d_<?php echo $i; ?>" class="form-label">Opção D</label>
+                                        <input type="text" class="form-control" id="opcao_d_<?php echo $i; ?>" name="opcao_d_<?php echo $i; ?>" required>
                                     </div>
                                 </div>
+                                <div class="mb-3">
+                                    <label for="resposta_correta_<?php echo $i; ?>" class="form-label">Resposta Correta</label>
+                                    <select id="resposta_correta_<?php echo $i; ?>" name="resposta_correta_<?php echo $i; ?>" class="form-select" required>
+                                        <option value="">Selecione a resposta correta</option>
+                                        <option value="A">Opção A</option>
+                                        <option value="B">Opção B</option>
+                                        <option value="C">Opção C</option>
+                                        <option value="D">Opção D</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endfor; ?>
+                        
+                        <hr>
+                        
+                        <nav aria-label="Navegação de Páginas">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item <?php echo ($pagina_atual <= 1) ? 'disabled' : ''; ?>">
+                                    <a class="page-link" href="?page=<?php echo $pagina_atual - 1; ?>">Anterior</a>
+                                </li>
+                                
+                                <?php for ($p = 1; $p <= $total_paginas; $p++): ?>
+                                <li class="page-item <?php echo ($p == $pagina_atual) ? 'active' : ''; ?>">
+                                    <a class="page-link" href="?page=<?php echo $p; ?>"><?php echo $p; ?></a>
+                                </li>
                                 <?php endfor; ?>
                                 
-                                <hr>
-                                
-                                <nav aria-label="Navegação de Páginas">
-                                    <ul class="pagination justify-content-center">
-                                        <li class="page-item <?php echo ($pagina_atual <= 1) ? 'disabled' : ''; ?>">
-                                            <a class="page-link" href="?page=<?php echo $pagina_atual - 1; ?>">Anterior</a>
-                                        </li>
-                                        
-                                        <?php for ($p = 1; $p <= $total_paginas; $p++): ?>
-                                        <li class="page-item <?php echo ($p == $pagina_atual) ? 'active' : ''; ?>">
-                                            <a class="page-link" href="?page=<?php echo $p; ?>"><?php echo $p; ?></a>
-                                        </li>
-                                        <?php endfor; ?>
-                                        
-                                        <li class="page-item <?php echo ($pagina_atual >= $total_paginas) ? 'disabled' : ''; ?>">
-                                            <a class="page-link" href="?page=<?php echo $pagina_atual + 1; ?>">Próximo</a>
-                                        </li>
-                                    </ul>
-                                </nav>
+                                <li class="page-item <?php echo ($pagina_atual >= $total_paginas) ? 'disabled' : ''; ?>">
+                                    <a class="page-link" href="?page=<?php echo $pagina_atual + 1; ?>">Próximo</a>
+                                </li>
+                            </ul>
+                        </nav>
 
-                                <div class="d-flex justify-content-end gap-2 mt-3">
-                                        <button type="submit" class="btn btn-warning">Salvar Idioma e Quiz (Fim)</button>
-                                </div>
-                            </form>
+                        <div class="d-flex justify-content-end gap-2 mt-3">
+                                <button type="submit" class="btn btn-warning">Salvar Idioma e Quiz (Fim)</button>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -693,6 +967,7 @@ if ($stmt_idiomas) {
                 </div>
             </div>
         </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
