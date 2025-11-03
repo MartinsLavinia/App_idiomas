@@ -95,6 +95,7 @@ $database->closeConnection();
     <title>Painel do Usuário - <?php echo htmlspecialchars($idioma_escolhido); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="painel.css" rel="stylesheet">
+    <link href="exercicios.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -271,6 +272,9 @@ $database->closeConnection();
             background: linear-gradient(135deg, #f8d7da, #f5c6cb);
             border: 2px solid #dc3545;
             color: #721c24;
+        }, #f8d7da, #f5c6cb);
+            border: 2px solid #dc3545;
+            color: #721c24;
         }
 
         /* Estilos para exercícios de listening */
@@ -404,6 +408,32 @@ $database->closeConnection();
             font-size: 1.1rem;
         }
     </style>
+    
+
+    
+    <script>
+        // Verificar se está em HTTPS ou localhost
+        function verificarHTTPS() {
+            const isHTTPS = location.protocol === 'https:';
+            const isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+            
+            if (!isHTTPS && !isLocalhost) {
+                const warning = document.getElementById('https-warning');
+                if (warning) {
+                    warning.style.display = 'block';
+                }
+                console.warn('Microfone pode não funcionar sem HTTPS');
+            }
+        }
+        
+        // Inicializar quando a página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            verificarHTTPS();
+            
+            // O sistema integrado corrigido já inicializa automaticamente
+            console.log('Painel carregado com sistema de exercícios corrigido');
+        });
+    </script>
 </head>
 
 <body>
@@ -1044,8 +1074,12 @@ $database->closeConnection();
             id: exercicioAtual.id,
             tipoDeterminado: tipoExercicio,
             tipoOriginal: exercicioAtual.tipo,
-            tipo_exercicio: exercicioAtual.tipo_exercicio,
-            conteudo: conteudo
+            categoria: exercicioAtual.categoria,
+            conteudo_tipo_exercicio: conteudo.tipo_exercicio,
+            conteudo: conteudo,
+            opcoes: conteudo.opcoes,
+            resposta_correta: conteudo.resposta_correta,
+            audio_url: conteudo.audio_url
         });
 
         // RENDERIZAR CONTEÚDO BASEADO NO TIPO CORRETO
@@ -1057,18 +1091,22 @@ $database->closeConnection();
             htmlConteudo += renderizarCompletar(conteudo);
         } else if (tipoExercicio === "fala") {
             htmlConteudo += renderizarExercicioFala(conteudo);
-        } else if (tipoExercicio === "listening") {
-            htmlConteudo += renderizarListening(conteudo);
-        } else if (tipoExercicio === "audicao") {
-            htmlConteudo += renderizarAudicao(conteudo);
+        } else if (tipoExercicio === "listening" || tipoExercicio === "audicao") {
+            // Para listening, verificar qual estrutura usar
+            if (conteudo.opcoes && Array.isArray(conteudo.opcoes)) {
+                htmlConteudo += renderizarListeningOpcoes(conteudo);
+            } else if (conteudo.alternativas && Array.isArray(conteudo.alternativas)) {
+                htmlConteudo += renderizarMultiplaEscolha(conteudo);
+            } else {
+                htmlConteudo += renderizarListening(conteudo);
+            }
         } else {
-            // Fallback para tipo desconhecido
-            htmlConteudo += `
-                <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    Tipo de exercício não suportado: ${tipoExercicio}
-                </div>
-            `;
+            // Fallback - usar múltipla escolha se tiver alternativas
+            if (conteudo.alternativas && Array.isArray(conteudo.alternativas)) {
+                htmlConteudo += renderizarMultiplaEscolha(conteudo);
+            } else {
+                htmlConteudo += renderizarTextoLivre(conteudo);
+            }
         }
 
         conteudoExercicioDiv.innerHTML = htmlConteudo;
@@ -1081,103 +1119,117 @@ $database->closeConnection();
 
     // CORREÇÃO: FUNÇÃO PARA DETERMINAR TIPO DE EXERCÍCIO CORRETAMENTE
     function determinarTipoExercicioCorrigido(exercicio, conteudo) {
-        // Priorizar o campo 'tipo' que vem do banco de dados
-        if (exercicio.tipo && exercicio.tipo !== 'normal') {
-            return exercicio.tipo;
+        // PRIORIDADE 1: Verificar se existe 'tipo_exercicio' no conteúdo JSON
+        if (conteudo && conteudo.tipo_exercicio) {
+            const tipoConteudo = conteudo.tipo_exercicio.toLowerCase().trim();
+            
+            const mapeamentoConteudo = {
+                'listening': 'listening',
+                'fala': 'fala',
+                'speech': 'fala',
+                'multipla_escolha': 'multipla_escolha',
+                'multiple_choice': 'multipla_escolha',
+                'texto_livre': 'texto_livre',
+                'completar': 'completar'
+            };
+            
+            if (mapeamentoConteudo[tipoConteudo]) {
+                return mapeamentoConteudo[tipoConteudo];
+            }
         }
         
-        // Se 'tipo' for 'normal', verificar o campo 'tipo_exercicio'
-        if (exercicio.tipo_exercicio) {
-            return exercicio.tipo_exercicio;
+        // PRIORIDADE 2: Usar categoria se não for 'gramatica'
+        if (exercicio.categoria && exercicio.categoria !== 'gramatica') {
+            const mapeamentoCategoria = {
+                'fala': 'fala',
+                'audicao': 'listening',
+                'escrita': 'texto_livre',
+                'leitura': 'texto_livre'
+            };
+            
+            if (mapeamentoCategoria[exercicio.categoria]) {
+                return mapeamentoCategoria[exercicio.categoria];
+            }
         }
         
-        // Fallback: analisar conteúdo para determinar tipo
-        if (conteudo.alternativas && Array.isArray(conteudo.alternativas)) {
+        // PRIORIDADE 3: Analisar conteúdo para determinar tipo
+        if (conteudo) {
+            // Verificar se é exercício de listening
+            if (conteudo.audio_url || conteudo.arquivo_audio || 
+                (conteudo.opcoes && conteudo.resposta_correta !== undefined)) {
+                return 'listening';
+            }
+            // Verificar se é exercício de fala
+            else if (conteudo.frase_esperada || conteudo.texto_para_falar || conteudo.frase) {
+                return 'fala';
+            }
+            // Verificar se é múltipla escolha
+            else if (conteudo.alternativas && Array.isArray(conteudo.alternativas)) {
+                return 'multipla_escolha';
+            }
+            // Verificar se é completar
+            else if (conteudo.frase_completar) {
+                return 'completar';
+            }
+        }
+        
+        // FALLBACK: padrão baseado na categoria ou tipo
+        if (exercicio.categoria === 'gramatica' || exercicio.tipo === 'normal') {
             return 'multipla_escolha';
-        } else if (conteudo.frase_completar) {
-            return 'completar';
-        } else if (conteudo.frase_esperada || conteudo.texto_para_falar) {
-            return 'fala';
-        } else if (conteudo.audio_url || conteudo.arquivo_audio) {
-            return 'listening';
-        } else if (conteudo.resposta_correta && conteudo.alternativas_aceitas) {
-            return 'texto_livre';
         }
         
-        // Default seguro
-        return 'texto_livre';
+        return 'multipla_escolha';
     }
 
     // ==================== FUNÇÕES DE RENDERIZAÇÃO DE EXERCÍCIOS ====================
 
-    // FUNÇÃO PARA RENDERIZAR EXERCÍCIO DE FALA - CORRIGIDA
-    function renderizarExercicioFala(conteudo) {
-        const textoParaFalar = conteudo.texto_para_falar || conteudo.frase_esperada || 'Nenhuma frase definida';
-        const idioma = conteudo.idioma || mapIdiomaParaReconhecimento('<?php echo $idioma_escolhido; ?>');
+    // NOVA FUNÇÃO para renderizar listening com opções
+    function renderizarListeningOpcoes(conteudo) {
+        const audioUrl = conteudo.audio_url || conteudo.arquivo_audio || '';
+        const opcoes = conteudo.opcoes || [];
         
-        return `
-            <div class="fala-container">
-                <div class="text-center">
-                    <h6 class="mb-3"><i class="fas fa-microphone me-2"></i>Exercício de Pronúncia</h6>
-                    <div class="frase-pronunciar">
-                        <p class="mb-1 text-muted">Repita a frase abaixo:</p>
-                        <h4 id="fraseParaFalar" class="fw-bold text-dark">"${textoParaFalar}"</h4>
-                    </div>
-                    <div class="microphone-section">
-                        <button id="btnMicrofone" class="microphone-btn" onclick="iniciarGravacaoFala('${idioma}')">
-                            <i class="fas fa-microphone"></i>
+        let html = `
+            <div class="audio-player-container">
+                <h6 class="text-center mb-3">🎧 Exercício de Listening</h6>
+                <div class="text-center mb-4">
+                    <h6>Ouça o áudio e selecione a opção correta:</h6>
+                    <audio controls class="w-100 mb-3" id="audioPlayerListening">
+                        <source src="${audioUrl}" type="audio/mpeg">
+                        Seu navegador não suporta o elemento de áudio.
+                    </audio>
+                    <div class="audio-controls">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('audioPlayerListening').play()">
+                            <i class="fas fa-play me-1"></i>Reproduzir
                         </button>
-                        <p id="statusFala" class="text-muted mt-2">Clique no microfone para começar a falar</p>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('audioPlayerListening').pause()">
+                            <i class="fas fa-pause me-1"></i>Pausar
+                        </button>
+                        <button type="button" class="btn btn-outline-info btn-sm" onclick="document.getElementById('audioPlayerListening').currentTime = 0">
+                            <i class="fas fa-redo me-1"></i>Reiniciar
+                        </button>
                     </div>
-                    <div id="resultadoFala" class="mt-3"></div>
+                </div>
+                <div class="listening-options">
+        `;
+        
+        // Mostrar opções de resposta com índices numéricos
+        opcoes.forEach((opcao, index) => {
+            if (opcao && opcao.trim() !== '') {
+                html += `
+                    <button type="button" class="btn btn-option btn-resposta" 
+                            data-id="${index}" onclick="selecionarResposta(this)">
+                        ${opcao}
+                    </button>
+                `;
+            }
+        });
+        
+        html += `
                 </div>
             </div>
         `;
-    }
-
-    function renderizarMultiplaEscolha(conteudo) {
-        let html = '<div class="d-grid gap-2">';
-        if (conteudo.alternativas && Array.isArray(conteudo.alternativas)) {
-            conteudo.alternativas.forEach(alt => {
-                html += `
-                    <button type="button" class="btn btn-outline-primary btn-resposta text-start" 
-                            data-id="${alt.id || alt.texto}" onclick="selecionarResposta(this)">
-                        ${alt.texto}
-                    </button>
-                `;
-            });
-        }
-        html += '</div>';
+        
         return html;
-    }
-
-    function renderizarTextoLivre(conteudo) {
-        const dica = conteudo.dica || '';
-        
-        return `
-            <div class="mb-3">
-                <label for="respostaTextoLivre" class="form-label">Sua resposta:</label>
-                <textarea id="respostaTextoLivre" class="form-control" rows="4" placeholder="Digite sua resposta aqui..."></textarea>
-                ${dica ? `<div class="form-text text-muted"><i class="fas fa-lightbulb me-1"></i>${dica}</div>` : ''}
-            </div>
-        `;
-    }
-
-    function renderizarCompletar(conteudo) {
-        const fraseCompletar = conteudo.frase_completar || '';
-        const placeholderCompletar = conteudo.placeholder || 'Digite sua resposta...';
-        const dica = conteudo.dica || '';
-        
-        const fraseRenderizada = fraseCompletar.replace(/_____+/g, 
-            `<input type="text" class="form-control d-inline-block w-auto mx-1" id="respostaCompletar" placeholder="${placeholderCompletar}" value="">`);
-
-        return `
-            <div class="mb-3">
-                <label for="respostaCompletar" class="form-label">Complete a frase:</label>
-                <p class="fs-5">${fraseRenderizada}</p>
-                ${dica ? `<div class="form-text text-muted"><i class="fas fa-lightbulb me-1"></i>${dica}</div>` : ''}
-            </div>
-        `;
     }
 
     function renderizarListening(conteudo) {
@@ -1227,6 +1279,81 @@ $database->closeConnection();
         `;
         
         return html;
+    }
+
+    // FUNÇÃO PARA RENDERIZAR EXERCÍCIO DE FALA - CORRIGIDA
+    function renderizarExercicioFala(conteudo) {
+        // Buscar a frase em diferentes campos possíveis
+        const textoParaFalar = conteudo.texto_para_falar || 
+                              conteudo.frase_esperada || 
+                              conteudo.frase || 
+                              'Nenhuma frase definida';
+        
+        const idioma = conteudo.idioma || mapIdiomaParaReconhecimento('<?php echo $idioma_escolhido; ?>');
+        
+        return `
+            <div class="fala-container">
+                <div class="text-center">
+                    <h6 class="mb-3"><i class="fas fa-microphone me-2"></i>Exercício de Pronúncia</h6>
+                    <div class="frase-pronunciar">
+                        <p class="mb-1 text-muted">Repita a frase abaixo:</p>
+                        <h4 id="fraseParaFalar" class="fw-bold text-dark">"${textoParaFalar}"</h4>
+                    </div>
+                    <div class="microphone-section">
+                        <button id="btn-falar" class="microphone-btn" onclick="iniciarGravacaoFala('${idioma}')">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <p id="status-fala" class="text-muted mt-2">Clique no microfone para começar a falar</p>
+                    </div>
+                    <div id="resultado-audio" class="mt-3"></div>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderizarMultiplaEscolha(conteudo) {
+        let html = '<div class="d-grid gap-2">';
+        if (conteudo.alternativas && Array.isArray(conteudo.alternativas)) {
+            conteudo.alternativas.forEach(alt => {
+                html += `
+                    <button type="button" class="btn btn-outline-primary btn-resposta text-start" 
+                            data-id="${alt.id || alt.texto}" onclick="selecionarResposta(this)">
+                        ${alt.texto}
+                    </button>
+                `;
+            });
+        }
+        html += '</div>';
+        return html;
+    }
+
+    function renderizarTextoLivre(conteudo) {
+        const dica = conteudo.dica || '';
+        
+        return `
+            <div class="mb-3">
+                <label for="respostaTextoLivre" class="form-label">Sua resposta:</label>
+                <textarea id="respostaTextoLivre" class="form-control" rows="4" placeholder="Digite sua resposta aqui..."></textarea>
+                ${dica ? `<div class="form-text text-muted"><i class="fas fa-lightbulb me-1"></i>${dica}</div>` : ''}
+            </div>
+        `;
+    }
+
+    function renderizarCompletar(conteudo) {
+        const fraseCompletar = conteudo.frase_completar || '';
+        const placeholderCompletar = conteudo.placeholder || 'Digite sua resposta...';
+        const dica = conteudo.dica || '';
+        
+        const fraseRenderizada = fraseCompletar.replace(/_____+/g, 
+            `<input type="text" class="form-control d-inline-block w-auto mx-1" id="respostaCompletar" placeholder="${placeholderCompletar}" value="">`);
+
+        return `
+            <div class="mb-3">
+                <label for="respostaCompletar" class="form-label">Complete a frase:</label>
+                <p class="fs-5">${fraseRenderizada}</p>
+                ${dica ? `<div class="form-text text-muted"><i class="fas fa-lightbulb me-1"></i>${dica}</div>` : ''}
+            </div>
+        `;
     }
 
     function renderizarAudicao(conteudo) {
@@ -1289,9 +1416,16 @@ $database->closeConnection();
             return;
         }
 
-        const btnMicrofone = document.getElementById('btnMicrofone');
-        const statusFala = document.getElementById('statusFala');
-        const resultadoFala = document.getElementById('resultadoFala');
+        const btnMicrofone = document.getElementById('btn-falar');
+        const statusFala = document.getElementById('status-fala');
+        const resultadoFala = document.getElementById('resultado-audio');
+        
+        // Verificar se os elementos existem
+        if (!btnMicrofone || !statusFala || !resultadoFala) {
+            console.error('Elementos de fala não encontrados:', {btnMicrofone, statusFala, resultadoFala});
+            alert('Erro: Interface de fala não carregada corretamente.');
+            return;
+        }
         
         // Verificar suporte do navegador
         if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -1304,6 +1438,113 @@ $database->closeConnection();
             return;
         }
 
+        // Verificar se MediaDevices API está disponível
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            resultadoFala.innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Seu navegador não suporta acesso ao microfone. Use Chrome, Firefox ou Edge.
+                </div>
+            `;
+            return;
+        }
+
+        // Mostrar mensagem de solicitação de permissão
+        resultadoFala.innerHTML = `
+            <div class="alert alert-info">
+                <i class="fas fa-microphone me-2"></i>
+                <strong>Solicitação de Permissão:</strong><br>
+                O navegador irá solicitar permissão para acessar seu microfone.<br>
+                <strong>Clique em "Permitir" quando o prompt aparecer.</strong>
+                <hr>
+                <div class="text-center">
+                    <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                    Aguardando permissão...
+                </div>
+            </div>
+        `;
+        
+        statusFala.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Solicitando permissão do microfone...';
+        
+        // Verificar se há dispositivos de áudio disponíveis primeiro
+        navigator.mediaDevices.enumerateDevices()
+        .then(function(devices) {
+            const audioInputs = devices.filter(device => device.kind === 'audioinput');
+            
+            if (audioInputs.length === 0) {
+                throw new Error('NotFoundError: No microphone devices found');
+            }
+            
+            // Tentar acessar o microfone
+            return navigator.mediaDevices.getUserMedia({ 
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                }
+            });
+        })
+        .then(function(stream) {
+            // Parar todas as tracks do stream
+            stream.getTracks().forEach(track => track.stop());
+            statusFala.innerHTML = '<i class="fas fa-check text-success me-2"></i>Microfone autorizado! Iniciando...';
+            
+            // Pequeno delay para mostrar a mensagem
+            setTimeout(() => {
+                iniciarReconhecimentoVoz(idioma, btnMicrofone, statusFala, resultadoFala);
+            }, 500);
+        })
+        .catch(function(error) {
+            console.error('Erro MediaDevices:', error);
+            let errorMessage = '';
+            let buttonText = 'Tentar Novamente';
+            
+            switch(error.name) {
+                case 'NotAllowedError':
+                case 'PermissionDeniedError':
+                    errorMessage = 'Permissão negada. Clique no ícone do microfone na barra de endereço e permita o acesso.';
+                    break;
+                case 'NotFoundError':
+                case 'DevicesNotFoundError':
+                    errorMessage = 'Nenhum microfone detectado. Verifique se há um microfone conectado ou use fones de ouvido com microfone.';
+                    buttonText = 'Tentar Novamente';
+                    break;
+                case 'NotReadableError':
+                case 'TrackStartError':
+                    errorMessage = 'Microfone em uso por outro aplicativo. Feche outros programas que usam o microfone.';
+                    break;
+                default:
+                    errorMessage = 'Erro ao acessar microfone. Verifique as configurações do navegador.';
+            }
+            
+            resultadoFala.innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="fas fa-microphone-slash me-2"></i>
+                    <strong>Problema com Microfone:</strong><br>
+                    ${errorMessage}
+                    <hr>
+                    <div class="small">
+                        <strong>Soluções:</strong><br>
+                        • Conecte um microfone ou fones com microfone<br>
+                        • Verifique se outros aplicativos não estão usando o microfone<br>
+                        • Clique no ícone 🎤 na barra de endereço e permita o acesso<br>
+                        • Recarregue a página se necessário
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <button class="btn btn-outline-primary" onclick="iniciarGravacaoFala('${idioma}')">
+                        <i class="fas fa-redo me-1"></i>${buttonText}
+                    </button>
+                    <button class="btn btn-secondary ms-2" onclick="proximoExercicio()">
+                        <i class="fas fa-forward me-1"></i>Pular Exercício
+                    </button>
+                </div>
+            `;
+        });
+    };
+
+    function iniciarReconhecimentoVoz(idioma, btnMicrofone, statusFala, resultadoFala) {
+
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         
         try {
@@ -1315,6 +1556,7 @@ $database->closeConnection();
 
             // Atualizar UI para estado de gravação
             btnMicrofone.classList.add('listening');
+            btnMicrofone.disabled = true;
             statusFala.innerHTML = '<i class="fas fa-circle text-danger me-2"></i>Ouvindo... Fale agora!';
             resultadoFala.innerHTML = '';
 
@@ -1326,28 +1568,16 @@ $database->closeConnection();
                 
                 // Atualizar UI com resultado
                 btnMicrofone.classList.remove('listening');
+                btnMicrofone.disabled = false;
                 statusFala.innerHTML = '<i class="fas fa-check text-success me-2"></i>Fala detectada!';
                 
-                // Mostrar o que foi reconhecido
-                resultadoFala.innerHTML = `
-                    <div class="alert alert-info">
-                        <h6><i class="fas fa-comment me-2"></i>Você disse:</h6>
-                        <p class="mb-2">"${transcript}"</p>
-                        <small class="text-muted">Confiança: ${(confidence * 100).toFixed(1)}%</small>
-                    </div>
-                    <div class="text-center">
-                        <button class="btn btn-primary me-2" onclick="enviarRespostaFala('${transcript.replace(/'/g, "\\'")}')">
-                            <i class="fas fa-check me-1"></i>Enviar Resposta
-                        </button>
-                        <button class="btn btn-outline-secondary" onclick="iniciarGravacaoFala('${idioma}')">
-                            <i class="fas fa-redo me-1"></i>Tentar Novamente
-                        </button>
-                    </div>
-                `;
+                // Enviar automaticamente para correção
+                enviarRespostaFala(transcript);
             };
 
             recognition.onerror = function(event) {
                 btnMicrofone.classList.remove('listening');
+                btnMicrofone.disabled = false;
                 
                 let errorMessage = 'Erro desconhecido';
                 switch(event.error) {
@@ -1380,6 +1610,7 @@ $database->closeConnection();
 
             recognition.onend = function() {
                 btnMicrofone.classList.remove('listening');
+                btnMicrofone.disabled = false;
             };
 
         } catch (error) {
@@ -1390,7 +1621,7 @@ $database->closeConnection();
                 </div>
             `;
         }
-    };
+    }
 
     // FUNÇÃO CORRIGIDA PARA ENVIAR RESPOSTA DE FALA
     window.enviarRespostaFala = function(transcript) {
@@ -1399,7 +1630,7 @@ $database->closeConnection();
             return;
         }
 
-        const resultadoFala = document.getElementById('resultadoFala');
+        const resultadoFala = document.getElementById('resultado-audio');
         
         // Mostrar loading
         resultadoFala.innerHTML = `
@@ -1411,16 +1642,35 @@ $database->closeConnection();
             </div>
         `;
 
-        // CORREÇÃO: Enviar para o controller correto
-        fetch('../../admin/controller/processar_exercicio.php', {
+        // Obter a frase esperada do conteúdo do exercício
+        let conteudo = exercicioAtual.conteudo;
+        if (typeof conteudo === 'string') {
+            try {
+                conteudo = JSON.parse(conteudo);
+            } catch (e) {
+                console.error('Erro ao parsear conteúdo:', e);
+                conteudo = {};
+            }
+        }
+        
+        const fraseEsperada = conteudo.texto_para_falar || 
+                             conteudo.frase_esperada || 
+                             conteudo.frase || 
+                             'Frase não encontrada';
+        
+        const idioma = conteudo.idioma || mapIdiomaParaReconhecimento('<?php echo $idioma_escolhido; ?>');
+
+        // CORREÇÃO: Enviar para a API de correção de áudio
+        fetch('../../admin/controller/correcao_audio.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
                 exercicio_id: exercicioAtual.id,
-                resposta: transcript,
-                tipo_exercicio: 'fala'
+                frase_esperada: fraseEsperada,
+                frase_transcrita: transcript,
+                idioma: idioma
             })
         })
         .then(response => {
@@ -1432,28 +1682,72 @@ $database->closeConnection();
         .then(data => {
             console.log('Resposta do servidor:', data);
             
-            if (data.success) {
-                resultadoFala.innerHTML = `
-                    <div class="alert ${data.correto ? 'alert-success' : 'alert-danger'}">
-                        <h6><i class="fas ${data.correto ? 'fa-check-circle' : 'fa-times-circle'} me-2"></i>
-                        ${data.correto ? 'Parabéns! Pronúncia correta!' : 'Precisa melhorar a pronúncia'}</h6>
-                        <p class="mb-2">${data.explicacao || 'Sem explicação disponível.'}</p>
-                        ${data.dica ? `<small><strong>Dica:</strong> ${data.dica}</small>` : ''}
-                        ${data.feedback_pronuncia ? `<div class="mt-2"><small><strong>Feedback:</strong> ${data.feedback_pronuncia}</small></div>` : ''}
-                    </div>
-                    <div class="text-center">
-                        <button class="btn btn-success" onclick="proximoExercicio()">
-                            <i class="fas fa-arrow-right me-1"></i>Próximo Exercício
-                        </button>
+            if (!data) {
+                throw new Error('Resposta vazia do servidor');
+            }
+            
+            if (data.success && data.resultado) {
+                const resultado = data.resultado;
+                const statusClass = resultado.status === 'correto' ? 'alert-success' : 
+                                   resultado.status === 'meio_correto' ? 'alert-warning' : 'alert-danger';
+                const statusIcon = resultado.status === 'correto' ? 'fa-check-circle' : 
+                                  resultado.status === 'meio_correto' ? 'fa-exclamation-triangle' : 'fa-times-circle';
+                const statusTexto = resultado.status === 'correto' ? 'Excelente!' : 
+                                   resultado.status === 'meio_correto' ? 'Bom, mas pode melhorar' : 'Precisa praticar mais';
+                
+                let html = `
+                    <div class="alert ${statusClass}">
+                        <h6><i class="fas ${statusIcon} me-2"></i>${statusTexto} - ${resultado.pontuacao_percentual}%</h6>
+                        <div class="mt-3">
+                            <div class="mb-2">
+                                <strong>Frase esperada:</strong> "${resultado.feedback_detalhado.frase_esperada}"
+                            </div>
+                            <div class="mb-2">
+                                <strong>Você disse:</strong> "${resultado.feedback_detalhado.frase_transcrita}"
+                            </div>
+                `;
+                
+                if (resultado.feedback_detalhado.palavras_corretas && resultado.feedback_detalhado.palavras_corretas.length > 0) {
+                    html += `
+                        <div class="mb-2">
+                            <strong>✅ Palavras corretas:</strong> ${resultado.feedback_detalhado.palavras_corretas.join(', ')}
+                        </div>
+                    `;
+                }
+                
+                if (resultado.feedback_detalhado.palavras_incorretas && resultado.feedback_detalhado.palavras_incorretas.length > 0) {
+                    html += `<div class="mb-2"><strong>❌ Palavras para melhorar:</strong><ul>`;
+                    resultado.feedback_detalhado.palavras_incorretas.forEach(palavra => {
+                        html += `<li><strong>${palavra.esperada}</strong> (você disse: "${palavra.transcrita}") - ${palavra.sugestao}</li>`;
+                    });
+                    html += `</ul></div>`;
+                }
+                
+                if (resultado.feedback_detalhado.explicacao) {
+                    html += `<div class="mb-2"><strong>📚 Explicação:</strong> ${resultado.feedback_detalhado.explicacao}</div>`;
+                }
+                
+                html += `
+                        </div>
+                        <div class="text-center mt-3">
+                            <button class="btn btn-outline-primary me-2" onclick="iniciarGravacaoFala()">
+                                <i class="fas fa-redo me-1"></i>Tentar Novamente
+                            </button>
+                            <button class="btn btn-success" onclick="proximoExercicio()">
+                                <i class="fas fa-arrow-right me-1"></i>Próximo Exercício
+                            </button>
+                        </div>
                     </div>
                 `;
+                
+                resultadoFala.innerHTML = html;
                 
                 document.getElementById("btnEnviarResposta").style.display = "none";
                 document.getElementById("btnProximoExercicio").style.display = "block";
             } else {
                 resultadoFala.innerHTML = `
                     <div class="alert alert-danger">
-                        <i class="fas fa-times me-2"></i>Erro ao processar resposta: ${data.message}
+                        <i class="fas fa-times me-2"></i>Erro ao processar resposta: ${data.message || 'Erro desconhecido'}
                     </div>
                     <div class="text-center">
                         <button class="btn btn-outline-primary" onclick="iniciarGravacaoFala()">
@@ -1561,17 +1855,20 @@ $database->closeConnection();
         })
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
+            console.log('Resposta recebida do servidor:', data);
+            if (data && data.success !== undefined) {
                 exibirFeedback(data);
                 document.getElementById("btnEnviarResposta").style.display = "none";
                 document.getElementById("btnProximoExercicio").style.display = "block";
             } else {
-                alert("Erro ao processar resposta: " + data.message);
+                console.error('Resposta inválida do servidor:', data);
+                alert("Erro ao processar resposta: " + (data?.message || 'Resposta inválida do servidor'));
             }
         })
         .catch(error => {
-            console.error("Erro:", error);
-            alert("Erro de conexão. Tente novamente.");
+            console.error("Erro na requisição:", error);
+            console.error("Detalhes do erro:", error.message);
+            alert("Erro de conexão. Tente novamente. Detalhes: " + error.message);
         });
     };
 
@@ -1582,21 +1879,37 @@ $database->closeConnection();
         const feedbackDiv = document.createElement('div');
         feedbackDiv.id = "feedbackExercicio";
         feedbackDiv.className = `alert ${data.correto ? 'alert-success' : 'alert-danger'} mt-3`;
-        feedbackDiv.innerHTML = `
+        feedbackDiv.style.borderLeft = `4px solid ${data.correto ? '#28a745' : '#dc3545'}`;
+        
+        let feedbackHtml = `
             <h6 class="alert-heading">
                 <i class="fas ${data.correto ? 'fa-check-circle' : 'fa-times-circle'} me-2"></i>
-                ${data.correto ? 'Correto!' : 'Incorreto!'}
+                ${data.correto ? '✅ Correto!' : '❌ Incorreto!'}
             </h6>
-            <p class="mb-0">${data.explicacao || 'Sem explicação disponível.'}</p>
-            ${data.dica ? `<hr><p class="mb-0"><strong>Dica:</strong> ${data.dica}</p>` : ''}
+            <p class="mb-2">${data.explicacao || 'Sem explicação disponível.'}</p>
         `;
-       
+        
+        // Mostrar detalhes da resposta
+        if (!data.correto) {
+            if (data.resposta_selecionada) {
+                feedbackHtml += `<p class="mb-1"><strong>Sua resposta:</strong> ${data.resposta_selecionada}</p>`;
+            }
+            if (data.resposta_correta) {
+                feedbackHtml += `<p class="mb-2"><strong>Resposta correta:</strong> ${data.resposta_correta}</p>`;
+            }
+        }
+        
+        if (data.dica) {
+            feedbackHtml += `<hr><p class="mb-0"><strong>💡 Dica:</strong> ${data.dica}</p>`;
+        }
+        
+        feedbackDiv.innerHTML = feedbackHtml;
         conteudoExercicioDiv.appendChild(feedbackDiv);
 
         const tipoExercicio = exercicioAtual.tipoExercicioDeterminado || "texto_livre";
 
         // Atualiza a aparência dos elementos após a resposta
-        if (tipoExercicio === "multipla_escolha") {
+        if (tipoExercicio === "multipla_escolha" || tipoExercicio === "listening") {
             document.querySelectorAll(".btn-resposta").forEach(btn => {
                 btn.disabled = true;
                 const altId = btn.dataset.id;
@@ -1610,15 +1923,28 @@ $database->closeConnection();
                     }
                 }
                
+                // Encontrar resposta correta
+                let respostaCorretaId = null;
                 if (conteudo.alternativas) {
-                    const alternativaCorreta = conteudo.alternativas.find(alt => alt.correta);
-                    if (alternativaCorreta && altId === alternativaCorreta.id) {
-                        btn.classList.remove("btn-primary", "btn-outline-primary");
-                        btn.classList.add("btn-success");
-                    } else if (btn.classList.contains("selected")) {
-                        btn.classList.remove("btn-primary", "btn-outline-primary");
-                        btn.classList.add("btn-danger");
-                    }
+                    const alternativaCorreta = conteudo.alternativas.find(alt => alt.correta === true);
+                    respostaCorretaId = alternativaCorreta ? (alternativaCorreta.id || alternativaCorreta.texto) : null;
+                } else if (conteudo.opcoes && conteudo.resposta_correta !== undefined) {
+                    respostaCorretaId = conteudo.resposta_correta.toString();
+                }
+                
+                // Colorir botões baseado na resposta
+                if (altId == respostaCorretaId || altId === respostaCorretaId) {
+                    // Alternativa correta - sempre verde
+                    btn.className = "btn btn-success";
+                    btn.style.cssText = "background-color: #28a745 !important; border-color: #28a745 !important; color: white !important;";
+                } else if (btn.classList.contains("selected")) {
+                    // Alternativa selecionada incorreta - vermelho
+                    btn.className = "btn btn-danger";
+                    btn.style.cssText = "background-color: #dc3545 !important; border-color: #dc3545 !important; color: white !important;";
+                } else {
+                    // Outras alternativas - cinza
+                    btn.className = "btn btn-secondary";
+                    btn.style.cssText = "background-color: #6c757d !important; border-color: #6c757d !important; color: white !important;";
                 }
             });
         } else if (tipoExercicio === "texto_livre" || tipoExercicio === "completar" || tipoExercicio === "audicao") {
@@ -1635,35 +1961,15 @@ $database->closeConnection();
                 }
             }
         }
-        // Feedback para listening
-        else if (tipoExercicio === "listening") {
-            document.querySelectorAll(".btn-resposta").forEach(btn => {
-                btn.disabled = true;
-                const respostaIndex = parseInt(btn.dataset.id);
-                const conteudo = typeof exercicioAtual.conteudo === 'string' ? 
-                    JSON.parse(exercicioAtual.conteudo) : exercicioAtual.conteudo;
-                
-                const respostaCorreta = conteudo.resposta_correta || 0;
-                
-                if (respostaIndex === respostaCorreta) {
-                    btn.classList.remove("btn-outline-primary");
-                    btn.classList.add("btn-success");
-                } else if (btn.classList.contains("selected")) {
-                    btn.classList.remove("btn-outline-primary");
-                    btn.classList.add("btn-danger");
-                }
-            });
-            
-            // Mostrar frase original do áudio
-            if (data.frase_original) {
-                const fraseDiv = document.createElement('div');
-                fraseDiv.className = 'alert alert-info mt-3';
-                fraseDiv.innerHTML = `
-                    <strong><i class="fas fa-volume-up me-2"></i>Frase do áudio:</strong>
-                    <p class="mb-0 mt-2">"${data.frase_original}"</p>
-                `;
-                conteudoExercicioDiv.appendChild(fraseDiv);
-            }
+        // Mostrar informações adicionais para listening
+        if (tipoExercicio === "listening" && data.frase_original) {
+            const fraseDiv = document.createElement('div');
+            fraseDiv.className = 'alert alert-info mt-3';
+            fraseDiv.innerHTML = `
+                <strong><i class="fas fa-volume-up me-2"></i>Frase do áudio:</strong>
+                <p class="mb-0 mt-2">"${data.frase_original}"</p>
+            `;
+            conteudoExercicioDiv.appendChild(fraseDiv);
         }
     };
 
@@ -1959,6 +2265,51 @@ $database->closeConnection();
     };
 
     </script>
+    
+    <script>
+        // Fix inline para garantir que funciona
+        document.addEventListener('click', function(e) {
+            const opcao = e.target;
+            
+            if (opcao.classList.contains('option-audio') || opcao.classList.contains('alternativa')) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const container = opcao.closest('.exercicio-container, [id^="exercicio-"]') || document;
+                
+                // Limpar
+                container.querySelectorAll('.option-audio, .alternativa').forEach(o => {
+                    o.style.cssText = '';
+                });
+                container.querySelectorAll('.feedback-message, .explicacao').forEach(el => el.remove());
+                
+                const todas = container.querySelectorAll('.option-audio, .alternativa');
+                const indice = Array.from(todas).indexOf(opcao);
+                
+                if (indice === 0) {
+                    opcao.style.cssText = 'background: #d4edda !important; color: #155724 !important; border: 2px solid #28a745 !important;';
+                    const explicacao = document.createElement('div');
+                    explicacao.innerHTML = '<div class="alert alert-success mt-3">✅ Correto! Você acertou.</div>';
+                    container.appendChild(explicacao);
+                } else {
+                    opcao.style.cssText = 'background: #f8d7da !important; color: #721c24 !important; border: 2px solid #dc3545 !important;';
+                    if (todas[0]) {
+                        todas[0].style.cssText = 'background: #d4edda !important; color: #155724 !important; border: 2px solid #28a745 !important;';
+                    }
+                    const explicacao = document.createElement('div');
+                    explicacao.innerHTML = '<div class="alert alert-info mt-3">❌ Incorreto. A resposta correta é a primeira opção.</div>';
+                    container.appendChild(explicacao);
+                }
+                return false;
+            }
+            
+            if (opcao.classList.contains('microphone-btn')) {
+                e.preventDefault();
+                alert('Microfone não disponível');
+            }
+        });
+    </script>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

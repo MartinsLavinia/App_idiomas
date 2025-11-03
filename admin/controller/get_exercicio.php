@@ -1,5 +1,5 @@
 <?php
-// get_exercicio.php - VERSÃO CORRIGIDA
+// get_exercicio.php - VERSÃO CORRIGIDA PARA EXERCÍCIOS DE FALA
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
@@ -47,7 +47,8 @@ try {
                 e.tipo,
                 e.pergunta,
                 e.conteudo, 
-                e.tipo AS tipo_exercicio,
+                e.categoria,
+                e.dificuldade,
                 e.caminho_id,
                 e.bloco_id,
                 u.idioma AS idioma_exercicio
@@ -68,7 +69,8 @@ try {
                 e.tipo,
                 e.pergunta,
                 e.conteudo, 
-                e.tipo AS tipo_exercicio,
+                e.categoria,
+                e.dificuldade,
                 e.caminho_id,
                 e.bloco_id,
                 u.idioma AS idioma_exercicio
@@ -152,31 +154,69 @@ function processarConteudoExercicio($row, $idioma_exercicio) {
     return $row;
 }
 
-// FUNÇÃO PARA DETERMINAR TIPO DE EXERCÍCIO
+// FUNÇÃO CORRIGIDA PARA DETERMINAR TIPO DE EXERCÍCIO
 function determinarTipoExercicio($row, $conteudo) {
-    // Primeiro, verificar se já tem um tipo definido
-    if (!empty($row['tipo_exercicio'])) {
-        return $row['tipo_exercicio'];
-    }
-    
-    // Se não tem tipo definido, analisar o conteúdo
-    if (is_array($conteudo)) {
-        if (isset($conteudo['alternativas']) && is_array($conteudo['alternativas'])) {
-            return 'multipla_escolha';
-        } elseif (isset($conteudo['frase_completar'])) {
-            return 'completar';
-        } elseif (isset($conteudo['frase_esperada']) || isset($conteudo['texto_para_falar'])) {
-            return 'fala';
-        } elseif (isset($conteudo['audio_url']) || isset($conteudo['arquivo_audio'])) {
-            return 'listening';
-        } elseif (isset($conteudo['texto_traduzir'])) {
-            return 'traducao';
-        } elseif (isset($conteudo['arrastar_soltar'])) {
-            return 'arrastar_soltar';
+    // PRIORIDADE 1: Verificar se existe 'tipo_exercicio' no conteúdo JSON
+    if (is_array($conteudo) && isset($conteudo['tipo_exercicio'])) {
+        $tipo_conteudo = strtolower(trim($conteudo['tipo_exercicio']));
+        
+        // Mapear tipos do conteúdo
+        $mapeamento_conteudo = [
+            'listening' => 'listening',
+            'fala' => 'fala', 
+            'speech' => 'fala',
+            'multipla_escolha' => 'multipla_escolha',
+            'multiple_choice' => 'multipla_escolha',
+            'texto_livre' => 'texto_livre',
+            'completar' => 'completar'
+        ];
+        
+        if (isset($mapeamento_conteudo[$tipo_conteudo])) {
+            return $mapeamento_conteudo[$tipo_conteudo];
         }
     }
     
-    // Fallback para o campo 'tipo' original ou padrão
+    // PRIORIDADE 2: Usar o campo 'categoria' se não for 'gramatica'
+    if (!empty($row['categoria']) && $row['categoria'] !== 'gramatica') {
+        $mapeamento_categoria = [
+            'fala' => 'fala',
+            'audicao' => 'listening', 
+            'escrita' => 'texto_livre',
+            'leitura' => 'texto_livre'
+        ];
+        
+        if (isset($mapeamento_categoria[$row['categoria']])) {
+            return $mapeamento_categoria[$row['categoria']];
+        }
+    }
+    
+    // PRIORIDADE 3: Analisar o conteúdo para determinar o tipo
+    if (is_array($conteudo)) {
+        // Verificar se é exercício de listening
+        if (isset($conteudo['audio_url']) || isset($conteudo['arquivo_audio']) || 
+            (isset($conteudo['opcoes']) && isset($conteudo['resposta_correta']))) {
+            return 'listening';
+        }
+        // Verificar se é exercício de fala
+        elseif (isset($conteudo['frase_esperada']) || isset($conteudo['texto_para_falar']) ||
+                isset($conteudo['frase'])) {
+            return 'fala';
+        }
+        // Verificar se é múltipla escolha
+        elseif (isset($conteudo['alternativas']) && is_array($conteudo['alternativas'])) {
+            return 'multipla_escolha';
+        }
+        // Verificar se é completar
+        elseif (isset($conteudo['frase_completar'])) {
+            return 'completar';
+        }
+    }
+    
+    // FALLBACK: padrão baseado na categoria ou tipo
+    if ($row['categoria'] === 'gramatica' || $row['tipo'] === 'normal') {
+        return 'multipla_escolha';
+    }
+    
     return $row['tipo'] ?? 'texto_livre';
 }
 
