@@ -451,6 +451,9 @@ $database->closeConnection();
             <a href="flashcards.php" class="list-group-item">
                 <i class="fas fa-layer-group"></i> Flash Cards
             </a>
+            <a href="perfil.php" class="list-group-item">
+                <i class="fas fa-cog"></i> Configurações
+            </a>
             <a href="../../logout.php" class="list-group-item mt-auto">
                 <i class="fas fa-sign-out-alt"></i> Sair
             </a>
