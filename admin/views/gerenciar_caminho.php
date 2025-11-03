@@ -86,8 +86,6 @@ $database->closeConnection();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
    <link rel="icon" type="image/png" href="../../imagens/mini-esquilo.png">
 
-
-
     <style>
         :root {
             --roxo-principal: #6a0dad;
@@ -269,6 +267,7 @@ border: 0 4px 8px rgba(235, 183, 14, 0.77);
     padding-top: 20px;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
     z-index: 1000;
+    transition: transform 0.3s ease-in-out;
 }
 
 .sidebar .profile {
@@ -377,24 +376,114 @@ border: 0 4px 8px rgba(235, 183, 14, 0.77);
 .main-content {
     margin-left: 250px;
     padding: 20px;
+    transition: margin-left 0.3s ease-in-out;
+}
+
+/* Menu Hamburguer */
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--roxo-principal) !important;
+    font-size: 1.5rem;
+    cursor: pointer;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1100;
+    transition: all 0.3s ease;
+}
+
+.menu-toggle:hover {
+    color: var(--roxo-escuro) !important;
+    transform: scale(1.1);
+}
+
+/* CORREÇÃO: Quando a sidebar está ativa */
+body:has(.sidebar.active) .menu-toggle,
+.sidebar.active ~ .menu-toggle {
+    color: var(--amarelo-detalhe) !important;
+}
+
+body:has(.sidebar.active) .menu-toggle:hover,
+.sidebar.active ~ .menu-toggle:hover {
+    color: var(--amarelo-hover) !important;
+}
+
+/* Overlay para mobile */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
 }
 
 @media (max-width: 992px) {
-    .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
+    .menu-toggle {
+        display: block;
     }
+    
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    
     .main-content {
         margin-left: 0;
     }
+    
+    .sidebar-overlay.active {
+        display: block;
+    }
 }
 
-        /* Ajuste do conteúdo principal para não ficar por baixo do sidebar */
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-        }
+@media (max-width: 768px) {
+    .sidebar {
+        width: 280px;
+    }
+    
+    .stats-card h3 {
+        font-size: 2rem;
+    }
+    
+    .table-responsive {
+        font-size: 0.9rem;
+    }
+    
+    .btn-sm {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .main-content {
+        padding: 15px 10px;
+    }
+    
+    .stats-card {
+        padding: 15px;
+    }
+    
+    .stats-card h3 {
+        font-size: 1.8rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .table-container {
+        padding: 15px;
+    }
+}
 
         .btn-warning {
             background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
@@ -412,18 +501,29 @@ border: 0 4px 8px rgba(235, 183, 14, 0.77);
             color: var(--preto-texto);
         }
 
-        @media (max-width: 768px) {
-            .sidebar {
-                position: relative;
-                width: 100%;
-                height: auto;
-            }
-            .main-content {
-                margin-left: 0;
-            }
-            .stats-card h3 {
-                font-size: 2rem;
-            }
+        .settings-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .settings-icon:hover {
+            color: var(--roxo-escuro) !important;
+            transform: rotate(90deg);
+        }
+
+        /* ESTILO PARA O BOTÃO LOGOUT - ADICIONAR */
+        .logout-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .logout-icon:hover {
+            color: var(--roxo-escuro) !important;
+            transform: translateY(-2px);
         }
     </style>
 </head>
@@ -470,23 +570,68 @@ document.addEventListener('DOMContentLoaded', function() {
         // Ativar também ao passar o mouse
         pesquisarCard.parentElement.addEventListener('mouseenter', ativarBrilho);
     }
+    
+    // Menu Hamburguer Functionality
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+            if (sidebarOverlay) {
+                sidebarOverlay.classList.toggle('active');
+            }
+        });
+        
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+        }
+        
+        // Fechar menu ao clicar em um link (mobile)
+        const sidebarLinks = sidebar.querySelectorAll('.list-group-item');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 992) {
+                    sidebar.classList.remove('active');
+                    if (sidebarOverlay) {
+                        sidebarOverlay.classList.remove('active');
+                    }
+                }
+            });
+        });
+    }
 });
 </script>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container-fluid d-flex justify-content-end align-items-center">
-            <div class="d-flex align-items-center" style="gap: 24px;">
-                <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
-                    <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
-                </a>
-                <a href="editar_perfil.php" class="settings-icon">
-                    <i class="fas fa-cog fa-lg"></i>
-                </a>
-            </div>
-        </div>
-    </nav>
+    <!-- Menu Hamburguer -->
+    <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Overlay para mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <div class="sidebar">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid d-flex justify-content-end align-items-center">
+        <div class="d-flex align-items-center" style="gap: 24px;">
+            <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
+                <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
+            </a>
+            <a href="editar_perfil.php" class="settings-icon">
+                <i class="fas fa-cog fa-lg"></i>
+            </a>
+            <a href="logout.php" class="logout-icon" title="Sair">
+                <i class="fas fa-sign-out-alt fa-lg"></i>
+            </a>
+        </div>
+    </div>
+</nav>
+
+    <div class="sidebar" id="sidebar">
     <div class="profile">
         <?php if ($foto_admin): ?>
             <div class="profile-avatar-sidebar">
@@ -517,9 +662,6 @@ document.addEventListener('DOMContentLoaded', function() {
             </a>
             <a href="estatisticas_usuarios.php" class="list-group-item">
                 <i class="fas fa-chart-bar"></i> Estatísticas
-            </a>
-            <a href="logout.php" class="list-group-item sair">
-                <i class="fas fa-sign-out-alt"></i> Sair
             </a>
         </div>
     </div>
@@ -600,52 +742,54 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>
 
-            <table class="table table-container table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Idioma</th>
-                        <th>Caminho</th>
-                        <th>Nível</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (!empty($caminhos)): ?>
-                    <?php foreach ($caminhos as $caminho): ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($caminho['id']); ?></td>
-                        <td><?php echo htmlspecialchars($caminho['idioma']); ?></td>
-                        <td><?php echo htmlspecialchars($caminho['nome_caminho']); ?></td>
-                        <td><?php echo htmlspecialchars($caminho['nivel']); ?></td>
-                        <td class="btn-acoes">
-                            <a href="gerenciar_blocos.php?caminho_id=<?php echo htmlspecialchars($caminho['id']); ?>"
-                                class="btn btn-sm btn-info btn-blocos">
-                                <i class="fas fa-eye"></i> Ver Blocos
-                            </a>
-                            
-                            <a href="editar_caminho.php?id=<?php echo htmlspecialchars($caminho['id']); ?>"
-                                class="btn btn-sm btn-primary btn-editar">
-                                <i class="fas fa-pen"></i> Editar
-                            </a>
-                            
-                            <button type="button" class="btn btn-sm btn-danger delete-btn btn-eliminar" data-bs-toggle="modal"
-                                data-bs-target="#confirmDeleteModal"
-                                data-id="<?php echo htmlspecialchars($caminho['id']); ?>"
-                                data-nome="<?php echo htmlspecialchars($caminho['nome_caminho']); ?>"
-                                data-tipo="caminho" data-action="eliminar_caminho.php">
-                                <i class="fas fa-trash"></i> Eliminar
-                            </button>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                    <?php else: ?>
-                    <tr>
-                        <td colspan="5" class="text-center">Nenhum caminho de aprendizado encontrado.</td>
-                    </tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table table-container table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Idioma</th>
+                            <th>Caminho</th>
+                            <th>Nível</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($caminhos)): ?>
+                        <?php foreach ($caminhos as $caminho): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($caminho['id']); ?></td>
+                            <td><?php echo htmlspecialchars($caminho['idioma']); ?></td>
+                            <td><?php echo htmlspecialchars($caminho['nome_caminho']); ?></td>
+                            <td><?php echo htmlspecialchars($caminho['nivel']); ?></td>
+                            <td class="btn-acoes">
+                                <a href="gerenciar_blocos.php?caminho_id=<?php echo htmlspecialchars($caminho['id']); ?>"
+                                    class="btn btn-sm btn-info btn-blocos">
+                                    <i class="fas fa-eye"></i> Ver Blocos
+                                </a>
+                                
+                                <a href="editar_caminho.php?id=<?php echo htmlspecialchars($caminho['id']); ?>"
+                                    class="btn btn-sm btn-primary btn-editar">
+                                    <i class="fas fa-pen"></i> Editar
+                                </a>
+                                
+                                <button type="button" class="btn btn-sm btn-danger delete-btn btn-eliminar" data-bs-toggle="modal"
+                                    data-bs-target="#confirmDeleteModal"
+                                    data-id="<?php echo htmlspecialchars($caminho['id']); ?>"
+                                    data-nome="<?php echo htmlspecialchars($caminho['nome_caminho']); ?>"
+                                    data-tipo="caminho" data-action="eliminar_caminho.php">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                        <?php else: ?>
+                        <tr>
+                            <td colspan="5" class="text-center">Nenhum caminho de aprendizado encontrado.</td>
+                        </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
 
             <!-- Estatísticas - MANTIDAS COMO ESTAVAM ANTES (EMBAIXO) -->
             <div class="row mb-4">
@@ -769,29 +913,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </div>
                             </div>
 
-                            <p class="text-muted">Use o botão "Adicionar Novo Idioma com Quiz" para criar um novo idioma completo com quiz de nivelamento.</p>
-
-                            <h5>Idiomas Existentes</h5>
-                            <ul class="list-group">
-                                <?php if (!empty($idiomas_db)): ?>
-                                <?php foreach ($idiomas_db as $idioma): ?>
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span><?php echo htmlspecialchars($idioma['idioma']); ?></span>
-                                    <div>
-                                        <a href="gerenciador_quiz_nivelamento.php?idioma=<?php echo urlencode($idioma['idioma']); ?>" class="btn btn-info btn-sm me-2">Gerenciar Quiz</a>
-                                        <button type="button" class="btn btn-danger btn-sm delete-btn" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal"
-                                            data-id="<?php echo urlencode($idioma['idioma']); ?>" data-nome="<?php echo htmlspecialchars($idioma['idioma']); ?>" data-tipo="idioma" data-action="excluir_idioma.php">
-                                            Excluir
-                                        </button>
-                                    </div>
-                                </li>
-                                <?php endforeach; ?>
-                                <?php else: ?>
-                                <li class="list-group-item text-center">Nenhum idioma encontrado.</li>
-                                <?php endif; ?>
-                                </ul>
+                            <p class="text-muted">Use o botão "Adicionar Novo Idioma com Quiz" para criar um idioma com quiz de nivelamento completo.</p>
                         </div>
                         <div class="modal-footer">
+                            <a href="pagina_adicionar_idiomas.php" class="btn btn-primary">
+                                <i class="fas fa-plus-circle me-2"></i>Adicionar Novo Idioma com Quiz
+                            </a>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
                         </div>
                     </div>
@@ -803,32 +930,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmação de Exclusão</h5>
+                            <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Exclusão</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div class="modal-body" id="confirmDeleteModalBody"></div>
+                        <div class="modal-body">
+                            <p>Tem certeza que deseja excluir o item <strong id="itemNome"></strong>?</p>
+                            <p class="text-danger"><strong>Atenção:</strong> Esta ação não pode ser desfeita!</p>
+                        </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <form id="deleteForm" method="POST" action="">
-                                <input type="hidden" name="id" id="deleteItemId">
-                                <button type="submit" class="btn btn-danger">Excluir</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Modal de Notificação -->
-            <div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="notificationModalLabel">Notificação</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body" id="notificationModalBody"></div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                            <a href="#" id="confirmDeleteBtn" class="btn btn-danger">Excluir</a>
                         </div>
                     </div>
                 </div>
@@ -838,135 +949,84 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Lógica para o modal de confirmação de exclusão
-        const confirmDeleteModal = document.getElementById('confirmDeleteModal');
-        if (confirmDeleteModal) {
-            confirmDeleteModal.addEventListener('show.bs.modal', function(event) {
-                const button = event.relatedTarget;
-                const itemId = button.getAttribute('data-id');
-                const itemName = button.getAttribute('data-nome');
-                const itemType = button.getAttribute('data-tipo');
-                const formAction = button.getAttribute('data-action');
+        // Script para o modal de confirmação de exclusão
+        document.addEventListener('DOMContentLoaded', function() {
+            const deleteButtons = document.querySelectorAll('.delete-btn');
+            const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+            const itemNome = document.getElementById('itemNome');
 
-                const modalBody = confirmDeleteModal.querySelector('#confirmDeleteModalBody');
-                const modalForm = confirmDeleteModal.querySelector('#deleteForm');
-                const hiddenInput = confirmDeleteModal.querySelector('#deleteItemId');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const nome = this.getAttribute('data-nome');
+                    const tipo = this.getAttribute('data-tipo');
+                    const action = this.getAttribute('data-action');
 
-                let message = '';
-                if (itemType === 'idioma') {
-                    message = `Tem certeza que deseja excluir o idioma '<strong>${itemName}</strong>'? Isso excluirá todos os caminhos, exercícios e quizzes associados a ele.`;
-                } else {
-                    message = `Tem certeza que deseja excluir o caminho '<strong>${itemName}</strong>'?`;
-                }
-
-                modalBody.innerHTML = `<p>${message}</p>`;
-                modalForm.action = formAction;
-                hiddenInput.value = itemId;
+                    itemNome.textContent = nome;
+                    confirmDeleteBtn.href = `${action}?id=${id}`;
+                });
             });
-        }
 
-        // Lógica para o modal de notificação
-        const urlParams = new URLSearchParams(window.location.search);
-        const status = urlParams.get('status');
-        const message = urlParams.get('message');
-
-        if (status && message) {
-            const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
-            const modalBody = document.getElementById('notificationModalBody');
-
-            modalBody.textContent = decodeURIComponent(message.replace(/\+/g, ' '));
-
-            const modalTitle = document.getElementById('notificationModalLabel');
-            if (status === 'success') {
-                modalTitle.textContent = 'Sucesso';
-            } else if (status === 'error') {
-                modalTitle.textContent = 'Erro';
-            }
-
-            notificationModal.show();
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-
-        // AJAX para adicionar caminho
-        const formAddCaminho = document.getElementById('formAddCaminho');
-        if (formAddCaminho) {
+            // Script para adicionar caminho via AJAX
+            const formAddCaminho = document.getElementById('formAddCaminho');
             const btnAddCaminho = document.getElementById('btnAddCaminho');
             const alertCaminho = document.getElementById('alertCaminho');
-            const spinner = btnAddCaminho.querySelector('.spinner-border');
 
             formAddCaminho.addEventListener('submit', function(e) {
                 e.preventDefault();
                 
-                // Mostrar loading
-                btnAddCaminho.disabled = true;
-                spinner.classList.remove('d-none');
-                
-                // Coletar dados do formulário
                 const formData = new FormData(this);
+                const spinner = btnAddCaminho.querySelector('.spinner-border');
+                const btnText = btnAddCaminho.querySelector('span:not(.spinner-border)');
                 
-                // Adicionar header para identificar como AJAX
-                const headers = new Headers();
-                headers.append('X-Requested-With', 'XMLHttpRequest');
-                
-                // Enviar via AJAX
+                // Mostrar loading
+                spinner.classList.remove('d-none');
+                btnText.textContent = 'Adicionando...';
+                btnAddCaminho.disabled = true;
+                alertCaminho.innerHTML = '';
+
                 fetch('adicionar_caminho.php', {
                     method: 'POST',
-                    headers: headers,
                     body: formData
                 })
-                .then(response => {
-                    // Primeiro verificar se a resposta é JSON
-                    const contentType = response.headers.get('content-type');
-                    if (contentType && contentType.includes('application/json')) {
-                        return response.json();
-                    } else {
-                        // Se não for JSON, retornar o texto para debug
-                        return response.text().then(text => {
-                            throw new Error('Resposta não é JSON: ' + text.substring(0, 100));
-                        });
-                    }
-                })
+                .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Sucesso
-                        alertCaminho.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
-                        
-                        // Limpar formulário
+                        alertCaminho.innerHTML = `
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="fas fa-check-circle"></i> ${data.message}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        `;
                         formAddCaminho.reset();
-                        
-                        // Recarregar a página após 1.5 segundos para mostrar o novo caminho
                         setTimeout(() => {
-                            window.location.reload();
+                            location.reload();
                         }, 1500);
                     } else {
-                        // Erro
-                        alertCaminho.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+                        alertCaminho.innerHTML = `
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="fas fa-exclamation-circle"></i> ${data.message}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        `;
                     }
                 })
                 .catch(error => {
-                    console.error('Erro completo:', error);
-                    alertCaminho.innerHTML = `<div class="alert alert-danger">Erro ao adicionar caminho: ${error.message}</div>`;
+                    console.error('Error:', error);
+                    alertCaminho.innerHTML = `
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle"></i> Erro ao adicionar caminho. Tente novamente.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    `;
                 })
                 .finally(() => {
-                    // Esconder loading
-                    btnAddCaminho.disabled = false;
                     spinner.classList.add('d-none');
+                    btnText.textContent = 'Adicionar';
+                    btnAddCaminho.disabled = false;
                 });
             });
-
-            // Limpar alerta quando o modal for fechado
-            const addCaminhoModal = document.getElementById('addCaminhoModal');
-            if (addCaminhoModal) {
-                addCaminhoModal.addEventListener('hidden.bs.modal', function() {
-                    if (alertCaminho) {
-                        alertCaminho.innerHTML = '';
-                    }
-                    formAddCaminho.reset();
-                });
-            }
-        }
-    });
+        });
     </script>
 </body>
 </html>

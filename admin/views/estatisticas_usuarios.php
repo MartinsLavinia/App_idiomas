@@ -174,7 +174,6 @@ $database->closeConnection();
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
      <link rel="icon" type="image/png" href="../../imagens/mini-esquilo.png">
     <style>
-    /* Paleta de Cores */
     :root {
         --roxo-principal: #6a0dad;
         --roxo-escuro: #4c087c;
@@ -187,7 +186,6 @@ $database->closeConnection();
         --cinza-medio: #dee2e6;
     }
 
-    /* Estilos Gerais do Corpo */
     body {
         font-family: 'Poppins', sans-serif;
         background-color: var(--cinza-claro);
@@ -196,80 +194,41 @@ $database->closeConnection();
     }
 
     @keyframes fadeIn {
-        from {
-            opacity: 0;
-        }
-        to {
-            opacity: 1;
-        }
+        from { opacity: 0; } to { opacity: 1; }
     }
 
-    .logout-icon {
+    .settings-icon {
         color: var(--roxo-principal) !important;
         transition: all 0.3s ease;
         text-decoration: none;
+        font-size: 1.2rem;
     }
 
-    /* Barra de Navegação - MODIFICADA PARA TRANSPARENTE */
-    .navbar {
-        background-color: transparent !important;
-        border-bottom: 3px solid var(--amarelo-detalhe);
-        box-shadow: 0 4px 15px rgba(255, 238, 0, 0.38);
+    .settings-icon:hover {
+        color: var(--roxo-escuro) !important;
+        transform: rotate(90deg);
     }
 
-    /* Ajuste da logo no header */
-    .navbar-brand {
-        margin-left: auto;
-        margin-right: 0;
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        width: 100%;
-    }
-
-    .navbar-brand .logo-header {
-        height: 70px;
-        width: auto;
-        display: block;
-    }
-
-    .navbar {
-        display: flex;
-        align-items: center;
-    }
-
-    .btn-outline-light {
-        color: var(--amarelo-detalhe);
-        border-color: var(--amarelo-detalhe);
-        font-weight: 600;
+    .table-container {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        border: 2px solid rgba(106, 13, 173, 0.1);
         transition: all 0.3s ease;
     }
 
-    .btn-outline-light:hover {
-        background-color: var(--amarelo-detalhe);
-        color: var(--preto-texto);
+    .card-header h5 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: white;
     }
 
-    /* Estilos de Cartões (Cards) */
-    .card {
-        border: none;
-        border-radius: 1rem;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    .card-header h5 i {
+        color: var(--amarelo-detalhe);
     }
 
-    .card-header {
-        background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3) !important;
-        color: var(--branco);
-        border-radius: 1rem 1rem 0 0 !important;
-        padding: 1.5rem;
-    }
-
-    .card-header h2 {
-        font-weight: 700;
-        letter-spacing: 0.5px;
-    }
-
-    /* Cartões de Estatísticas - ATUALIZADO */
+    /* Cartões de Estatísticas */
     .stats-card {
         background: rgba(255, 255, 255, 0.95) !important;
         color: var(--preto-texto);
@@ -344,188 +303,281 @@ $database->closeConnection();
     .stats-card:nth-child(3) { animation-delay: 0.3s; }
     .stats-card:nth-child(4) { animation-delay: 0.4s; }
 
- /* Menu Lateral */
-.sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 250px;
-    height: 100%;
-    background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
-    color: var(--branco);
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    padding-top: 20px;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-}
-
-.sidebar .profile {
-    text-align: center;
-    margin-bottom: 30px;
-    padding: 0 15px;
-}
-
-.profile-avatar-sidebar {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    border: 3px solid var(--amarelo-detalhe);
-    background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 15px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.profile-avatar-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-}
-
-.profile-avatar-sidebar:has(.profile-avatar-img) i {
-    display: none;
-}
-
-.profile-avatar-sidebar i {
-    font-size: 3.5rem;
-    color: var(--amarelo-detalhe);
-}
-
-.sidebar .profile h5 {
-    font-weight: 600;
-    margin-bottom: 5px;
-    color: var(--branco);
-    font-size: 1.1rem;
-}
-
-.sidebar .profile small {
-    color: var(--cinza-claro);
-    font-size: 0.9rem;
-}
-
-.sidebar .list-group {
-    width: 100%;
-}
-
-.sidebar .list-group-item {
-    background-color: transparent;
-    color: var(--branco);
-    border: none;
-    padding: 15px 25px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.3s ease;
-}
-
-.sidebar .list-group-item:hover {
-    background-color: var(--roxo-escuro);
-    cursor: pointer;
-}
-
-.sidebar .list-group-item.active {
-    background-color: var(--roxo-escuro) !important;
-    color: var(--branco) !important;
-    font-weight: 600;
-    border-left: 4px solid var(--amarelo-detalhe);
-}
-
-.sidebar .list-group-item i {
-    color: var(--amarelo-detalhe);
-}
-
-/* Bottom Navigation Bar para mobile */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3); /* Mesmo gradiente da sidebar */
-    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.15);
-    z-index: 1020;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 5px 0;
-}
-
-.bottom-nav-item {
-    flex: 1;
-    text-align: center;
-    color: var(--branco);
-    text-decoration: none;
-    padding: 8px 0;
-    transition: all 0.3s ease;
-    border-radius: 8px;
-}
-
-.bottom-nav-item i {
-    font-size: 1.5rem; /* Tamanho do ícone */
-    display: block;
-    margin: 0 auto;
-    color: var(--amarelo-detalhe);
-}
-
-.bottom-nav-item.active {
-    background-color: rgba(255, 255, 255, 0.15);
-}
-
-.bottom-nav-item.active i {
-    transform: scale(1.1);
-}
-
-.bottom-nav-item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Ajustes de layout para diferentes tamanhos de tela */
-@media (min-width: 992px) {
-    .main-content {
-        margin-left: 250px;
-        padding: 20px;
+    /* Barra de Navegação */
+    .navbar {
+        background-color: transparent !important;
+        border-bottom: 3px solid var(--amarelo-detalhe);
+        box-shadow: 0 4px 15px rgba(255, 238, 0, 0.38);
     }
-}
 
-@media (max-width: 991.98px) {
-    .main-content {
-        margin-left: 0;
-        padding: 20px 20px 80px 20px; /* Adiciona padding-bottom para a bottom-nav */
-    }
-    .sidebar {
-        display: none !important; /* Esconde a sidebar desktop em telas menores */
-    }
-}
-.main-content {
-    margin-left: 250px;
-    padding: 20px;
-}
-
-@media (max-width: 992px) {
-    .sidebar {
+    .navbar-brand {
+        margin-left: auto;
+        margin-right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
         width: 100%;
-        height: auto;
-        position: relative;
     }
-    .main-content {
-        margin-left: 0;
+
+    .navbar-brand .logo-header {
+        height: 70px;
+        width: auto;
+        display: block;
     }
-}
 
+    .btn-outline-light {
+        color: var(--amarelo-detalhe);
+        border-color: var(--amarelo-detalhe);
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
 
-    /* Ajuste do conteúdo principal para não ficar por baixo do sidebar */
+   .btn-outline-warning:hover {
+        background-color: var(--amarelo-detalhe);
+        border: 0 4px 8px rgba(235, 183, 14, 0.77);
+    }
+
+    /* Menu Lateral */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 250px;
+        height: 100%;
+        background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+        color: var(--branco);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding-top: 20px;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .sidebar .profile {
+        text-align: center;
+        margin-bottom: 30px;
+        padding: 0 15px;
+    }
+
+    .profile-avatar-sidebar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        border: 3px solid var(--amarelo-detalhe);
+        background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .profile-avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .profile-avatar-sidebar:has(.profile-avatar-img) i {
+        display: none;
+    }
+
+    .profile-avatar-sidebar i {
+        font-size: 3.5rem;
+        color: var(--amarelo-detalhe);
+    }
+
+    .sidebar .profile h5 {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: var(--branco);
+        font-size: 1.1rem;
+        word-wrap: break-word;
+        max-width: 200px;
+        text-align: center;
+        line-height: 1.3;
+    }
+
+    .sidebar .profile small {
+        color: var(--cinza-claro);
+        font-size: 0.9rem;
+        word-wrap: break-word;
+        max-width: 200px;
+        text-align: center;
+        line-height: 1.2;
+        margin-top: 5px;
+    }
+
+    .sidebar .list-group {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .sidebar .list-group-item.sair {
+        background-color: transparent;
+        color: var(--branco);
+        border: none;
+        padding: 15px 25px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 40px !important;
+    }
+
+    .sidebar .list-group-item {
+        background-color: transparent;
+        color: var(--branco);
+        border: none;
+        padding: 15px 25px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .sidebar .list-group-item:hover {
+        background-color: var(--roxo-escuro);
+        cursor: pointer;
+    }
+
+    .sidebar .list-group-item.active {
+        background-color: var(--roxo-escuro) !important;
+        color: var(--branco) !important;
+        font-weight: 600;
+        border-left: 4px solid var(--amarelo-detalhe);
+    }
+
+    .sidebar .list-group-item i {
+        color: var(--amarelo-detalhe);
+    }
+
     .main-content {
         margin-left: 250px;
         padding: 20px;
+        transition: margin-left 0.3s ease-in-out;
     }
 
-    /* Botão amarelo principal */
+    /* Menu Hamburguer */
+    .menu-toggle {
+        display: none;
+        background: none;
+        border: none;
+        color: var(--roxo-principal) !important;
+        font-size: 1.5rem;
+        cursor: pointer;
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 1100;
+        transition: all 0.3s ease;
+    }
+
+    .menu-toggle:hover {
+        color: var(--roxo-escuro) !important;
+        transform: scale(1.1);
+    }
+
+    /* CORREÇÃO: Quando a sidebar está ativa */
+    body:has(.sidebar.active) .menu-toggle,
+    .sidebar.active ~ .menu-toggle {
+        color: var(--amarelo-detalhe) !important;
+    }
+
+    body:has(.sidebar.active) .menu-toggle:hover,
+    .sidebar.active ~ .menu-toggle:hover {
+        color: var(--amarelo-hover) !important;
+    }
+
+    /* Overlay para mobile */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+
+    @media (max-width: 992px) {
+        .menu-toggle {
+            display: block;
+        }
+        
+        .sidebar {
+            transform: translateX(-100%);
+        }
+        
+        .sidebar.active {
+            transform: translateX(0);
+        }
+        
+        .main-content {
+            margin-left: 0;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 280px;
+        }
+        
+        .stats-card h3 {
+            font-size: 2rem;
+        }
+        
+        .table-responsive {
+            font-size: 0.9rem;
+        }
+        
+        .btn-sm {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+        }
+
+        .chart-container {
+            height: 300px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .main-content {
+            padding: 15px 10px;
+        }
+        
+        .stats-card {
+            padding: 15px;
+        }
+        
+        .stats-card h3 {
+            font-size: 1.8rem;
+        }
+        
+        .card-body {
+            padding: 1rem;
+        }
+        
+        .table-container {
+            padding: 15px;
+        }
+        
+        .chart-container {
+            height: 250px;
+        }
+    }
+
     .btn-warning {
         background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
         color: var(--preto-texto);
@@ -537,11 +589,10 @@ $database->closeConnection();
     .btn-warning:hover {
         background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
         transform: translateY(-2px);
-        box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
+        box-shadow: 0 6px 25px rgba(255, 217, 0, 0.66);
         color: var(--preto-texto);
     }
 
-    /* Botões personalizados */
     .btn-primary {
         background-color: var(--roxo-principal);
         border-color: var(--roxo-principal);
@@ -553,20 +604,7 @@ $database->closeConnection();
         background-color: var(--roxo-escuro);
         border-color: var(--roxo-escuro);
         transform: scale(1.05);
-    }
-
-    .btn-secondary {
-        background-color: var(--cinza-medio);
-        border-color: var(--cinza-medio);
-        color: var(--preto-texto);
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .btn-secondary:hover {
-        background-color: #c8c9cb;
-        border-color: #c8c9cb;
-        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(106, 13, 173, 0.3);
     }
 
     /* Containers para gráficos */
@@ -673,135 +711,6 @@ $database->closeConnection();
         font-weight: 600;
     }
 
-    /* Responsividade */
-    @media (max-width: 992px) {
-        .sidebar {
-            width: 100%;
-            height: auto;
-            position: relative;
-        }
-        .main-content {
-            margin-left: 0;
-        }
-    }
-
-   /* Menu Lateral - ATUALIZADO */
-.sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 250px;
-    height: 100%;
-    background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
-    color: var(--branco);
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    padding-top: 20px;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-}
-
-.sidebar .profile {
-    text-align: center;
-    margin-bottom: 30px;
-    padding: 0 15px;
-}
-
-/* Container do avatar - PARA QUANDO TEM FOTO (80x80px COM CÍRCULO) */
-.profile-avatar-sidebar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    border: 3px solid var(--amarelo-detalhe);
-    background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 15px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.profile-avatar-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-}
-
-/* Ícone quando NÃO tem foto - SEM CÍRCULO (apenas ícone) */
-.sidebar .profile i.fa-user-circle {
-    font-size: 4rem; /* Tamanho do ícone */
-    color: var(--amarelo-detalhe);
-    margin: 0 auto 15px;
-    display: block;
-    /* REMOVIDO: border, background, box-shadow, width, height */
-}
-
-.sidebar .list-group {
-    width: 100%;
-}
-
-.sidebar .list-group-item {
-    background-color: transparent;
-    color: var(--branco);
-    border: none;
-    padding: 15px 25px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.3s ease;
-}
-
-.sidebar .list-group-item:hover {
-    background-color: var(--roxo-escuro);
-    cursor: pointer;
-}
-
-.sidebar .list-group-item.active {
-    background-color: var(--roxo-escuro) !important;
-    color: var(--branco) !important;
-    font-weight: 600;
-    border-left: 4px solid var(--amarelo-detalhe);
-}
-
-.sidebar .list-group-item i {
-    color: var(--amarelo-detalhe);
-}
-
-/*--*/
-
-.main-content {
-    margin-left: 250px;
-    padding: 20px;
-}
-
-@media (max-width: 992px) {
-    .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-    }
-    .main-content {
-        margin-left: 0;
-    }
-}
-
-
-    .settings-icon {
-        color: var(--roxo-principal) !important;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        font-size: 1.2rem;
-    }
-
-    .settings-icon:hover {
-        color: var(--roxo-escuro) !important;
-        transform: rotate(90deg);
-    }
-    
     /* Títulos */
     .page-header {
         display: flex;
@@ -825,33 +734,193 @@ $database->closeConnection();
     }
 
    .btn-back {
-    background: rgba(255, 255, 255, 0.2);
-    border: 2px solid var(--roxo-principal);
-    color: var(--roxo-principal);
-    padding: 0.6rem 1.5rem;
-    border-radius: 25px;
-    transition: all 0.3s ease;
-    font-weight: 600;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid var(--roxo-principal);
+        color: var(--roxo-principal);
+        padding: 0.6rem 1.5rem;
+        border-radius: 25px;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
 
-.btn-back:hover {
-    background-color:var(--roxo-escuro);
-    border-color: var(--branco); 
-    color: var(--branco);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
-}
+    .btn-back:hover {
+        background-color: var(--roxo-escuro);
+        border-color: var(--branco); 
+        color: var(--branco);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+    }
+
+    @media (max-width: 576px) {
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+        
+        .btn-back {
+            align-self: flex-start;
+        }
+    }
+
+    .settings-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .settings-icon:hover {
+            color: var(--roxo-escuro) !important;
+            transform: rotate(90deg);
+        }
+
+        /* ESTILO PARA O BOTÃO LOGOUT - ADICIONAR */
+        .logout-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .logout-icon:hover {
+            color: var(--roxo-escuro) !important;
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Menu Hamburguer Functionality
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+            if (sidebarOverlay) {
+                sidebarOverlay.classList.toggle('active');
+            }
+        });
+        
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+        }
+        
+        // Fechar menu ao clicar em um link (mobile)
+        const sidebarLinks = sidebar.querySelectorAll('.list-group-item');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 992) {
+                    sidebar.classList.remove('active');
+                    if (sidebarOverlay) {
+                        sidebarOverlay.classList.remove('active');
+                    }
+                }
+            });
+        });
+    }
+
+    // Gráficos
+    const niveisCtx = document.getElementById('niveisChart').getContext('2d');
+    const niveisChart = new Chart(niveisCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [<?php echo !empty($usuarios_por_nivel) ? implode(',', array_map(function($n) { return '"' . $n['nivel'] . '"'; }, $usuarios_por_nivel)) : ''; ?>],
+            datasets: [{
+                data: [<?php echo !empty($usuarios_por_nivel) ? implode(',', array_map(function($n) { return $n['quantidade']; }, $usuarios_por_nivel)) : ''; ?>],
+                backgroundColor: [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Gráfico de Idiomas Populares
+    const idiomasCtx = document.getElementById('idiomasChart').getContext('2d');
+    const idiomasChart = new Chart(idiomasCtx, {
+        type: 'bar',
+        data: {
+            labels: [<?php echo !empty($idiomas_populares) ? implode(',', array_map(function($i) { return '"' . $i['idioma'] . '"'; }, $idiomas_populares)) : ''; ?>],
+            datasets: [{
+                label: 'Usuários Únicos',
+                data: [<?php echo !empty($idiomas_populares) ? implode(',', array_map(function($i) { return $i['usuarios_unicos']; }, $idiomas_populares)) : ''; ?>],
+                backgroundColor: '#6a0dad'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Gráfico de Registros Mensais
+    const registrosCtx = document.getElementById('registrosChart').getContext('2d');
+    const registrosChart = new Chart(registrosCtx, {
+        type: 'line',
+        data: {
+            labels: [<?php echo !empty($registros_mensais) ? implode(',', array_map(function($r) { 
+                $mes = date('m/Y', strtotime($r['mes'] . '-01'));
+                return '"' . $mes . '"'; 
+            }, array_reverse($registros_mensais))) : ''; ?>],
+            datasets: [{
+                label: 'Novos Usuários',
+                data: [<?php echo !empty($registros_mensais) ? implode(',', array_map(function($r) { 
+                    return $r['novos_usuarios']; 
+                }, array_reverse($registros_mensais))) : ''; ?>],
+                borderColor: '#ffd700',
+                backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+});
+</script>
+
+    <!-- Menu Hamburguer -->
+    <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Overlay para mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container d-flex justify-content-between align-items-center">
-            <div></div>
+        <div class="container-fluid d-flex justify-content-end align-items-center">
             <div class="d-flex align-items-center" style="gap: 24px;">
                 <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
                     <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
@@ -866,16 +935,13 @@ $database->closeConnection();
         </div>
     </nav>
 
- <!-- Menu Lateral ATUALIZADO com foto de perfil -->
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
         <div class="profile">
             <?php if ($foto_admin): ?>
-                <!-- COM FOTO: Com círculo amarelo de 80x80px -->
                 <div class="profile-avatar-sidebar">
                     <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
                 </div>
             <?php else: ?>
-                <!-- SEM FOTO: Apenas ícone, SEM círculo -->
                 <i class="fas fa-user-circle"></i>
             <?php endif; ?>
             <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
@@ -884,7 +950,7 @@ $database->closeConnection();
 
         <div class="list-group">
             <a href="gerenciar_caminho.php" class="list-group-item">
-                <i class="fas fa-plus-circle"></i> Gerenciar Caminhos
+                <i class="fas fa-plus-circle"></i> Adicionar Caminho
             </a>
             <a href="pagina_adicionar_idiomas.php" class="list-group-item">
                 <i class="fas fa-language"></i> Gerenciar Idiomas
@@ -895,7 +961,7 @@ $database->closeConnection();
             <a href="gerenciar_unidades.php" class="list-group-item">
                 <i class="fas fa-cubes"></i> Gerenciar Unidades
             </a>
-            <a href="gerenciar_usuarios.php" class="list-group-item ">
+            <a href="gerenciar_usuarios.php" class="list-group-item">
                 <i class="fas fa-users"></i> Gerenciar Usuários
             </a>
             <a href="estatisticas_usuarios.php" class="list-group-item active">
@@ -905,12 +971,12 @@ $database->closeConnection();
     </div>
 
     <div class="main-content">
-        <div class="container mt-4">
+        <div class="container-fluid mt-4">
             <div class="page-header">
                 <h2 class="mb-0"><i class="fas fa-chart-bar"></i> Estatísticas de Usuários</h2>
                  <a href="gerenciar_caminho.php" class="btn-back">
-    <i class="fas fa-arrow-left"></i>Voltar para Caminhos
-</a>
+                    <i class="fas fa-arrow-left"></i>Voltar para Caminhos
+                </a>
             </div>
 
             <!-- Estatísticas Rápidas -->
@@ -1104,84 +1170,5 @@ $database->closeConnection();
     </nav>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Gráfico de Usuários por Nível
-        const niveisCtx = document.getElementById('niveisChart').getContext('2d');
-        const niveisChart = new Chart(niveisCtx, {
-            type: 'doughnut',
-            data: {
-                labels: [<?php echo !empty($usuarios_por_nivel) ? implode(',', array_map(function($n) { return '"' . $n['nivel'] . '"'; }, $usuarios_por_nivel)) : ''; ?>],
-                datasets: [{
-                    data: [<?php echo !empty($usuarios_por_nivel) ? implode(',', array_map(function($n) { return $n['quantidade']; }, $usuarios_por_nivel)) : ''; ?>],
-                    backgroundColor: [
-                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
-            }
-        });
-
-        // Gráfico de Idiomas Populares
-        const idiomasCtx = document.getElementById('idiomasChart').getContext('2d');
-        const idiomasChart = new Chart(idiomasCtx, {
-            type: 'bar',
-            data: {
-                labels: [<?php echo !empty($idiomas_populares) ? implode(',', array_map(function($i) { return '"' . $i['idioma'] . '"'; }, $idiomas_populares)) : ''; ?>],
-                datasets: [{
-                    label: 'Usuários Únicos',
-                    data: [<?php echo !empty($idiomas_populares) ? implode(',', array_map(function($i) { return $i['usuarios_unicos']; }, $idiomas_populares)) : ''; ?>],
-                    backgroundColor: '#6a0dad'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-
-        // Gráfico de Registros Mensais
-        const registrosCtx = document.getElementById('registrosChart').getContext('2d');
-        const registrosChart = new Chart(registrosCtx, {
-            type: 'line',
-            data: {
-                labels: [<?php echo !empty($registros_mensais) ? implode(',', array_map(function($r) { 
-                    $mes = date('m/Y', strtotime($r['mes'] . '-01'));
-                    return '"' . $mes . '"'; 
-                }, array_reverse($registros_mensais))) : ''; ?>],
-                datasets: [{
-                    label: 'Novos Usuários',
-                    data: [<?php echo !empty($registros_mensais) ? implode(',', array_map(function($r) { 
-                        return $r['novos_usuarios']; 
-                    }, array_reverse($registros_mensais))) : ''; ?>],
-                    borderColor: '#ffd700',
-                    backgroundColor: 'rgba(255, 215, 0, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-    </script>
 </body>
 </html>
