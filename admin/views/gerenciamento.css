@@ -379,7 +379,7 @@ body:has(.sidebar.active) .menu-toggle:hover,
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
 
-.card-header {
+.card-header, table thead {
     background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro)) !important;
     color: var(--branco);
     border-radius: 15px 15px 0 0 !important;
@@ -478,16 +478,13 @@ body:has(.sidebar.active) .menu-toggle:hover,
 /* Tabelas */
 .table {
     margin-bottom: 0;
+      border-collapse: separate; /* ESSENCIAL pra bordas arredondadas funcionarem */
+  border-spacing: 0;
+  border: 2px solid #555;
+  border-radius: 10px;
+  overflow: hidden; /* Garante o corte nas bordas */
 }
 
-.table thead th {
-    background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
-    color: var(--branco);
-    border: none;
-    padding: 15px;
-    font-weight: 600;
-    text-align: center;
-}
 
 .table tbody td {
     padding: 12px 15px;
@@ -501,7 +498,26 @@ body:has(.sidebar.active) .menu-toggle:hover,
     transform: scale(1.01);
     transition: all 0.2s ease;
 }
+.tabela th,
+.tabela td {
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+}
 
+.table thead th {
+    background: rgba(106, 13, 173, 0.1);
+    color: var(--cinza-claro);
+    border-bottom: 2px solid rgba(106, 13, 173, 0.3);
+    font-weight: 600;
+}
+
+.table thead th:first-child {
+  border-top-left-radius: 12px;
+}
+
+.table thead th:last-child {
+  border-top-right-radius: 12px;
+}
 /* Botões de ação na tabela */
 .btn-acoes {
     display: flex;

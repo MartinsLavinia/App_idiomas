@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 echo '<div class="alert alert-' . ($message_type == 'success' ? 'success' : 'danger') . ' mt-3">' . $message_content . '</div>';
             }
             ?>
-            <div class="row mb-4" style="display: inline-flex;flex-flow: row nowrap;align-items: flex-start;justify-content: flex-start;">
+            <div class="row mb-4" style="display: inline-flex;flex-flow: row nowrap;align-items: flex-start;justify-content: flex-start; width:80%">
                         <h2 class="mb-4">Gerenciar Caminhos de Aprendizagem</h2>
                         <a href="#" class="btn btn-warning mb-4" data-bs-toggle="modal" data-bs-target="#addCaminhoModal" style="width: 220px; padding:15px">
                             <i class="fas fa-plus-circle me-2"></i>Adicionar Caminho
