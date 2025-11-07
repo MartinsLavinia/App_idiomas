@@ -477,13 +477,13 @@ body:has(.sidebar.active) .menu-toggle:hover,
 
 /* Tabelas */
 .table {
-    margin-bottom: 0;
-      border-collapse: separate; /* ESSENCIAL pra bordas arredondadas funcionarem */
+  margin-bottom: 0;
+  border-collapse: separate; /* ESSENCIAL pra bordas arredondadas funcionarem */
   border-spacing: 0;
-  border: 2px solid #555;
   border-radius: 10px;
   overflow: hidden; /* Garante o corte nas bordas */
 }
+
 
 
 .table tbody td {
