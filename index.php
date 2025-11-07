@@ -9,6 +9,9 @@
         rel="stylesheet">
     <link rel="icon" type="image/png" href="imagens/mini-esquilo.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+     <link rel='stylesheet' id='styleContraste' href="css/style.css"  type='text/css' media='all' />
+     <script src="https://cdn.jsdelivr.net/gh/bennyluk/Sienna-Accessibility-Widget@latest/dist/sienna-accessibility-widget.min.js"></script>
+
 
     <style>
     /* Reset e configurações base */
@@ -470,6 +473,7 @@
     .scroll-btn:hover {
         background: white;
         color: #7c3aed;
+        font-weight: 500;
     }
 
     .arrow-down {
@@ -984,6 +988,8 @@
     .btn-back:hover {
         background: white;
         color: #7c3aed;
+        font-weight: 500;
+        font-family: 'Inter', sans-serif;
     }
 
     /* Footer */
@@ -1014,6 +1020,7 @@
         color: #fbbf24;
         font-weight: 600;
     }
+  
 
     .footer-description {
         color: #c4b5fd;
@@ -1058,9 +1065,47 @@
         transition: color 0.3s ease;
     }
 
-    .footer-links button:hover {
-        color: white;
+   .footer-links button:hover {
+    color: white;
+    text-decoration: none;
+    position: relative;
+}
+
+.footer-links button:hover::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    bottom: -3px;
+    left: 0;
+    background: #00ffff;
+    box-shadow: 0 0 8px #00ffff, 0 0 16px #00ffff;
+    animation: neonUnderline 0.3s ease-out forwards;
+    transform: scaleX(0);
+    transform-origin: left;
+}
+
+@keyframes neonUnderline {
+    to {
+        transform: scaleX(1);
+        box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px rgba(0, 255, 255, 0.5);
     }
+}
+
+/* Mantém o efeito enquanto o mouse está em cima */
+.footer-links button:hover::after {
+    animation-fill-mode: forwards;
+}
+
+/* Transição suave para remover o efeito quando o mouse sai */
+.footer-links button::after {
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+.footer-links button:not(:hover)::after {
+    transform: scaleX(0);
+    box-shadow: none;
+}
 
     .contact-info {
         color: #c4b5fd;
@@ -1378,6 +1423,7 @@
         outline: 2px solid #fbbf24;
         outline-offset: 2px;
     }
+    
     </style>
 </head>
 
@@ -2071,6 +2117,7 @@
         trackEvent
     };
     </script>
+    
 
     <!-- Header fixo -->
     <header class="header" id="header">
@@ -2088,7 +2135,7 @@
                     Entrar
                 </button>
                 <a href="public/views/cadastro.php" class="btn-outline"
-                    style="text-decoration: none; font-size: 14px; padding: 6px 12px;">Cadastre-se</a>
+                    style="text-decoration: none; font-size: 14px; padding: 6px 12px; box-shadow: white;">Cadastre-se</a>
             </nav>
 
             <!-- Menu mobile -->
@@ -2414,7 +2461,38 @@
                         <li><button onclick="scrollToSection('welcome')" style="font-size: 16px;">Início</button></li>
                         <li><button onclick="scrollToSection('main')" style="font-size: 16px;">Sobre Nós</button></li>
                         <li><button style="font-size: 16px;">Termos de Serviço</button></li>
-                        <li><a href="politica_de_privacidade.php" style="font-size: 16px; background: none; border: none; color: #c4b5fd; cursor: pointer; padding: 0; text-align: left;">Política de Privacidade</a></li>
+                        <li>
+    <a href="politica_de_privacidade.php" 
+       style="font-size: 16px; background: none; border: none; color: #c4b5fd; cursor: pointer; padding: 0; text-align: left; position: relative; text-decoration: none;"
+       onmouseover="this.style.color='white'"
+       onmouseout="this.style.color='#c4b5fd'">
+        Política de Privacidade
+        <style>
+            a[href="politica_de_privacidade.php"]::after {
+                content: '';
+                position: absolute;
+                width: 100%;
+                height: 2px;
+                bottom: -3px;
+                left: 0;
+                background: #00ffff;
+                transform: scaleX(0);
+                transform-origin: left;
+                transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                opacity: 0;
+            }
+            
+            a[href="politica_de_privacidade.php"]:hover::after {
+                transform: scaleX(1);
+                opacity: 1;
+                box-shadow: 
+                    0 0 6px #00ffff,
+                    0 0 12px #00ffff,
+                    0 0 18px rgba(0, 255, 255, 0.4);
+            }
+        </style>
+    </a>
+</li>
                     </ul>
                 </div>
 
@@ -2437,6 +2515,296 @@
     <?php
     include 'cookie_banner.php';
     ?>
+
+    
+  <div vw class="enabled">
+    <div vw-access-button class="active"></div>
+    <div vw-plugin-wrapper>
+      <div class="vw-plugin-top-wrapper"></div>
+    </div>
+  </div>
+  <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+  <script>
+    new window.VLibras.Widget('https://vlibras.gov.br/app');
+  </script>
+
+<!-- Botão de Acessibilidade - Corrigido -->
+<div id="accessibility-widget" class="accessibility-widget">
+    <button id="accessibility-toggle" class="accessibility-toggle" aria-label="Menu de Acessibilidade">
+        <i class="fas fa-universal-access"></i>
+    </button>
+    
+    <div id="accessibility-panel" class="accessibility-panel">
+        <div class="accessibility-header">
+            <h3>Acessibilidade</h3>
+            <button id="close-panel" class="close-btn" aria-label="Fechar menu de acessibilidade">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="accessibility-options">
+            <div class="option-group">
+                <h4>Tamanho do Texto</h4>
+                <button class="option-btn" data-action="font-increase">
+                    <i class="fas fa-text-height"></i> Aumentar Fonte
+                </button>
+                <button class="option-btn" data-action="font-decrease">
+                    <i class="fas fa-text-height"></i> Diminuir Fonte
+                </button>
+                <button class="option-btn" data-action="font-normal">
+                    <i class="fas fa-text-height"></i> Fonte Normal
+                </button>
+            </div>
+            
+            <div class="option-group">
+                <h4>Leitura</h4>
+                <button class="option-btn" data-action="read-page">
+                    <i class="fas fa-volume-up"></i> Ler Página
+                </button>
+                <button class="option-btn" data-action="stop-reading">
+                    <i class="fas fa-volume-mute"></i> Parar Leitura
+                </button>
+            </div>
+            
+            <div class="option-group">
+                <h4>Navegação</h4>
+                <button class="option-btn" data-action="highlight-links">
+                    <i class="fas fa-link"></i> Destacar Links
+                </button>
+                <button class="option-btn" data-action="cursor-big">
+                    <i class="fas fa-mouse-pointer"></i> Cursor Normal
+                </button>
+            </div>
+            
+            <div class="option-group">
+                <h4>Reset</h4>
+                <button class="option-btn reset-btn" data-action="reset-all">
+                    <i class="fas fa-redo"></i> Redefinir Tudo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.accessibility-widget {
+    position: fixed;
+    bottom: 390px;
+     right: 7px;
+    z-index: 10000;
+    font-family: 'Inter', sans-serif;
+}
+.accessibility-toggle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.accessibility-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(251, 191, 36, 0.6);
+}
+.accessibility-panel {
+    position: absolute;
+    bottom: 60px;
+    right: 0;
+    width: 280px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    padding: 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+}
+.accessibility-panel.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+.accessibility-header {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 15px 15px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.accessibility-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+.close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: background 0.3s ease;
+}
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+.accessibility-options {
+    padding: 15px;
+    max-height: 350px;
+    overflow-y: auto;
+}
+.option-group {
+    margin-bottom: 15px;
+}
+.option-group h4 {
+    margin: 0 0 8px 0;
+    color: #333;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.option-btn {
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    text-align: left;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #333;
+}
+.option-btn:hover {
+    background: #e9ecef;
+    border-color: #fbbf24;
+    transform: translateX(3px);
+}
+.option-btn i {
+    width: 16px;
+    text-align: center;
+    color: #fbbf24;
+}
+.reset-btn {
+    background: #fff5f5;
+    border-color: #fed7d7;
+    color: #c53030;
+}
+.reset-btn:hover {
+    background: #fed7d7;
+    border-color: #c53030;
+}
+.big-cursor * {
+    cursor: default !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const widget = document.getElementById('accessibility-widget');
+    const toggleBtn = document.getElementById('accessibility-toggle');
+    const panel = document.getElementById('accessibility-panel');
+    const closeBtn = document.getElementById('close-panel');
+    const optionBtns = document.querySelectorAll('.option-btn');
+
+    let fontScale = parseFloat(localStorage.getItem('fontScale')) || 1.0;
+    let speech = null;
+
+    toggleBtn.addEventListener('click', () => panel.classList.toggle('active'));
+    closeBtn.addEventListener('click', () => panel.classList.remove('active'));
+    document.addEventListener('click', e => {
+        if (!widget.contains(e.target)) panel.classList.remove('active');
+    });
+
+    optionBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const action = this.getAttribute('data-action');
+            handleAccessibilityAction(action);
+        });
+    });
+
+    function handleAccessibilityAction(action) {
+        const body = document.body;
+        switch(action) {
+            case 'font-increase': adjustFont(0.1); break;
+            case 'font-decrease': adjustFont(-0.1); break;
+            case 'font-normal': resetFont(); break;
+            case 'read-page': readPageContent(); break;
+            case 'stop-reading': stopReading(); break;
+            case 'highlight-links':
+                body.classList.toggle('highlight-links');
+                break;
+            case 'cursor-big':
+                body.classList.toggle('big-cursor');
+                break;
+            case 'reset-all': resetAllPreferences(); break;
+        }
+    }
+
+    function adjustFont(change) {
+        fontScale += change;
+        if (fontScale < 0.7) fontScale = 0.7;
+        if (fontScale > 1.8) fontScale = 1.8;
+
+        document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, a, span, li, label, button').forEach(el => {
+            el.style.transform = `scale(${fontScale})`;
+            el.style.transformOrigin = 'left top';
+        });
+
+        localStorage.setItem('fontScale', fontScale);
+    }
+
+    function resetFont() {
+        fontScale = 1.0;
+        document.querySelectorAll('*').forEach(el => el.style.transform = '');
+        localStorage.removeItem('fontScale');
+    }
+
+    function readPageContent() {
+        stopReading();
+        if ('speechSynthesis' in window) {
+            speech = new SpeechSynthesisUtterance(document.body.innerText);
+            speech.lang = 'pt-BR';
+            speech.rate = 0.9;
+            window.speechSynthesis.speak(speech);
+        } else {
+            alert('Seu navegador não suporta leitura de texto por voz.');
+        }
+    }
+
+    function stopReading() {
+        if (window.speechSynthesis) window.speechSynthesis.cancel();
+    }
+
+    function resetAllPreferences() {
+        localStorage.clear();
+        document.querySelectorAll('*').forEach(el => el.style.transform = '');
+        document.body.className = '';
+        stopReading();
+    }
+
+    // carregar escala salva
+    if (fontScale !== 1.0) adjustFont(0);
+});
+</script>
+
+
 </body>
 
 </html>

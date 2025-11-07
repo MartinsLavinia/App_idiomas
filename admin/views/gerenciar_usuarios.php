@@ -714,30 +714,26 @@ $database->closeConnection();
         }
     }
 
-    .settings-icon {
-            color: var(--roxo-principal) !important;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            font-size: 1.2rem;
-        }
+  .settings-icon {
+    color: var(--roxo-principal) !important;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    font-size: 1.2rem;
+}
 
-        .settings-icon:hover {
-            color: var(--roxo-escuro) !important;
-            transform: rotate(90deg);
-        }
+.settings-icon:hover {
+    color: var(--roxo-escuro) !important;
+    transform: rotate(90deg);
+}
 
-        /* ESTILO PARA O BOTÃO LOGOUT - ADICIONAR */
-        .logout-icon {
-            color: var(--roxo-principal) !important;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            font-size: 1.2rem;
-        }
+.navbar .logout-icon i {
+    color: var(--roxo-principal) !important;
+}
 
-        .logout-icon:hover {
-            color: var(--roxo-escuro) !important;
-            transform: translateY(-2px);
-        }
+.navbar .logout-icon:hover i {
+    color: var(--roxo-escuro) !important;
+}
+
 
         /* Correção para o ícone de usuários no header */
 .page-header-icon {
@@ -873,21 +869,21 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- Overlay para mobile -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container-fluid d-flex justify-content-end align-items-center">
-            <div class="d-flex align-items-center" style="gap: 24px;">
-                <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
-                    <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
-                </a>
-                <a href="editar_perfil.php" class="settings-icon">
-                    <i class="fas fa-cog fa-lg"></i>
-                </a>
-                <a href="logout.php" class="logout-icon" title="Sair">
+   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid d-flex justify-content-end align-items-center">
+        <div class="d-flex align-items-center" style="gap: 24px;">
+            <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
+                <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
+            </a>
+            <a href="editar_perfil.php" class="settings-icon">
+                <i class="fas fa-cog fa-lg"></i>
+            </a>
+            <a href="logout.php" class="logout-icon" title="Sair">
                     <i class="fas fa-sign-out-alt fa-lg"></i>
                 </a>
-            </div>
         </div>
-    </nav>
+    </div>
+</nav>
 
     <div class="sidebar" id="sidebar">
     <div class="profile">
@@ -1013,9 +1009,6 @@ document.addEventListener('DOMContentLoaded', function() {
             <!-- Lista de Usuários -->
             <div class="table-container" style="margin-top: 30px;">
                 <div class="card-header">
-                    <h5 class="mb-0 text-white">
-                        Lista de Usuários (<?php echo count($usuarios); ?> encontrados)
-                    </h5>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">

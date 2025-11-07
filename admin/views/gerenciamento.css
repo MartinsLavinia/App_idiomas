@@ -1,4 +1,5 @@
 /* Reset e configurações básicas */
+
 * {
     margin: 0;
     padding: 0;
@@ -324,6 +325,13 @@ body:has(.sidebar.active) .menu-toggle:hover,
     font-weight: 600;
     transition: all 0.3s ease;
 
+}
+/* ESTILO ESPECÍFICO PARA O ÍCONE DE LOGOUT */
+.logout-icon {
+    color: var(--roxo-principal) !important;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    font-size: 1.2rem;
 }
 
 /* Move o botão Pesquisar para a direita */
@@ -824,4 +832,11 @@ body:has(.sidebar.active) .menu-toggle:hover,
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--roxo-escuro);
+}
+
+a.logout-icon,
+button.logout-icon {
+  background: transparent !important;
+  color: var(--roxo-principal) !important;
+  border: none !important;
 }
