@@ -1,6 +1,6 @@
 <?php
 /**
- * API para geração de áudio no admin
+ * API para geração de áudio
  * Corrige problemas de geração de áudio
  */
 
@@ -37,12 +37,6 @@ try {
         throw new Exception('Frase muito longa. Máximo 300 caracteres');
     }
     
-    // Validar idioma
-    $idiomasPermitidos = ['en-us', 'en-gb', 'pt-br', 'es-es', 'fr-fr', 'de-de'];
-    if (!in_array($idioma, $idiomasPermitidos)) {
-        $idioma = 'en-us'; // Fallback
-    }
-    
     // Criar serviço de áudio
     $audioService = new \App\Services\AudioService();
     
@@ -58,8 +52,6 @@ try {
     ], JSON_UNESCAPED_UNICODE);
     
 } catch (Exception $e) {
-    error_log('Erro na geração de áudio: ' . $e->getMessage());
-    
     http_response_code(400);
     echo json_encode([
         'success' => false,

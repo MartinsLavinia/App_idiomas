@@ -1,18 +1,29 @@
 <?php
-// processar_exercicio.php
+/**
+ * Controlador principal para processamento de exercícios
+ * Versão corrigida com integração aos novos modelos
+ */
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
-// Handle preflight OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
 session_start();
-// Assumindo que a classe Database está em um caminho acessível
-include_once __DIR__ . '/../../conexao.php';
+
+// Autoload para as novas classes
+spl_autoload_register(function ($class) {
+    $file = __DIR__ . '/../../src/' . str_replace(['App\\', '\\'], ['', '/'], $class) . '.php';
+    if (file_exists($file)) {
+        require $file;
+    }
+});
+
+require_once __DIR__ . '/../../conexao.php';
 
 // Verificar se o usuário está logado
 if (!isset($_SESSION['id_usuario'])) {
@@ -64,36 +75,42 @@ try {
         exit();
     }
 
-    // Processar resposta baseado no tipo - USAR CATEGORIA SE DISPONÍVEL
-    $conteudo = json_decode($exercicio['conteudo'], true);
-    
-    // Determinar o tipo real do exercício
-    $tipo_real = $tipo_exercicio;
-    if (!empty($exercicio['categoria'])) {
-        $tipo_real = normalizarTipoExercicio($exercicio['categoria']);
-    } elseif ($exercicio['tipo'] !== 'normal') {
-        $tipo_real = normalizarTipoExercicio($exercicio['tipo']);
-    }
+    // Usar novo sistema de processamento
+    $categoria = $exercicio['categoria'] ?? 'gramatica';
     
     // Log para debug
-    error_log("Processando exercício ID: $exercicio_id, Tipo: $tipo_real, Categoria: " . ($exercicio['categoria'] ?? 'N/A'));
-    error_log("Conteúdo do exercício: " . json_encode($conteudo));
+    error_log("Processando exercício ID: $exercicio_id, Categoria: $categoria");
     
-    // Adicionar exercicio_id aos dados POST para acesso nas funções
-    $_POST['exercicio_id'] = $exercicio_id;
-    
-    $resultado = processarResposta($resposta_usuario, $conteudo, $tipo_real);
+    // Processar com novos modelos se for listening ou fala
+    if ($categoria === 'audicao' || $categoria === 'listening') {
+        $exercicioObj = \App\Models\ExercicioListening::fromDatabase($exercicio);
+        $resultado = $exercicioObj->processarResposta($resposta_usuario);
+    } elseif ($categoria === 'fala') {
+        $exercicioObj = \App\Models\ExercicioFala::fromDatabase($exercicio);
+        $resultado = $exercicioObj->processarResposta($resposta_usuario);
+    } else {
+        // Usar sistema antigo para outros tipos
+        $conteudo = json_decode($exercicio['conteudo'], true);
+        $tipo_real = normalizarTipoExercicio($tipo_exercicio);
+        $resultado = processarResposta($resposta_usuario, $conteudo, $tipo_real);
+    }
     
     // Garantir que sempre retorne success
     if (!isset($resultado['success'])) {
         $resultado['success'] = true;
     }
 
-    // Registrar resposta do usuário
-    registrarRespostaUsuario($conn, $id_usuario, $exercicio_id, $resultado['correto'], $resposta_usuario);
-
-    // Registrar progresso do usuário
-    registrarProgresso($conn, $id_usuario, $exercicio_id, $resultado['correto'], $resultado['pontuacao'] ?? 0);
+    // Usar novo serviço de progresso
+    $progressoService = new \App\Services\ProgressoService($conn);
+    $progressoService->registrarResposta(
+        $id_usuario,
+        $exercicio_id,
+        $categoria,
+        $resultado['correto'],
+        $resultado['pontuacao'] ?? 0,
+        $resposta_usuario,
+        $resultado
+    );
 
     $database->closeConnection();
 
@@ -173,7 +190,7 @@ function normalizarTipoExercicio($tipo) {
 }
 
 function processarListening($resposta_usuario, $conteudo) {
-    error_log("Processando listening - Conteúdo: " . json_encode($conteudo));
+    error_log("Processando listening (sistema legado) - Conteúdo: " . json_encode($conteudo));
     
     // Verificar se é um exercício de listening com estrutura de opções
     if (isset($conteudo['opcoes']) && is_array($conteudo['opcoes']) && isset($conteudo['resposta_correta'])) {
@@ -194,7 +211,7 @@ function processarListening($resposta_usuario, $conteudo) {
         'correto' => false,
         'explicacao' => '❌ Incorreto! Exercício mal configurado. Verifique as opções ou alternativas.',
         'pontuacao' => 0,
-        'alternativa_correta_id' => null // Adicionado para evitar erro de variável indefinida no frontend
+        'alternativa_correta_id' => null
     ];
 }
 
