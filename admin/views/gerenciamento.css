@@ -319,10 +319,17 @@ body:has(.sidebar.active) .menu-toggle:hover,
     color: #dc2626 !important;
 }
 .btn-outline-light {
-    color: var(--amarelo-detalhe);
+     color: var(--preto-texto);
     border-color: var(--amarelo-detalhe);
     font-weight: 600;
     transition: all 0.3s ease;
+
+}
+
+/* Move o botão Pesquisar para a direita */
+.card-body form .col-md-auto:last-child {
+    margin-left: 20px !important;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
 }
 
 .btn-outline-light:hover {
@@ -342,7 +349,6 @@ body:has(.sidebar.active) .menu-toggle:hover,
     font-weight: 600;
     transition: all 0.3s ease;
 }
-
 .btn-warning:hover {
     background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
     transform: translateY(-2px);
@@ -486,6 +492,7 @@ body:has(.sidebar.active) .menu-toggle:hover,
 
 
 
+
 .table tbody td {
     padding: 12px 15px;
     vertical-align: middle;
@@ -619,6 +626,7 @@ body:has(.sidebar.active) .menu-toggle:hover,
     color: var(--roxo-principal);
     margin-bottom: 8px;
 }
+
 
 /* Responsividade */
 @media (max-width: 1200px) {

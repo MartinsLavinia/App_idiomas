@@ -326,11 +326,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <?php endforeach; ?>
                                 </select>
                             </div>
-                            <div class="col-md-auto d-flex align-items-end">
-                                <button type="submit" class="btn btn-outline-warning" style="margin: auto;">
-                                    <i class="fas fa-search me-2"></i>Pesquisar
-                                </button>
-                            </div>
+                           <div class="col-md-auto d-flex align-items-end">
+    <button type="submit" class="btn btn-outline-warning" style="margin: auto; color: black !important;">
+        <i class="fas fa-search me-2" style="color: black;"></i>Pesquisar
+    </button>
+</div>
                         </div>
                     </form>
                 </div>
