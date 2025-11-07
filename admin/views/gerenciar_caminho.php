@@ -247,6 +247,7 @@ $database->closeConnection();
         }
 
        .btn-outline-warning:hover {
+<<<<<<< HEAD
             background-color: var(--amarelo-detalhe);
             border: 0 4px 8px rgba(235, 183, 14, 0.77);
         }
@@ -476,6 +477,245 @@ $database->closeConnection();
                 font-size: 1rem;
             }
         }
+=======
+
+background-color: var(--amarelo-detalhe);
+border: 0 4px 8px rgba(235, 183, 14, 0.77);
+
+}
+/* Menu Lateral */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 250px;
+        height: 100%;
+        background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+        color: var(--branco);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding-top: 20px;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .sidebar .profile {
+        text-align: center;
+        margin-bottom: 30px;
+        padding: 0 15px;
+    }
+
+    .profile-avatar-sidebar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        border: 3px solid var(--amarelo-detalhe);
+        background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .profile-avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .profile-avatar-sidebar:has(.profile-avatar-img) i {
+        display: none;
+    }
+
+    .profile-avatar-sidebar i {
+        font-size: 3.5rem;
+        color: var(--amarelo-detalhe);
+    }
+
+    .sidebar .profile h5 {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: var(--branco);
+        font-size: 1.1rem;
+        word-wrap: break-word;
+        max-width: 200px;
+        text-align: center;
+        line-height: 1.3;
+    }
+
+    .sidebar .profile small {
+        color: var(--cinza-claro);
+        font-size: 0.9rem;
+        word-wrap: break-word;
+        max-width: 200px;
+        text-align: center;
+        line-height: 1.2;
+        margin-top: 5px;
+    }
+
+    .sidebar .list-group {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .sidebar .list-group-item.sair {
+        background-color: transparent;
+        color: var(--branco);
+        border: none;
+        padding: 15px 25px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 40px !important;
+    }
+
+    .sidebar .list-group-item {
+        background-color: transparent;
+        color: var(--branco);
+        border: none;
+        padding: 15px 25px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .sidebar .list-group-item:hover {
+        background-color: var(--roxo-escuro);
+        cursor: pointer;
+    }
+
+    .sidebar .list-group-item.active {
+        background-color: var(--roxo-escuro) !important;
+        color: var(--branco) !important;
+        font-weight: 600;
+        border-left: 4px solid var(--amarelo-detalhe);
+    }
+
+    .sidebar .list-group-item i {
+        color: var(--amarelo-detalhe);
+    }
+
+    .main-content {
+        margin-left: 250px;
+        padding: 20px;
+        transition: margin-left 0.3s ease-in-out;
+    }
+
+/* Menu Hamburguer */
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--roxo-principal) !important;
+    font-size: 1.5rem;
+    cursor: pointer;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1100;
+    transition: all 0.3s ease;
+}
+
+.menu-toggle:hover {
+    color: var(--roxo-escuro) !important;
+    transform: scale(1.1);
+}
+
+/* CORREÇÃO: Quando a sidebar está ativa */
+body:has(.sidebar.active) .menu-toggle,
+.sidebar.active ~ .menu-toggle {
+    color: var(--amarelo-detalhe) !important;
+}
+
+body:has(.sidebar.active) .menu-toggle:hover,
+.sidebar.active ~ .menu-toggle:hover {
+    color: var(--amarelo-hover) !important;
+}
+
+/* Overlay para mobile */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+@media (max-width: 992px) {
+    .menu-toggle {
+        display: block;
+    }
+    
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+    
+    .sidebar-overlay.active {
+        display: block;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 280px;
+    }
+    
+    .stats-card h3 {
+        font-size: 2rem;
+    }
+    
+    .table-responsive {
+        font-size: 0.9rem;
+    }
+    
+    .btn-sm {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .main-content {
+        padding: 15px 10px;
+    }
+    
+    .stats-card {
+        padding: 15px;
+    }
+    
+    .stats-card h3 {
+        font-size: 1.8rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .table-container {
+        padding: 15px;
+    }
+}
+>>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
 
         .btn-warning {
             background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
@@ -491,6 +731,34 @@ $database->closeConnection();
             box-shadow: 0 6px 25px rgba(255, 217, 0, 0.66);
             color: var(--preto-texto);
         }
+<<<<<<< HEAD
+=======
+
+        .settings-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .settings-icon:hover {
+            color: var(--roxo-escuro) !important;
+            transform: rotate(90deg);
+        }
+
+        /* ESTILO PARA O BOTÃO LOGOUT - ADICIONAR */
+        .logout-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .logout-icon:hover {
+            color: var(--roxo-escuro) !important;
+            transform: translateY(-2px);
+        }
+>>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
     </style>
 </head>
 
@@ -536,6 +804,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Ativar também ao passar o mouse
         pesquisarCard.parentElement.addEventListener('mouseenter', ativarBrilho);
     }
+<<<<<<< HEAD
 
     // Menu hamburguer functionality
     const hamburgerBtn = document.getElementById('hamburgerBtn');
@@ -624,7 +893,105 @@ document.addEventListener('DOMContentLoaded', function() {
                 <i class="fas fa-sign-out-alt"></i> Sair
             </a>
         </div>
+=======
+    
+    // Menu Hamburguer Functionality
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+            if (sidebarOverlay) {
+                sidebarOverlay.classList.toggle('active');
+            }
+        });
+        
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+        }
+        
+        // Fechar menu ao clicar em um link (mobile)
+        const sidebarLinks = sidebar.querySelectorAll('.list-group-item');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 992) {
+                    sidebar.classList.remove('active');
+                    if (sidebarOverlay) {
+                        sidebarOverlay.classList.remove('active');
+                    }
+                }
+            });
+        });
+    }
+});
+</script>
+
+    <!-- Menu Hamburguer -->
+    <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Overlay para mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid d-flex justify-content-end align-items-center">
+        <div class="d-flex align-items-center" style="gap: 24px;">
+            <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
+                <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
+            </a>
+            <a href="editar_perfil.php" class="settings-icon">
+                <i class="fas fa-cog fa-lg"></i>
+            </a>
+            <a href="logout.php" class="logout-icon" title="Sair">
+                <i class="fas fa-sign-out-alt fa-lg"></i>
+            </a>
+        </div>
     </div>
+</nav>
+
+<div class="sidebar" id="sidebar">
+    <div class="profile">
+        <?php if ($foto_admin): ?>
+            <div class="profile-avatar-sidebar">
+                <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
+            </div>
+        <?php else: ?>
+            <div class="profile-avatar-sidebar">
+                <i class="fa-solid fa-user" style="color: var(--amarelo-detalhe); font-size: 3.5rem;"></i>
+            </div>
+        <?php endif; ?>
+        <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+        <small>Administrador(a)</small>
+    </div>
+
+    <div class="list-group">
+        <a href="gerenciar_caminho.php" class="list-group-item active">
+            <i class="fas fa-plus-circle"></i> Adicionar Caminho
+        </a>
+        <a href="pagina_adicionar_idiomas.php" class="list-group-item">
+            <i class="fas fa-language"></i> Gerenciar Idiomas
+        </a>
+        <a href="gerenciar_teorias.php" class="list-group-item">
+            <i class="fas fa-book-open"></i> Gerenciar Teorias
+        </a>
+        <a href="gerenciar_unidades.php" class="list-group-item">
+            <i class="fas fa-cubes"></i> Gerenciar Unidades
+        </a>
+        <a href="gerenciar_usuarios.php" class="list-group-item">
+            <i class="fas fa-users"></i> Gerenciar Usuários
+        </a>
+        <a href="estatisticas_usuarios.php" class="list-group-item">
+            <i class="fas fa-chart-bar"></i> Estatísticas
+        </a>
+>>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
+    </div>
+</div>
 
     <div class="main-content" id="mainContent">
         <div class="container-fluid mt-4">
@@ -873,6 +1240,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </div>
                             </div>
 
+<<<<<<< HEAD
                             <p class="text-muted">Use o botão "Adicionar Novo Idioma com Quiz" para criar um novo idioma completo com quiz de nivelamento.</p>
 
                             <h5>Idiomas Existentes</h5>
@@ -898,6 +1266,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                         <div class="modal-footer">
                             <a href="pagina_adicionar_idiomas.php" class="btn btn-warning">
+=======
+                            <p class="text-muted">Use o botão "Adicionar Novo Idioma com Quiz" para criar um idioma com quiz de nivelamento completo.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <a href="pagina_adicionar_idiomas.php" class="btn btn-primary">
+>>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
                                 <i class="fas fa-plus-circle me-2"></i>Adicionar Novo Idioma com Quiz
                             </a>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
@@ -911,6 +1285,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
+<<<<<<< HEAD
                             <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminação</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
@@ -921,6 +1296,18 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                             <a href="#" id="confirmDeleteBtn" class="btn btn-danger">Eliminar</a>
+=======
+                            <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Exclusão</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Tem certeza que deseja excluir o item <strong id="itemNome"></strong>?</p>
+                            <p class="text-danger"><strong>Atenção:</strong> Esta ação não pode ser desfeita!</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <a href="#" id="confirmDeleteBtn" class="btn btn-danger">Excluir</a>
+>>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
                         </div>
                     </div>
                 </div>
@@ -932,6 +1319,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
+<<<<<<< HEAD
         // Função para adicionar caminho via AJAX
         $(document).ready(function() {
             $('#formAddCaminho').on('submit', function(e) {
@@ -984,6 +1372,85 @@ document.addEventListener('DOMContentLoaded', function() {
                 $('#itemNome').text(nome);
                 $('#confirmDeleteBtn').attr('href', action + '?id=' + id + '&tipo=' + tipo);
             });
+=======
+        // Script para o modal de confirmação de exclusão
+        document.addEventListener('DOMContentLoaded', function() {
+            const deleteButtons = document.querySelectorAll('.delete-btn');
+            const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+            const itemNome = document.getElementById('itemNome');
+
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const nome = this.getAttribute('data-nome');
+                    const tipo = this.getAttribute('data-tipo');
+                    const action = this.getAttribute('data-action');
+
+                    itemNome.textContent = nome;
+                    confirmDeleteBtn.href = `${action}?id=${id}`;
+                });
+            });
+
+            // Script para adicionar caminho via AJAX
+            const formAddCaminho = document.getElementById('formAddCaminho');
+            const btnAddCaminho = document.getElementById('btnAddCaminho');
+            const alertCaminho = document.getElementById('alertCaminho');
+
+            formAddCaminho.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const spinner = btnAddCaminho.querySelector('.spinner-border');
+                const btnText = btnAddCaminho.querySelector('span:not(.spinner-border)');
+                
+                // Mostrar loading
+                spinner.classList.remove('d-none');
+                btnText.textContent = 'Adicionando...';
+                btnAddCaminho.disabled = true;
+                alertCaminho.innerHTML = '';
+
+                fetch('adicionar_caminho.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alertCaminho.innerHTML = `
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="fas fa-check-circle"></i> ${data.message}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        `;
+                        formAddCaminho.reset();
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        alertCaminho.innerHTML = `
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="fas fa-exclamation-circle"></i> ${data.message}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alertCaminho.innerHTML = `
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle"></i> Erro ao adicionar caminho. Tente novamente.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    `;
+                })
+                .finally(() => {
+                    spinner.classList.add('d-none');
+                    btnText.textContent = 'Adicionar';
+                    btnAddCaminho.disabled = false;
+                });
+            });
+>>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
         });
     </script>
 </body>

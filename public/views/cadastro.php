@@ -94,6 +94,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <title>Cadastro - Site de Idiomas</title>
     <link href="cadastro-login.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Estilos para o medidor de força da senha */
+        .password-strength-meter {
+            margin-top: -0.5rem; /* Reduz o espaço após o campo de senha */
+            margin-bottom: 1rem;
+        }
+        .strength-bar {
+            height: 6px;
+            background-color: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .strength-fill {
+            height: 100%;
+            width: 0;
+            border-radius: 3px;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+        .strength-text {
+            font-size: 0.8rem;
+            margin-top: 4px;
+            text-align: right;
+            font-weight: 500;
+        }
+        /* Cores da barra */
+        .strength-weak { background-color: #dc3545; } /* Vermelho */
+        .strength-medium { background-color: #ffc107; } /* Amarelo */
+        .strength-strong { background-color: #198754; } /* Verde */
+        /* Cores do texto */
+        .text-weak { color: #dc3545; }
+        .text-medium { color: #ffc107; }
+        .text-strong { color: #198754; }
+    </style>
 </head>
 
 <body>
@@ -135,6 +168,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="input-group">
                 <input type="password" id="senha" name="senha" placeholder="Senha" required>
             </div>
+            <!-- Medidor de Força da Senha -->
+            <div class="password-strength-meter">
+                <div class="strength-bar">
+                    <div id="strength-fill" class="strength-fill"></div>
+                </div>
+                <div id="strength-text" class="strength-text"></div>
+            </div>
             <div class="input-group">
                 <label for="idioma" style="display:none;">Escolha seu primeiro idioma</label>
                 <select class="form-select" id="idioma" name="idioma" required>
@@ -164,6 +204,55 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // --- LÓGICA DO MEDIDOR DE FORÇA DA SENHA ---
+    document.addEventListener('DOMContentLoaded', function() {
+        const senhaInput = document.getElementById('senha');
+        const strengthFill = document.getElementById('strength-fill');
+        const strengthText = document.getElementById('strength-text');
+
+        senhaInput.addEventListener('input', function() {
+            const senha = this.value;
+            let score = 0;
+            let feedback = '';
+
+            if (senha.length === 0) {
+                score = 0;
+                feedback = '';
+            } else {
+                // Critérios de pontuação
+                if (senha.length >= 8) score++;       // Comprimento
+                if (/[a-z]/.test(senha)) score++;     // Letras minúsculas
+                if (/[A-Z]/.test(senha)) score++;     // Letras maiúsculas
+                if (/[0-9]/.test(senha)) score++;     // Números
+                if (/[^a-zA-Z0-9]/.test(senha)) score++; // Caracteres especiais
+            }
+
+            // Atualiza a barra e o texto com base na pontuação
+            let width = (score / 5) * 100;
+            strengthFill.style.width = width + '%';
+            strengthFill.className = 'strength-fill'; // Reseta as classes de cor
+
+            if (senha.length === 0) {
+                strengthText.textContent = '';
+            } else if (score <= 2) {
+                feedback = 'Senha fraca';
+                strengthFill.classList.add('strength-weak');
+                strengthText.className = 'strength-text text-weak';
+            } else if (score <= 4) {
+                feedback = 'Senha média';
+                strengthFill.classList.add('strength-medium');
+                strengthText.className = 'strength-text text-medium';
+            } else {
+                feedback = 'Senha forte';
+                strengthFill.classList.add('strength-strong');
+                strengthText.className = 'strength-text text-strong';
+            }
+
+            strengthText.textContent = feedback;
+        });
+    });
+    </script>
     <script>
     // Particle animation script
     const canvas = document.getElementById('particles-js');

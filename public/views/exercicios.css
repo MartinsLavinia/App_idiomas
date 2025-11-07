@@ -1,0 +1,335 @@
+/* Estilos para Exercícios - Feedback Visual Corrigido */
+
+/* Estilos base para exercícios */
+.exercicio-container {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    margin: 20px 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e9ecef;
+}
+
+/* Alternativas de exercícios */
+.alternativa, .option-audio, .opcao-exercicio {
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px 20px;
+    margin: 10px 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    position: relative;
+}
+
+.alternativa:hover, .option-audio:hover, .opcao-exercicio:hover {
+    border-color: #007bff;
+    background: #e7f3ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+}
+
+/* Estado selecionado */
+.alternativa.selecionada, .option-audio.selected, .opcao-exercicio.selecionada {
+    border-color: #007bff;
+    background: #e7f3ff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+/* Feedback visual - RESPOSTA CORRETA */
+.alternativa.option-correct, 
+.alternativa.resposta-correta,
+.option-audio.option-correct,
+.opcao-exercicio.option-correct,
+.opcao-exercicio.resposta-correta {
+    background: linear-gradient(135deg, #d4edda, #c3e6cb) !important;
+    border-color: #28a745 !important;
+    color: #155724 !important;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2) !important;
+    animation: correctPulse 0.6s ease-out;
+}
+
+.alternativa.option-correct::after,
+.alternativa.resposta-correta::after,
+.option-audio.option-correct::after,
+.opcao-exercicio.option-correct::after,
+.opcao-exercicio.resposta-correta::after {
+    content: "✓";
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #28a745;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* Feedback visual - RESPOSTA INCORRETA */
+.alternativa.option-incorrect,
+.alternativa.resposta-incorreta,
+.option-audio.option-incorrect,
+.opcao-exercicio.option-incorrect,
+.opcao-exercicio.resposta-incorreta {
+    background: linear-gradient(135deg, #f8d7da, #f5c6cb) !important;
+    border-color: #dc3545 !important;
+    color: #721c24 !important;
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.2) !important;
+    animation: incorrectShake 0.6s ease-out;
+}
+
+.alternativa.option-incorrect::after,
+.alternativa.resposta-incorreta::after,
+.option-audio.option-incorrect::after,
+.opcao-exercicio.option-incorrect::after,
+.opcao-exercicio.resposta-incorreta::after {
+    content: "✗";
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #dc3545;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* Animações */
+@keyframes correctPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+@keyframes incorrectShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Desabilitar alternativas após resposta */
+.alternativa:disabled,
+.option-audio:disabled,
+.opcao-exercicio:disabled,
+.alternativa[style*="pointer-events: none"],
+.option-audio[style*="pointer-events: none"],
+.opcao-exercicio[style*="pointer-events: none"] {
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+/* Estilos para exercícios de fala */
+.microphone-section {
+    text-align: center;
+    padding: 30px;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 15px;
+    margin: 25px 0;
+}
+
+.microphone-btn {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border: none;
+    color: white;
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    font-size: 2.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+    position: relative;
+    overflow: hidden;
+    margin: 20px auto;
+    display: block;
+    cursor: pointer;
+}
+
+.microphone-btn:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: 0 12px 35px rgba(40, 167, 69, 0.5);
+}
+
+.microphone-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.microphone-btn.listening {
+    background: linear-gradient(135deg, #dc3545, #e83e8c);
+    animation: microphonePulse 1.5s infinite;
+}
+
+@keyframes microphonePulse {
+    0% { 
+        transform: scale(1);
+        box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+    }
+    50% { 
+        transform: scale(1.1);
+        box-shadow: 0 12px 35px rgba(220, 53, 69, 0.5);
+    }
+    100% { 
+        transform: scale(1);
+        box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+    }
+}
+
+/* Status do microfone */
+.speech-status {
+    padding: 20px;
+    border-radius: 12px;
+    margin: 20px 0;
+    text-align: center;
+    font-weight: 500;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.speech-ready {
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    border: 2px solid #28a745;
+    color: #155724;
+}
+
+.speech-requesting {
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    border: 2px solid #ffc107;
+    color: #856404;
+}
+
+.speech-listening {
+    background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+    border: 2px solid #dc3545;
+    color: #721c24;
+    animation: listeningGlow 2s infinite;
+}
+
+.speech-processing {
+    background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+    border: 2px solid #17a2b8;
+    color: #0c5460;
+}
+
+.speech-error {
+    background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+    border: 2px solid #dc3545;
+    color: #721c24;
+}
+
+@keyframes listeningGlow {
+    0%, 100% { box-shadow: 0 0 5px rgba(220, 53, 69, 0.3); }
+    50% { box-shadow: 0 0 20px rgba(220, 53, 69, 0.6); }
+}
+
+/* Feedback de exercícios */
+.feedback-message, .explicacao-exercicio {
+    margin-top: 20px;
+    padding: 0;
+}
+
+.feedback-message .alert, .explicacao-exercicio .alert {
+    border-radius: 10px;
+    padding: 20px;
+    margin: 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Loading de exercícios */
+.loading-exercicio {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 10px;
+    margin: 15px 0;
+    backdrop-filter: blur(5px);
+}
+
+.loading-exercicio .spinner-border {
+    width: 2rem;
+    height: 2rem;
+}
+
+/* Erro de exercícios */
+.erro-exercicio .alert {
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.2);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .exercicio-container {
+        padding: 20px 15px;
+        margin: 15px 0;
+    }
+    
+    .alternativa, .option-audio, .opcao-exercicio {
+        padding: 12px 15px;
+        font-size: 0.9rem;
+    }
+    
+    .microphone-btn {
+        width: 80px;
+        height: 80px;
+        font-size: 2rem;
+    }
+    
+    .speech-status {
+        padding: 15px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Melhorias para acessibilidade */
+.alternativa:focus, .option-audio:focus, .opcao-exercicio:focus {
+    outline: 3px solid #007bff;
+    outline-offset: 2px;
+}
+
+.microphone-btn:focus {
+    outline: 3px solid #28a745;
+    outline-offset: 4px;
+}
+
+/* Estilos para exercícios de listening específicos */
+.exercicio-listening .audio-player {
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.exercicio-listening .audio-controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 15px 0;
+}
+
+.exercicio-listening .btn-audio {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.exercicio-listening .btn-audio:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
+
+/* Indicador de áudio tocando */
+.audio-playing {
+    animation: audioWave 1s infinite;
+}
+
+@keyframes audioWave {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
