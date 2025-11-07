@@ -247,238 +247,6 @@ $database->closeConnection();
         }
 
        .btn-outline-warning:hover {
-<<<<<<< HEAD
-            background-color: var(--amarelo-detalhe);
-            border: 0 4px 8px rgba(235, 183, 14, 0.77);
-        }
-  
-        /* Menu Lateral */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 250px;
-            height: 100%;
-            background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
-            color: var(--branco);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            padding-top: 20px;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            transition: transform 0.3s ease;
-        }
-
-        .sidebar.collapsed {
-            transform: translateX(-100%);
-        }
-
-        .sidebar .profile {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 0 15px;
-        }
-
-        .profile-avatar-sidebar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            border: 3px solid var(--amarelo-detalhe);
-            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .profile-avatar-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-        }
-
-        .profile-avatar-sidebar:has(.profile-avatar-img) i {
-            display: none;
-        }
-
-        .profile-avatar-sidebar i {
-            font-size: 3.5rem;
-            color: var(--amarelo-detalhe);
-        }
-
-        .sidebar .profile h5 {
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: var(--branco);
-            font-size: 1.1rem;
-            word-wrap: break-word;
-            max-width: 200px;
-            text-align: center;
-            line-height: 1.3;
-        }
-
-        .sidebar .profile small {
-            color: var(--cinza-claro);
-            font-size: 0.9rem;
-            word-wrap: break-word;
-            max-width: 200px;
-            text-align: center;
-            line-height: 1.2;
-            margin-top: 5px;
-        }
-
-        .sidebar .list-group {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-        }
-
-        .sidebar .list-group-item.sair {
-            background-color: transparent;
-            color: var(--branco);
-            border: none;
-            padding: 15px 25px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 40px !important;
-        }
-
-        .sidebar .list-group-item {
-            background-color: transparent;
-            color: var(--branco);
-            border: none;
-            padding: 15px 25px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar .list-group-item:hover {
-            background-color: var(--roxo-escuro);
-            cursor: pointer;
-        }
-
-        .sidebar .list-group-item.active {
-            background-color: var(--roxo-escuro) !important;
-            color: var(--branco) !important;
-            font-weight: 600;
-            border-left: 4px solid var(--amarelo-detalhe);
-        }
-
-        .sidebar .list-group-item i {
-            color: var(--amarelo-detalhe);
-        }
-
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-            transition: margin-left 0.3s ease;
-        }
-
-        .main-content.expanded {
-            margin-left: 0;
-        }
-
-        /* Botão hamburguer */
-        .hamburger-btn {
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            z-index: 1100;
-            background: var(--roxo-principal);
-            border: none;
-            color: white;
-            border-radius: 5px;
-            padding: 8px 12px;
-            font-size: 1.2rem;
-            display: none;
-            transition: all 0.3s ease;
-        }
-
-        .hamburger-btn:hover {
-            background: var(--roxo-escuro);
-            transform: scale(1.05);
-        }
-
-        @media (max-width: 992px) {
-            .sidebar {
-                width: 250px;
-                transform: translateX(-100%);
-            }
-
-            .sidebar.show {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
-
-            .hamburger-btn {
-                display: block;
-            }
-
-            .navbar-brand {
-                justify-content: center;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-            }
-
-            .stats-card h3 {
-                font-size: 2rem;
-            }
-
-            .table-responsive {
-                font-size: 0.9rem;
-            }
-
-            .btn-acoes {
-                display: flex;
-                flex-direction: column;
-                gap: 5px;
-            }
-
-            .btn-acoes .btn {
-                width: 100%;
-                margin-bottom: 5px;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .main-content {
-                padding: 10px;
-            }
-
-            .card-header h5 {
-                font-size: 1.1rem;
-            }
-
-            .stats-card {
-                padding: 15px;
-            }
-
-            .stats-card h3 {
-                font-size: 1.8rem;
-            }
-
-            .stats-card p {
-                font-size: 1rem;
-            }
-        }
-=======
-
 background-color: var(--amarelo-detalhe);
 border: 0 4px 8px rgba(235, 183, 14, 0.77);
 
@@ -715,7 +483,6 @@ body:has(.sidebar.active) .menu-toggle:hover,
         padding: 15px;
     }
 }
->>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
 
         .btn-warning {
             background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
@@ -731,8 +498,6 @@ body:has(.sidebar.active) .menu-toggle:hover,
             box-shadow: 0 6px 25px rgba(255, 217, 0, 0.66);
             color: var(--preto-texto);
         }
-<<<<<<< HEAD
-=======
 
         .settings-icon {
             color: var(--roxo-principal) !important;
@@ -758,7 +523,6 @@ body:has(.sidebar.active) .menu-toggle:hover,
             color: var(--roxo-escuro) !important;
             transform: translateY(-2px);
         }
->>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
     </style>
 </head>
 
@@ -804,96 +568,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Ativar também ao passar o mouse
         pesquisarCard.parentElement.addEventListener('mouseenter', ativarBrilho);
     }
-<<<<<<< HEAD
-
-    // Menu hamburguer functionality
-    const hamburgerBtn = document.getElementById('hamburgerBtn');
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
-
-    if (hamburgerBtn && sidebar) {
-        hamburgerBtn.addEventListener('click', function() {
-            sidebar.classList.toggle('show');
-            mainContent.classList.toggle('expanded');
-        });
-    }
-
-    // Fechar menu ao clicar em um link (em dispositivos móveis)
-    const sidebarLinks = document.querySelectorAll('.sidebar .list-group-item');
-    sidebarLinks.forEach(link => {
-        link.addEventListener('click', function() {
-            if (window.innerWidth <= 992) {
-                sidebar.classList.remove('show');
-                mainContent.classList.remove('expanded');
-            }
-        });
-    });
-
-    // Fechar menu ao redimensionar a janela para tamanho maior
-    window.addEventListener('resize', function() {
-        if (window.innerWidth > 992) {
-            sidebar.classList.remove('show');
-            mainContent.classList.remove('expanded');
-        }
-    });
-});
-</script>
-
-    <!-- Botão Hamburguer -->
-    <button class="hamburger-btn" id="hamburgerBtn">
-        <i class="fas fa-bars"></i>
-    </button>
-
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container-fluid d-flex justify-content-end align-items-center">
-            <div class="d-flex align-items-center" style="gap: 24px;">
-                <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
-                    <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
-                </a>
-                <a href="editar_perfil.php" class="settings-icon">
-                    <i class="fas fa-cog fa-lg"></i>
-                </a>
-            </div>
-        </div>
-    </nav>
-
-    <div class="sidebar" id="sidebar">
-        <div class="profile">
-            <?php if ($foto_admin): ?>
-                <div class="profile-avatar-sidebar">
-                    <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
-                </div>
-            <?php else: ?>
-                <i class="fas fa-user-circle"></i>
-            <?php endif; ?>
-            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
-            <small>Administrador(a)</small>
-        </div>
-
-        <div class="list-group">
-            <a href="gerenciar_caminho.php" class="list-group-item active">
-                <i class="fas fa-plus-circle"></i> Adicionar Caminho
-            </a>
-            <a href="pagina_adicionar_idiomas.php" class="list-group-item">
-                <i class="fas fa-language"></i> Gerenciar Idiomas
-            </a>
-            <a href="gerenciar_teorias.php" class="list-group-item">
-                <i class="fas fa-book-open"></i> Gerenciar Teorias
-            </a>
-            <a href="gerenciar_unidades.php" class="list-group-item">
-                <i class="fas fa-cubes"></i> Gerenciar Unidades
-            </a>
-            <a href="gerenciar_usuarios.php" class="list-group-item">
-                <i class="fas fa-users"></i> Gerenciar Usuários
-            </a>
-            <a href="estatisticas_usuarios.php" class="list-group-item">
-                <i class="fas fa-chart-bar"></i> Estatísticas
-            </a>
-            <a href="logout.php" class="list-group-item sair">
-                <i class="fas fa-sign-out-alt"></i> Sair
-            </a>
-        </div>
-=======
     
     // Menu Hamburguer Functionality
     const menuToggle = document.getElementById('menuToggle');
@@ -989,7 +663,6 @@ document.addEventListener('DOMContentLoaded', function() {
         <a href="estatisticas_usuarios.php" class="list-group-item">
             <i class="fas fa-chart-bar"></i> Estatísticas
         </a>
->>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
     </div>
 </div>
 
@@ -1240,38 +913,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </div>
                             </div>
 
-<<<<<<< HEAD
-                            <p class="text-muted">Use o botão "Adicionar Novo Idioma com Quiz" para criar um novo idioma completo com quiz de nivelamento.</p>
-
-                            <h5>Idiomas Existentes</h5>
-                            <ul class="list-group">
-                                <?php if (!empty($idiomas_db)): ?>
-                                <?php foreach ($idiomas_db as $idioma): ?>
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span><?php echo htmlspecialchars($idioma['idioma']); ?></span>
-                                    <div>
-                                        <a href="gerenciador_quiz_nivelamento.php?idioma=<?php echo urlencode($idioma['idioma']); ?>" class="btn btn-sm btn-outline-primary me-1">
-                                            <i class="fas fa-edit"></i> Quiz
-                                        </a>
-                                        <a href="eliminar_idioma.php?idioma=<?php echo urlencode($idioma['idioma']); ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza que deseja eliminar este idioma? Esta ação não pode ser desfeita.')">
-                                            <i class="fas fa-trash"></i> Eliminar
-                                        </a>
-                                    </div>
-                                </li>
-                                <?php endforeach; ?>
-                                <?php else: ?>
-                                <li class="list-group-item text-center">Nenhum idioma cadastrado.</li>
-                                <?php endif; ?>
-                            </ul>
-                        </div>
-                        <div class="modal-footer">
-                            <a href="pagina_adicionar_idiomas.php" class="btn btn-warning">
-=======
                             <p class="text-muted">Use o botão "Adicionar Novo Idioma com Quiz" para criar um idioma com quiz de nivelamento completo.</p>
                         </div>
                         <div class="modal-footer">
                             <a href="pagina_adicionar_idiomas.php" class="btn btn-primary">
->>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
                                 <i class="fas fa-plus-circle me-2"></i>Adicionar Novo Idioma com Quiz
                             </a>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
@@ -1285,18 +930,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-<<<<<<< HEAD
-                            <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminação</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p>Tem certeza que deseja eliminar este item?</p>
-                            <p><strong id="itemNome"></strong></p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <a href="#" id="confirmDeleteBtn" class="btn btn-danger">Eliminar</a>
-=======
                             <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Exclusão</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
@@ -1307,7 +940,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                             <a href="#" id="confirmDeleteBtn" class="btn btn-danger">Excluir</a>
->>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
                         </div>
                     </div>
                 </div>
@@ -1319,60 +951,6 @@ document.addEventListener('DOMContentLoaded', function() {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
-<<<<<<< HEAD
-        // Função para adicionar caminho via AJAX
-        $(document).ready(function() {
-            $('#formAddCaminho').on('submit', function(e) {
-                e.preventDefault();
-                var formData = $(this).serialize();
-                var btn = $('#btnAddCaminho');
-                var spinner = btn.find('.spinner-border');
-                var alertDiv = $('#alertCaminho');
-
-                btn.prop('disabled', true);
-                spinner.removeClass('d-none');
-
-                $.ajax({
-                    type: 'POST',
-                    url: 'adicionar_caminho.php',
-                    data: formData,
-                    success: function(response) {
-                        try {
-                            var result = JSON.parse(response);
-                            if (result.success) {
-                                alertDiv.html('<div class="alert alert-success">' + result.message + '</div>');
-                                $('#formAddCaminho')[0].reset();
-                                setTimeout(function() {
-                                    location.reload();
-                                }, 1500);
-                            } else {
-                                alertDiv.html('<div class="alert alert-danger">' + result.message + '</div>');
-                            }
-                        } catch (e) {
-                            alertDiv.html('<div class="alert alert-danger">Erro ao processar resposta do servidor.</div>');
-                        }
-                    },
-                    error: function() {
-                        alertDiv.html('<div class="alert alert-danger">Erro ao adicionar caminho. Tente novamente.</div>');
-                    },
-                    complete: function() {
-                        btn.prop('disabled', false);
-                        spinner.addClass('d-none');
-                    }
-                });
-            });
-
-            // Modal de confirmação de eliminação
-            $('.delete-btn').on('click', function() {
-                var id = $(this).data('id');
-                var nome = $(this).data('nome');
-                var action = $(this).data('action');
-                var tipo = $(this).data('tipo');
-
-                $('#itemNome').text(nome);
-                $('#confirmDeleteBtn').attr('href', action + '?id=' + id + '&tipo=' + tipo);
-            });
-=======
         // Script para o modal de confirmação de exclusão
         document.addEventListener('DOMContentLoaded', function() {
             const deleteButtons = document.querySelectorAll('.delete-btn');
@@ -1450,7 +1028,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     btnAddCaminho.disabled = false;
                 });
             });
->>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
         });
     </script>
 </body>

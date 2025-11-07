@@ -466,209 +466,7 @@ $database->closeConnection();
         letter-spacing: 0.5px;
     }
 
-<<<<<<< HEAD
-    /* Menu Lateral */
-    .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 250px;
-        height: 100%;
-        background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
-        color: var(--branco);
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        padding-top: 20px;
-        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-        z-index: 1000;
-        transition: transform 0.3s ease;
-    }
 
-    .sidebar.collapsed {
-        transform: translateX(-100%);
-    }
-
-    .sidebar.show {
-        transform: translateX(0);
-    }
-
-    .sidebar .profile {
-        text-align: center;
-        margin-bottom: 30px;
-        padding: 0 15px;
-    }
-
-    /* Container do avatar - PARA QUANDO TEM FOTO (80x80px COM CÍRCULO) */
-    .profile-avatar-sidebar {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        border: 3px solid var(--amarelo-detalhe);
-        background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 15px;
-        overflow: hidden;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    }
-
-    .profile-avatar-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: 50%;
-    }
-
-    /* Ícone quando NÃO tem foto - SEM CÍRCULO (apenas ícone) */
-    .sidebar .profile i.fa-user-circle {
-        font-size: 4rem; /* Tamanho do ícone */
-        color: var(--amarelo-detalhe);
-        margin: 0 auto 15px;
-        display: block;
-        /* REMOVIDO: border, background, box-shadow, width, height */
-    }
-
-    .sidebar .list-group {
-        width: 100%;
-    }
-
-    .sidebar .list-group-item {
-        background-color: transparent;
-        color: var(--branco);
-        border: none;
-        padding: 15px 25px;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        transition: all 0.3s ease;
-    }
-
-    .sidebar .list-group-item:hover {
-        background-color: var(--roxo-escuro);
-        cursor: pointer;
-    }
-
-    .sidebar .list-group-item.active {
-        background-color: var(--roxo-escuro) !important;
-        color: var(--branco) !important;
-        font-weight: 600;
-        border-left: 4px solid var(--amarelo-detalhe);
-    }
-
-    .sidebar .list-group-item i {
-        color: var(--amarelo-detalhe);
-    }
-
-    /* Botão Hamburguer */
-    .hamburger-btn {
-        position: fixed;
-        top: 15px;
-        left: 15px;
-        z-index: 1100;
-        background: var(--roxo-principal);
-        border: none;
-        color: white;
-        border-radius: 5px;
-        padding: 8px 12px;
-        font-size: 1.2rem;
-        display: none;
-        transition: all 0.3s ease;
-    }
-
-    .hamburger-btn:hover {
-        background: var(--roxo-escuro);
-        transform: scale(1.05);
-    }
-
-    .main-content {
-        margin-left: 250px;
-        padding: 20px;
-        transition: margin-left 0.3s ease;
-    }
-
-    .main-content.expanded {
-        margin-left: 0;
-    }
-
-    @media (max-width: 992px) {
-        .sidebar {
-            width: 250px;
-            transform: translateX(-100%);
-        }
-
-        .sidebar.show {
-            transform: translateX(0);
-        }
-
-        .main-content {
-            margin-left: 0;
-        }
-
-        .hamburger-btn {
-            display: block !important;
-        }
-
-        .navbar-brand {
-            justify-content: center;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .sidebar {
-            width: 100%;
-        }
-
-        .main-content {
-            margin-left: 0;
-            padding: 15px;
-        }
-
-        .card-header {
-            padding: 1rem;
-        }
-
-        .card-header h2 {
-            font-size: 1.3rem;
-        }
-    }
-
-    @media (max-width: 576px) {
-        .main-content {
-            padding: 10px;
-        }
-
-        .btn-warning {
-            min-width: auto;
-            width: 100%;
-            margin-bottom: 10px;
-        }
-
-        .container.mt-4 {
-            padding: 10px !important;
-        }
-    }
-
-    .btn-warning {
-        background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
-        color: var(--preto-texto);
-        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
-        min-width: 180px;
-        border: none;
-        transition: all 0.3s ease;
-    }
-
-    .btn-warning:hover {
-        background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
-        color: var(--preto-texto);
-    }
-
-=======
->>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
     .btn-primary {
         background-color: var(--roxo-principal);
         border-color: var(--roxo-principal);
@@ -917,19 +715,6 @@ $database->closeConnection();
 </head>
 <body>
 
-<<<<<<< HEAD
-    <!-- Botão Hamburguer -->
-    <button class="hamburger-btn" id="hamburgerBtn">
-        <i class="fas fa-bars"></i>
-    </button>
-
-    <!-- Overlay para fechar menu -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container d-flex justify-content-between align-items-center">
-            <div></div>
-=======
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Menu Hamburguer Functionality
@@ -978,7 +763,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid d-flex justify-content-end align-items-center">
->>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
             <div class="d-flex align-items-center" style="gap: 24px;">
                 <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
                     <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
@@ -1000,12 +784,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </nav>
 
-<<<<<<< HEAD
-    
-<div class="sidebar" id="sidebar">
-=======
     <div class="sidebar" id="sidebar">
->>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
     <div class="profile">
         <?php if ($foto_admin): ?>
             <div class="profile-avatar-sidebar">
@@ -1042,13 +821,8 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 </div>
 
-<<<<<<< HEAD
-    <div class="main-content" id="mainContent">
-        <div class="container mt-4">
-=======
     <div class="main-content">
         <div class="container-fluid mt-4">
->>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
             <div class="page-header flex-column flex-sm-row">
                 <h2 class="mb-2 mb-sm-0"><i class="fas fa-book-open"></i> Gerenciar Teorias</h2>
                 <div class="action-buttons">
@@ -1116,52 +890,6 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 
-<<<<<<< HEAD
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Menu hamburguer functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const hamburgerBtn = document.getElementById('hamburgerBtn');
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            const sidebarOverlay = document.getElementById('sidebarOverlay');
-
-            if (hamburgerBtn && sidebar) {
-                hamburgerBtn.addEventListener('click', function() {
-                    sidebar.classList.toggle('show');
-                    mainContent.classList.toggle('expanded');
-                    sidebarOverlay.classList.toggle('show');
-                });
-
-                // Fechar menu ao clicar no overlay
-                sidebarOverlay.addEventListener('click', function() {
-                    sidebar.classList.remove('show');
-                    mainContent.classList.remove('expanded');
-                    sidebarOverlay.classList.remove('show');
-                });
-
-                // Fechar menu ao clicar em um link (em dispositivos móveis)
-                const sidebarLinks = document.querySelectorAll('.sidebar .list-group-item');
-                sidebarLinks.forEach(link => {
-                    link.addEventListener('click', function() {
-                        if (window.innerWidth <= 992) {
-                            sidebar.classList.remove('show');
-                            mainContent.classList.remove('expanded');
-                            sidebarOverlay.classList.remove('show');
-                        }
-                    });
-                });
-
-                // Fechar menu ao redimensionar a janela para tamanho maior
-                window.addEventListener('resize', function() {
-                    if (window.innerWidth > 992) {
-                        sidebar.classList.remove('show');
-                        mainContent.classList.remove('expanded');
-                        sidebarOverlay.classList.remove('show');
-                    }
-                });
-            }
-=======
     <!-- Modal de Confirmação de Exclusão -->
     <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -1197,7 +925,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     confirmDeleteBtn.href = `eliminar_teoria.php?id=${id}`;
                 });
             });
->>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
         });
     </script>
 </body>

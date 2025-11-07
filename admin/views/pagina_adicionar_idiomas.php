@@ -158,25 +158,6 @@ if ($stmt_idiomas) {
             box-shadow: 0 4px 8px rgba(235, 183, 14, 0.77);
         }
 
-<<<<<<< HEAD
-        /* Menu Lateral */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 250px;
-            height: 100%;
-            background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
-            color: var(--branco);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            padding-top: 20px;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            transition: transform 0.3s ease;
-        }
-=======
 /* Menu Lateral */
 .sidebar {
     position: fixed;
@@ -194,53 +175,11 @@ if ($stmt_idiomas) {
     z-index: 1000;
     transition: transform 0.3s ease-in-out;
 }
->>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
 
         .sidebar.collapsed {
             transform: translateX(-100%);
         }
 
-<<<<<<< HEAD
-        .sidebar.show {
-            transform: translateX(0);
-        }
-
-        .sidebar .profile {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 0 15px;
-        }
-
-        .profile-avatar-sidebar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            border: 3px solid var(--amarelo-detalhe);
-            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .profile-avatar-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-        }
-
-        .profile-avatar-sidebar:has(.profile-avatar-img) i {
-            display: none;
-        }
-
-        .profile-avatar-sidebar i {
-            font-size: 3.5rem;
-            color: var(--amarelo-detalhe);
-        }
-=======
 /* CONTAINER DA FOTO DO PERFIL - APENAS QUANDO HÁ FOTO */
 .profile-avatar-sidebar {
     width: 100px;
@@ -322,7 +261,6 @@ if ($stmt_idiomas) {
     gap: 10px;
     transition: all 0.3s ease;
 }
->>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
 
         .sidebar .list-group {
             width: 100%;
@@ -345,113 +283,6 @@ if ($stmt_idiomas) {
             cursor: pointer;
         }
 
-<<<<<<< HEAD
-        .sidebar .list-group-item.active {
-            background-color: var(--roxo-escuro) !important;
-            color: var(--branco) !important;
-            font-weight: 600;
-            border-left: 4px solid var(--amarelo-detalhe);
-        }
-
-        .sidebar .list-group-item i {
-            color: var(--amarelo-detalhe);
-        }
-
-        /* Botão Hamburguer */
-        .hamburger-btn {
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            z-index: 1100;
-            background: var(--roxo-principal);
-            border: none;
-            color: white;
-            border-radius: 5px;
-            padding: 8px 12px;
-            font-size: 1.2rem;
-            display: none;
-            transition: all 0.3s ease;
-        }
-
-        .hamburger-btn:hover {
-            background: var(--roxo-escuro);
-            transform: scale(1.05);
-        }
-
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-            transition: margin-left 0.3s ease;
-        }
-
-        .main-content.expanded {
-            margin-left: 0;
-        }
-
-        @media (max-width: 992px) {
-            .sidebar {
-                width: 250px;
-                transform: translateX(-100%);
-            }
-
-            .sidebar.show {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
-
-            .hamburger-btn {
-                display: block !important;
-            }
-
-            .navbar-brand {
-                justify-content: center;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-            }
-
-            .main-content {
-                margin-left: 0;
-                padding: 15px;
-            }
-
-            .card-header {
-                padding: 1rem;
-            }
-
-            .card-header h2 {
-                font-size: 1.3rem;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .main-content {
-                padding: 10px;
-            }
-
-            .btn-warning {
-                min-width: auto;
-                width: 100%;
-                margin-bottom: 10px;
-            }
-
-            .container.py-4 {
-                padding: 10px !important;
-            }
-
-            .col-xl-10 {
-                padding: 0;
-            }
-        }
-
-        /* Ajuste do conteúdo principal para não ficar por baixo do sidebar */
-=======
 /* Menu Hamburguer */
 .menu-toggle {
     display: none;
@@ -538,7 +369,6 @@ body:has(.sidebar.active) .menu-toggle:hover,
         padding: 20px 10px;
     }
 }
->>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
         .btn-warning {
             background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
             color: var(--preto-texto);
@@ -719,24 +549,6 @@ body:has(.sidebar.active) .menu-toggle:hover,
             opacity: 0.7;
         }
 
-<<<<<<< HEAD
-        /* Responsividade para formulários de quiz */
-        @media (max-width: 768px) {
-            .row .col-md-3 {
-                margin-bottom: 10px;
-            }
-            
-            .card.mb-3 .card-body {
-                padding: 1rem;
-            }
-            
-            .pagination {
-                flex-wrap: wrap;
-            }
-            
-            .pagination .page-item {
-                margin-bottom: 5px;
-=======
         /* Responsividade para formulários */
         @media (max-width: 768px) {
             .card-body {
@@ -751,53 +563,19 @@ body:has(.sidebar.active) .menu-toggle:hover,
                 --bs-pagination-padding-x: 0.6rem;
                 --bs-pagination-padding-y: 0.4rem;
                 --bs-pagination-font-size: 0.9rem;
->>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
             }
         }
 
         @media (max-width: 576px) {
-<<<<<<< HEAD
-            .card-body {
-                padding: 1rem;
-            }
-            
-            h5.card-title {
-=======
             h2 {
                 font-size: 1.5rem;
             }
             
             .card-header h5 {
->>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
                 font-size: 1.1rem;
             }
             
             .form-control, .form-select {
-<<<<<<< HEAD
-                font-size: 16px; /* Previne zoom no iOS */
-            }
-            
-            .btn-sm {
-                padding: 0.25rem 0.5rem;
-                font-size: 0.75rem;
-            }
-        }
-
-        /* Overlay para menu mobile */
-        .sidebar-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-            display: none;
-        }
-
-        .sidebar-overlay.show {
-            display: block;
-=======
                 font-size: 0.9rem;
                 padding: 0.5rem 0.75rem;
             }
@@ -835,25 +613,12 @@ body:has(.sidebar.active) .menu-toggle:hover,
         .logout-icon:hover {
             color: var(--roxo-escuro) !important;
             transform: translateY(-2px);
->>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
+
         }
     </style>
 </head>
 <body>
 
-<<<<<<< HEAD
-    <!-- Botão Hamburguer -->
-    <button class="hamburger-btn" id="hamburgerBtn">
-        <i class="fas fa-bars"></i>
-    </button>
-
-    <!-- Overlay para fechar menu -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container d-flex justify-content-between align-items-center">
-            <div></div>
-=======
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Menu Hamburguer Functionality
@@ -954,7 +719,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid d-flex justify-content-end align-items-center">
->>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
             <div class="d-flex align-items-center" style="gap: 24px;">
                 <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
                     <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
@@ -969,10 +733,6 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </nav>
 
-<<<<<<< HEAD
-    
-=======
->>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
 <div class="sidebar" id="sidebar">
     <div class="profile">
         <?php if ($foto_admin): ?>
@@ -1010,32 +770,6 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 </div>
 
-<<<<<<< HEAD
-    <div class="main-content" id="mainContent">
-        <div class="container py-4">
-            <div class="row justify-content-center">
-                <div class="col-xl-10">
-                    <h2 class="mb-4">
-    <i class="fas fa-language me-2"></i>
-    Gerenciar idiomas simples
-</h2>
-                        <a href="#" class="btn btn-warning mb-4" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
-                            <i class="fas fa-plus-circle me-2"></i>Gerenciar idiomas
-                        </a>
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Adicionar Novo Idioma com Quiz (Página <?php echo $pagina_atual . ' de ' . $total_paginas; ?>)</h5>
-                        </div>
-                        <div class="card-body">
-                            <form action="adicionar_idioma_completo.php?page=<?php echo $pagina_atual + 1; ?>" method="POST">
-                                <?php if ($pagina_atual === 1): ?>
-                                <div class="mb-3">
-                                    <label for="idioma_novo_completo" class="form-label">Nome do Idioma</label>
-                                    <input type="text" class="form-control" id="idioma_novo_completo" name="idioma" placeholder="Ex: Espanhol" required>
-                                </div>
-                                <hr>
-                                <?php endif; ?>
-=======
     <div class="main-content">
         <div class="container-fluid mt-4">
             <?php
@@ -1045,7 +779,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 echo '<div class="alert alert-' . ($message_type == 'success' ? 'success' : 'danger') . ' mt-3">' . $message_content . '</div>';
             }
             ?>
->>>>>>> 8657775199f686e857d86dd1f1b0bc174e6224b3
 
             <h2 class="mb-4">
                 <i class="fas fa-language me-2"></i>
