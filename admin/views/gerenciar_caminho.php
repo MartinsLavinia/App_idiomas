@@ -77,13 +77,13 @@ $database->closeConnection();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciar Caminhos - Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="gerenciamento.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="gerenciamento.css" rel="stylesheet">
    <link rel="icon" type="image/png" href="../../imagens/mini-esquilo.png">
 
 </head>
@@ -239,7 +239,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ?>
             <div class="row mb-4" style="display: inline-flex;flex-flow: row nowrap;align-items: flex-start;justify-content: flex-start;">
                         <h2 class="mb-4">Gerenciar Caminhos de Aprendizagem</h2>
-                        <a href="#" class="btn btn-warning mb-4" data-bs-toggle="modal" data-bs-target="#addCaminhoModal" style="width: 220px;">
+                        <a href="#" class="btn btn-warning mb-4" data-bs-toggle="modal" data-bs-target="#addCaminhoModal" style="width: 220px; padding:15px">
                             <i class="fas fa-plus-circle me-2"></i>Adicionar Caminho
                         </a>
             </div>
@@ -299,12 +299,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         <i class="fas fa-search me-2"></i>Pesquisar Caminhos
                     </h5>
                 </div>
-                <div class="card-body">
-                    <form action="" method="GET">
-                        <div class="row g-3 align-items-center">
-                            <div class="col-md-auto">
+                <div class="card-body" style="display: inline-flex; align-items: flex-start; justify-content: flex-start; align-content: center; gap: 15px;">
+                    <form action="" method="GET" style="display: inline-flex;width: fit-content; flex-flow: row nowrap;align-items: flex-start;justify-content: flex-start; gap:15px">
+                        <div class="row-cols-md-auto g-3 align-items-center" style="display: inline-flex;width: fit-content; flex-flow: row nowrap;align-items: flex-start;justify-content: flex-start; gap:5px">
+                            <div class="row-cols-md-auto" style="display: inline-flex;width: fit-content; flex-flow: row nowrap;align-items: flex-start;justify-content: flex-start; gap:5px">
                                 <label for="idioma_busca" class="col-form-label">Idioma:</label>
-                                <select id="idioma_busca" name="idioma" class="form-select">
+                                <select id="idioma_busca" name="idioma" class="form-select" style="width:fit-content;padding: 10px 35px;">
                                     <option value="">Todos os Idiomas</option>
                                     <?php foreach ($idiomas_db as $idioma): ?>
                                     <option value="<?php echo htmlspecialchars($idioma['idioma']); ?>"
@@ -314,9 +314,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <?php endforeach; ?>
                                 </select>
                             </div>
-                            <div class="col-md-auto">
+                            <div class="row-cols-md-auto" style="display: inline-flex;width: fit-content; flex-flow: row nowrap;align-items: flex-start;justify-content: flex-start; gap:5px">
                                 <label for="nivel_busca" class="col-form-label">Nível:</label>
-                                <select id="nivel_busca" name="nivel" class="form-select">
+                                <select id="nivel_busca" name="nivel" class="form-select" style="width:fit-content;padding: 10px 35px;">
                                     <option value="">Todos os Níveis</option>
                                     <?php foreach ($niveis_db as $nivel): ?>
                                     <option value="<?php echo htmlspecialchars($nivel); ?>"
@@ -327,7 +327,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </select>
                             </div>
                             <div class="col-md-auto d-flex align-items-end">
-                                <button type="submit" class="btn btn-outline-warning" style="margin-top: 40px;">
+                                <button type="submit" class="btn btn-outline-warning" style="margin: auto;">
                                     <i class="fas fa-search me-2"></i>Pesquisar
                                 </button>
                             </div>
