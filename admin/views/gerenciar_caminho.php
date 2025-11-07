@@ -86,444 +86,6 @@ $database->closeConnection();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
    <link rel="icon" type="image/png" href="../../imagens/mini-esquilo.png">
 
-    <style>
-        :root {
-            --roxo-principal: #6a0dad;
-            --roxo-escuro: #4c087c;
-            --amarelo-detalhe: #ffd700;
-            --amarelo-botao: #ffd700;
-            --amarelo-hover: #e7c500;
-            --branco: #ffffff;
-            --preto-texto: #212529;
-            --cinza-claro: #f8f9fa;
-            --cinza-medio: #dee2e6;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--cinza-claro);
-            color: var(--preto-texto);
-            animation: fadeIn 1s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .settings-icon {
-            color: var(--roxo-principal) !important;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            font-size: 1.2rem;
-        }
-
-        .settings-icon:hover {
-            color: var(--roxo-escuro) !important;
-            transform: rotate(90deg);
-        }
-
-        .table-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            border: 2px solid rgba(106, 13, 173, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .card-header h5 {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: white;
-        }
-
-        .card-header h5 i {
-            color: var(--amarelo-detalhe);
-        }
-
-        /* Cartões de Estatísticas - MESMO ESTILO DO PRIMEIRO CÓDIGO */
-        .stats-card {
-            background: rgba(255, 255, 255, 0.95) !important;
-            color: var(--preto-texto);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
-            border: 2px solid rgba(106, 13, 173, 0.1);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            animation: statsCardAnimation 0.8s ease-out;
-            position: relative;
-            overflow: hidden;
-            text-align: center;
-        }
-
-        @keyframes statsCardAnimation {
-            from {
-                opacity: 0;
-                transform: translateY(30px) rotateX(-10deg);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) rotateX(0);
-            }
-        }
-
-        .stats-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(106, 13, 173, 0.1), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .stats-card:hover::before {
-            left: 100%;
-        }
-
-        .stats-card:hover {
-            transform: translateY(-8px) scale(1.03);
-            box-shadow: 0 15px 30px rgba(106, 13, 173, 0.25);
-            border-color: rgba(106, 13, 173, 0.3);
-        }
-
-        .stats-card h3 {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: var(--roxo-principal);
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .stats-card p {
-            margin-bottom: 0;
-            opacity: 0.9;
-            font-size: 1.1rem;
-            color: var(--preto-texto);
-        }
-
-        .stats-card i {
-            font-size: 2rem;
-            color: var(--amarelo-detalhe);
-            margin-bottom: 1rem;
-        }
-
-        /* Animações adicionais para stats-card */
-        .stats-card:nth-child(1) { animation-delay: 0.1s; }
-        .stats-card:nth-child(2) { animation-delay: 0.2s; }
-        .stats-card:nth-child(3) { animation-delay: 0.3s; }
-        .stats-card:nth-child(4) { animation-delay: 0.4s; }
-
-        /* Barra de Navegação - MODIFICADA PARA TRANSPARENTE */
-        .navbar {
-            background-color: transparent !important;
-            border-bottom: 3px solid var(--amarelo-detalhe);
-            box-shadow: 0 4px 15px rgba(255, 238, 0, 0.38);
-        }
-
-        .navbar-brand {
-            margin-left: auto;
-            margin-right: 0;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            width: 100%;
-        }
-
-        .navbar-brand .logo-header {
-            height: 70px;
-            width: auto;
-            display: block;
-        }
-
-        .btn-outline-light {
-            color: var(--amarelo-detalhe);
-            border-color: var(--amarelo-detalhe);
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-       .btn-outline-warning:hover {
-background-color: var(--amarelo-detalhe);
-border: 0 4px 8px rgba(235, 183, 14, 0.77);
-
-}
-/* Menu Lateral */
-    .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 250px;
-        height: 100%;
-        background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
-        color: var(--branco);
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        padding-top: 20px;
-        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-        z-index: 1000;
-        transition: transform 0.3s ease-in-out;
-    }
-
-    .sidebar .profile {
-        text-align: center;
-        margin-bottom: 30px;
-        padding: 0 15px;
-    }
-
-    .profile-avatar-sidebar {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        border: 3px solid var(--amarelo-detalhe);
-        background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 15px;
-        overflow: hidden;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    }
-
-    .profile-avatar-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: 50%;
-    }
-
-    .profile-avatar-sidebar:has(.profile-avatar-img) i {
-        display: none;
-    }
-
-    .profile-avatar-sidebar i {
-        font-size: 3.5rem;
-        color: var(--amarelo-detalhe);
-    }
-
-    .sidebar .profile h5 {
-        font-weight: 600;
-        margin-bottom: 5px;
-        color: var(--branco);
-        font-size: 1.1rem;
-        word-wrap: break-word;
-        max-width: 200px;
-        text-align: center;
-        line-height: 1.3;
-    }
-
-    .sidebar .profile small {
-        color: var(--cinza-claro);
-        font-size: 0.9rem;
-        word-wrap: break-word;
-        max-width: 200px;
-        text-align: center;
-        line-height: 1.2;
-        margin-top: 5px;
-    }
-
-    .sidebar .list-group {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-    }
-
-    .sidebar .list-group-item.sair {
-        background-color: transparent;
-        color: var(--branco);
-        border: none;
-        padding: 15px 25px;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-top: 40px !important;
-    }
-
-    .sidebar .list-group-item {
-        background-color: transparent;
-        color: var(--branco);
-        border: none;
-        padding: 15px 25px;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        transition: all 0.3s ease;
-    }
-
-    .sidebar .list-group-item:hover {
-        background-color: var(--roxo-escuro);
-        cursor: pointer;
-    }
-
-    .sidebar .list-group-item.active {
-        background-color: var(--roxo-escuro) !important;
-        color: var(--branco) !important;
-        font-weight: 600;
-        border-left: 4px solid var(--amarelo-detalhe);
-    }
-
-    .sidebar .list-group-item i {
-        color: var(--amarelo-detalhe);
-    }
-
-    .main-content {
-        margin-left: 250px;
-        padding: 20px;
-        transition: margin-left 0.3s ease-in-out;
-    }
-
-/* Menu Hamburguer */
-.menu-toggle {
-    display: none;
-    background: none;
-    border: none;
-    color: var(--roxo-principal) !important;
-    font-size: 1.5rem;
-    cursor: pointer;
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    z-index: 1100;
-    transition: all 0.3s ease;
-}
-
-.menu-toggle:hover {
-    color: var(--roxo-escuro) !important;
-    transform: scale(1.1);
-}
-
-/* CORREÇÃO: Quando a sidebar está ativa */
-body:has(.sidebar.active) .menu-toggle,
-.sidebar.active ~ .menu-toggle {
-    color: var(--amarelo-detalhe) !important;
-}
-
-body:has(.sidebar.active) .menu-toggle:hover,
-.sidebar.active ~ .menu-toggle:hover {
-    color: var(--amarelo-hover) !important;
-}
-
-/* Overlay para mobile */
-.sidebar-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-}
-
-@media (max-width: 992px) {
-    .menu-toggle {
-        display: block;
-    }
-    
-    .sidebar {
-        transform: translateX(-100%);
-    }
-    
-    .sidebar.active {
-        transform: translateX(0);
-    }
-    
-    .main-content {
-        margin-left: 0;
-    }
-    
-    .sidebar-overlay.active {
-        display: block;
-    }
-}
-
-@media (max-width: 768px) {
-    .sidebar {
-        width: 280px;
-    }
-    
-    .stats-card h3 {
-        font-size: 2rem;
-    }
-    
-    .table-responsive {
-        font-size: 0.9rem;
-    }
-    
-    .btn-sm {
-        font-size: 0.8rem;
-        padding: 0.25rem 0.5rem;
-    }
-}
-
-@media (max-width: 576px) {
-    .main-content {
-        padding: 15px 10px;
-    }
-    
-    .stats-card {
-        padding: 15px;
-    }
-    
-    .stats-card h3 {
-        font-size: 1.8rem;
-    }
-    
-    .card-body {
-        padding: 1rem;
-    }
-    
-    .table-container {
-        padding: 15px;
-    }
-}
-
-        .btn-warning {
-            background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
-            color: var(--preto-texto);
-            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
-            min-width: 180px;
-            border: none;
-        }
-
-        .btn-warning:hover {
-            background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(255, 217, 0, 0.66);
-            color: var(--preto-texto);
-        }
-
-        .settings-icon {
-            color: var(--roxo-principal) !important;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            font-size: 1.2rem;
-        }
-
-        .settings-icon:hover {
-            color: var(--roxo-escuro) !important;
-            transform: rotate(90deg);
-        }
-
-        /* ESTILO PARA O BOTÃO LOGOUT - ADICIONAR */
-        .logout-icon {
-            color: var(--roxo-principal) !important;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            font-size: 1.2rem;
-        }
-
-        .logout-icon:hover {
-            color: var(--roxo-escuro) !important;
-            transform: translateY(-2px);
-        }
-    </style>
 </head>
 
 <body>
@@ -675,12 +237,44 @@ document.addEventListener('DOMContentLoaded', function() {
                 echo '<div class="alert alert-' . ($message_type == 'success' ? 'success' : 'danger') . ' mt-3">' . $message_content . '</div>';
             }
             ?>
+            <div class="row mb-4" style="display: inline-flex;flex-flow: row nowrap;align-items: flex-start;justify-content: flex-start;">
+                        <h2 class="mb-4">Gerenciar Caminhos de Aprendizagem</h2>
+                        <a href="#" class="btn btn-warning mb-4" data-bs-toggle="modal" data-bs-target="#addCaminhoModal" style="width: 220px;">
+                            <i class="fas fa-plus-circle me-2"></i>Adicionar Caminho
+                        </a>
+            </div>
 
-            <h2 class="mb-4">Gerenciar Caminhos de Aprendizagem</h2>
-
-            <a href="#" class="btn btn-warning mb-4" data-bs-toggle="modal" data-bs-target="#addCaminhoModal">
-                <i class="fas fa-plus-circle me-2"></i>Adicionar Caminho
-            </a>
+            <!-- Estatísticas - MANTIDAS COMO ESTAVAM ANTES (EMBAIXO) -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <i class="fas fa-road"></i>
+                        <h3><?= count($caminhos) ?></h3>
+                        <p>Total de Caminhos</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <i class="fas fa-cubes"></i>
+                        <h3><?= count($unidades_db) ?></h3>
+                        <p>Total de Unidades</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <i class="fas fa-globe"></i>
+                        <h3><?= count($idiomas_db) ?></h3>
+                        <p>Total de Idiomas</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <i class="fas fa-tasks"></i>
+                        <h3><?= isset($quizzes_concluidos) ? $quizzes_concluidos : 0 ?></h3>
+                        <p>Quizzes Concluídos</p>
+                    </div>
+                </div>
+            </div>
 
             <!-- Notificações -->
             <?php if (isset($_SESSION['success'])): ?>
@@ -750,7 +344,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <th>Idioma</th>
                             <th>Caminho</th>
                             <th>Nível</th>
-                            <th>Ações</th>
+                            <th style="width:30%">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -789,38 +383,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         <?php endif; ?>
                     </tbody>
                 </table>
-            </div>
-
-            <!-- Estatísticas - MANTIDAS COMO ESTAVAM ANTES (EMBAIXO) -->
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="stats-card">
-                        <i class="fas fa-road"></i>
-                        <h3><?= count($caminhos) ?></h3>
-                        <p>Total de Caminhos</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stats-card">
-                        <i class="fas fa-cubes"></i>
-                        <h3><?= count($unidades_db) ?></h3>
-                        <p>Total de Unidades</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stats-card">
-                        <i class="fas fa-globe"></i>
-                        <h3><?= count($idiomas_db) ?></h3>
-                        <p>Total de Idiomas</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stats-card">
-                        <i class="fas fa-tasks"></i>
-                        <h3><?= isset($quizzes_concluidos) ? $quizzes_concluidos : 0 ?></h3>
-                        <p>Quizzes Concluídos</p>
-                    </div>
-                </div>
             </div>
 
             <!-- Modal para Adicionar Caminho -->
