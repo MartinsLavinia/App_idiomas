@@ -166,16 +166,16 @@ $database->closeConnection();
     .table-container {
         background: rgba(255, 255, 255, 0.95);
         border-radius: 15px;
-        padding: 20px;
+        padding: 0;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         border: 2px solid rgba(106, 13, 173, 0.1);
         transition: all 0.3s ease;
+        overflow: hidden;
     }
 
     .card-header h5 {
         font-size: 1.3rem;
-        font-weight: 600;
-        color: white;
+        font-family: 'Poppins', sans-serif;
     }
 
     .card-header h5 i {
@@ -764,6 +764,64 @@ $database->closeConnection();
     align-items: center;
     margin-bottom: 0;
 }
+
+/* FUNDO ROXO APENAS NO HEADER DOS FILTROS */
+.filtros-header-roxo .card-header {
+    background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro)) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px 15px 0 0 !important;
+    padding: 15px 20px;
+}
+
+.filtros-header-roxo .card-header h5 {
+    color: var(--branco) !important;
+    font-weight: 600;
+    margin: 0;
+}
+
+.filtros-header-roxo .card-header h5 i {
+    color: var(--amarelo-detalhe) !important;
+}
+
+.filtros-header-roxo .card-body {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 0 0 15px 15px;
+    padding: 20px;
+}
+
+/* Estilo para os elementos do formulário nos filtros */
+.filtros-header .form-label {
+    color: var(--roxo-principal) !important;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.filtros-heade .form-control,
+.filtros-header .form-select {
+    border: 2px solid var(--roxo-principal);
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.filtros-header .form-control:focus,
+.filtros-header .form-select:focus {
+    border-color: var(--roxo-escuro);
+    box-shadow: 0 0 0 0.2rem rgba(106, 13, 173, 0.25);
+}
+
+.filtros-header .btn-warning {
+    background: linear-gradient(135deg, var(--amarelo-detalhe), #ffc107);
+    border: none;
+    color: var(--preto-texto);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.filtros-header .btn-warning:hover {
+    background: linear-gradient(135deg, #e6c200, #e0a800);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4);
+}
         
     </style>
 </head>
@@ -879,7 +937,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="col-md-3">
                     <div class="stats-card text-center">
                         <h3>5</h3>
-                        <p><i class="fas fa-users" style="color: black;"></i> Total de Usuários</p>
+                        <p><i class="fas fa-users" style="color: var(--amarelo-detalhe);"></i> Total de Usuários</p>
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -903,9 +961,9 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
 
             <!-- Filtros de Pesquisa - Versão Simplificada -->
-<div class="table-container mb-4">
+<div class="table-container mb-4 filtros-header-roxo">
     <div class="card-header">
-        <h5 class="mb-0 text-white"><i class="fas fa-search"></i> Filtros de Pesquisa</h5>
+        <h5 class="mb-0"><i class="fas fa-search"></i> Filtros de Pesquisa</h5>
     </div>
     <div class="card-body">
         <form method="GET" action="">

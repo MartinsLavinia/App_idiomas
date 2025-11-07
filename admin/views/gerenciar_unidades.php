@@ -143,8 +143,7 @@ body {
     font-weight: 700;
     letter-spacing: 0.5px;
 }
-
-/* Menu Lateral */
+/* Sidebar */
 .sidebar {
     position: fixed;
     top: 0;
@@ -159,6 +158,7 @@ body {
     padding-top: 20px;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
     z-index: 1000;
+    transition: transform 0.3s ease-in-out;
 }
 
 .sidebar .profile {
@@ -167,10 +167,9 @@ body {
     padding: 0 15px;
 }
 
-/* Container do avatar - PARA QUANDO TEM FOTO (80x80px COM CÍRCULO) */
 .profile-avatar-sidebar {
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
     border: 3px solid var(--amarelo-detalhe);
     background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
@@ -189,17 +188,52 @@ body {
     border-radius: 50%;
 }
 
-/* Ícone quando NÃO tem foto - SEM CÍRCULO (apenas ícone) */
-.sidebar .profile i.fa-user-circle {
-    font-size: 4rem; /* Tamanho do ícone */
+.profile-avatar-sidebar:has(.profile-avatar-img) i {
+    display: none;
+}
+
+.profile-avatar-sidebar i {
+    font-size: 3.5rem;
     color: var(--amarelo-detalhe);
-    margin: 0 auto 15px;
-    display: block;
-    /* REMOVIDO: border, background, box-shadow, width, height */
+}
+
+.sidebar .profile h5 {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--branco);
+    font-size: 1.1rem;
+    word-wrap: break-word;
+    max-width: 200px;
+    text-align: center;
+    line-height: 1.3;
+}
+
+.sidebar .profile small {
+    color: var(--cinza-claro);
+    font-size: 0.9rem;
+    word-wrap: break-word;
+    max-width: 200px;
+    text-align: center;
+    line-height: 1.2;
+    margin-top: 5px;
 }
 
 .sidebar .list-group {
+    display: flex;
+    flex-direction: column;
     width: 100%;
+}
+
+.sidebar .list-group-item.sair {
+    background-color: transparent;
+    color: var(--branco);
+    border: none;
+    padding: 15px 25px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 40px !important;
 }
 
 .sidebar .list-group-item {
@@ -212,11 +246,13 @@ body {
     align-items: center;
     gap: 10px;
     transition: all 0.3s ease;
+    text-decoration: none;
 }
 
 .sidebar .list-group-item:hover {
     background-color: var(--roxo-escuro);
     cursor: pointer;
+    transform: translateX(5px);
 }
 
 .sidebar .list-group-item.active {
@@ -228,6 +264,8 @@ body {
 
 .sidebar .list-group-item i {
     color: var(--amarelo-detalhe);
+    width: 20px;
+    text-align: center;
 }
 
 /* Bottom Navigation Bar para mobile */
@@ -759,23 +797,23 @@ body {
         </div>
     </nav>
 
-   <div class="sidebar">
+<div class="sidebar" id="sidebar">
     <div class="profile">
         <?php if ($foto_admin): ?>
-            <!-- COM FOTO: Com círculo amarelo de 80x80px -->
             <div class="profile-avatar-sidebar">
                 <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
             </div>
         <?php else: ?>
-            <!-- SEM FOTO: Apenas ícone, SEM círculo -->
-            <i class="fas fa-user-circle"></i>
+            <div class="profile-avatar-sidebar">
+                <i class="fa-solid fa-user" style="color: var(--amarelo-detalhe); font-size: 3.5rem;"></i>
+            </div>
         <?php endif; ?>
         <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
         <small>Administrador(a)</small>
     </div>
 
     <div class="list-group">
-        <a href="gerenciar_caminho.php" class="list-group-item">
+        <a href="gerenciar_caminho.php" class="list-group-item ">
             <i class="fas fa-plus-circle"></i> Adicionar Caminho
         </a>
         <a href="pagina_adicionar_idiomas.php" class="list-group-item">
@@ -796,8 +834,10 @@ body {
     </div>
 </div>
 
+
     <div class="main-content">
-        <div class="container mt-4">            <div class="page-header flex-column flex-sm-row">
+        <div class="container mt-4">            
+            <div class="page-header flex-column flex-sm-row">
                 <h2 class="mb-0"><i class="fas fa-cubes"></i> Gerenciar Unidades</h2>
                 <div class="action-buttons">
                     <a href="adicionar_unidade.php" class="btn btn-warning">
