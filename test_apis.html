@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste das APIs</title>
+</head>
+<body>
+    <h1>Teste das APIs</h1>
+    
+    <button onclick="testarAPI('/App_idiomas/api/test.php')">Testar API Test</button>
+    <button onclick="testarAPI('/App_idiomas/api/exercicios/test_listening.php')">Testar API Listening Test</button>
+    <button onclick="testarAPI('/App_idiomas/api/processar_exercicio.php', 'POST')">Testar API Principal</button>
+    
+    <div id="resultado"></div>
+    
+    <script>
+    function testarAPI(url, method = 'GET') {
+        const resultDiv = document.getElementById('resultado');
+        resultDiv.innerHTML = '<p>Testando ' + url + '...</p>';
+        
+        const options = {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+        
+        if (method === 'POST') {
+            options.body = JSON.stringify({
+                exercicio_id: 1,
+                resposta: 0,
+                tipo_exercicio: 'listening'
+            });
+        }
+        
+        fetch(url, options)
+            .then(response => {
+                resultDiv.innerHTML += '<p>Status: ' + response.status + '</p>';
+                return response.text();
+            })
+            .then(text => {
+                resultDiv.innerHTML += '<pre>' + text + '</pre>';
+            })
+            .catch(error => {
+                resultDiv.innerHTML += '<p style="color: red;">Erro: ' + error.message + '</p>';
+            });
+    }
+    </script>
+</body>
+</html>

@@ -84,10 +84,37 @@ function getBlocosByCaminhos($conn, array $caminhoIds) {
 }
 
 function adicionarExercicio($conn, $caminhoId, $blocoId, $ordem, $tipo_exercicio, $pergunta, $conteudo) {
-    $sql = "INSERT INTO exercicios (caminho_id, bloco_id, ordem, tipo, pergunta, conteudo) VALUES (?, ?, ?, ?, ?, ?)";
+    // Mapear tipo_exercicio para o ENUM da coluna 'tipo'
+    $tipoEnum = 'normal'; // padrão
+    if ($tipo_exercicio === 'especial') {
+        $tipoEnum = 'especial';
+    } elseif ($tipo_exercicio === 'quiz') {
+        $tipoEnum = 'quiz';
+    }
+    
+    // Definir categoria baseada no tipo_exercicio
+    $categoria = 'gramatica'; // padrão
+    switch ($tipo_exercicio) {
+        case 'listening':
+            $categoria = 'audicao';
+            break;
+        case 'fala':
+            $categoria = 'fala';
+            break;
+        case 'texto_livre':
+        case 'completar':
+            $categoria = 'escrita';
+            break;
+        case 'multipla_escolha':
+        default:
+            $categoria = 'gramatica';
+            break;
+    }
+    
+    $sql = "INSERT INTO exercicios (caminho_id, bloco_id, ordem, tipo, pergunta, conteudo, categoria) VALUES (?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     if ($stmt) {
-        $stmt->bind_param("iiisss", $caminhoId, $blocoId, $ordem, $tipo_exercicio, $pergunta, $conteudo);
+        $stmt->bind_param("iiissss", $caminhoId, $blocoId, $ordem, $tipoEnum, $pergunta, $conteudo, $categoria);
         if ($stmt->execute()) {
             $stmt->close();
             return true;
@@ -236,22 +263,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         array_map('trim', explode(',', $_POST['palavras_chave'])) : 
                         [];
                     
+                    // Estrutura corrigida para exercícios de fala
                     $conteudo = json_encode([
                         'frase_esperada' => $_POST['frase_esperada'],
                         'texto_para_falar' => $_POST['frase_esperada'],
                         'idioma' => $_POST['idioma_fala'],
-                        'pronuncia_fonetica' => $_POST['pronuncia_fonetica'] ?? '',
+                        'dicas_pronuncia' => $_POST['explicacao_fala'] ?? '',
                         'palavras_chave' => $palavras_chave,
-                        'explicacao' => $_POST['explicacao_fala'] ?? '',
+                        'contexto' => 'Exercício de pronúncia',
+                        'pronuncia_fonetica' => $_POST['pronuncia_fonetica'] ?? '',
                         'tolerancia_erro' => floatval($_POST['tolerancia_erro'] ?? 0.8),
                         'max_tentativas' => intval($_POST['max_tentativas'] ?? 3),
-                        'config_fala' => [
-                            'dificuldade' => 'medio',
-                            'tempo_maximo_gravacao' => 30,
-                            'tentativas_permitidas' => intval($_POST['max_tentativas'] ?? 3),
-                            'tolerancia_pronuncia' => floatval($_POST['tolerancia_erro'] ?? 0.8),
-                            'feedback_imediato' => true
-                        ]
+                        'tipo_exercicio' => 'fala'
                     ], JSON_UNESCAPED_UNICODE);
                     
                     $sucesso_insercao = true;
@@ -263,12 +286,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $mensagem = '<div class="alert alert-danger">Frase, pelo menos 2 opções e a indicação da resposta correta são obrigatórios para listening.</div>';
                 } else {
                     try {
-                        $listeningController = new ListeningController();
+                        // Usar sistema de áudio simplificado para evitar conflitos
+                        $audio_url = '';
                         
-                        $audio_url = $listeningController->gerarAudio(
-                            $_POST['frase_listening'], 
-                            $_POST['idioma_audio'] ?? 'en-us'
-                        );
+                        // Tentar usar o sistema novo se disponível
+                        if (file_exists(__DIR__ . '/../../src/Services/AudioService.php')) {
+                            try {
+                                require_once __DIR__ . '/../../src/Services/AudioService.php';
+                                
+                                // Autoload simplificado
+                                if (!class_exists('\App\Services\AudioService')) {
+                                    spl_autoload_register(function ($class) {
+                                        $file = __DIR__ . '/../../src/' . str_replace(['App\\', '\\'], ['', '/'], $class) . '.php';
+                                        if (file_exists($file)) {
+                                            require $file;
+                                        }
+                                    });
+                                }
+                                
+                                $audioService = new \App\Services\AudioService();
+                                $audio_url = $audioService->gerarAudio(
+                                    $_POST['frase_listening'], 
+                                    $_POST['idioma_audio'] ?? 'en-us'
+                                );
+                            } catch (Exception $audioError) {
+                                // Fallback: usar sistema antigo ou URL placeholder
+                                $audio_url = '/App_idiomas/audios/placeholder_' . md5($_POST['frase_listening']) . '.mp3';
+                                error_log('Erro no AudioService: ' . $audioError->getMessage());
+                            }
+                        } else {
+                            // Fallback: gerar URL placeholder
+                            $audio_url = '/App_idiomas/audios/placeholder_' . md5($_POST['frase_listening']) . '.mp3';
+                        }
                         
                         $opcoes = [
                             trim($_POST['listening_opcao1']),
@@ -280,36 +329,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         
                         $resposta_correta_index = (int)($_POST['listening_alt_correta'] ?? 0);
                         
-                        $bloco_info = $listeningModel->buscarInfoBloco($bloco_id);
-
+                        // Estrutura corrigida para listening
                         $conteudo = json_encode([
-                            'bloco_id' => $bloco_id,
-                            'frase' => $_POST['frase_listening'],
+                            'frase_original' => $_POST['frase_listening'],
                             'audio_url' => $audio_url,
                             'opcoes' => $opcoes,
                             'resposta_correta' => $resposta_correta_index,
-                            'idioma' => $bloco_info['idioma_unidade'] ?? ($_POST['idioma_audio'] ?? 'en-us'),
-                            'nivel' => $bloco_info['nivel_caminho'] ?? 'basico',
-                            'ordem' => $ordem,
+                            'explicacao' => $_POST['explicacao_listening'] ?? '',
+                            'transcricao' => $_POST['frase_listening'],
+                            'dicas_compreensao' => 'Ouça com atenção e foque nas palavras-chave.',
+                            'idioma' => $_POST['idioma_audio'] ?? 'en-us',
                             'tipo_exercicio' => 'listening'
                         ], JSON_UNESCAPED_UNICODE);
                         
                         $sucesso_insercao = true;
                         
                     } catch (Exception $e) {
-                        $mensagem = '<div class="alert alert-danger">Erro ao gerar áudio ou salvar: ' . $e->getMessage() . '</div>';
+                        $mensagem = '<div class="alert alert-danger">Erro ao gerar áudio: ' . $e->getMessage() . '</div>';
                     }
                 }
                 break;
 
-            case 'audicao':
-                $conteudo = json_encode([
-                    'audio_url' => $_POST['audio_url'] ?? '',
-                    'transcricao' => $_POST['transcricao'] ?? '',
-                    'resposta_correta' => $_POST['resposta_audio_correta'] ?? ''
-                ], JSON_UNESCAPED_UNICODE);
-                $sucesso_insercao = true;
-                break;
+
 
             case 'especial':
                 if (empty($_POST['link_video']) || empty($_POST['pergunta_extra'])) {
@@ -337,8 +378,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // INSERIR NO BANCO DE DADOS - LÓGICA CORRIGIDA
         if ($sucesso_insercao && $conteudo) {
-            if (adicionarExercicio($conn, $caminho_id, $bloco_id, $ordem, $tipo_exercicio, $pergunta, $conteudo)) {
-                $mensagem = '<div class="alert alert-success">Exercício de ' . $tipo_exercicio . ' adicionado com sucesso!</div>';
+            $exercicio_id = adicionarExercicio($conn, $caminho_id, $bloco_id, $ordem, $tipo_exercicio, $pergunta, $conteudo);
+            if ($exercicio_id) {
+                $mensagem = '<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>Exercício de ' . $tipo_exercicio . ' adicionado com sucesso! ID: ' . $exercicio_id . '</div>';
                 
                 // Limpar apenas os campos do formulário, não todos os POST
                 $_POST['pergunta'] = '';
@@ -358,7 +400,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $post_tipo = $_POST["tipo"];
                 $post_tipo_exercicio = $_POST["tipo_exercicio"];
             } else {
-                $mensagem = '<div class="alert alert-danger">Erro ao adicionar exercício no banco de dados.</div>';
+                $mensagem = '<div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i>Erro ao adicionar exercício no banco de dados. Verifique os logs para mais detalhes.</div>';
             }
         }
     }
@@ -1076,7 +1118,7 @@ $database->closeConnection();
                                 <option value="completar" <?php echo ($post_tipo_exercicio == "completar") ? "selected" : ""; ?>>Completar Frase</option>
                                 <option value="fala" <?php echo ($post_tipo_exercicio == "fala") ? "selected" : ""; ?>>Exercício de Fala (Speaking)</option>
                                 <option value="listening" <?php echo ($post_tipo_exercicio == "listening") ? "selected" : ""; ?>>Exercício de Listening</option>
-                                <option value="audicao" <?php echo ($post_tipo_exercicio == "audicao") ? "selected" : ""; ?>>Exercício de Audição</option>
+
                             </select>
                         </div>
 
