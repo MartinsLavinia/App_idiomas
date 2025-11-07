@@ -291,11 +291,14 @@ $database->closeConnection();
         .card-header { 
             background: linear-gradient(135deg, var(--roxo-principal) 0%, var(--roxo-claro) 100%); 
             color: var(--branco); 
-            font-size: 1.4rem; 
+            font-size: 1.2rem; 
             font-weight: 600; 
-            text-align: center; 
-            padding: 25px 20px;
+            padding: 18px 20px;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
         }
 
         .card-header::before {
@@ -308,6 +311,43 @@ $database->closeConnection();
             height: 4px;
             background: var(--amarelo-detalhe);
             border-radius: 2px;
+        }
+
+        /* título alinhado à esquerda dentro do header (aumentado para ficar proporcional ao botão Salvar) */
+        .card-header .card-title-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--branco);
+            font-size: 1.35rem;
+            font-weight: 800;
+        }
+
+        .card-header .card-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Botão voltar no header: tamanho aumentado para ficar proporcional ao botão Salvar */
+        .btn-voltar-header {
+            padding: 10px 18px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.12);
+            color: var(--branco);
+            border: 1px solid rgba(255,255,255,0.08);
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+            min-height: 44px;
+        }
+
+        .btn-voltar-header:hover {
+            background: rgba(255,255,255,0.18);
+            color: var(--branco);
         }
 
         /* LAYOUT HORIZONTAL - Container principal */
@@ -672,9 +712,10 @@ $database->closeConnection();
             max-width: 1200px;
             margin: 25px auto 0;
             padding: 0 20px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            align-items: center;
             animation: fadeInUp 0.6s ease-out 0.3s both;
         }
 
@@ -690,134 +731,210 @@ $database->closeConnection();
         }
 
          /* Botões de navegação - ESTILO SIMPLES E PROFISSIONAL */
+        /* Estilos mais sutis e coerentes com o tema para os botões de navegação */
         .btn-navigation {
-            padding: 14px 28px;
-            border-radius: 12px;
-            font-weight: 600;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 700;
             font-size: 1rem;
-            transition: all 0.3s ease;
-            border: none;
-            display: flex;
+            transition: background-color 0.18s ease, transform 0.12s ease, border-color 0.18s ease;
+            border: 1px solid transparent;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
             text-decoration: none;
-            min-height: 54px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            min-height: 48px;
+            box-shadow: none;
             cursor: pointer;
+            background: transparent;
+            color: var(--roxo-principal);
+            text-transform: none;
         }
 
         .btn-navigation:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transform: translateY(-1px);
+            background: rgba(106, 13, 173, 0.06);
+            box-shadow: none;
         }
 
+        /* Botão "Voltar ao Dashboard": tom roxo suave, sem gradientes fortes */
         .btn-voltar-dashboard {
             background: transparent;
-            border: 2px solid #4c087c;
-            color: #4c087c;
-            font-weight: 700;
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            position: relative;
-            overflow: hidden;
-            box-shadow: none;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-size: inherit;
+            border: 1px solid rgba(76, 8, 124, 0.12);
+            color: var(--roxo-principal);
+            font-weight: 600;
+            border-radius: 10px;
+            text-transform: none;
         }
 
         .btn-voltar-dashboard::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -150%;
-            width: 150%;
-            height: 100%;
-            background: linear-gradient(
-                90deg,
-                transparent,
-                rgba(255, 255, 255, 0.3),
-                transparent
-            );
-            transform: skewX(-25deg);
-            transition: left 0.8s ease;
-            pointer-events: none;
-        }
-
-        .btn-voltar-dashboard:hover::before {
-            left: 150%;
+            display: none; /* remove efeito de brilho */
         }
 
         .btn-voltar-dashboard:hover {
-            background: linear-gradient(135deg, #4c087c 0%, #8a2be2 100%);
-            border-color: #8a2be2;
-            color: white;
-            box-shadow: 0 6px 20px rgba(36, 31, 194, 0.4);
-            transform: translateY(-3px) scale(1.05);
+            background: rgba(76, 8, 124, 0.06);
+            color: var(--roxo-principal);
         }
 
         .btn-voltar-dashboard:active {
-            transform: translateY(-1px) scale(1.02);
-            box-shadow: 0 4px 15px rgba(30, 26, 155, 0.5);
+            transform: translateY(0);
         }
 
+        /* Botão "Cancelar Alterações": aparência neutra e proporcional */
         .btn-cancelar-alteracoes {
             background: transparent;
-            border: 2px solid #909090;
-            color: #909090;
+            border: 1px solid rgba(144, 144, 144, 0.12);
+            color: var(--cinza-escuro);
             font-weight: 700;
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            position: relative;
-            overflow: hidden;
-            box-shadow: none;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-size: inherit;
+            border-radius: 10px;
+            text-transform: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            min-height: 48px;
         }
 
         .btn-cancelar-alteracoes::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -150%;
-            width: 150%;
-            height: 100%;
-            background: linear-gradient(
-                90deg,
-                transparent,
-                rgba(255, 255, 255, 0.3),
-                transparent
-            );
-            transform: skewX(-25deg);
-            transition: left 0.8s ease;
-            pointer-events: none;
-        }
-
-        .btn-cancelar-alteracoes:hover::before {
-            left: 150%;
+            display: none; /* remove efeito de brilho */
         }
 
         .btn-cancelar-alteracoes:hover {
-            background: linear-gradient(135deg, #909090 0%, #A0A0A0 100%);
-            border-color: #909090;
-            color: white;
-            box-shadow: 0 6px 20px rgba(144, 144, 144, 0.4);
-            transform: translateY(-3px) scale(1.05);
+            background: rgba(144, 144, 144, 0.06);
+            color: var(--cinza-escuro);
         }
 
         .btn-cancelar-alteracoes:active {
-            transform: translateY(-1px) scale(1.02);
-            box-shadow: 0 4px 15px rgba(144, 144, 144, 0.5);
+            transform: translateY(0);
         }
 
         /* Ícones dos botões */
         .btn-navigation i {
-            font-size: 1.1em;
+            font-size: 1.15em;
             transition: transform 0.3s ease;
         }
 
         .btn-voltar-dashboard:hover i {
             transform: translateX(-2px);
+        }
+
+        /* Estilos customizados para o modal de alteração de foto */
+        .custom-photo-modal {
+            border-radius: 14px;
+            overflow: hidden;
+            background: linear-gradient(180deg, #ffffff, #fbfbff);
+            box-shadow: 0 12px 40px rgba(16, 12, 48, 0.12);
+        }
+
+        .custom-photo-header {
+            background: linear-gradient(135deg, var(--roxo-principal) 0%, var(--roxo-claro) 100%);
+            color: var(--branco);
+            border-bottom: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+        }
+
+        .custom-photo-header .modal-title {
+            font-weight: 700;
+            font-size: 1.05rem;
+            margin: 0;
+        }
+
+        .custom-photo-modal .modal-body {
+            background: transparent;
+            padding: 18px 22px;
+        }
+
+        /* Avatar dentro do modal */
+        .custom-photo-modal .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid rgba(106,13,173,0.08);
+            box-shadow: 0 10px 30px rgba(106,13,173,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--roxo-claro), var(--roxo-principal));
+        }
+
+        #imagePreview {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        #preview {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 8px 22px rgba(0,0,0,0.12);
+            border: 3px solid #fff;
+        }
+
+        /* Estilo do input file para combinar com o design */
+        input#foto_perfil.form-control.form-control-enhanced {
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--cinza-medio);
+            background: #fff;
+            cursor: pointer;
+        }
+
+        /* Botões do modal (Salvar / Cancelar) com estilo personalizado */
+        /* Unifica tamanho e espaçamento para ficar igual a .btn-cancelar-alteracoes */
+        .btn-photo-save,
+        .btn-photo-cancel {
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            min-height: 48px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-transform: none;
+            cursor: pointer;
+        }
+
+        /* Salvar Foto: roxo preenchido, mas com hover discreto semelhante ao cancelar */
+        .btn-photo-save {
+            background: linear-gradient(135deg, var(--roxo-principal) 0%, var(--roxo-claro) 100%);
+            color: var(--branco);
+            border: 2px solid rgba(76,8,124,0.12);
+            box-shadow: 0 8px 24px rgba(76,8,124,0.06);
+            transition: background-color 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease;
+        }
+
+        .btn-photo-save:hover {
+            background: linear-gradient(135deg, rgba(76,8,124,0.95) 0%, rgba(138,43,226,0.95) 100%);
+            transform: translateY(-1px);
+            color: var(--branco);
+            box-shadow: 0 6px 20px rgba(76,8,124,0.12);
+        }
+
+        /* Cancelar: outline roxo suave — hover com fundo translúcido (efeito parecido com .btn-cancelar-alteracoes) */
+        .btn-photo-cancel {
+            background: transparent;
+            border: 2px solid rgba(76,8,124,0.12);
+            color: var(--roxo-principal);
+            transition: background-color 0.12s ease, color 0.12s ease, transform 0.12s ease;
+        }
+
+        .btn-photo-cancel:hover {
+            background: rgba(76,8,124,0.06);
+            color: var(--preto-texto);
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 576px) {
+            .custom-photo-modal .profile-avatar { width: 96px; height: 96px; }
+            #preview { width: 88px; height: 88px; }
         }
 
         /* Efeitos de loading */
@@ -875,7 +992,8 @@ $database->closeConnection();
                 border-bottom: 2px solid var(--cinza-medio);
             }
             .navigation-buttons-container {
-                grid-template-columns: 1fr;
+                width: 100%;
+                justify-content: center;
                 gap: 12px;
             }
         }
@@ -963,7 +1081,15 @@ $database->closeConnection();
         <!-- Card Principal com Layout Horizontal -->
         <div class="card main-card fade-in-left">
             <div class="card-header">
-                <i class="fas fa-user-cog me-3"></i>Configurações do Perfil
+                <div class="card-title-left">
+                    <i class="fas fa-user-cog me-1"></i>
+                    <span>Configurações do Perfil</span>
+                </div>
+                <div class="card-actions">
+                    <a href="gerenciar_caminho.php" class="btn btn-voltar-header">
+                        <i class="fas fa-arrow-left me-1"></i>Voltar ao Dashboard
+                    </a>
+                </div>
             </div>
             
             <div class="horizontal-layout">
@@ -1111,9 +1237,6 @@ $database->closeConnection();
 
                                 <!-- BOTÕES DE NAVEGAÇÃO - ESTILO ATUALIZADO -->
                                 <div class="navigation-buttons-container">
-                                    <a href="gerenciar_caminho.php" class="btn btn-navigation btn-voltar-dashboard">
-                                        <i class="fas fa-arrow-left me-2"></i>Voltar ao Dashboard
-                                    </a>
                                     <button type="button" class="btn btn-navigation btn-cancelar-alteracoes" data-bs-toggle="modal" data-bs-target="#confirmCancelModal">
                                         <i class="fas fa-times me-2"></i>Cancelar Alterações
                                     </button>
@@ -1238,12 +1361,12 @@ $database->closeConnection();
                         
                         <div class="row g-2">
                             <div class="col-md-6">
-                                <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">
+                                <button type="button" class="btn btn-secondary btn-cancelar-alteracoes w-100" data-bs-dismiss="modal">
                                     <i class="fas fa-times me-1"></i>Cancelar
                                 </button>
                             </div>
                             <div class="col-md-6">
-                                <button type="submit" class="btn btn-success w-100">
+                                <button type="submit" class="btn btn-photo-save w-100">
                                     <i class="fas fa-save me-1"></i>Salvar Foto
                                 </button>
                             </div>

@@ -1254,10 +1254,19 @@ $database->closeConnection();
                     <div class="frase-pronunciar">
                         <h4>"${textoParaFalar}"</h4>
                     </div>
+                    <div class="alert alert-info mb-3">
+                        <h6>🔒 IMPORTANTE: Permissão do Microfone</h6>
+                        <p class="mb-2">Para usar este exercício, você precisa permitir o microfone:</p>
+                        <ol class="mb-2">
+                            <li>Clique no ícone 🔒 na barra de endereços</li>
+                            <li>Selecione "Permitir" para microfone</li>
+                            <li>Clique no botão abaixo</li>
+                        </ol>
+                    </div>
                     <button id="btn-falar" class="microphone-btn" onclick="iniciarGravacao('${idioma}')">
                         <i class="fas fa-microphone"></i>
                     </button>
-                    <p id="status-fala" class="text-muted">Clique no microfone e permita quando solicitado</p>
+                    <p id="status-fala" class="text-muted">Permita o microfone e clique para gravar</p>
                     <div id="resultado-audio"></div>
                 </div>
             </div>
@@ -1377,38 +1386,59 @@ $database->closeConnection();
     };
     
     window.iniciarGravacao = function(idioma = 'en-US') {
+        console.log('=== INICIANDO GRAVAÇÃO ===');
+        console.log('Idioma:', idioma);
+        
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         
         if (!SpeechRecognition) {
+            console.error('SpeechRecognition não suportado');
             alert('Navegador não suporta reconhecimento de voz');
             return;
         }
         
+        console.log('SpeechRecognition disponível');
+        
         const statusFala = document.getElementById('status-fala');
         const btnFalar = document.getElementById('btn-falar');
+        
+        if (!statusFala || !btnFalar) {
+            console.error('Elementos não encontrados:', {statusFala, btnFalar});
+            return;
+        }
         
         const recognition = new SpeechRecognition();
         recognition.lang = idioma;
         recognition.continuous = false;
         recognition.interimResults = false;
         
+        console.log('Configurações do recognition:', {
+            lang: recognition.lang,
+            continuous: recognition.continuous,
+            interimResults: recognition.interimResults
+        });
+        
         btnFalar.disabled = true;
         statusFala.textContent = 'Iniciando...';
         
         recognition.onstart = function() {
+            console.log('Recognition iniciado');
             statusFala.textContent = '🎤 FALE AGORA!';
             statusFala.className = 'text-primary fw-bold';
             btnFalar.classList.add('listening');
         };
         
         recognition.onresult = function(event) {
+            console.log('Resultado recebido:', event.results);
             const transcript = event.results[0][0].transcript;
+            console.log('Transcript:', transcript);
             statusFala.textContent = 'Processando...';
             btnFalar.classList.remove('listening');
             enviarRespostaFala(transcript);
         };
         
         recognition.onerror = function(event) {
+            console.error('Erro no recognition:', event.error);
             btnFalar.classList.remove('listening');
             btnFalar.disabled = false;
             
@@ -1416,18 +1446,57 @@ $database->closeConnection();
                 statusFala.innerHTML = '❌ Permissão negada';
                 statusFala.className = 'text-danger';
                 
+                const navegador = detectarNavegador();
                 document.getElementById('resultado-audio').innerHTML = `
-                    <div class="alert alert-warning mt-3">
-                        <h6>🔒 Como permitir o microfone:</h6>
-                        <ol class="mb-2">
-                            <li>Clique no ícone 🔒 ou 🎤 na barra de endereços (ao lado da URL)</li>
-                            <li>Selecione "Sempre permitir" para microfone</li>
-                            <li>Recarregue a página (F5)</li>
-                            <li>Tente novamente</li>
-                        </ol>
-                        <button class="btn btn-primary btn-sm" onclick="window.location.reload()">
-                            <i class="fas fa-refresh me-1"></i>Recarregar Página
-                        </button>
+                    <div class="alert alert-danger mt-3">
+                        <h6>🚫 MICROFONE BLOQUEADO</h6>
+                        <p><strong>Seu navegador (${navegador}) está bloqueando o microfone.</strong></p>
+                        
+                        <div class="accordion" id="accordionNavegador">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseChrome">
+                                        🔧 Como desbloquear no Chrome/Edge
+                                    </button>
+                                </h2>
+                                <div id="collapseChrome" class="accordion-collapse collapse show">
+                                    <div class="accordion-body">
+                                        <ol>
+                                            <li>Clique no ícone 🔒 à esquerda da URL</li>
+                                            <li>Clique em "Microfone" e selecione "Permitir"</li>
+                                            <li>OU vá em Configurações > Privacidade > Microfone</li>
+                                            <li>Adicione este site à lista de permitidos</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFirefox">
+                                        🦊 Como desbloquear no Firefox
+                                    </button>
+                                </h2>
+                                <div id="collapseFirefox" class="accordion-collapse collapse">
+                                    <div class="accordion-body">
+                                        <ol>
+                                            <li>Clique no ícone 🔒 à esquerda da URL</li>
+                                            <li>Clique na seta ao lado de "Bloqueado"</li>
+                                            <li>Selecione "Permitir" para microfone</li>
+                                            <li>Recarregue a página</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <button class="btn btn-warning btn-sm" onclick="window.location.reload()">
+                                🔄 Recarregar e Tentar Novamente
+                            </button>
+                            <button class="btn btn-info btn-sm ms-2" onclick="abrirConfiguracoesMicrofone()">
+                                ⚙️ Abrir Configurações
+                            </button>
+                        </div>
                     </div>
                 `;
             } else {
@@ -1437,6 +1506,7 @@ $database->closeConnection();
         };
         
         recognition.onend = function() {
+            console.log('Recognition finalizado');
             btnFalar.classList.remove('listening');
             btnFalar.disabled = false;
             if (statusFala.textContent.includes('FALE')) {
@@ -1445,10 +1515,51 @@ $database->closeConnection();
             }
         };
         
-        recognition.start();
+        try {
+            console.log('Tentando iniciar recognition...');
+            recognition.start();
+            console.log('Recognition.start() chamado com sucesso');
+        } catch (error) {
+            console.error('Erro ao iniciar recognition:', error);
+            statusFala.textContent = 'Erro ao iniciar: ' + error.message;
+            btnFalar.disabled = false;
+        }
     };
-
-
+    
+    function detectarNavegador() {
+        const userAgent = navigator.userAgent;
+        if (userAgent.includes('Chrome')) return 'Chrome';
+        if (userAgent.includes('Firefox')) return 'Firefox';
+        if (userAgent.includes('Safari')) return 'Safari';
+        if (userAgent.includes('Edge')) return 'Edge';
+        return 'Desconhecido';
+    }
+    
+    window.abrirConfiguracoesMicrofone = function() {
+        const navegador = detectarNavegador();
+        let url = '';
+        
+        switch(navegador) {
+            case 'Chrome':
+                url = 'chrome://settings/content/microphone';
+                break;
+            case 'Firefox':
+                url = 'about:preferences#privacy';
+                break;
+            case 'Edge':
+                url = 'edge://settings/content/microphone';
+                break;
+            default:
+                alert('Abra as configurações do seu navegador e procure por "Microfone" ou "Permissões"');
+                return;
+        }
+        
+        try {
+            window.open(url, '_blank');
+        } catch(e) {
+            alert(`Abra uma nova aba e digite: ${url}`);
+        }
+    };
 
     window.enviarRespostaFala = function(transcript) {
         const statusFala = document.getElementById('status-fala');
