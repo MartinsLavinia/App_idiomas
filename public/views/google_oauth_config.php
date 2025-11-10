@@ -1,8 +1,8 @@
 <?php
 
 // Substitua pelos seus dados do Google Cloud Console
-define("GOOGLE_CLIENT_ID", "YOUR_CLIENT_ID");
-define("GOOGLE_CLIENT_SECRET", "YOUR_CLIENT_SECRET");
+define("GOOGLE_CLIENT_ID", "COLE_SEU_CLIENT_ID_AQUI"); // <-- SUBSTITUA AQUI
+define("GOOGLE_CLIENT_SECRET", "COLE_SEU_CLIENT_SECRET_AQUI"); // <-- SUBSTITUA AQUI
 define("GOOGLE_REDIRECT_URI_USER", "http://localhost:8000/public/views/google_oauth_callback.php"); // URL de callback para usuários
 define("GOOGLE_REDIRECT_URI_ADMIN", "http://localhost:8000/admin/views/google_oauth_callback_admin.php"); // URL de callback para administradores
 

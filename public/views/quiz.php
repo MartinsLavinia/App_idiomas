@@ -78,26 +78,23 @@ if (!$idioma_quiz) {
     exit();
 }
 
-// Busca perguntas de todos os 6 níveis em uma única consulta
-$sql_perguntas = "
-    (SELECT * FROM quiz_nivelamento WHERE idioma = ? AND nivel = 'A1' ORDER BY RAND() LIMIT 5)
-    UNION ALL
-    (SELECT * FROM quiz_nivelamento WHERE idioma = ? AND nivel = 'A2' ORDER BY RAND() LIMIT 5)
-    UNION ALL
-    (SELECT * FROM quiz_nivelamento WHERE idioma = ? AND nivel = 'B1' ORDER BY RAND() LIMIT 5)
-    UNION ALL
-    (SELECT * FROM quiz_nivelamento WHERE idioma = ? AND nivel = 'B2' ORDER BY RAND() LIMIT 5)
-    UNION ALL
-    (SELECT * FROM quiz_nivelamento WHERE idioma = ? AND nivel = 'C1' ORDER BY RAND() LIMIT 5)
-    UNION ALL
-    (SELECT * FROM quiz_nivelamento WHERE idioma = ? AND nivel = 'C2' ORDER BY RAND() LIMIT 5)
-    ORDER BY RAND()
-";
+// Busca perguntas de todos os níveis disponíveis para o idioma
+$sql_perguntas = "SELECT * FROM quiz_nivelamento WHERE idioma = ? ORDER BY RAND() LIMIT 30";
 $stmt_perguntas = $conn->prepare($sql_perguntas);
-$stmt_perguntas->bind_param("ssssss", $idioma_quiz, $idioma_quiz, $idioma_quiz, $idioma_quiz, $idioma_quiz, $idioma_quiz);
+$stmt_perguntas->bind_param("s", $idioma_quiz);
 $stmt_perguntas->execute();
 $perguntas_quiz = $stmt_perguntas->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt_perguntas->close();
+
+// Se não houver perguntas suficientes, buscar pelo menos algumas
+if (count($perguntas_quiz) < 10) {
+    $sql_perguntas_fallback = "SELECT * FROM quiz_nivelamento WHERE idioma = ? LIMIT 10";
+    $stmt_fallback = $conn->prepare($sql_perguntas_fallback);
+    $stmt_fallback->bind_param("s", $idioma_quiz);
+    $stmt_fallback->execute();
+    $perguntas_quiz = $stmt_fallback->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt_fallback->close();
+}
 
 // Fecha a conexão
 $database->closeConnection();
