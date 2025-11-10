@@ -92,7 +92,12 @@ if (!$teoria) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="../../imagens/mini-esquilo.png">
-    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script src="https://cdn.tiny.cloud/1/YOUR_API_KEY/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <!-- 
+        ATENÇÃO, ADMINISTRADOR: 
+        Para remover o aviso do TinyMCE, substitua 'YOUR_API_KEY' no link acima pela sua chave de API do TinyMCE.
+        Você pode obter uma chave de API gratuita em https://www.tiny.cloud/auth/signup/
+    -->
     <style>
     <?php include __DIR__ . '/gerenciamento.css'; ?>
     
