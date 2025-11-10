@@ -57,6 +57,8 @@ if ($stmt_idiomas) {
 }
 
 ?>
+
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -97,8 +99,7 @@ if ($stmt_idiomas) {
             font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
             background: var(--cinza-claro);
             color: var(--preto-texto);
-            min-height: 100vh;
-            animation: fadeIn 1s ease-in-out;
+            min-height: 100vh;          
         }
 
         @keyframes fadeIn {
@@ -375,6 +376,7 @@ body:has(.sidebar.active) .menu-toggle:hover,
             box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
             min-width: 180px;
             border: none;
+            top: 2750px;
         }
 
         .btn-warning:hover {

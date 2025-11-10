@@ -109,7 +109,6 @@ $database->closeConnection();
             font-family: 'Poppins', sans-serif;
             background-color: var(--cinza-claro);
             color: var(--preto-texto);
-            animation: fadeIn 1s ease-in-out;
         }
 
         @keyframes fadeIn {
