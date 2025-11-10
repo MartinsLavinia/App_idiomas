@@ -161,6 +161,71 @@ body {
     transition: transform 0.3s ease-in-out;
 }
 
+/* Menu Hamburguer */
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--roxo-principal) !important;
+    font-size: 1.5rem;
+    cursor: pointer;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1100;
+    transition: all 0.3s ease;
+}
+
+.menu-toggle:hover {
+    color: var(--roxo-escuro) !important;
+    transform: scale(1.1);
+}
+
+/* CORREÇÃO: Quando a sidebar está ativa */
+body:has(.sidebar.active) .menu-toggle,
+.sidebar.active ~ .menu-toggle {
+    color: var(--amarelo-detalhe) !important;
+}
+
+body:has(.sidebar.active) .menu-toggle:hover,
+.sidebar.active ~ .menu-toggle:hover {
+    color: var(--amarelo-hover) !important;
+}
+
+/* Overlay para mobile */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+@media (max-width: 992px) {
+    .menu-toggle {
+        display: block;
+    }
+    
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+    
+    .sidebar-overlay.active {
+        display: block;
+    }
+}
+
 .sidebar .profile {
     text-align: center;
     margin-bottom: 30px;
@@ -268,49 +333,7 @@ body {
     text-align: center;
 }
 
-/* Bottom Navigation Bar para mobile */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3); /* Mesmo gradiente da sidebar */
-    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.15);
-    z-index: 1020;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 5px 0;
-}
-
-.bottom-nav-item {
-    flex: 1;
-    text-align: center;
-    color: var(--branco);
-    text-decoration: none;
-    padding: 8px 0;
-    transition: all 0.3s ease;
-    border-radius: 8px;
-}
-
-.bottom-nav-item i {
-    font-size: 1.5rem; /* Tamanho do ícone */
-    display: block;
-    margin: 0 auto;
-    color: var(--amarelo-detalhe);
-}
-
-.bottom-nav-item.active {
-    background-color: rgba(255, 255, 255, 0.15);
-}
-
-.bottom-nav-item.active i {
-    transform: scale(1.1);
-}
-
-.bottom-nav-item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
+/* bottom-nav removido (usamos menu hambúrguer para mobile) */
 
 /* Ajustes de layout para diferentes tamanhos de tela */
 @media (min-width: 992px) {
@@ -321,13 +344,12 @@ body {
 }
 
 @media (max-width: 991.98px) {
-    .main-content {
-        margin-left: 0;
-        padding: 20px 20px 80px 20px; /* Adiciona padding-bottom para a bottom-nav */
+        .main-content {
+            margin-left: 0;
+            padding: 20px; /* Ajusta padding para não reservar espaço para a bottom-nav removida */
     }
-    .sidebar {
-        display: none !important; /* Esconde a sidebar desktop em telas menores */
-    }
+    /* A sidebar em telas pequenas agora é off-canvas (transform) e
+       controlada pelo botão hambúrguer. Não usar display:none aqui. */
 }
 
 /* Efeito de brilho para o botão Adicionar Nova Unidade */
@@ -369,66 +391,6 @@ body {
     color: var(--preto-texto);
 }
 
-.btn-primary {
-    background-color: var(--roxo-principal);
-    border-color: var(--roxo-principal);
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.btn-primary:hover {
-    background-color: var(--roxo-escuro);
-    border-color: var(--roxo-escuro);
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(106, 13, 173, 0.3);
-}
-
-.btn-secundary {
-    background: linear-gradient(135deg, #6c757d, #495057);
-    border: none;
-    color: var(--branco);
-    font-weight: 600;
-    padding: 10px 20px;
-    border-radius: 8px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
-    text-decoration: none;
-}
-
-.btn-secundary:hover {
-    background: linear-gradient(135deg, #495057, #343a40);
-    color: var(--branco);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
-}
-
-.btn-secundary i {
-    font-size: 0.9em;
-    transition: transform 0.3s ease;
-}
-
-.btn-secundary:hover i {
-    transform: translateX(-4px);
-}
-
-.btn-secondary {
-    background-color: var(--cinza-medio);
-    border-color: var(--cinza-medio);
-    color: var(--preto-texto);
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.btn-secondary:hover {
-    background-color: #b8b9bdd3;
-    border-color: #c8c9cb;
-    transform: scale(1.05);
-    color: var(--preto-texto);
-    box-shadow: 0 4px 12px rgba(194, 192, 192, 0.53);
-}
 
 .btn-success {
     background-color: #28a745;
@@ -624,87 +586,48 @@ body {
     overflow: hidden;
 }
 
-/* Botão Editar - Efeito de brilho roxo */
+/* Botão Editar - versão minimalista */
 .btn-primary {
-    background: linear-gradient(135deg, var(--roxo-principal) 0%, #8b5cf6 100%);
-    border: none;
-    color: var(--branco);
-    box-shadow: 0 3px 10px rgba(106, 13, 173, 0.3);
-}
-
-.btn-primary::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.3),
-        transparent
-    );
-    transition: left 0.6s ease;
-}
-
-.btn-primary:hover::before {
-    left: 100%;
+    background: transparent;
+    color: var(--roxo-principal);
+    border: 2px solid #6a0dad;
+    font-weight: 600;
+    padding: 8px 12px;
+    border-radius: 6px;
+    position: relative;
+    transition: background 0.12s ease, color 0.12s ease, transform 0.12s ease;
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, var(--roxo-escuro) 0%, var(--roxo-principal) 100%);
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 5px 15px rgba(106, 13, 173, 0.4);
-    color: var(--branco);
+    background: rgba(106, 13, 173, 0.06);
+    color: var(--roxo-principal);
+    border: 2px solid #6a0dad;
+    transform: translateY(-1px);
 }
 
 /* Botão Eliminar - Efeito de pulsação vermelha */
 .btn-danger {
-    background: linear-gradient(135deg, #dc3545 0%, #ef4444 100%);
-    border: none;
-    color: var(--branco);
-    box-shadow: 0 3px 10px rgba(220, 53, 69, 0.3);
-}
-
-.btn-danger::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 0.5rem;
-    opacity: 0;
-    animation: pulse-danger 2s infinite;
-}
-
-@keyframes pulse-danger {
-    0% {
-        transform: scale(1);
-        opacity: 0.7;
-    }
-    50% {
-        transform: scale(1.05);
-        opacity: 0.3;
-    }
-    100% {
-        transform: scale(1);
-        opacity: 0.7;
-    }
-}
-
-.btn-danger:hover::before {
-    animation: none;
-    opacity: 0;
+    /* refinado: aviso sem ser agressivo, formato pill */
+    background: rgba(220, 53, 69, 0.06);
+    color: #8a1820; /* tom menos saturado */
+    /* borda fina e cor firme */
+    border: 2px solid #c82333;
+    box-sizing: border-box;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 999px;
+    transition: transform 0.14s ease, box-shadow 0.14s ease, background 0.12s ease;
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.04);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .btn-danger:hover {
-    background: linear-gradient(135deg, #c82333 0%, #dc3545 100%);
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
-    color: var(--branco);
+    background: rgba(220, 53, 69, 0.12);
+    color: #7a151b;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(220, 53, 69, 0.08);
 }
 
 /* Efeito de ícones nos botões */
@@ -777,8 +700,45 @@ body {
     .page-header { flex-direction: column; align-items: flex-start; }
 }
     </style>
-</head>
 <body>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Menu Hamburguer Functionality
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+            if (sidebarOverlay) {
+                sidebarOverlay.classList.toggle('active');
+            }
+        });
+        
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+        }
+        
+        // Fechar menu ao clicar em um link (mobile)
+        const sidebarLinks = sidebar.querySelectorAll('.list-group-item');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 992) {
+                    sidebar.classList.remove('active');
+                    if (sidebarOverlay) {
+                        sidebarOverlay.classList.remove('active');
+                    }
+                }
+            });
+        });
+    }
+});
+</script>
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container d-flex justify-content-between align-items-center">
@@ -796,6 +756,13 @@ body {
             </div>
         </div>
     </nav>
+
+        <!-- Menu Hamburguer -->
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        <!-- Overlay para mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <div class="sidebar" id="sidebar">
     <div class="profile">
@@ -900,10 +867,9 @@ body {
                                         <?php else: ?>
                                             <span class="text-muted">-</span>
                                         <?php endif; ?>
-                                    </td>                                    <td class="col-descricao" title="<?= htmlspecialchars($unidade['descricao']); ?>">
-                                        <small class="text-muted">
-                                            <?= htmlspecialchars(substr($unidade['descricao'], 0, 50)) . (strlen($unidade['descricao']) > 50 ? '...' : ''); ?>
-                                        </small>
+                                    </td>
+                                    <td class="col-descricao" data-full="<?= htmlspecialchars($unidade['descricao']); ?>" title="<?= htmlspecialchars($unidade['descricao']); ?>">
+                                        <small class="text-muted"><?= htmlspecialchars($unidade['descricao']); ?></small>
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
@@ -935,27 +901,7 @@ body {
         </div>
     </div>
 
-    <!-- Bottom Navigation Bar para telas pequenas -->
-    <nav class="bottom-nav d-lg-none">
-        <a href="gerenciar_caminho.php" class="bottom-nav-item">
-            <i class="fas fa-plus-circle"></i>
-        </a>
-        <a href="pagina_adicionar_idiomas.php" class="bottom-nav-item">
-            <i class="fas fa-language"></i>
-        </a>
-        <a href="gerenciar_teorias.php" class="bottom-nav-item">
-            <i class="fas fa-book-open"></i>
-        </a>
-        <a href="gerenciar_unidades.php" class="bottom-nav-item active">
-            <i class="fas fa-cubes"></i>
-        </a>
-        <a href="gerenciar_usuarios.php" class="bottom-nav-item">
-            <i class="fas fa-users"></i>
-        </a>
-        <a href="estatisticas_usuarios.php" class="bottom-nav-item">
-            <i class="fas fa-chart-bar"></i>
-        </a>
-    </nav>
+    <!-- bottom-nav removido; mobile usa menu hambúrguer -->
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -970,5 +916,6 @@ body {
             });
         });
     </script>
+    
 </body>
 </html>

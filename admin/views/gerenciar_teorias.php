@@ -467,31 +467,48 @@ $database->closeConnection();
     }
 
 
+    /* Botão Editar - versão minimalista */
     .btn-primary {
-        background-color: var(--roxo-principal);
-        border-color: var(--roxo-principal);
+        background: transparent;
+        color: var(--roxo-principal);
+        border: 2px solid #6a0dad;
         font-weight: 600;
-        transition: all 0.3s ease;
+        padding: 8px 12px;
+        border-radius: 6px;
+        position: relative;
+        transition: background 0.12s ease, color 0.12s ease, transform 0.12s ease;
     }
 
     .btn-primary:hover {
-        background-color: var(--roxo-escuro);
-        border-color: var(--roxo-escuro);
-        transform: scale(1.05);
-        box-shadow: 0 4px 12px rgba(106, 13, 173, 0.3);
+        background: rgba(106, 13, 173, 0.06);
+        color: var(--roxo-principal);
+        border: 2px solid #6a0dad;
+        transform: translateY(-1px);
     }
 
+    /* Botão Eliminar - Efeito de pulsação vermelha */
     .btn-danger {
-        background-color: #dc3545;
-        border-color: #dc3545;
-        font-weight: 600;
-        transition: all 0.3s ease;
+        /* refinado: aviso sem ser agressivo, formato pill */
+        background: rgba(220, 53, 69, 0.06);
+        color: #8a1820; /* tom menos saturado */
+        /* borda fina e cor firme */
+        border: 2px solid #c82333;
+        box-sizing: border-box;
+        font-weight: 700;
+        padding: 6px 12px;
+        border-radius: 999px;
+        transition: transform 0.14s ease, box-shadow 0.14s ease, background 0.12s ease;
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.04);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
     }
 
     .btn-danger:hover {
-        background-color: #c82333;
-        border-color: #c82333;
-        transform: scale(1.05);
+        background: rgba(220, 53, 69, 0.12);
+        color: #7a151b;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(220, 53, 69, 0.08);
     }
 
     .table {
