@@ -20,6 +20,12 @@ if (!isset($_GET['unidade_id']) || !is_numeric($_GET['unidade_id'])) {
 $unidade_id = $_GET['unidade_id'];
 $mensagem = '';
 
+// Exibir mensagem de sucesso se existir
+if (isset($_SESSION['mensagem_sucesso'])) {
+    $mensagem = '<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>' . $_SESSION['mensagem_sucesso'] . '</div>';
+    unset($_SESSION['mensagem_sucesso']);
+}
+
 $database = new Database();
 $conn = $database->conn;
 $listeningModel = new ListeningModel($database);
@@ -347,24 +353,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($sucesso_insercao && $conteudo) {
             $exercicio_id = adicionarExercicio($conn, $caminho_id, $bloco_id, $ordem, $tipo_exercicio, $pergunta, $conteudo);
             if ($exercicio_id) {
-                $mensagem = '<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>Exercício de ' . $tipo_exercicio . ' adicionado com sucesso! ID: ' . $exercicio_id . '</div>';
-                
-                // Limpar apenas os campos do formulário, não todos os POST
-                $_POST['pergunta'] = '';
-
-                $_POST['frase_listening'] = '';
-                $_POST['resposta_esperada'] = '';
-                $_POST['frase_completar'] = '';
-                $_POST['resposta_completar'] = '';
-                $_POST['explicacao'] = '';
-                $_POST['explicacao_listening'] = '';
-                
-                // Manter os selects preenchidos
-                $post_caminho_id = $_POST["caminho_id"];
-                $post_bloco_id = $_POST["bloco_id"];
-                $post_ordem = $_POST["ordem"];
-                $post_tipo = $_POST["tipo"];
-                $post_tipo_exercicio = $_POST["tipo_exercicio"];
+                $_SESSION['mensagem_sucesso'] = 'Exercício de ' . $tipo_exercicio . ' adicionado com sucesso!';
+                header("Location: adicionar_atividades.php?unidade_id=" . $unidade_id);
+                exit();
             } else {
                 $mensagem = '<div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i>Erro ao adicionar exercício no banco de dados. Verifique os logs para mais detalhes.</div>';
             }

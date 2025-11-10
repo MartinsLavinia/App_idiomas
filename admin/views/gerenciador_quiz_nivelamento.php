@@ -155,7 +155,7 @@ if ($tabela_existe) {
     }
 
     // 2. Últimas perguntas adicionadas (top 5)
-    $sql_ultimas_perguntas = "SELECT id, pergunta, DATE_FORMAT(data_criacao, '%d/%m/%Y') as data_adicao FROM quiz_nivelamento WHERE idioma = ? ORDER BY id DESC LIMIT 5";
+    $sql_ultimas_perguntas = "SELECT id, pergunta FROM quiz_nivelamento WHERE idioma = ? ORDER BY id DESC LIMIT 5";
     $stmt_ultimas_perguntas = $conn->prepare($sql_ultimas_perguntas);
     if ($stmt_ultimas_perguntas !== false) {
         $stmt_ultimas_perguntas->bind_param('s', $idioma_selecionado);
@@ -181,7 +181,7 @@ if ($tabela_existe) {
     }
 
     // 4. Estatísticas de atividade
-    $sql_atividade_mensal = "SELECT COUNT(*) as total FROM quiz_nivelamento WHERE idioma = ? AND MONTH(data_criacao) = MONTH(NOW()) AND YEAR(data_criacao) = YEAR(NOW())";
+    $sql_atividade_mensal = "SELECT COUNT(*) as total FROM quiz_nivelamento WHERE idioma = ?";
     $stmt_atividade_mensal = $conn->prepare($sql_atividade_mensal);
     if ($stmt_atividade_mensal !== false) {
         $stmt_atividade_mensal->bind_param('s', $idioma_selecionado);
