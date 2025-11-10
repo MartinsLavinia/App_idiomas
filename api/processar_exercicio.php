@@ -50,7 +50,7 @@ try {
     error_log('Processando exercício ID: ' . $exercicio_id . ', Categoria: ' . $categoria . ', Tipo: ' . $tipo);
     
     // Processar resposta baseado no tipo
-    if ($categoria === 'listening' || $categoria === 'audicao') {
+    if ($categoria === 'audicao' || $tipo === 'listening' || (isset($conteudo['tipo_exercicio']) && $conteudo['tipo_exercicio'] === 'listening')) {
         $resultado = processarListening($resposta, $conteudo);
     } else if ($categoria === 'fala') {
         $resultado = processarFala($resposta, $conteudo);
@@ -85,7 +85,6 @@ try {
 }
 
 function processarListening($resposta, $conteudo) {
-    // Log para debug
     error_log('Processando listening - Resposta: ' . $resposta);
     error_log('Conteúdo: ' . json_encode($conteudo));
     
@@ -99,21 +98,24 @@ function processarListening($resposta, $conteudo) {
         $resposta_texto = isset($opcoes[$resposta_index]) ? $opcoes[$resposta_index] : 'Opção inválida';
         $correta_texto = isset($opcoes[$correto_index]) ? $opcoes[$correto_index] : 'Opção não encontrada';
         
+        // Obter texto original do áudio
+        $texto_audio = $conteudo['frase_original'] ?? $conteudo['transcricao'] ?? '';
+        
         return [
             'success' => true,
             'correto' => $correto,
             'explicacao' => $correto ? 
                 '✅ Correto! Você entendeu perfeitamente o áudio.' : 
                 '❌ Incorreto. A resposta correta é: "' . $correta_texto . '"',
-            'transcricao' => $conteudo['transcricao'] ?? $conteudo['frase_original'] ?? '',
+            'transcricao' => $texto_audio,
             'dicas_compreensao' => $conteudo['dicas_compreensao'] ?? 'Ouça novamente com atenção.',
             'alternativa_correta_id' => $correto_index,
             'resposta_selecionada' => $resposta_texto,
-            'resposta_correta' => $correta_texto
+            'resposta_correta' => $correta_texto,
+            'audio_texto' => $texto_audio
         ];
     }
     
-    // Fallback para múltipla escolha
     return processarMultiplaEscolha($resposta, $conteudo);
 }
 
