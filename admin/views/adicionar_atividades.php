@@ -379,211 +379,78 @@ $database->closeConnection();
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="../../imagens/mini-esquilo.png">
     <style>
+    /* Reset e configurações básicas */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        user-select: none;
+    }
+
     :root {
         --roxo-principal: #6a0dad;
         --roxo-escuro: #4c087c;
-        --roxo-claro: #8b5cf6;
         --amarelo-detalhe: #ffd700;
         --amarelo-botao: #ffd700;
-        --amarelo-hover: #e6c200;
+        --amarelo-hover: #e7c500;
         --branco: #ffffff;
         --preto-texto: #212529;
         --cinza-claro: #f8f9fa;
         --cinza-medio: #dee2e6;
-        --gradiente-roxo: linear-gradient(135deg, #6a0dad 0%, #4c087c 100%);
-        --gradiente-amarelo: linear-gradient(135deg, #ffd700 0%, #e6c200 100%);
-        --gradiente-verde: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        --gradiente-azul: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
-        --amarelo-acoes: #cfa90dff;
+        --cinza-escuro: #6c757d;
     }
 
     body {
         font-family: 'Poppins', sans-serif;
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        background-color: var(--cinza-claro);
         color: var(--preto-texto);
-        animation: fadeIn 1s ease-in-out;
-        min-height: 100vh;
+        line-height: 1.6;
+        overflow-x: hidden;
     }
 
+    /* Animações */
     @keyframes fadeIn {
-        from { 
-            opacity: 0; 
-            transform: translateY(20px);
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
         }
-        to { 
-            opacity: 1; 
+        to {
+            opacity: 1;
             transform: translateY(0);
         }
     }
 
-    .settings-icon {
-        color: var(--roxo-principal) !important;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        font-size: 1.2rem;
-    }
-
-    .settings-icon:hover {
-        color: var(--roxo-escuro) !important;
-        transform: rotate(90deg) scale(1.1);
-    }
-
-    .table-container {
-        background: var(--branco);
-        border-radius: 20px;
-        padding: 25px;
-        box-shadow: 0 8px 30px rgba(106, 13, 173, 0.15);
-        border: 2px solid rgba(106, 13, 173, 0.1);
-        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        backdrop-filter: blur(10px);
-    }
-
-    .table-container:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 40px rgba(106, 13, 173, 0.25);
-        border-color: rgba(106, 13, 173, 0.2);
-    }
-
-    .card-header {
-        background: var(--gradiente-roxo);
-        color: white;
-        padding: 20px 25px;
-        border-radius: 15px 15px 0 0 !important;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .card-header::before {
-        content: '';
-;
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-        animation: shine 3s infinite;
-    }
-
-    @keyframes shine {
-        0% { left: -100%; }
-        50% { left: 100%; }
-        100% { left: 100%; }
-    }
-
-    .card-header h5 {
-        font-size: 1.4rem;
-        font-weight: 700;
-        margin: 0;
-        position: relative;
-        z-index: 2;
-    }
-
-    .card-header h5 i {
-        color: var(--amarelo-detalhe);
-        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    }
-
-    .stats-card {
-        background: var(--branco);
-        color: var(--preto-texto);
-        border-radius: 20px;
-        padding: 25px;
-        margin-bottom: 25px;
-        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        border: 2px solid rgba(106, 13, 173, 0.1);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-        animation: statsCardAnimation 0.8s ease-out;
-        position: relative;
-        overflow: hidden;
-        text-align: center;
-        backdrop-filter: blur(10px);
-    }
-
-    @keyframes statsCardAnimation {
+    @keyframes slideInUp {
         from {
             opacity: 0;
-            transform: translateY(30px) scale(0.9);
+            transform: translateY(30px);
         }
         to {
             opacity: 1;
-            transform: translateY(0) scale(1);
+            transform: translateY(0);
         }
     }
 
-    .stats-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(106, 13, 173, 0.08), transparent);
-        transition: left 0.6s ease;
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
     }
 
-    .stats-card:hover::before {
-        left: 100%;
+    /* Layout Principal */
+    .main-content {
+        margin-left: 250px;
+        padding: 20px;
+        min-height: 100vh;
+        transition: margin-left 0.3s ease-in-out;
+        animation: fadeIn 0.5s ease-in-out;
     }
 
-    .stats-card:hover {
-        transform: translateY(-10px) scale(1.02);
-        box-shadow: 0 20px 40px rgba(106, 13, 173, 0.3);
-        border-color: rgba(106, 13, 173, 0.3);
-    }
-
-    .stats-card h3 {
-        font-size: 2.8rem;
-        font-weight: 800;
-        margin-bottom: 8px;
-        background: var(--gradiente-roxo);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        text-shadow: 0 4px 8px rgba(106, 13, 173, 0.2);
-    }
-
-    .stats-card p {
-        margin-bottom: 0;
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--roxo-escuro);
-    }
-
-    .stats-card i {
-        font-size: 2.5rem;
-        color: var(--amarelo-detalhe);
-        margin-bottom: 1.2rem;
-        text-shadow: 0 4px 8px rgba(255, 215, 0, 0.3);
-    }
-
-    .navbar {
-        background: transparent !important;
-        border-bottom: 3px solid var(--amarelo-detalhe);
-        box-shadow: 0 6px 20px rgba(255, 238, 0, 0.25);
-        backdrop-filter: blur(10px);
-    }
-
-    .navbar-brand {
-        margin-left: auto;
-        margin-right: 0;
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        width: 100%;
-    }
-
-    .navbar-brand .logo-header {
-        height: 75px;
-        width: auto;
-        display: block;
-        transition: transform 0.3s ease;
-    }
-
-    .navbar-brand .logo-header:hover {
-        transform: scale(1.05);
-    }
-
+ /* Menu Lateral */
     .sidebar {
         position: fixed;
         top: 0;
@@ -598,6 +465,7 @@ $database->closeConnection();
         padding-top: 20px;
         box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
         z-index: 1000;
+        transition: transform 0.3s ease-in-out;
     }
 
     .sidebar .profile {
@@ -607,11 +475,11 @@ $database->closeConnection();
     }
 
     .profile-avatar-sidebar {
-        width: 80px;
-        height: 80px;
+        width: 100px;
+        height: 100px;
         border-radius: 50%;
         border: 3px solid var(--amarelo-detalhe);
-        background: linear-gradient(135deg, var(--roxo-claro), var(--roxo-principal));
+        background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
         display: flex;
         align-items: center;
         justify-content: center;
@@ -627,40 +495,52 @@ $database->closeConnection();
         border-radius: 50%;
     }
 
-    .profile-avatar-sidebar:has(img) i {
+    .profile-avatar-sidebar:has(.profile-avatar-img) i {
         display: none;
     }
 
-    .admin-name {
+    .profile-avatar-sidebar i {
+        font-size: 3.5rem;
+        color: var(--amarelo-detalhe);
+    }
+
+    .sidebar .profile h5 {
         font-weight: 600;
-        margin-bottom: 0;
+        margin-bottom: 5px;
         color: var(--branco);
+        font-size: 1.1rem;
         word-wrap: break-word;
         max-width: 200px;
         text-align: center;
         line-height: 1.3;
-        font-size: 1rem;
     }
 
-    .admin-email {
+    .sidebar .profile small {
         color: var(--cinza-claro);
+        font-size: 0.9rem;
         word-wrap: break-word;
         max-width: 200px;
         text-align: center;
-        font-size: 0.75rem;
         line-height: 1.2;
         margin-top: 5px;
-        opacity: 0.9;
-    }
-
-    .sidebar .profile i {
-        font-size: 4rem;
-        color: var(--amarelo-detalhe);
-        margin-bottom: 10px;
     }
 
     .sidebar .list-group {
+        display: flex;
+        flex-direction: column;
         width: 100%;
+    }
+
+    .sidebar .list-group-item.sair {
+        background-color: transparent;
+        color: var(--branco);
+        border: none;
+        padding: 15px 25px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 40px !important;
     }
 
     .sidebar .list-group-item {
@@ -687,119 +567,153 @@ $database->closeConnection();
         border-left: 4px solid var(--amarelo-detalhe);
     }
 
-    .sidebar .list-group-item i {
-        color: var(--amarelo-detalhe);
+/* CORREÇÃO ESPECÍFICA PARA OS ÍCONES DO SIDEBAR */
+.sidebar .fas,
+.sidebar .fa-solid,
+.sidebar .fa-regular,
+.sidebar .fa-brands,
+.sidebar [class*="fa-"] {
+    color: var(--amarelo-detalhe) !important;
+}
+
+.sidebar .list-group-item .fas,
+.sidebar .list-group-item .fa-solid,
+.sidebar .list-group-item .fa-regular,
+.sidebar .list-group-item .fa-brands,
+.sidebar .list-group-item [class*="fa-"] {
+    color: var(--amarelo-detalhe) !important;
+}
+
+/* Menu Hamburguer */
+    .menu-toggle {
+        display: none;
+        background: none;
+        border: none;
+        color: var(--roxo-principal) !important;
+        font-size: 1.5rem;
+        cursor: pointer;
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 1100;
+        transition: all 0.3s ease;
+        padding: 10px;
+        border-radius: 5px;
+        background: rgba(106, 13, 173, 0.1);
     }
 
-    .main-content {
-        margin-left: 250px;
-        padding: 20px;
+    .menu-toggle:hover {
+        color: var(--roxo-escuro) !important;
+        transform: scale(1.1);
+        background: rgba(106, 13, 173, 0.2);
     }
 
+    /* CORREÇÃO: Quando a sidebar está ativa */
+    body:has(.sidebar.active) .menu-toggle,
+    .sidebar.active ~ .menu-toggle {
+        color: var(--amarelo-detalhe) !important;
+        background: rgba(255, 215, 0, 0.1);
+    }
+
+    body:has(.sidebar.active) .menu-toggle:hover,
+    .sidebar.active ~ .menu-toggle:hover {
+        color: var(--amarelo-hover) !important;
+        background: rgba(255, 215, 0, 0.2);
+    }
+
+    /* Overlay para mobile */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        backdrop-filter: blur(3px);
+    }
+
+    /* Navbar */
+    .navbar {
+        background-color: transparent !important;
+        border-bottom: 3px solid var(--amarelo-detalhe);
+        box-shadow: 0 4px 15px rgba(255, 238, 0, 0.38);
+        animation: slideInDown 0.5s ease-out;
+    }
+
+    .navbar-brand {
+        margin-left: auto;
+        margin-right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        width: 100%;
+    }
+
+    .navbar-brand .logo-header {
+        height: 70px;
+        width: auto;
+        display: block;
+        transition: transform 0.3s ease;
+    }
+
+    .navbar-brand .logo-header:hover {
+        transform: scale(1.05);
+    }
+
+    .settings-icon {
+        color: var(--roxo-principal) !important;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        font-size: 1.2rem;
+        padding: 8px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .settings-icon:hover {
+        color: var(--roxo-escuro) !important;
+        transform: rotate(90deg);
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .logout-icon {
+        color: var(--roxo-principal) !important;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        font-size: 1.2rem;
+    }
+
+    /* Botões */
     .btn-warning {
         background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
         color: var(--preto-texto);
         box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
         min-width: 180px;
         border: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
     }
 
     .btn-warning:hover {
         background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
         transform: translateY(-2px);
-        box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
-        color: var(--preto-texto);
-    }
-
-    @media (max-width: 768px) {
-        .sidebar {
-            position: relative;
-            width: 100%;
-            height: auto;
-        }
-        .main-content {
-            margin-left: 0;
-        }
-        .stats-card h3 {
-            font-size: 2rem;
-        }
-    }
-
-    .btn {
-        border-radius: 12px;
-        padding: 12px 24px;
-        font-weight: 700;
-        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        border: 2px solid transparent;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        position: relative;
-        overflow: hidden;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-size: 0.9rem;
-    }
-
-    .btn::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -150%;
-        width: 150%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-        transform: skewX(-25deg);
-        transition: left 0.8s ease;
-    }
-
-    .btn:hover::before {
-        left: 150%;
-    }
-
-    .btn-warning {
-        background: var(--gradiente-amarelo);
-        color: var(--preto-texto);
-        box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
-        border: none;
-        min-width: 200px;
-    }
-
-    .btn-warning:hover {
-        background: linear-gradient(135deg, #e6c200 0%, #cc9900 100%);
-        transform: translateY(-3px) scale(1.05);
-        box-shadow: 0 12px 30px var(--roxo-principal);
+        box-shadow: 0 6px 25px rgba(255, 217, 0, 0.66);
         color: var(--preto-texto);
     }
 
     .btn-primary {
-        background: var(--gradiente-roxo);
+        background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
         border: none;
         color: white;
-        box-shadow: 0 6px 20px rgba(106, 13, 173, 0.4);
+        box-shadow: 0 4px 15px rgba(106, 13, 173, 0.3);
     }
 
     .btn-primary:hover {
-        background: linear-gradient(135deg, var(--roxo-escuro) 0%, var(--roxo-principal) 100%);
-        transform: translateY(-3px) scale(1.05);
-        box-shadow: 0 12px 30px rgba(106, 13, 173, 0.6);
-        color: var(--amarelo-detalhe);
-    }
-
-    .btn-outline-warning {
-        background: var(--branco);
-        color: var(--roxo-principal);
-        border-color: var(--roxo-principal);
+        background: linear-gradient(135deg, var(--roxo-escuro), var(--roxo-principal));
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(106, 13, 173, 0.2);
-    }
-
-    .btn-outline-warning:hover {
-        background: var(--roxo-principal);
-        color: white;
-        border-color: var(--roxo-principal);
-        box-shadow: 0 6px 20px rgba(106, 13, 173, 0.4);
-        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(106, 13, 173, 0.4);
     }
 
     .btn-back {
@@ -817,11 +731,66 @@ $database->closeConnection();
     }
 
     .btn-back:hover {
-        background-color:var(--roxo-escuro);
+        background-color: var(--roxo-escuro);
         border-color: var(--branco); 
         color: var(--branco);
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+    }
+
+    /* Cards e Containers */
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        animation: slideInUp 0.5s ease-out;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro)) !important;
+        color: var(--branco);
+        border-radius: 15px 15px 0 0 !important;
+        border: none;
+        padding: 15px 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .card-header h5 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: white;
+        margin: 0;
+    }
+
+    .card-header h5 i {
+        color: var(--amarelo-detalhe);
+    }
+
+    /* Formulários */
+    .form-control, .form-select {
+        border: 2px solid var(--cinza-medio);
+        border-radius: 10px;
+        padding: 10px 15px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--roxo-principal);
+        box-shadow: 0 0 0 0.2rem rgba(106, 13, 173, 0.25);
+        transform: translateY(-2px);
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: var(--roxo-principal);
+        margin-bottom: 8px;
     }
 
     .subtipo-campos {
@@ -845,13 +814,176 @@ $database->closeConnection();
         border: 1px dashed #dee2e6;
     }
 
+    /* Alertas */
+    .alert {
+        border: none;
+        border-radius: 10px;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        animation: slideInDown 0.3s ease-out;
+    }
 
+    .alert-success {
+        background: linear-gradient(135deg, #d4edda, #c3e6cb);
+        color: #155724;
+        border-left: 4px solid #28a745;
+    }
+
+    .alert-danger {
+        background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+        color: #721c24;
+        border-left: 4px solid #dc3545;
+    }
+
+.alert-info {
+    background: linear-gradient(135deg, rgba(106, 13, 173, 0.1), rgba(76, 8, 124, 0.1));
+    color: var(--roxo-principal);
+    border-left: 4px solid var(--roxo-principal);
+}
+
+    /* Responsividade */
+    @media (max-width: 1200px) {
+        .sidebar {
+            width: 220px;
+        }
+        
+        .main-content {
+            margin-left: 220px;
+        }
+    }
+
+    @media (max-width: 992px) {
+        .menu-toggle {
+            display: block;
+        }
+        
+        .sidebar {
+            transform: translateX(-100%);
+            width: 280px;
+        }
+        
+        .sidebar.active {
+            transform: translateX(0);
+        }
+        
+        .main-content {
+            margin-left: 0;
+            padding: 80px 15px 20px;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+        
+        .navbar-brand .logo-header {
+            height: 60px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .main-content {
+            padding: 70px 10px 15px;
+        }
+        
+        .card-body {
+            padding: 1rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .menu-toggle {
+            top: 10px;
+            left: 10px;
+            font-size: 1.3rem;
+            padding: 8px;
+        }
+        
+        .sidebar {
+            width: 100%;
+        }
+        
+        .main-content {
+            padding: 60px 5px 10px;
+        }
+        
+        .navbar-brand .logo-header {
+            height: 50px;
+        }
+        
+        .settings-icon {
+            font-size: 1rem;
+            padding: 6px;
+        }
+        
+        .card-header h5 {
+            font-size: 1.1rem;
+        }
+        
+        .form-control, .form-select {
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+    }
+
+    @media (max-width: 380px) {
+        .sidebar .profile h5 {
+            font-size: 1rem;
+            max-width: 150px;
+        }
+        
+        .sidebar .profile small {
+            font-size: 0.8rem;
+            max-width: 150px;
+        }
+        
+        .profile-avatar-sidebar {
+            width: 80px;
+            height: 80px;
+        }
+        
+        .sidebar .list-group-item {
+            padding: 12px 20px;
+            font-size: 0.9rem;
+        }
+    }
+
+    /* Scroll personalizado */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: var(--cinza-claro);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--roxo-principal);
+        border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--roxo-escuro);
+    }
+
+    a.logout-icon,
+    button.logout-icon {
+      background: transparent !important;
+      color: var(--roxo-principal) !important;
+      border: none !important;
+    }
     </style>
 </head>
 <body>
+    <!-- Menu Hamburguer -->
+    <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Overlay para mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container d-flex justify-content-between align-items-center">
-            <div></div>
+        <div class="container-fluid d-flex justify-content-end align-items-center">
             <div class="d-flex align-items-center" style="gap: 24px;">
                 <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
                     <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
@@ -859,49 +991,51 @@ $database->closeConnection();
                 <a href="editar_perfil.php" class="settings-icon">
                     <i class="fas fa-cog fa-lg"></i>
                 </a>
+                <a href="logout.php" class="logout-icon" title="Sair">
+                    <i class="fas fa-sign-out-alt fa-lg"></i>
+                </a>
             </div>
         </div>
     </nav>
 
-   <div class="sidebar">
-    <div class="profile">
-        <?php if ($foto_admin): ?>
-            <div class="profile-avatar-sidebar">
-                <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
-            </div>
-        <?php else: ?>
-            <i class="fas fa-user-circle"></i>
-        <?php endif; ?>
-        <h5 class="admin-name"><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
-        <small class="admin-email"><?php echo htmlspecialchars($_SESSION['email_admin']); ?></small>
-    </div>
+    <div class="sidebar" id="sidebar">
+        <div class="profile">
+            <?php if ($foto_admin): ?>
+                <div class="profile-avatar-sidebar">
+                    <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
+                </div>
+            <?php else: ?>
+                <div class="profile-avatar-sidebar">
+                    <i class="fa-solid fa-user" style="color: var(--amarelo-detalhe); font-size: 3.5rem;"></i>
+                </div>
+            <?php endif; ?>
+            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+            <small>Administrador(a)</small>
+        </div>
 
         <div class="list-group">
-            <a href="gerenciar_caminho.php" class="list-group-item">
-                <i class="fas fa-plus-circle"></i> Adicionar Caminho
-            </a>
-            <a href="pagina_adicionar_idiomas.php" class="list-group-item">
-                <i class="fas fa-language"></i> Gerenciar Idiomas
-            </a>
-            <a href="gerenciar_teorias.php" class="list-group-item">
-                <i class="fas fa-book-open"></i> Gerenciar Teorias
-            </a>
-            <a href="gerenciar_unidades.php" class="list-group-item">
-                <i class="fas fa-cubes"></i> Gerenciar Unidades
-            </a>
-            <a href="gerenciar_usuarios.php" class="list-group-item">
-                <i class="fas fa-users"></i> Gerenciar Usuários
-            </a>
-            <a href="estatisticas_usuarios.php" class="list-group-item">
-                <i class="fas fa-chart-bar"></i> Estatísticas
-            </a>
-            <a href="logout.php" class="list-group-item mt-auto">
-                <i class="fas fa-sign-out-alt"></i> Sair
-            </a>
-        </div>
+        <a href="gerenciar_caminho.php" class="list-group-item  active">
+            <i class="fas fa-plus-circle"></i> Adicionar Caminho
+        </a>
+        <a href="pagina_adicionar_idiomas.php" class="list-group-item">
+            <i class="fas fa-language"></i> Gerenciar Idiomas
+        </a>
+        <a href="gerenciar_teorias.php" class="list-group-item">
+            <i class="fas fa-book-open"></i> Gerenciar Teorias
+        </a>
+        <a href="gerenciar_unidades.php" class="list-group-item">
+            <i class="fas fa-cubes"></i> Gerenciar Unidades
+        </a>
+        <a href="gerenciar_usuarios.php" class="list-group-item">
+            <i class="fas fa-users"></i> Gerenciar Usuários
+        </a>
+        <a href="estatisticas_usuarios.php" class="list-group-item">
+            <i class="fas fa-chart-bar"></i> Estatísticas
+        </a>
+    </div>
     </div>
 
-    <div class="main-content">
+    <div class="main-content" id="mainContent">
         <div class="container-fluid mt-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
@@ -993,7 +1127,6 @@ $database->closeConnection();
                                 <option value="texto_livre" <?php echo ($post_tipo_exercicio == "texto_livre") ? "selected" : ""; ?>>Texto Livre (Completar)</option>
                                 <option value="completar" <?php echo ($post_tipo_exercicio == "completar") ? "selected" : ""; ?>>Completar Frase</option>
                                 <option value="listening" <?php echo ($post_tipo_exercicio == "listening") ? "selected" : ""; ?>>Exercício de Listening</option>
-
                             </select>
                         </div>
 
@@ -1005,6 +1138,7 @@ $database->closeConnection();
 
                         <!-- Campos Dinâmicos -->
                         <div id="conteudo-campos" style="display: none;">
+                            <!-- Conteúdo dos campos dinâmicos permanece igual -->
                             <div id="campos-normal">
                                 <!-- Campos para Múltipla Escolha -->
                                 <div id="campos-multipla" class="subtipo-campos" style="display: none;">
@@ -1091,6 +1225,7 @@ $database->closeConnection();
                                         <input type="text" class="form-control" id="placeholder_completar" name="placeholder_completar" value="<?php echo htmlspecialchars($post_placeholder_completar); ?>">
                                     </div>
                                 </div>
+
                                 <!-- Campos para Listening -->
                                 <div id="campos-listening" class="subtipo-campos" style="display: none;">
                                     <h5>Configuração - Exercício de Listening</h5>
@@ -1159,26 +1294,6 @@ $database->closeConnection();
                                         </button>
                                     </div>
                                 </div>
-
-                                <!-- Campos para Exercício de Audição -->
-                                <div id="campos-audicao" class="subtipo-campos" style="display: none;">
-                                    <h5>Configuração - Exercício de Audição</h5>
-                                    <div class="mb-3">
-                                        <label for="audio_url" class="form-label">URL do Áudio *</label>
-                                        <input type="url" class="form-control" id="audio_url" name="audio_url" value="<?php echo htmlspecialchars($post_audio_url); ?>">
-                                        <div class="form-text">Link para o arquivo de áudio (MP3, WAV, etc.).</div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="transcricao" class="form-label">Transcrição do Áudio (Opcional)</label>
-                                        <textarea class="form-control" id="transcricao" name="transcricao" rows="2"><?php echo htmlspecialchars($post_transcricao); ?></textarea>
-                                        <div class="form-text">Texto do áudio para referência.</div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="resposta_audio_correta" class="form-label">Resposta Correta *</label>
-                                        <input type="text" class="form-control" id="resposta_audio_correta" name="resposta_audio_correta" value="<?php echo htmlspecialchars($post_resposta_audio_correta); ?>">
-                                        <div class="form-text">A resposta esperada do usuário após ouvir o áudio.</div>
-                                    </div>
-                                </div>
                             </div>
 
                             <!-- Campos para Tipo Especial -->
@@ -1215,6 +1330,42 @@ $database->closeConnection();
     </div>
 
     <script>
+    // Menu Hamburguer Functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        
+        if (menuToggle && sidebar) {
+            menuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+                if (sidebarOverlay) {
+                    sidebarOverlay.classList.toggle('active');
+                }
+            });
+            
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                });
+            }
+            
+            // Fechar menu ao clicar em um link (mobile)
+            const sidebarLinks = sidebar.querySelectorAll('.list-group-item');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 992) {
+                        sidebar.classList.remove('active');
+                        if (sidebarOverlay) {
+                            sidebarOverlay.classList.remove('active');
+                        }
+                    }
+                });
+            });
+        }
+    });
+
     const blocosPorCaminho = <?php echo json_encode($blocos_por_caminho, JSON_UNESCAPED_UNICODE); ?>;
 
     function carregarBlocos(caminhoId, blocoSelecionado = null) {
@@ -1367,8 +1518,6 @@ $database->closeConnection();
         container.appendChild(novaAlternativa);
     }
 
-
-
     // Função para testar áudio do listening
     async function testarAudio() {
         const frase = document.getElementById('frase_listening').value;
@@ -1389,7 +1538,7 @@ $database->closeConnection();
             formData.append('frase', frase.trim());
             formData.append('idioma', idioma.trim());
             
-            const response = await fetch('../controller/gerar_audio_api.php', { // Corrigido para usar fetch
+            const response = await fetch('../controller/gerar_audio_api.php', {
                 method: 'POST',
                 body: formData
             });
@@ -1416,7 +1565,7 @@ $database->closeConnection();
 
     // Validação do formulário antes do envio
     document.querySelector('form').addEventListener('submit', function(e) {
-        console.log('Form submission initiated.'); // Linha de depuração: verifica se o evento de submit está sendo acionado
+        console.log('Form submission initiated.');
         const tipoExercicio = document.getElementById('tipo_exercicio').value;
         let isValid = true;
         let errorMessage = '';
@@ -1460,8 +1609,6 @@ $database->closeConnection();
                 }
                 break;
 
-
-
             case 'listening':
                 const fraseListening = document.getElementById('frase_listening').value;
                 const opcao1 = document.querySelector('input[name="listening_opcao1"]').value;
@@ -1492,7 +1639,6 @@ $database->closeConnection();
             }
         }
     });
-
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

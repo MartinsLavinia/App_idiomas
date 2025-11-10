@@ -727,19 +727,39 @@ body {
 }
 
 .btn-warning {
-    background: var(--gradiente-amarelo);
-    color: var(--preto-texto);
-    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
-    border: none;
-    min-width: 200px;
+    background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
+            color: var(--preto-texto);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+            min-width: 180px
+             border-radius: 6px;
 }
 
 .btn-warning:hover {
-    background: linear-gradient(135deg, #e6c200 0%, #cc9900 100%);
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 12px 30px var(--roxo-principal);
-    color: var(--preto-texto);
+      background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
+            color: var(--preto-texto);
+           
 }
+
+   .btn-secondary {
+            background: rgba(33, 37, 41, 0.08);
+            border: 1.5px solid var(--preto-texto);
+            color: var(--preto-texto);
+            padding: 0.75rem 2rem;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: background 0.2s, color 0.2s, border 0.2s, transform 0.2s;
+            box-shadow: none;
+        }
+
+        .btn-secondary:hover, .btn-secondary:focus {
+            background: rgba(33, 37, 41, 0.18);
+            color: var(--preto-texto);
+            transform: translateY(-2px) scale(1.03);
+            outline: none;
+             border-radius: 6px;
+        }
 
 .btn-primary {
     background: var(--gradiente-roxo);
@@ -1237,6 +1257,11 @@ h2 {
 
 .acoes-rapidas-container .card-header {
     background: linear-gradient(135deg, #17a2b8, #6f42c1);
+}
+
+.card-header i {
+    color: var(--amarelo-detalhe);
+   
 }
 
 .acoes-rapidas-grid {
