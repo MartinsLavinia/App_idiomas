@@ -201,104 +201,7 @@ $database->closeConnection();
             padding: 20px;
         }
 
-        /* Estilos para exercícios de fala */
-        .microphone-section {
-            text-align: center;
-            margin: 30px 0;
-        }
 
-        .microphone-btn {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            border: none;
-            color: white;
-            border-radius: 50%;
-            width: 100px;
-            height: 100px;
-            font-size: 2.5rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
-            position: relative;
-            overflow: hidden;
-            margin: 20px auto;
-            display: block;
-        }
-
-        .microphone-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 12px 35px rgba(40, 167, 69, 0.5);
-        }
-
-        .microphone-btn.listening {
-            background: linear-gradient(135deg, #dc3545, #e83e8c);
-            animation: pulse 1.5s infinite;
-        }
-        
-        .microphone-btn.listening::after {
-            content: '';
-            position: absolute;
-            top: -10px;
-            left: -10px;
-            right: -10px;
-            bottom: -10px;
-            border: 3px solid #dc3545;
-            border-radius: 50%;
-            animation: ripple 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { 
-                transform: scale(1);
-                box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
-            }
-            50% { 
-                transform: scale(1.1);
-                box-shadow: 0 12px 35px rgba(220, 53, 69, 0.5);
-            }
-            100% { 
-                transform: scale(1);
-                box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
-            }
-        }
-        
-        @keyframes ripple {
-            0% {
-                transform: scale(1);
-                opacity: 1;
-            }
-            100% {
-                transform: scale(1.5);
-                opacity: 0;
-            }
-        }
-
-        .speech-status {
-            padding: 20px;
-            border-radius: 12px;
-            margin: 20px 0;
-            text-align: center;
-            font-weight: 500;
-        }
-
-        .speech-listening {
-            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
-            border: 2px solid #ffd700;
-            color: #856404;
-        }
-
-        .speech-success {
-            background: linear-gradient(135deg, #d1edff, #b3d9ff);
-            border: 2px solid #28a745;
-            color: #004085;
-        }
-
-        .speech-error {
-            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
-            border: 2px solid #dc3545;
-            color: #721c24;
-        }, #f8d7da, #f5c6cb);
-            border: 2px solid #dc3545;
-            color: #721c24;
-        }
 
         /* Estilos para exercícios de listening */
         .audio-player-container {
@@ -360,26 +263,7 @@ $database->closeConnection();
             border-radius: 4px;
         }
 
-        /* Estilos específicos para exercícios de fala */
-        .fala-container {
-            background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
-            border: 2px solid var(--roxo-principal);
-            border-radius: 15px;
-            padding: 25px;
-            margin: 20px 0;
-        }
 
-        .frase-pronunciar {
-            background: white;
-            border: 2px dashed var(--roxo-principal);
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-            margin: 20px 0;
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: var(--roxo-escuro);
-        }
 
         /* Estilos para preview de flashcards */
         .flashcard-preview {
@@ -877,7 +761,7 @@ $database->closeConnection();
     let exercicioIndex = 0;
     let respostaSelecionada = null;
     let palavrasCarregadas = [];
-    let recognition = null;
+
 
     // ==================== INICIALIZAÇÃO ====================
     document.addEventListener('DOMContentLoaded', function() {
@@ -1112,8 +996,7 @@ $database->closeConnection();
             htmlConteudo += renderizarTextoLivre(conteudo);
         } else if (tipoExercicio === "completar") {
             htmlConteudo += renderizarCompletar(conteudo);
-        } else if (tipoExercicio === "fala") {
-            htmlConteudo += renderizarExercicioFala(conteudo);
+
         } else if (tipoExercicio === "listening" || tipoExercicio === "audicao") {
             // Para listening, verificar qual estrutura usar
             if (conteudo.opcoes && Array.isArray(conteudo.opcoes)) {
@@ -1139,24 +1022,19 @@ $database->closeConnection();
         const feedbackDiv = document.getElementById("feedbackExercicio");
         if (feedbackDiv) feedbackDiv.remove();
         
-        // Para exercícios de fala, esconder botão de enviar resposta padrão
-        if (tipoExercicio === "fala") {
-            document.getElementById("btnEnviarResposta").style.display = "none";
-        }
+
     }
 
     function determinarTipoExercicioCorrigido(exercicio, conteudo) {
         if (conteudo?.tipo_exercicio) {
             const tipo = conteudo.tipo_exercicio.toLowerCase();
-            if (['listening', 'fala', 'multipla_escolha', 'texto_livre', 'completar'].includes(tipo)) {
+            if (['listening', 'multipla_escolha', 'texto_livre', 'completar'].includes(tipo)) {
                 return tipo;
             }
         }
         
         if (exercicio.categoria === 'audicao') return 'listening';
-        if (exercicio.categoria === 'fala') return 'fala';
         if (conteudo?.opcoes && conteudo?.resposta_correta !== undefined) return 'listening';
-        if (conteudo?.frase_esperada || conteudo?.texto_para_falar) return 'fala';
         if (conteudo?.alternativas) return 'multipla_escolha';
         
         return 'multipla_escolha';
@@ -1243,35 +1121,7 @@ $database->closeConnection();
         return html;
     }
 
-    function renderizarExercicioFala(conteudo) {
-        const textoParaFalar = conteudo.frase_esperada || conteudo.texto_para_falar || 'Frase não definida';
-        const idioma = conteudo.idioma || 'en-US';
-        
-        return `
-            <div class="fala-container">
-                <div class="text-center">
-                    <h6><i class="fas fa-microphone me-2"></i>Exercício de Pronúncia</h6>
-                    <div class="frase-pronunciar">
-                        <h4>"${textoParaFalar}"</h4>
-                    </div>
-                    <div class="alert alert-info mb-3">
-                        <h6>🔒 IMPORTANTE: Permissão do Microfone</h6>
-                        <p class="mb-2">Para usar este exercício, você precisa permitir o microfone:</p>
-                        <ol class="mb-2">
-                            <li>Clique no ícone 🔒 na barra de endereços</li>
-                            <li>Selecione "Permitir" para microfone</li>
-                            <li>Clique no botão abaixo</li>
-                        </ol>
-                    </div>
-                    <button id="btn-falar" class="microphone-btn" onclick="iniciarGravacao('${idioma}')">
-                        <i class="fas fa-microphone"></i>
-                    </button>
-                    <p id="status-fala" class="text-muted">Permita o microfone e clique para gravar</p>
-                    <div id="resultado-audio"></div>
-                </div>
-            </div>
-        `;
-    }
+
 
     function renderizarMultiplaEscolha(conteudo) {
         let html = '<div class="d-grid gap-2">';
@@ -1348,270 +1198,7 @@ $database->closeConnection();
         `;
     }
 
-    // ==================== FUNÇÕES DE FALA ====================
 
-    // MAPEAR IDIOMA PARA RECONHECIMENTO
-    function mapIdiomaParaReconhecimento(idioma) {
-        const mapa = {
-            'Ingles': 'en-US',
-            'Inglês': 'en-US',
-            'English': 'en-US',
-            'Japones': 'ja-JP',
-            'Japonês': 'ja-JP',
-            'Japanese': 'ja-JP',
-            'Coreano': 'ko-KR',
-            'Korean': 'ko-KR',
-            'Portugues': 'pt-BR',
-            'Português': 'pt-BR',
-            'Portuguese': 'pt-BR',
-            'Espanhol': 'es-ES',
-            'Spanish': 'es-ES'
-        };
-        
-        return mapa[idioma] || 'en-US';
-    }
-    
-
-
-    window.solicitarPermissao = function() {
-        const btnPermitir = document.getElementById('btn-permitir');
-        const btnFalar = document.getElementById('btn-falar');
-        const statusFala = document.getElementById('status-fala');
-        
-        // Pular verificação getUserMedia e ir direto para Speech Recognition
-        btnPermitir.style.display = 'none';
-        btnFalar.style.display = 'block';
-        statusFala.textContent = 'Clique no microfone para falar';
-        statusFala.className = 'text-success';
-    };
-    
-    window.iniciarGravacao = function(idioma = 'en-US') {
-        console.log('=== INICIANDO GRAVAÇÃO ===');
-        console.log('Idioma:', idioma);
-        
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        
-        if (!SpeechRecognition) {
-            console.error('SpeechRecognition não suportado');
-            alert('Navegador não suporta reconhecimento de voz');
-            return;
-        }
-        
-        console.log('SpeechRecognition disponível');
-        
-        const statusFala = document.getElementById('status-fala');
-        const btnFalar = document.getElementById('btn-falar');
-        
-        if (!statusFala || !btnFalar) {
-            console.error('Elementos não encontrados:', {statusFala, btnFalar});
-            return;
-        }
-        
-        const recognition = new SpeechRecognition();
-        recognition.lang = idioma;
-        recognition.continuous = false;
-        recognition.interimResults = false;
-        
-        console.log('Configurações do recognition:', {
-            lang: recognition.lang,
-            continuous: recognition.continuous,
-            interimResults: recognition.interimResults
-        });
-        
-        btnFalar.disabled = true;
-        statusFala.textContent = 'Iniciando...';
-        
-        recognition.onstart = function() {
-            console.log('Recognition iniciado');
-            statusFala.textContent = '🎤 FALE AGORA!';
-            statusFala.className = 'text-primary fw-bold';
-            btnFalar.classList.add('listening');
-        };
-        
-        recognition.onresult = function(event) {
-            console.log('Resultado recebido:', event.results);
-            const transcript = event.results[0][0].transcript;
-            console.log('Transcript:', transcript);
-            statusFala.textContent = 'Processando...';
-            btnFalar.classList.remove('listening');
-            enviarRespostaFala(transcript);
-        };
-        
-        recognition.onerror = function(event) {
-            console.error('Erro no recognition:', event.error);
-            btnFalar.classList.remove('listening');
-            btnFalar.disabled = false;
-            
-            if (event.error === 'not-allowed') {
-                statusFala.innerHTML = '❌ Permissão negada';
-                statusFala.className = 'text-danger';
-                
-                const navegador = detectarNavegador();
-                document.getElementById('resultado-audio').innerHTML = `
-                    <div class="alert alert-danger mt-3">
-                        <h6>🚫 MICROFONE BLOQUEADO</h6>
-                        <p><strong>Seu navegador (${navegador}) está bloqueando o microfone.</strong></p>
-                        
-                        <div class="accordion" id="accordionNavegador">
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseChrome">
-                                        🔧 Como desbloquear no Chrome/Edge
-                                    </button>
-                                </h2>
-                                <div id="collapseChrome" class="accordion-collapse collapse show">
-                                    <div class="accordion-body">
-                                        <ol>
-                                            <li>Clique no ícone 🔒 à esquerda da URL</li>
-                                            <li>Clique em "Microfone" e selecione "Permitir"</li>
-                                            <li>OU vá em Configurações > Privacidade > Microfone</li>
-                                            <li>Adicione este site à lista de permitidos</li>
-                                        </ol>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFirefox">
-                                        🦊 Como desbloquear no Firefox
-                                    </button>
-                                </h2>
-                                <div id="collapseFirefox" class="accordion-collapse collapse">
-                                    <div class="accordion-body">
-                                        <ol>
-                                            <li>Clique no ícone 🔒 à esquerda da URL</li>
-                                            <li>Clique na seta ao lado de "Bloqueado"</li>
-                                            <li>Selecione "Permitir" para microfone</li>
-                                            <li>Recarregue a página</li>
-                                        </ol>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-3">
-                            <button class="btn btn-warning btn-sm" onclick="window.location.reload()">
-                                🔄 Recarregar e Tentar Novamente
-                            </button>
-                            <button class="btn btn-info btn-sm ms-2" onclick="abrirConfiguracoesMicrofone()">
-                                ⚙️ Abrir Configurações
-                            </button>
-                        </div>
-                    </div>
-                `;
-            } else {
-                statusFala.textContent = 'Erro: ' + event.error;
-                statusFala.className = 'text-danger';
-            }
-        };
-        
-        recognition.onend = function() {
-            console.log('Recognition finalizado');
-            btnFalar.classList.remove('listening');
-            btnFalar.disabled = false;
-            if (statusFala.textContent.includes('FALE')) {
-                statusFala.textContent = 'Clique no microfone para falar novamente';
-                statusFala.className = 'text-muted';
-            }
-        };
-        
-        try {
-            console.log('Tentando iniciar recognition...');
-            recognition.start();
-            console.log('Recognition.start() chamado com sucesso');
-        } catch (error) {
-            console.error('Erro ao iniciar recognition:', error);
-            statusFala.textContent = 'Erro ao iniciar: ' + error.message;
-            btnFalar.disabled = false;
-        }
-    };
-    
-    function detectarNavegador() {
-        const userAgent = navigator.userAgent;
-        if (userAgent.includes('Chrome')) return 'Chrome';
-        if (userAgent.includes('Firefox')) return 'Firefox';
-        if (userAgent.includes('Safari')) return 'Safari';
-        if (userAgent.includes('Edge')) return 'Edge';
-        return 'Desconhecido';
-    }
-    
-    window.abrirConfiguracoesMicrofone = function() {
-        const navegador = detectarNavegador();
-        let url = '';
-        
-        switch(navegador) {
-            case 'Chrome':
-                url = 'chrome://settings/content/microphone';
-                break;
-            case 'Firefox':
-                url = 'about:preferences#privacy';
-                break;
-            case 'Edge':
-                url = 'edge://settings/content/microphone';
-                break;
-            default:
-                alert('Abra as configurações do seu navegador e procure por "Microfone" ou "Permissões"');
-                return;
-        }
-        
-        try {
-            window.open(url, '_blank');
-        } catch(e) {
-            alert(`Abra uma nova aba e digite: ${url}`);
-        }
-    };
-
-    window.enviarRespostaFala = function(transcript) {
-        const statusFala = document.getElementById('status-fala');
-        statusFala.textContent = 'Processando resposta...';
-        
-        // Usar a API de fala que criamos
-        fetch('/App_idiomas/api/fala.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                exercicio_id: exercicioAtual.id,
-                frase_transcrita: transcript
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            const resultadoFala = document.getElementById('resultado-audio');
-            
-            if (data.success !== undefined) {
-                resultadoFala.innerHTML = `
-                    <div class="alert ${data.correto ? 'alert-success' : 'alert-warning'}">
-                        <h6>${data.correto ? '✅ Correto!' : '⚠️ Pode melhorar'}</h6>
-                        <p><strong>Você disse:</strong> "${transcript}"</p>
-                        ${data.explicacao ? `<p><strong>Feedback:</strong> ${data.explicacao}</p>` : ''}
-                        ${data.dicas_pronuncia ? `<p><strong>Dica:</strong> ${data.dicas_pronuncia}</p>` : ''}
-                    </div>
-                `;
-                
-                statusFala.textContent = data.correto ? 'Excelente!' : 'Tente novamente';
-                document.getElementById("btnProximoExercicio").style.display = "block";
-            } else {
-                resultadoFala.innerHTML = `
-                    <div class="alert alert-danger">
-                        <h6>❌ Erro</h6>
-                        <p>${data.message || 'Erro ao processar resposta'}</p>
-                    </div>
-                `;
-                statusFala.textContent = 'Erro ao processar';
-            }
-        })
-        .catch(error => {
-            console.error('Erro:', error);
-            const resultadoFala = document.getElementById('resultado-audio');
-            resultadoFala.innerHTML = `
-                <div class="alert alert-danger">
-                    <h6>❌ Erro de conexão</h6>
-                    <p>Não foi possível processar sua resposta</p>
-                </div>
-            `;
-            statusFala.textContent = 'Erro de conexão';
-        });
-    };
 
     // ==================== FUNÇÕES DE RESPOSTA ====================
 
@@ -1648,11 +1235,9 @@ $database->closeConnection();
         const tipoExercicio = exercicioAtual.tipoExercicioDeterminado || 'multipla_escolha';
         let apiUrl = '/App_idiomas/api/processar_exercicio.php';
         
-        // Usar APIs específicas para listening e fala
+        // Usar API específica para listening
         if (tipoExercicio === 'listening' || tipoExercicio === 'audicao') {
             apiUrl = '/App_idiomas/api/exercicios/listening.php';
-        } else if (tipoExercicio === 'fala') {
-            apiUrl = '/App_idiomas/api/fala.php';
         }
         
         console.log('Enviando resposta:', {
@@ -2058,11 +1643,7 @@ $database->closeConnection();
                 return false;
             }
             
-            if (opcao.classList.contains('microphone-btn')) {
-                e.preventDefault();
-                // Não fazer nada - deixar a função onclick do botão funcionar
-                return true;
-            }
+
         });
     </script>
     
