@@ -792,6 +792,8 @@ $database->closeConnection();
             padding: 12px 20px;
             font-size: 1rem;
             min-height: 48px;
+            width: 100%;
+            border-color: rgba(17, 17, 17, 1);
         }
 
         .btn-cancelar-alteracoes::before {

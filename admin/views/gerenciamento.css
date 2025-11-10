@@ -356,6 +356,9 @@ body:has(.sidebar.active) .menu-toggle:hover,
     border: none;
     font-weight: 600;
     transition: all 0.3s ease;
+    position: absolute;   /* ou relative, dependendo do container */
+    top: 150px;            /* move pra baixo */
+    right: 20px; 
 }
 .btn-warning:hover {
     background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
