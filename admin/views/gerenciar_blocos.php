@@ -1325,7 +1325,11 @@ h2 {
     display: block;
     animation: fadeIn 0.3s ease;
 }
-
+.logout-icon {
+    color: var(--roxo-principal) !important;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
 </style>
 </head>
 
@@ -1340,6 +1344,9 @@ h2 {
                 <a href="editar_perfil.php" class="settings-icon">
                     <i class="fas fa-cog fa-lg"></i>
                 </a>
+                <a href="logout.php" class="logout-icon" title="Sair">
+                <i class="fas fa-sign-out-alt fa-lg"></i>
+            </a>
             </div>
         </div>
     </nav>

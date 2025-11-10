@@ -2,11 +2,44 @@
 session_start();
 include_once __DIR__ . '/../../conexao.php';
 
+// Ativar exibição de erros (apenas para desenvolvimento)
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 // Verificação de segurança
 if (!isset($_SESSION['id_admin'])) {
     header("Location: login_admin.php");
     exit();
 }
+
+// === ADICIONE O CÓDIGO DA FOTO AQUI ===
+// Buscar foto do admin
+$id_admin = $_SESSION['id_admin'];
+$foto_admin = null;
+
+// Cria uma nova conexão para buscar a foto
+$database_foto = new Database();
+$conn_foto = $database_foto->conn;
+
+$check_column_sql = "SHOW COLUMNS FROM administradores LIKE 'foto_perfil'";
+$result_check = $conn_foto->query($check_column_sql);
+
+if ($result_check && $result_check->num_rows > 0) {
+    $sql_foto = "SELECT foto_perfil FROM administradores WHERE id = ?";
+    $stmt_foto = $conn_foto->prepare($sql_foto);
+    $stmt_foto->bind_param("i", $id_admin);
+    $stmt_foto->execute();
+    $resultado_foto = $stmt_foto->get_result();
+    
+    if ($resultado_foto && $resultado_foto->num_rows > 0) {
+        $admin_foto = $resultado_foto->fetch_assoc();
+        $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
+    }
+    $stmt_foto->close();
+}
+
+$database_foto->closeConnection();
+// === FIM DO CÓDIGO DA FOTO ===
 
 $database = new Database();
 $conn = $database->conn;
@@ -211,6 +244,7 @@ $database->closeConnection();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="../../imagens/mini-esquilo.png">
 
     <style>
         :root {
@@ -292,6 +326,8 @@ $database->closeConnection();
             padding: 2.5rem;
             position: relative;
             z-index: 1;
+            margin-left: 250px;
+            transition: margin-left 0.3s ease-in-out;
         }
 
         /* Divisórias decorativas */
@@ -380,74 +416,190 @@ $database->closeConnection();
             animation: fadeInUp 0.6s ease-out forwards;
         }
 
-        .page-header {
+        /* ========== SIDEBAR ========== */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100%;
+            background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+            color: var(--branco);
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2.5rem;
-            animation: fadeInUp 0.5s ease-out;
-            padding: 1.5rem;
-            background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(248, 250, 252, 0.9));
-            border-radius: var(--borda-radius);
-            box-shadow: var(--sombra-leve);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(124, 58, 237, 0.1);
+            flex-direction: column;
+            justify-content: flex-start;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: transform 0.3s ease-in-out;
         }
-        .page-header .logo-container img {
-            height: 70px;
-            transition: var(--transicao-padrao);
+
+        .sidebar .profile {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 0 15px;
         }
-        .page-header .logo-container img:hover {
-            transform: scale(1.05) rotate(5deg);
-        }
-        .page-header .header-title h1 {
-            font-weight: 700;
-            font-size: 1.75rem;
-            margin-bottom: 0.25rem;
-            background: linear-gradient(135deg, #7c3aed, #5b21b6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .breadcrumb {
-            margin-bottom: 0;
-            --bs-breadcrumb-divider-color: var(--cinza-texto);
-        }
-       .breadcrumb-item a {
-    text-decoration: none;
-    color: var(--roxo-principal);
-    font-weight: 500;
-    transition: var(--transicao-padrao);
-}
-.breadcrumb-item a:hover {
-    color: var(--roxo-principal);
-    transform: translateX(5px);
-    text-shadow: 0 0 10px #5b21b6;
-}
-        .page-header .profile-actions {
+
+        .profile-avatar-sidebar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid var(--amarelo-detalhe);
+            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
             display: flex;
             align-items: center;
-            gap: 1rem;
+            justify-content: center;
+            margin: 0 auto 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
-        .page-header .profile-actions .admin-info {
-            text-align: right;
+
+        .profile-avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
         }
-        .page-header .profile-actions .admin-info span {
+
+        .profile-avatar-sidebar:has(.profile-avatar-img) i {
+            display: none;
+        }
+
+        .profile-avatar-sidebar i {
+            font-size: 3.5rem;
+            color: var(--amarelo-detalhe);
+        }
+
+        .sidebar .profile h5 {
             font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--branco);
+            font-size: 1.1rem;
+            word-wrap: break-word;
+            max-width: 200px;
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        .sidebar .profile small {
+            color: var(--cinza-claro);
             font-size: 0.9rem;
+            word-wrap: break-word;
+            max-width: 200px;
+            text-align: center;
+            line-height: 1.2;
+            margin-top: 5px;
         }
-        .page-header .profile-actions .admin-info small {
-            color: var(--cinza-texto);
-            font-size: 0.8rem;
+
+        .sidebar .list-group {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
         }
-        .page-header .profile-actions .fa-user-circle {
-            font-size: 2.8rem;
-            color: var(--roxo-principal);
-            transition: var(--transicao-padrao);
+
+        .sidebar .list-group-item.sair {
+            background-color: transparent;
+            color: var(--branco);
+            border: none;
+            padding: 15px 25px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 40px !important;
         }
-        .page-header .profile-actions .fa-user-circle:hover {
-            animation: pulse 0.6s ease-in-out;
+
+        .sidebar .list-group-item {
+            background-color: transparent;
+            color: var(--branco);
+            border: none;
+            padding: 15px 25px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
         }
+
+        .sidebar .list-group-item:hover {
+            background-color: var(--roxo-escuro);
+            cursor: pointer;
+        }
+
+        .sidebar .list-group-item.active {
+            background-color: var(--roxo-escuro) !important;
+            color: var(--branco) !important;
+            font-weight: 600;
+            border-left: 4px solid var(--amarelo-detalhe);
+        }
+
+        .sidebar .list-group-item i {
+            color: var(--amarelo-detalhe);
+        }
+
+        /* Bottom Navigation Bar para mobile */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.15);
+            z-index: 1020;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 5px 0;
+        }
+
+        .bottom-nav-item {
+            flex: 1;
+            text-align: center;
+            color: var(--branco);
+            text-decoration: none;
+            padding: 8px 0;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+
+        .bottom-nav-item i {
+            font-size: 1.5rem;
+            display: block;
+            margin: 0 auto;
+            color: var(--amarelo-detalhe);
+        }
+
+        .bottom-nav-item.active {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .bottom-nav-item.active i {
+            transform: scale(1.1);
+        }
+
+        .bottom-nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Ajustes de layout para diferentes tamanhos de tela */
+        @media (min-width: 992px) {
+            .main-content {
+                margin-left: 250px;
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 991.98px) {
+            .main-content {
+                margin-left: 0;
+                padding: 20px 20px 80px 20px;
+            }
+            .sidebar {
+                display: none !important;
+            }
+        }
+
+     
 
         /* ========== CARDS ADMINISTRATIVOS ========== */
         .admin-section {
@@ -663,21 +815,43 @@ $database->closeConnection();
             transform: translateY(-2px);
             box-shadow: var(--sombra-media);
         }
-        .btn-primary { 
-            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
-            border: none;
-        }
-        .btn-primary:hover { 
-            background: linear-gradient(135deg, var(--roxo-escuro), #3a0660);
-        }
+
+.btn-primary { 
+    background: transparent;
+    color: var(--roxo-principal);
+    border: 2px solid var(--roxo-principal);
+    font-weight: 600;
+    padding: 8px 12px;
+    border-radius: 6px;
+    position: relative;
+    transition: 0.2s ease;
+}
+
+.btn-primary:hover { 
+    background: var(--roxo-principal);
+    color: var(--branco);
+    border-color: var(--roxo-principal);
+    transform: translateY(-2px);
+}
+
+
         .btn-warning { 
-            background: linear-gradient(135deg, var(--amarelo-detalhe), #ffed4e);
-            border: none;
-            color: var(--preto-texto);
+              background: transparent;
+    color: var(--roxo-principal);
+    border: 2px solid #6a0dad;
+    font-weight: 600;
+    padding: 8px 12px;
+    border-radius: 6px;
+    position: relative;
+    transition: background 0.12s ease, color 0.12s ease, transform 0.12s ease;
         }
+
+
         .btn-warning:hover { 
-            background: linear-gradient(135deg, #ffca2c, var(--amarelo-detalhe));
-            color: var(--preto-texto);
+             background: rgba(106, 13, 173, 0.06);
+    color: var(--roxo-principal);
+    border: 2px solid #6a0dad;
+    transform: translateY(-1px);
         }
 
         .modal-content { 
@@ -816,6 +990,77 @@ $database->closeConnection();
                 margin-bottom: 1rem;
             }
         }
+
+        /* Navbar */
+        .navbar {
+            background: transparent !important;
+            border-bottom: 3px solid var(--amarelo-detalhe);
+            box-shadow: 0 6px 20px rgba(255, 238, 0, 0.25);
+            backdrop-filter: blur(10px);
+        }
+
+        .navbar-brand {
+            margin-left: auto;
+            margin-right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            width: 100%;
+        }
+
+        .navbar-brand .logo-header {
+            height: 75px;
+            width: auto;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .navbar-brand .logo-header:hover {
+            transform: scale(1.05);
+        }
+
+        .settings-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .settings-icon:hover {
+            color: var(--roxo-escuro) !important;
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        /* Botão Eliminar - Efeito de pulsação vermelha */
+.btn-danger {
+    /* refinado: aviso sem ser agressivo, formato pill */
+    background: rgba(220, 53, 69, 0.06);
+    color: #8a1820; /* tom menos saturado */
+    /* borda fina e cor firme */
+    border: 2px solid #c82333;
+    box-sizing: border-box;
+    font-weight: 700;
+    padding: 6px 12px;
+     border-radius: 6px;
+    transition: transform 0.14s ease, box-shadow 0.14s ease, background 0.12s ease;
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.04);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-danger:hover {
+    background: rgba(220, 53, 69, 0.12);
+    color: #7a151b;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(220, 53, 69, 0.08);
+}
+
+.logout-icon {
+    color: var(--roxo-principal) !important;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
     </style>
 </head>
 <body>
@@ -828,33 +1073,66 @@ $database->closeConnection();
         <div class="floating-shape shape-4"></div>
     </div>
 
-    
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div></div>
+            <div class="d-flex align-items-center" style="gap: 24px;">
+                <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
+                    <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
+                </a>
+                <a href="editar_perfil.php" class="settings-icon">
+                    <i class="fas fa-cog fa-lg"></i>
+                </a>
+                 <a href="logout.php" class="logout-icon" title="Sair">
+                    <i class="fas fa-sign-out-alt fa-lg"></i>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="profile">
+            <?php if ($foto_admin): ?>
+                <div class="profile-avatar-sidebar">
+                    <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-avatar-img">
+                </div>
+            <?php else: ?>
+                <div class="profile-avatar-sidebar">
+                    <i class="fa-solid fa-user" style="color: var(--amarelo-detalhe); font-size: 3.5rem;"></i>
+                </div>
+            <?php endif; ?>
+            <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
+            <small>Administrador(a)</small>
+        </div>
+
+        <div class="list-group">
+            <a href="gerenciar_caminho.php" class="list-group-item">
+                <i class="fas fa-plus-circle"></i> Adicionar Caminho
+            </a>
+            <a href="pagina_adicionar_idiomas.php" class="list-group-item active">
+                <i class="fas fa-language"></i> Gerenciar Idiomas
+            </a>
+            <a href="gerenciar_teorias.php" class="list-group-item">
+                <i class="fas fa-book-open"></i> Gerenciar Teorias
+            </a>
+            <a href="gerenciar_unidades.php" class="list-group-item">
+                <i class="fas fa-cubes"></i> Gerenciar Unidades
+            </a>
+            <a href="gerenciar_usuarios.php" class="list-group-item">
+                <i class="fas fa-users"></i> Gerenciar Usuários
+            </a>
+            <a href="estatisticas_usuarios.php" class="list-group-item">
+                <i class="fas fa-chart-bar"></i> Estatísticas
+            </a>
+            
+        </div>
+    </div>
 
     <div class="main-content">
         <!-- CABEÇALHO INTEGRADO -->
-        <header class="page-header">
-            <div class="logo-container">
-                <a href="gerenciar_caminho.php"><img src="../../imagens/logo-idiomas.png" alt="Logo SpeakNut"></a>
-            </div>
-            <div class="header-title">
-                <h1>Gerenciar Quiz</h1>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb justify-content-center">
-                        <li class="breadcrumb-item"><a href="gerenciar_caminho.php">Painel</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Quiz de Nivelamento</li>
-                    </ol>
-                </nav>
-            </div>
-            <div class="profile-actions">
-                <div class="admin-info">
-                    <span><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></span>
-                    <small>Administrador</small>
-                </div>
-                <i class="fas fa-user-circle"></i>
-            </div>
-        </header>
-
-     
+    
 
         <!-- CARDS DE ESTATÍSTICAS -->
         <div class="row mb-4">
@@ -888,134 +1166,6 @@ $database->closeConnection();
         </div>
 
         
-
-             <!-- Mini divisória -->
-        <div class="mini-divider"></div>
-
-        
-
-        <!-- ========== SEÇÃO ADMINISTRATIVA ========== -->
-        <div class="admin-section">
-            <div class="row">
-                <!-- Card de Progresso Geral -->
-                <div class="col-lg-6 mb-4">
-                    <div class="progress-card">
-                        <div class="progress-info">
-                            <div class="progress-badge">
-                                <i class="fas fa-chart-line me-2"></i>Progresso do Quiz
-                            </div>
-                            <h4 class="mb-3">
-                                <i class="fas fa-tasks me-2"></i><?php echo $total_perguntas; ?> Perguntas
-                            </h4>
-                            <p class="mb-2">Meta: 50 perguntas para um quiz completo</p>
-                            <div class="progress-bar-custom">
-                                <div class="progress-bar-fill" style="width: <?php echo min(($total_perguntas / 50) * 100, 100); ?>%"></div>
-                            </div>
-                            <div class="progress-text">
-                                <?php echo number_format(min(($total_perguntas / 50) * 100, 100), 1); ?>% completo
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card de Atividade Mensal -->
-                <div class="col-lg-3 col-md-6 mb-4">
-                    <div class="stat-card">
-                        <div class="icon-container" style="background: linear-gradient(135deg, #10b981, #059669);">
-                            <i class="fas fa-calendar-check"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h6>Atividade Mensal</h6>
-                            <div class="stat-number"><?php echo $atividade_mensal; ?></div>
-                            <small>Perguntas este mês</small>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card de Qualidade -->
-                <div class="col-lg-3 col-md-6 mb-4">
-                    <div class="stat-card">
-                        <div class="icon-container" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
-                            <i class="fas fa-star"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h6>Qualidade</h6>
-                            <div class="stat-number"><?php echo ($total_perguntas >= 20) ? 'Alta' : (($total_perguntas >= 10) ? 'Média' : 'Básica'); ?></div>
-                            <small>Nível do Quiz</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-   
-
-        <!-- Divisória decorativa -->
-        <div class="section-divider"></div>
-
-        <!-- ========== ESTATÍSTICAS DETALHADAS ========== -->
-        <div class="row mb-4">
-            <!-- Card: Distribuição de Respostas Corretas -->
-            <div class="col-lg-6 mb-4">
-                <div class="stats-chart-card">
-                    <h6><i class="fas fa-chart-bar"></i>Distribuição de Respostas Corretas</h6>
-                    <?php if (!empty($stats_respostas)): ?>
-                        <?php 
-                        $cores = ['A' => '#7c3aed', 'B' => '#fbbf24', 'C' => '#28a745', 'D' => '#dc3545'];
-                        foreach ($stats_respostas as $stat): 
-                            $percentual = ($total_perguntas > 0) ? round(($stat['quantidade'] / $total_perguntas) * 100, 1) : 0;
-                        ?>
-                        <div class="progress-item">
-                            <label>
-                                <span><i class="fas fa-check-circle me-1"></i>Alternativa <?php echo htmlspecialchars($stat['resposta_correta']); ?></span>
-                                <span><strong><?php echo $stat['quantidade']; ?></strong> perguntas (<?php echo $percentual; ?>%)</span>
-                            </label>
-                            <div class="progress">
-                                <div class="progress-bar" role="progressbar" style="width: <?php echo $percentual; ?>%; background: <?php echo $cores[$stat['resposta_correta']] ?? '#6c757d'; ?>;" aria-valuenow="<?php echo $percentual; ?>" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                        </div>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <p class="text-muted text-center">Nenhuma estatística disponível.</p>
-                    <?php endif; ?>
-                </div>
-            </div>
-
-            <!-- Card: Distribuição por Dificuldade -->
-            <div class="col-lg-6 mb-4">
-                <div class="stats-chart-card">
-                    <h6><i class="fas fa-signal"></i>Distribuição por Dificuldade</h6>
-                    <div class="progress-item">
-                        <label>
-                            <span><i class="fas fa-circle text-success me-1"></i>Fácil</span>
-                            <span><strong><?php echo $perguntas_faceis; ?></strong> perguntas</span>
-                        </label>
-                        <div class="progress">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: <?php echo ($total_perguntas > 0) ? ($perguntas_faceis / $total_perguntas) * 100 : 0; ?>%" aria-valuenow="<?php echo $perguntas_faceis; ?>" aria-valuemin="0" aria-valuemax="<?php echo $total_perguntas; ?>"></div>
-                        </div>
-                    </div>
-                    <div class="progress-item">
-                        <label>
-                            <span><i class="fas fa-circle text-warning me-1"></i>Médio</span>
-                            <span><strong><?php echo $perguntas_medias; ?></strong> perguntas</span>
-                        </label>
-                        <div class="progress">
-                            <div class="progress-bar bg-warning" role="progressbar" style="width: <?php echo ($total_perguntas > 0) ? ($perguntas_medias / $total_perguntas) * 100 : 0; ?>%" aria-valuenow="<?php echo $perguntas_medias; ?>" aria-valuemin="0" aria-valuemax="<?php echo $total_perguntas; ?>"></div>
-                        </div>
-                    </div>
-                    <div class="progress-item">
-                        <label>
-                            <span><i class="fas fa-circle text-danger me-1"></i>Difícil</span>
-                            <span><strong><?php echo $perguntas_dificeis; ?></strong> perguntas</span>
-                        </label>
-                        <div class="progress">
-                            <div class="progress-bar bg-danger" role="progressbar" style="width: <?php echo ($total_perguntas > 0) ? ($perguntas_dificeis / $total_perguntas) * 100 : 0; ?>%" aria-valuenow="<?php echo $perguntas_dificeis; ?>" aria-valuemin="0" aria-valuemax="<?php echo $total_perguntas; ?>"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Divisória decorativa -->
         <div class="section-divider"></div>
 
@@ -1150,6 +1300,34 @@ $database->closeConnection();
         </div>
     </div>
 
+    <!-- Bottom Navigation Bar para telas pequenas -->
+    <nav class="bottom-nav d-lg-none">
+        <a href="gerenciar_caminho.php" class="bottom-nav-item">
+            <i class="fas fa-plus-circle"></i>
+        </a>
+        <a href="pagina_adicionar_idiomas.php" class="bottom-nav-item">
+            <i class="fas fa-language"></i>
+        </a>
+        <a href="gerenciar_teorias.php" class="bottom-nav-item">
+            <i class="fas fa-book-open"></i>
+        </a>
+        <a href="gerenciar_unidades.php" class="bottom-nav-item">
+            <i class="fas fa-cubes"></i>
+        </a>
+        <a href="gerenciar_usuarios.php" class="bottom-nav-item">
+            <i class="fas fa-users"></i>
+        </a>
+        <a href="estatisticas_usuarios.php" class="bottom-nav-item">
+            <i class="fas fa-chart-bar"></i>
+        </a>
+        <a href="gerenciar_quiz_nivelamento.php" class="bottom-nav-item active">
+            <i class="fas fa-question-circle"></i>
+        </a>
+        <a href="logout.php" class="bottom-nav-item">
+            <i class="fas fa-sign-out-alt"></i>
+        </a>
+    </nav>
+
     <!-- MODAIS -->
     <?php foreach ($quiz_perguntas as $pergunta): ?>
     <div class="modal fade" id="editQuizModal_<?php echo $pergunta['id']; ?>" tabindex="-1" aria-hidden="true">
@@ -1264,5 +1442,8 @@ $database->closeConnection();
         });
     });
     </script>
+
+
+
 </body>
 </html>
