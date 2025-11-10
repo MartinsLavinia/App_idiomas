@@ -711,6 +711,22 @@ $database->closeConnection();
         color: var(--amarelo-detalhe);
         font-size: 1.2rem;
     }
+
+    .settings-icon {
+    color: var(--roxo-principal) !important;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    font-size: 1.2rem;
+    padding: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.settings-icon:hover {
+    color: var(--roxo-escuro) !important;
+    transform: rotate(90deg);
+    background: rgba(255, 255, 255, 0.2);
+}
     </style>
 </head>
 <body>
@@ -767,19 +783,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
                     <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
                 </a>
-                <!-- Foto do perfil no header -->
-                <a href="editar_perfil.php">
-                    <?php if ($foto_admin): ?>
-                        <img src="<?= htmlspecialchars($foto_admin) ?>" alt="Foto de perfil" class="profile-icon-header">
-                    <?php else: ?>
-                        <div class="profile-icon-container">
-                            <i class="fas fa-user"></i>
-                        </div>
-                    <?php endif; ?>
-                </a>
-                <a href="logout.php" class="logout-icon" title="Sair">
-                    <i class="fas fa-sign-out-alt fa-lg"></i>
-                </a>
+                 <a href="editar_perfil.php" class="settings-icon">
+                <i class="fas fa-cog fa-lg"></i>
+            </a>
+            <a href="logout.php" class="logout-icon" title="Sair">
+                <i class="fas fa-sign-out-alt fa-lg"></i>
+            </a>
+                
             </div>
         </div>
     </nav>

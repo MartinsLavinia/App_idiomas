@@ -311,7 +311,6 @@ body {
     font-family: 'Poppins', sans-serif;
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     color: var(--preto-texto);
-    animation: fadeIn 1s ease-in-out;
     min-height: 100vh;
 }
 
