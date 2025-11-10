@@ -370,16 +370,15 @@ body:has(.sidebar.active) .menu-toggle:hover,
         padding: 20px 10px;
     }
 }
-        .btn-warning {
+        .btn-salvar-quiz{
             background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
             color: var(--preto-texto);
             box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
             min-width: 180px;
             border: none;
-            top: 2750px;
         }
 
-        .btn-warning:hover {
+        .btn-salvar-quiz:hover {
             background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
             transform: translateY(-2px);
             box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
@@ -787,7 +786,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 Gerenciar idiomas simples
             </h2>
 
-            <a href="#" class="btn btn-warning mb-4" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
+            <a href="#" class="btn btn-salvar-quiz mb-4" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
                 <i class="fas fa-plus-circle me-2"></i>Gerenciar idiomas
             </a>
 
@@ -887,7 +886,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </nav>
 
                         <div class="d-flex justify-content-end gap-2 mt-3">
-                                <button type="submit" class="btn btn-warning">Salvar Idioma e Quiz (Fim)</button>
+                                <button type="submit" class="btn btn-salvar-quiz" style="font-weight: 500px;">Salvar Idioma e Quiz (Fim)</button>
                         </div>
                     </form>
                 </div>
