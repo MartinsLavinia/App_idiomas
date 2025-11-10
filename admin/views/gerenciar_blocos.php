@@ -727,39 +727,37 @@ body {
 }
 
 .btn-warning {
-    background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
+     background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
             color: var(--preto-texto);
             box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
-            min-width: 180px
-             border-radius: 6px;
+            min-width: 180px;
 }
 
 .btn-warning:hover {
-      background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
+background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
             transform: translateY(-2px);
             box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
             color: var(--preto-texto);
-           
 }
 
-   .btn-secondary {
-            background: rgba(33, 37, 41, 0.08);
-            border: 1.5px solid var(--preto-texto);
-            color: var(--preto-texto);
-            padding: 0.75rem 2rem;
-            border-radius: 6px;
-            font-weight: 600;
-            transition: background 0.2s, color 0.2s, border 0.2s, transform 0.2s;
-            box-shadow: none;
-        }
+.btn-secondary {
+    background: rgba(33, 37, 41, 0.08);
+    border: 1.5px solid var(--preto-texto);
+    color: var(--preto-texto);
+    padding: 0.75rem 2rem;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: background 0.2s, color 0.2s, border 0.2s, transform 0.2s;
+    box-shadow: none;
+}
 
-        .btn-secondary:hover, .btn-secondary:focus {
-            background: rgba(33, 37, 41, 0.18);
-            color: var(--preto-texto);
-            transform: translateY(-2px) scale(1.03);
-            outline: none;
-             border-radius: 6px;
-        }
+.btn-secondary:hover, .btn-secondary:focus {
+    background: rgba(33, 37, 41, 0.18);
+    color: var(--preto-texto);
+    transform: translateY(-2px) scale(1.03);
+    outline: none;
+    border-radius: 6px;
+}
 
 .btn-primary {
     background: var(--gradiente-roxo);
@@ -1317,7 +1315,16 @@ h2 {
     box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
 }
 
+/* Estilo para os botões de edição que ficam ocultos inicialmente */
+.edit-buttons {
+    display: none;
+    margin-top: 15px;
+}
 
+.edit-buttons.show {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
 
 </style>
 </head>
@@ -1377,9 +1384,7 @@ h2 {
 
 
     <div class="main-content">
-        <!-- ... (resto do conteúdo permanece igual) ... -->
         <div class="container-fluid mt-4">
-            <!-- Cabeçalho original mantido, apenas o botão alterado -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h2 class="mb-1">
@@ -1419,66 +1424,48 @@ FOREIGN KEY (bloco_id) REFERENCES blocos(id) ON DELETE SET NULL;</pre>
                         <div class="card-header">
                             <h5 class="card-title mb-0">
                                 <i class="fas fa-plus-circle me-1"></i>
-                                <?php echo isset($_GET['editar']) ? 'Editar Bloco' : 'Adicionar Novo Bloco'; ?>
+                                <span id="formTitle">Adicionar Novo Bloco</span>
                             </h5>
                         </div>
                         <div class="card-body">
-                            <?php
-                            $edit_mode = isset($_GET['editar']);
-                            $bloco_edit = null;
-                            
-                            if ($edit_mode) {
-                                $bloco_id_edit = intval($_GET['editar']);
-                                foreach ($blocos as $bloco) {
-                                    if ($bloco['id'] == $bloco_id_edit) {
-                                        $bloco_edit = $bloco;
-                                        break;
-                                    }
-                                }
-                            }
-                            ?>
-                            
-                            <form method="POST">
+                            <form method="POST" id="formBloco">
                                 <div class="mb-3">
                                     <label for="titulo" class="form-label">Título do Bloco *</label>
-                                    <input type="text" class="form-control" id="titulo" name="titulo" 
-                                           value="<?php echo $bloco_edit ? htmlspecialchars($bloco_edit['titulo']) : ''; ?>" 
-                                           required>
+                                    <input type="text" class="form-control" id="titulo" name="titulo" required>
                                 </div>
 
                                 <div class="mb-3">
                                     <label for="nome_bloco" class="form-label">Nome do Bloco *</label>
-                                    <input type="text" class="form-control" id="nome_bloco" name="nome_bloco" 
-                                           value="<?php echo $bloco_edit ? htmlspecialchars($bloco_edit['nome_bloco']) : ''; ?>" 
-                                           required>
+                                    <input type="text" class="form-control" id="nome_bloco" name="nome_bloco" required>
                                 </div>
                                 
                                 <div class="mb-3">
                                     <label for="ordem_bloco" class="form-label">Ordem no Caminho *</label>
-                                    <input type="number" class="form-control" id="ordem_bloco" name="ordem_bloco" 
-                                           value="<?php echo $bloco_edit ? htmlspecialchars($bloco_edit['ordem']) : ''; ?>" 
-                                           min="1" required>
+                                    <input type="number" class="form-control" id="ordem_bloco" name="ordem_bloco" min="1" required>
                                     <div class="form-text">Define a sequência deste bloco no caminho</div>
                                 </div>
                                 
                                 <div class="mb-3">
                                     <label for="descricao" class="form-label">Descrição</label>
-                                    <textarea class="form-control" id="descricao" name="descricao" rows="3"><?php echo $bloco_edit ? htmlspecialchars($bloco_edit['descricao']) : ''; ?></textarea>
+                                    <textarea class="form-control" id="descricao" name="descricao" rows="3"></textarea>
                                 </div>
                                 
-                                <?php if ($edit_mode): ?>
-                                    <input type="hidden" name="bloco_id" value="<?php echo $bloco_edit['id']; ?>">
+                                <input type="hidden" name="bloco_id" id="bloco_id">
+                                
+                                <!-- Botão Adicionar (sempre visível) -->
+                                <button type="submit" name="adicionar_bloco" class="btn btn-primary w-100" id="btnAdicionar">
+                                    <i class="fas fa-plus me-1"></i>Adicionar Bloco
+                                </button>
+                                
+                                <!-- Botões Editar (inicialmente ocultos) -->
+                                <div class="edit-buttons" id="editButtons">
                                     <button type="submit" name="editar_bloco" class="btn btn-warning w-100">
                                         <i class="fas fa-save me-1"></i>Atualizar Bloco
                                     </button>
-                                    <a href="gerenciar_blocos.php?caminho_id=<?php echo $caminho_id; ?>" class="btn btn-secondary w-100 mt-2">
+                                    <button type="button" class="btn btn-secondary w-100 mt-2" id="btnCancelar">
                                         <i class="fas fa-times me-1"></i>Cancelar
-                                    </a>
-                                <?php else: ?>
-                                    <button type="submit" name="adicionar_bloco" class="btn btn-primary w-100">
-                                        <i class="fas fa-plus me-1"></i>Adicionar Bloco
                                     </button>
-                                <?php endif; ?>
+                                </div>
                             </form>
                         </div>
                     </div>
@@ -1569,10 +1556,15 @@ FOREIGN KEY (bloco_id) REFERENCES blocos(id) ON DELETE SET NULL;</pre>
                                                                     <i class="fas fa-tasks"></i>
                                                                 </a>
                                                                 <?php endif; ?>
-                                                                <a href="gerenciar_blocos.php?caminho_id=<?php echo $caminho_id; ?>&editar=<?php echo $bloco['id']; ?>" 
-                                                                   class="btn btn-outline-warning" title="Editar Bloco">
+                                                                <button type="button" class="btn btn-outline-warning btn-editar" 
+                                                                   title="Editar Bloco"
+                                                                   data-blocoid="<?php echo $bloco['id']; ?>"
+                                                                   data-titulo="<?php echo htmlspecialchars($bloco['titulo']); ?>"
+                                                                   data-nomebloco="<?php echo htmlspecialchars($bloco['nome_bloco']); ?>"
+                                                                   data-ordem="<?php echo $bloco['ordem']; ?>"
+                                                                   data-descricao="<?php echo htmlspecialchars($bloco['descricao']); ?>">
                                                                     <i class="fas fa-edit"></i>
-                                                                </a>
+                                                                </button>
                                                                 <button type="button" class="btn btn-outline-danger" 
                                                                    title="Excluir Bloco"
                                                                    data-bs-toggle="modal" 
@@ -1706,6 +1698,90 @@ FOREIGN KEY (bloco_id) REFERENCES blocos(id) ON DELETE SET NULL;</pre>
                 
                 blocoNome.textContent = nome;
                 confirmDelete.href = `gerenciar_blocos.php?caminho_id=<?php echo $caminho_id; ?>&excluir_bloco=${blocoId}`;
+            });
+
+            // Variável para controlar o estado de edição
+            let editando = false;
+
+            // Elementos do DOM
+            const btnAdicionar = document.getElementById('btnAdicionar');
+            const editButtons = document.getElementById('editButtons');
+            const btnCancelar = document.getElementById('btnCancelar');
+            const formTitle = document.getElementById('formTitle');
+            const formBloco = document.getElementById('formBloco');
+            const tituloInput = document.getElementById('titulo');
+            const nomeBlocoInput = document.getElementById('nome_bloco');
+            const ordemInput = document.getElementById('ordem_bloco');
+            const descricaoInput = document.getElementById('descricao');
+            const blocoIdInput = document.getElementById('bloco_id');
+
+            // Botões de edição
+            const botoesEditar = document.querySelectorAll('.btn-editar');
+
+            // Função para alternar entre modo adicionar e editar
+            function toggleModoEdicao(ativar, dados = null) {
+                if (ativar && dados) {
+                    // Modo edição
+                    editando = true;
+                    btnAdicionar.style.display = 'none';
+                    editButtons.classList.add('show');
+                    formTitle.textContent = 'Editar Bloco';
+                    
+                    // Preencher formulário com dados
+                    tituloInput.value = dados.titulo;
+                    nomeBlocoInput.value = dados.nomeBloco;
+                    ordemInput.value = dados.ordem;
+                    descricaoInput.value = dados.descricao;
+                    blocoIdInput.value = dados.blocoId;
+                } else {
+                    // Modo adição
+                    editando = false;
+                    btnAdicionar.style.display = 'block';
+                    editButtons.classList.remove('show');
+                    formTitle.textContent = 'Adicionar Novo Bloco';
+                    
+                    // Limpar formulário
+                    formBloco.reset();
+                    blocoIdInput.value = '';
+                }
+            }
+
+            // Event listeners para botões de edição
+            botoesEditar.forEach(botao => {
+                botao.addEventListener('click', function() {
+                    const blocoId = this.getAttribute('data-blocoid');
+                    const titulo = this.getAttribute('data-titulo');
+                    const nomeBloco = this.getAttribute('data-nomebloco');
+                    const ordem = this.getAttribute('data-ordem');
+                    const descricao = this.getAttribute('data-descricao');
+
+                    // Se já está editando este mesmo bloco, cancela a edição
+                    if (editando && blocoIdInput.value === blocoId) {
+                        toggleModoEdicao(false);
+                    } else {
+                        // Ativa o modo edição com os dados
+                        toggleModoEdicao(true, {
+                            blocoId: blocoId,
+                            titulo: titulo,
+                            nomeBloco: nomeBloco,
+                            ordem: ordem,
+                            descricao: descricao
+                        });
+                    }
+                });
+            });
+
+            // Event listener para botão cancelar
+            btnCancelar.addEventListener('click', function() {
+                toggleModoEdicao(false);
+            });
+
+            // Resetar para modo adição ao enviar o formulário
+            formBloco.addEventListener('submit', function() {
+                // Pequeno delay para garantir que o submit seja processado
+                setTimeout(() => {
+                    toggleModoEdicao(false);
+                }, 100);
             });
         });
     </script>
