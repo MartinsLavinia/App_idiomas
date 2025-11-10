@@ -98,9 +98,7 @@ function adicionarExercicio($conn, $caminhoId, $blocoId, $ordem, $tipo_exercicio
         case 'listening':
             $categoria = 'audicao';
             break;
-        case 'fala':
-            $categoria = 'fala';
-            break;
+
         case 'texto_livre':
         case 'completar':
             $categoria = 'escrita';
@@ -147,14 +145,7 @@ $post_tipo = $_POST["tipo"] ?? "normal";
 $post_tipo_exercicio = $_POST["tipo_exercicio"] ?? "multipla_escolha";
 $post_pergunta = $_POST["pergunta"] ?? '';
 
-// CAMPOS ESPECÍFICOS PARA FALA
-$post_frase_esperada = $_POST["frase_esperada"] ?? '';
-$post_idioma_fala = $_POST["idioma_fala"] ?? 'en-US';
-$post_pronuncia_fonetica = $_POST["pronuncia_fonetica"] ?? '';
-$post_palavras_chave = $_POST["palavras_chave"] ?? '';
-$post_explicacao_fala = $_POST["explicacao_fala"] ?? '';
-$post_tolerancia_erro = $_POST["tolerancia_erro"] ?? '0.8';
-$post_max_tentativas = $_POST["max_tentativas"] ?? '3';
+
 
 // CAMPOS ESPECÍFICOS PARA LISTENING
 $post_frase_listening = $_POST["frase_listening"] ?? '';
@@ -255,31 +246,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
                 break;
 
-            case 'fala':
-                if (empty($_POST['frase_esperada']) || empty($_POST['idioma_fala'])) {
-                    $mensagem = '<div class="alert alert-danger">Frase esperada e idioma são obrigatórios para exercícios de fala.</div>';
-                } else {
-                    $palavras_chave = !empty($_POST['palavras_chave']) ? 
-                        array_map('trim', explode(',', $_POST['palavras_chave'])) : 
-                        [];
-                    
-                    // Estrutura corrigida para exercícios de fala
-                    $conteudo = json_encode([
-                        'frase_esperada' => $_POST['frase_esperada'],
-                        'texto_para_falar' => $_POST['frase_esperada'],
-                        'idioma' => $_POST['idioma_fala'],
-                        'dicas_pronuncia' => $_POST['explicacao_fala'] ?? '',
-                        'palavras_chave' => $palavras_chave,
-                        'contexto' => 'Exercício de pronúncia',
-                        'pronuncia_fonetica' => $_POST['pronuncia_fonetica'] ?? '',
-                        'tolerancia_erro' => floatval($_POST['tolerancia_erro'] ?? 0.8),
-                        'max_tentativas' => intval($_POST['max_tentativas'] ?? 3),
-                        'tipo_exercicio' => 'fala'
-                    ], JSON_UNESCAPED_UNICODE);
-                    
-                    $sucesso_insercao = true;
-                }
-                break;
+
 
             case 'listening':
                 if (empty($_POST['frase_listening']) || empty($_POST['listening_opcao1']) || empty($_POST['listening_opcao2']) || !isset($_POST['listening_alt_correta'])) {
@@ -384,13 +351,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 
                 // Limpar apenas os campos do formulário, não todos os POST
                 $_POST['pergunta'] = '';
-                $_POST['frase_esperada'] = '';
+
                 $_POST['frase_listening'] = '';
                 $_POST['resposta_esperada'] = '';
                 $_POST['frase_completar'] = '';
                 $_POST['resposta_completar'] = '';
                 $_POST['explicacao'] = '';
-                $_POST['explicacao_fala'] = '';
                 $_POST['explicacao_listening'] = '';
                 
                 // Manter os selects preenchidos
@@ -888,88 +854,7 @@ $database->closeConnection();
         border: 1px dashed #dee2e6;
     }
 
-    .microphone-btn {
-        background: linear-gradient(135deg, #28a745, #20c997);
-        border: none;
-        color: white;
-        border-radius: 50%;
-        width: 60px;
-        height: 60px;
-        font-size: 1.5rem;
-        transition: all 0.3s ease;
-    }
 
-    .microphone-btn:hover {
-        transform: scale(1.1);
-        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
-    }
-
-    .microphone-btn.listening {
-        background: linear-gradient(135deg, #dc3545, #e83e8c);
-        animation: pulse 1.5s infinite;
-    }
-
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-        100% { transform: scale(1); }
-    }
-
-    .speech-status {
-        padding: 10px;
-        border-radius: 8px;
-        margin: 10px 0;
-        text-align: center;
-    }
-
-    .speech-listening {
-        background: #fff3cd;
-        border: 1px solid #ffeaa7;
-        color: #856404;
-    }
-
-    .speech-success {
-        background: #d1edff;
-        border: 1px solid #b3d9ff;
-        color: #004085;
-    }
-
-    .speech-error {
-        background: #f8d7da;
-        border: 1px solid #f5c6cb;
-        color: #721c24;
-    }
-
-    .microphone-permission {
-        background: #fff3cd;
-        border: 1px solid #ffeaa7;
-        border-radius: 8px;
-        padding: 15px;
-        margin: 10px 0;
-    }
-
-    .microphone-permission h5 {
-        color: #856404;
-        margin-bottom: 10px;
-    }
-
-    .microphone-permission ol {
-        text-align: left;
-        margin-bottom: 10px;
-    }
-
-    .microphone-permission li {
-        margin-bottom: 5px;
-    }
-
-    .permission-granted {
-        background: #d1edff;
-        border: 1px solid #b3d9ff;
-        border-radius: 8px;
-        padding: 15px;
-        margin: 10px 0;
-        color: #004085;
-    }
     </style>
 </head>
 <body>
@@ -1116,7 +1001,6 @@ $database->closeConnection();
                                 <option value="multipla_escolha" <?php echo ($post_tipo_exercicio == "multipla_escolha") ? "selected" : ""; ?>>Múltipla Escolha</option>
                                 <option value="texto_livre" <?php echo ($post_tipo_exercicio == "texto_livre") ? "selected" : ""; ?>>Texto Livre (Completar)</option>
                                 <option value="completar" <?php echo ($post_tipo_exercicio == "completar") ? "selected" : ""; ?>>Completar Frase</option>
-                                <option value="fala" <?php echo ($post_tipo_exercicio == "fala") ? "selected" : ""; ?>>Exercício de Fala (Speaking)</option>
                                 <option value="listening" <?php echo ($post_tipo_exercicio == "listening") ? "selected" : ""; ?>>Exercício de Listening</option>
 
                             </select>
@@ -1129,10 +1013,10 @@ $database->closeConnection();
                         </div>
 
                         <!-- Campos Dinâmicos -->
-                        <div id="conteudo-campos">
+                        <div id="conteudo-campos" style="display: none;">
                             <div id="campos-normal">
                                 <!-- Campos para Múltipla Escolha -->
-                                <div id="campos-multipla" class="subtipo-campos">
+                                <div id="campos-multipla" class="subtipo-campos" style="display: none;">
                                     <h5>Configuração - Múltipla Escolha</h5>
                                     <div class="mb-3">
                                         <label class="form-label">Alternativas</label>
@@ -1173,7 +1057,7 @@ $database->closeConnection();
                                 </div>
 
                                 <!-- Campos para Texto Livre -->
-                                <div id="campos-texto" class="subtipo-campos">
+                                <div id="campos-texto" class="subtipo-campos" style="display: none;">
                                     <h5>Configuração - Texto Livre</h5>
                                     <div class="mb-3">
                                         <label for="resposta_esperada" class="form-label">Resposta Esperada *</label>
@@ -1191,7 +1075,7 @@ $database->closeConnection();
                                 </div>
 
                                 <!-- Campos para Completar Frase -->
-                                <div id="campos-completar" class="subtipo-campos">
+                                <div id="campos-completar" class="subtipo-campos" style="display: none;">
                                     <h5>Configuração - Completar Frase</h5>
                                     <div class="mb-3">
                                         <label for="frase_completar" class="form-label">Frase para Completar *</label>
@@ -1216,108 +1100,8 @@ $database->closeConnection();
                                         <input type="text" class="form-control" id="placeholder_completar" name="placeholder_completar" value="<?php echo htmlspecialchars($post_placeholder_completar); ?>">
                                     </div>
                                 </div>
-
-                                <!-- Campos para Exercício de Fala -->
-                                <div id="campos-fala" class="subtipo-campos">
-                                    <h5>Configuração - Exercício de Fala (Speaking)</h5>
-                                    
-                                    <div class="alert alert-info">
-                                        <i class="fas fa-info-circle me-2"></i>
-                                        <strong>Exercício de Pronúncia:</strong> Os alunos praticarão falando a frase e o sistema avaliará a pronúncia.
-                                    </div>
-
-                                    <!-- Status da Permissão do Microfone -->
-                                    <div id="microfone-status" class="mb-3">
-                                        <div class="permission-granted">
-                                            <i class="fas fa-microphone me-2"></i>
-                                            <strong>Microfone Permitido!</strong> O sistema está pronto para testar exercícios de fala.
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        <label for="frase_esperada" class="form-label">Frase Esperada para Pronúncia *</label>
-                                        <textarea class="form-control" id="frase_esperada" name="frase_esperada" rows="3" 
-                                                  placeholder="Digite a frase que o aluno deve pronunciar"><?php echo htmlspecialchars($post_frase_esperada); ?></textarea>
-                                        <div class="form-text">A frase exata que o aluno deve falar para ser considerada correta.</div>
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        <label for="idioma_fala" class="form-label">Idioma da Pronúncia *</label>
-                                        <select class="form-select" id="idioma_fala" name="idioma_fala">
-                                            <option value="en-US" <?php echo ($post_idioma_fala == 'en-US') ? 'selected' : ''; ?>>Inglês Americano</option>
-                                            <option value="en-GB" <?php echo ($post_idioma_fala == 'en-GB') ? 'selected' : ''; ?>>Inglês Britânico</option>
-                                            <option value="es-ES" <?php echo ($post_idioma_fala == 'es-ES') ? 'selected' : ''; ?>>Espanhol</option>
-                                            <option value="fr-FR" <?php echo ($post_idioma_fala == 'fr-FR') ? 'selected' : ''; ?>>Francês</option>
-                                            <option value="de-DE" <?php echo ($post_idioma_fala == 'de-DE') ? 'selected' : ''; ?>>Alemão</option>
-                                            <option value="pt-BR" <?php echo ($post_idioma_fala == 'pt-BR') ? 'selected' : ''; ?>>Português Brasileiro</option>
-                                        </select>
-                                        <div class="form-text">Selecione o idioma para o reconhecimento de voz.</div>
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        <label for="pronuncia_fonetica" class="form-label">Pronúncia Fonética (Opcional)</label>
-                                        <input type="text" class="form-control" id="pronuncia_fonetica" name="pronuncia_fonetica" 
-                                               placeholder="Ex: /hɛˈloʊ/ para 'Hello'" value="<?php echo htmlspecialchars($post_pronuncia_fonetica); ?>">
-                                        <div class="form-text">Transcrição fonética para referência (IPA).</div>
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        <label for="palavras_chave" class="form-label">Palavras-Chave Importantes (Opcional)</label>
-                                        <input type="text" class="form-control" id="palavras_chave" name="palavras_chave" 
-                                               placeholder="palavra1, palavra2, palavra3" value="<?php echo htmlspecialchars($post_palavras_chave); ?>">
-                                        <div class="form-text">Separe por vírgula as palavras mais importantes para a avaliação.</div>
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        <label for="explicacao_fala" class="form-label">Explicação e Dicas de Pronúncia</label>
-                                        <textarea class="form-control" id="explicacao_fala" name="explicacao_fala" rows="3" 
-                                                  placeholder="Dicas para melhorar a pronúncia..."><?php echo htmlspecialchars($post_explicacao_fala); ?></textarea>
-                                        <div class="form-text">Explicação que aparecerá após o aluno completar o exercício.</div>
-                                    </div>
-                                    
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="tolerancia_erro" class="form-label">Tolerância de Erro</label>
-                                                <select class="form-select" id="tolerancia_erro" name="tolerancia_erro">
-                                                    <option value="0.9" <?php echo ($post_tolerancia_erro == '0.9') ? 'selected' : ''; ?>>Alta (90%) - Mais fácil</option>
-                                                    <option value="0.8" <?php echo ($post_tolerancia_erro == '0.8') ? 'selected' : ''; ?>>Média (80%)</option>
-                                                    <option value="0.7" <?php echo ($post_tolerancia_erro == '0.7') ? 'selected' : ''; ?>>Baixa (70%) - Mais difícil</option>
-                                                </select>
-                                                <div class="form-text">Quão precisa a pronúncia precisa ser.</div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="max_tentativas" class="form-label">Máximo de Tentativas</label>
-                                                <select class="form-select" id="max_tentativas" name="max_tentativas">
-                                                    <option value="1" <?php echo ($post_max_tentativas == '1') ? 'selected' : ''; ?>>1 tentativa</option>
-                                                    <option value="3" <?php echo ($post_max_tentativas == '3') ? 'selected' : ''; ?>>3 tentativas</option>
-                                                    <option value="5" <?php echo ($post_max_tentativas == '5') ? 'selected' : ''; ?>>5 tentativas</option>
-                                                    <option value="999" <?php echo ($post_max_tentativas == '999') ? 'selected' : ''; ?>>Ilimitado</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Preview do Exercício de Fala -->
-                                    <div class="mb-3">
-                                        <label class="form-label">Prévia do Exercício de Fala</label>
-                                        <div class="card bg-light">
-                                            <div class="card-body">
-                                                <div id="previewFala" class="text-center">
-                                                    <p class="text-muted">Digite uma frase acima para ver a prévia</p>
-                                                </div>
-                                                <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="testarReconhecimentoFala()">
-                                                    <i class="fas fa-microphone me-1"></i>Testar Reconhecimento de Voz
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
                                 <!-- Campos para Listening -->
-                                <div id="campos-listening" class="subtipo-campos">
+                                <div id="campos-listening" class="subtipo-campos" style="display: none;">
                                     <h5>Configuração - Exercício de Listening</h5>
                                     
                                     <div class="mb-3">
@@ -1386,7 +1170,7 @@ $database->closeConnection();
                                 </div>
 
                                 <!-- Campos para Exercício de Audição -->
-                                <div id="campos-audicao" class="subtipo-campos">
+                                <div id="campos-audicao" class="subtipo-campos" style="display: none;">
                                     <h5>Configuração - Exercício de Audição</h5>
                                     <div class="mb-3">
                                         <label for="audio_url" class="form-label">URL do Áudio *</label>
@@ -1407,7 +1191,7 @@ $database->closeConnection();
                             </div>
 
                             <!-- Campos para Tipo Especial -->
-                            <div id="campos-especial" class="subtipo-campos">
+                            <div id="campos-especial" class="subtipo-campos" style="display: none;">
                                 <h5>Configuração - Exercício Especial (Vídeo/Áudio)</h5>
                                 <div class="mb-3">
                                     <label for="link_video" class="form-label">Link do Vídeo/Áudio (YouTube, Vimeo, etc.) *</label>
@@ -1420,7 +1204,7 @@ $database->closeConnection();
                             </div>
 
                             <!-- Campos para Tipo Quiz -->
-                            <div id="campos-quiz" class="subtipo-campos">
+                            <div id="campos-quiz" class="subtipo-campos" style="display: none;">
                                 <h5>Configuração - Quiz</h5>
                                 <div class="mb-3">
                                     <label for="quiz_id" class="form-label">ID do Quiz *</label>
@@ -1476,7 +1260,6 @@ $database->closeConnection();
         const camposMultipla = document.getElementById("campos-multipla");
         const camposTexto = document.getElementById("campos-texto");
         const camposCompletar = document.getElementById("campos-completar");
-        const camposFala = document.getElementById("campos-fala");
         const camposAudicao = document.getElementById("campos-audicao");
         const camposListening = document.getElementById("campos-listening");
 
@@ -1496,16 +1279,18 @@ $database->closeConnection();
         }
 
         function atualizarCampos() {
-            // Esconder todos os campos principais
+            const conteudoCampos = document.getElementById('conteudo-campos');
+            
+            // Esconder container principal
+            conteudoCampos.style.display = "none";
+            
+            // Esconder todos os campos
             camposNormal.style.display = "none";
             camposEspecial.style.display = "none";
             camposQuiz.style.display = "none";
-            
-            // Esconder todos os subcampos
             camposMultipla.style.display = "none";
             camposTexto.style.display = "none";
             camposCompletar.style.display = "none";
-            camposFala.style.display = "none";
             camposAudicao.style.display = "none";
             camposListening.style.display = "none";
 
@@ -1513,8 +1298,6 @@ $database->closeConnection();
             setRequired(document.getElementById('resposta_esperada'), false);
             setRequired(document.getElementById('frase_completar'), false);
             setRequired(document.getElementById('resposta_completar'), false);
-            setRequired(document.getElementById('frase_esperada'), false);
-            setRequired(document.getElementById('idioma_fala'), false);
             setRequired(document.getElementById('frase_listening'), false);
             setRequired(document.querySelector('input[name="listening_opcao1"]'), false);
             setRequired(document.querySelector('input[name="listening_opcao2"]'), false);
@@ -1523,49 +1306,45 @@ $database->closeConnection();
             setRequired(document.getElementById('link_video'), false);
             setRequired(document.getElementById('pergunta_extra'), false);
 
-            if (tipoSelect.value === "normal") {
-                camposNormal.style.display = "block";
+            // Mostrar campos apenas se tipo e subtipo estiverem selecionados
+            if (tipoSelect.value && tipoExercicioSelect.value) {
+                conteudoCampos.style.display = "block";
                 
-                switch (tipoExercicioSelect.value) {
-                    case "multipla_escolha":
-                        camposMultipla.style.display = "block";
-                        break;
-                    case "texto_livre":
-                        camposTexto.style.display = "block";
-                        setRequired(document.getElementById('resposta_esperada'), true);
-                        break;
-                    case "completar":
-                        camposCompletar.style.display = "block";
-                        setRequired(document.getElementById('frase_completar'), true);
-                        setRequired(document.getElementById('resposta_completar'), true);
-                        break;
-                    case "fala":
-                        camposFala.style.display = "block";
-                        setRequired(document.getElementById('frase_esperada'), true);
-                        setRequired(document.getElementById('idioma_fala'), true);
-                        // Verificar permissão quando mostrar campos de fala
-                        setTimeout(() => {
-                            verificarPermissaoMicrofoneAuto();
-                        }, 500);
-                        break;
-                    case "listening":
-                        camposListening.style.display = "block";
-                        setRequired(document.getElementById('frase_listening'), true);
-                        setRequired(document.querySelector('input[name="listening_opcao1"]'), true);
-                        setRequired(document.querySelector('input[name="listening_opcao2"]'), true);
-                        break;
-                    case "audicao":
-                        camposAudicao.style.display = "block";
-                        setRequired(document.getElementById('audio_url'), true);
-                        setRequired(document.getElementById('resposta_audio_correta'), true);
-                        break;
+                if (tipoSelect.value === "normal") {
+                    camposNormal.style.display = "block";
+                    
+                    switch (tipoExercicioSelect.value) {
+                        case "multipla_escolha":
+                            camposMultipla.style.display = "block";
+                            break;
+                        case "texto_livre":
+                            camposTexto.style.display = "block";
+                            setRequired(document.getElementById('resposta_esperada'), true);
+                            break;
+                        case "completar":
+                            camposCompletar.style.display = "block";
+                            setRequired(document.getElementById('frase_completar'), true);
+                            setRequired(document.getElementById('resposta_completar'), true);
+                            break;
+                        case "listening":
+                            camposListening.style.display = "block";
+                            setRequired(document.getElementById('frase_listening'), true);
+                            setRequired(document.querySelector('input[name="listening_opcao1"]'), true);
+                            setRequired(document.querySelector('input[name="listening_opcao2"]'), true);
+                            break;
+                        case "audicao":
+                            camposAudicao.style.display = "block";
+                            setRequired(document.getElementById('audio_url'), true);
+                            setRequired(document.getElementById('resposta_audio_correta'), true);
+                            break;
+                    }
+                } else if (tipoSelect.value === "especial") {
+                    camposEspecial.style.display = "block";
+                    setRequired(document.getElementById('link_video'), true);
+                    setRequired(document.getElementById('pergunta_extra'), true);
+                } else if (tipoSelect.value === "quiz") {
+                    camposQuiz.style.display = "block";
                 }
-            } else if (tipoSelect.value === "especial") {
-                camposEspecial.style.display = "block";
-                setRequired(document.getElementById('link_video'), true);
-                setRequired(document.getElementById('pergunta_extra'), true);
-            } else if (tipoSelect.value === "quiz") {
-                camposQuiz.style.display = "block";
             }
         }
 
@@ -1578,34 +1357,6 @@ $database->closeConnection();
         if (initialCaminhoId) {
             carregarBlocos(initialCaminhoId, <?php echo !empty($post_bloco_id) ? $post_bloco_id : 'null'; ?>);
         }
-
-        // Preview automático para fala
-        const fraseFalaInput = document.getElementById('frase_esperada');
-        if (fraseFalaInput) {
-            fraseFalaInput.addEventListener('input', function() {
-                const preview = document.getElementById('previewFala');
-                if (this.value) {
-                    preview.innerHTML = `
-                        <div class="alert alert-light">
-                            <strong>Exercício:</strong> Pronuncie a frase abaixo
-                            <br><em>"${this.value}"</em>
-                        </div>
-                        <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="testarReconhecimentoFala()">
-                            <i class="fas fa-microphone me-1"></i>Testar Reconhecimento de Voz
-                        </button>
-                    `;
-                } else {
-                    preview.innerHTML = '<p class="text-muted">Digite uma frase acima para ver a prévia</p>';
-                }
-            });
-        }
-
-        // Verificar permissão automaticamente ao carregar a página
-        setTimeout(() => {
-            if (document.getElementById('campos-fala').style.display !== 'none') {
-                verificarPermissaoMicrofoneAuto();
-            }
-        }, 1000);
     });
     
     function adicionarAlternativa() {
@@ -1625,274 +1376,7 @@ $database->closeConnection();
         container.appendChild(novaAlternativa);
     }
 
-    // Função para verificar e solicitar permissão do microfone automaticamente
-    async function verificarPermissaoMicrofoneAuto() {
-        try {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                console.warn('Navegador não suporta acesso ao microfone');
-                atualizarStatusMicrofone('not-supported');
-                return false;
-            }
-            
-            // Tenta acessar o microfone silenciosamente
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                audio: {
-                    echoCancellation: true,
-                    noiseSuppression: true,
-                    autoGainControl: true
-                }
-            });
-            
-            // Libera o stream imediatamente
-            stream.getTracks().forEach(track => track.stop());
-            
-            console.log('Permissão do microfone concedida');
-            atualizarStatusMicrofone('granted');
-            return true;
-            
-        } catch (error) {
-            console.log('Permissão do microfone necessária:', error.name);
-            
-            if (error.name === 'NotAllowedError') {
-                atualizarStatusMicrofone('denied');
-            } else {
-                atualizarStatusMicrofone('error', error.message);
-            }
-            return false;
-        }
-    }
 
-    // Função para atualizar o status visual da permissão
-    function atualizarStatusMicrofone(status, mensagem = '') {
-        const statusElement = document.getElementById('microfone-status');
-        if (!statusElement) return;
-
-        switch(status) {
-            case 'granted':
-                statusElement.innerHTML = `
-                    <div class="permission-granted">
-                        <i class="fas fa-microphone me-2"></i>
-                        <strong>Microfone Permitido!</strong> O sistema está pronto para testar exercícios de fala.
-                    </div>
-                `;
-                break;
-            case 'denied':
-                statusElement.innerHTML = `
-                    <div class="microphone-permission">
-                        <h5><i class="fas fa-microphone-slash me-2"></i>Permissão do Microfone Necessária</h5>
-                        <p>Para usar exercícios de fala, você precisa permitir o acesso ao microfone:</p>
-                        <ol>
-                            <li>Clique no ícone de <strong>cadeado</strong> 🔒 ou <strong>câmera</strong> 📷 na barra de endereços</li>
-                            <li>Procure por "Microfone" ou "Microphone"</li>
-                            <li>Mude para <strong>"Permitir"</strong> ou <strong>"Allow"</strong></li>
-                            <li>Recarregue a página ou <button type="button" class="btn btn-sm btn-outline-primary" onclick="window.location.reload()">Clique aqui para recarregar</button></li>
-                        </ol>
-                        <div class="mt-3">
-                            <button type="button" class="btn btn-warning btn-sm" onclick="solicitarPermissaoMicrofone()">
-                                <i class="fas fa-microphone me-1"></i>Tentar Novamente
-                            </button>
-                        </div>
-                    </div>
-                `;
-                break;
-            case 'not-supported':
-                statusElement.innerHTML = `
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        <strong>Navegador Não Suportado</strong>
-                        <p>Seu navegador não suporta acesso ao microfone. Use Chrome, Edge ou Safari.</p>
-                    </div>
-                `;
-                break;
-            case 'error':
-                statusElement.innerHTML = `
-                    <div class="alert alert-danger">
-                        <i class="fas fa-times me-2"></i>
-                        <strong>Erro no Microfone</strong>
-                        <p>${mensagem}</p>
-                    </div>
-                `;
-                break;
-        }
-    }
-
-    // Função para solicitar permissão explicitamente
-    async function solicitarPermissaoMicrofone() {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            stream.getTracks().forEach(track => track.stop());
-            
-            // Sucesso - recarrega a página
-            window.location.reload();
-        } catch (error) {
-            console.error('Falha ao obter permissão:', error);
-            atualizarStatusMicrofone('denied');
-        }
-    }
-
-    // Função corrigida para testar reconhecimento de fala
-    async function testarReconhecimentoFala() {
-        const frase = document.getElementById('frase_esperada').value;
-        const idioma = document.getElementById('idioma_fala').value;
-        
-        if (!frase) {
-            alert('Digite uma frase primeiro para testar');
-            return;
-        }
-        
-        // Verifica permissão primeiro
-        const temPermissao = await verificarPermissaoMicrofoneAuto();
-        if (!temPermissao) {
-            return;
-        }
-        
-        const preview = document.getElementById('previewFala');
-        if (!preview) return;
-        
-        preview.innerHTML = `
-            <div class="alert alert-success">
-                <i class="fas fa-microphone me-2"></i>
-                <strong>Microfone Permitido!</strong> Teste de reconhecimento pronto.
-                <br><small>Frase: "${frase}" | Idioma: ${idioma}</small>
-            </div>
-            <p class="text-muted">Clique no botão abaixo e tente falar a frase</p>
-            <button type="button" class="btn btn-success btn-sm" onclick="iniciarReconhecimentoTeste()">
-                <i class="fas fa-play me-1"></i>Iniciar Teste de Voz
-            </button>
-            <div id="resultadoTeste" class="mt-2"></div>
-        `;
-    }
-
-    let recognitionTeste = null;
-
-    function iniciarReconhecimentoTeste() {
-        const fraseEsperada = document.getElementById('frase_esperada').value;
-        const idioma = document.getElementById('idioma_fala').value;
-        const resultadoDiv = document.getElementById('resultadoTeste');
-        
-        if (!resultadoDiv) return;
-        
-        // Verificar suporte do navegador
-        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-            resultadoDiv.innerHTML = '<div class="alert alert-warning">Seu navegador não suporta reconhecimento de voz. Use Chrome, Edge ou Safari.</div>';
-            return;
-        }
-        
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        recognitionTeste = new SpeechRecognition();
-        
-        recognitionTeste.lang = idioma;
-        recognitionTeste.continuous = false;
-        recognitionTeste.interimResults = false;
-        recognitionTeste.maxAlternatives = 1;
-        
-        resultadoDiv.innerHTML = `
-            <div class="speech-status speech-listening">
-                <i class="fas fa-microphone me-2"></i>Ouvindo... Fale agora!
-                <br><small>Frase esperada: "${fraseEsperada}"</small>
-            </div>
-            <button type="button" class="btn btn-danger btn-sm mt-2" onclick="pararReconhecimentoTeste()">
-                <i class="fas fa-stop me-1"></i>Parar
-            </button>
-        `;
-        
-        recognitionTeste.start();
-        
-        recognitionTeste.onresult = function(event) {
-            const transcript = event.results[0][0].transcript;
-            const confidence = event.results[0][0].confidence;
-            
-            const isCorrect = transcript.toLowerCase().trim() === fraseEsperada.toLowerCase().trim();
-            const similarity = calcularSimilaridade(transcript.toLowerCase(), fraseEsperada.toLowerCase());
-            
-            resultadoDiv.innerHTML = `
-                <div class="speech-status ${isCorrect ? 'speech-success' : 'speech-error'}">
-                    <i class="fas ${isCorrect ? 'fa-check' : 'fa-times'} me-2"></i>
-                    <strong>${isCorrect ? 'Correto!' : 'Precisa melhorar'}</strong>
-                    <br>Você disse: "${transcript}"
-                    <br>Confiança: ${(confidence * 100).toFixed(1)}%
-                    <br>Similaridade: ${(similarity * 100).toFixed(1)}%
-                    ${!isCorrect ? `<br>Esperado: "${fraseEsperada}"` : ''}
-                </div>
-                <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="testarReconhecimentoFala()">
-                    <i class="fas fa-redo me-1"></i>Testar Novamente
-                </button>
-            `;
-        };
-        
-        recognitionTeste.onerror = function(event) {
-            let errorMessage = 'Erro desconhecido';
-            switch(event.error) {
-                case 'not-allowed':
-                    errorMessage = 'Permissão de microfone negada. Permita o acesso ao microfone.';
-                    break;
-                case 'no-speech':
-                    errorMessage = 'Nenhuma fala detectada. Tente novamente.';
-                    break;
-                case 'audio-capture':
-                    errorMessage = 'Nenhum microfone detectado.';
-                    break;
-                case 'network':
-                    errorMessage = 'Erro de rede. Tente novamente.';
-                    break;
-                default:
-                    errorMessage = `Erro: ${event.error}`;
-            }
-            
-            resultadoDiv.innerHTML = `
-                <div class="speech-status speech-error">${errorMessage}</div>
-                <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="testarReconhecimentoFala()">
-                    <i class="fas fa-redo me-1"></i>Tentar Novamente
-                </button>
-            `;
-        };
-        
-        recognitionTeste.onend = function() {
-            console.log('Reconhecimento finalizado');
-        };
-    }
-
-    function pararReconhecimentoTeste() {
-        if (recognitionTeste) {
-            recognitionTeste.stop();
-        }
-    }
-
-    // Função auxiliar para calcular similaridade entre strings
-    function calcularSimilaridade(str1, str2) {
-        const longer = str1.length > str2.length ? str1 : str2;
-        const shorter = str1.length > str2.length ? str2 : str1;
-        
-        if (longer.length === 0) return 1.0;
-        
-        return (longer.length - calcularDistancia(longer, shorter)) / parseFloat(longer.length);
-    }
-
-    function calcularDistancia(s1, s2) {
-        s1 = s1.toLowerCase();
-        s2 = s2.toLowerCase();
-
-        const costs = [];
-        for (let i = 0; i <= s1.length; i++) {
-            let lastValue = i;
-            for (let j = 0; j <= s2.length; j++) {
-                if (i === 0) {
-                    costs[j] = j;
-                } else {
-                    if (j > 0) {
-                        let newValue = costs[j - 1];
-                        if (s1.charAt(i - 1) !== s2.charAt(j - 1)) {
-                            newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
-                        }
-                        costs[j - 1] = lastValue;
-                        lastValue = newValue;
-                    }
-                }
-            }
-            if (i > 0) costs[s2.length] = lastValue;
-        }
-        return costs[s2.length];
-    }
 
     // Função para testar áudio do listening
     async function testarAudio() {
@@ -1985,14 +1469,7 @@ $database->closeConnection();
                 }
                 break;
 
-            case 'fala':
-                const fraseEsperada = document.getElementById('frase_esperada').value;
-                const idiomaFala = document.getElementById('idioma_fala').value; // Adiciona a verificação do idioma
-                if (!fraseEsperada.trim() || !idiomaFala.trim()) {
-                    isValid = false;
-                    errorMessage = 'A frase esperada e o idioma são obrigatórios para exercícios de fala.'; // Mensagem de erro mais específica
-                }
-                break;
+
 
             case 'listening':
                 const fraseListening = document.getElementById('frase_listening').value;

@@ -21,13 +21,35 @@ $nivel_usuario = null;
 $nome_usuario = $_SESSION["nome_usuario"] ?? "usuário";
 $mostrar_selecao_idioma = false;
 
+// Buscar idiomas disponíveis do banco de dados
+$sql_idiomas_disponiveis = "SELECT nome_idioma FROM idiomas ORDER BY nome_idioma ASC";
+$result_idiomas = $conn->query($sql_idiomas_disponiveis);
+$idiomas_disponiveis = [];
+$idiomas_display = []; // Para exibição com acentos
+if ($result_idiomas && $result_idiomas->num_rows > 0) {
+    while ($row = $result_idiomas->fetch_assoc()) {
+        $nome_original = $row['nome_idioma'];
+        $nome_normalizado = str_replace(['ê', 'ã'], ['e', 'a'], $nome_original);
+        $idiomas_disponiveis[] = $nome_normalizado;
+        $idiomas_display[$nome_normalizado] = $nome_original; // Mapear para exibição
+    }
+}
+
+// Buscar todos os idiomas que o usuário já estudou
+$sql_idiomas_usuario = "SELECT idioma, nivel, data_inicio, ultima_atividade FROM progresso_usuario WHERE id_usuario = ? ORDER BY ultima_atividade DESC";
+$stmt_idiomas_usuario = $conn->prepare($sql_idiomas_usuario);
+$stmt_idiomas_usuario->bind_param("i", $id_usuario);
+$stmt_idiomas_usuario->execute();
+$idiomas_usuario = $stmt_idiomas_usuario->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt_idiomas_usuario->close();
+
 // Processa seleção de idioma para usuários sem progresso
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["idioma_inicial"])) {
     $idioma_inicial = $_POST["idioma_inicial"];
     $nivel_inicial = "A1";
    
     // Insere progresso inicial para o usuário
-    $sql_insert_progresso = "INSERT INTO progresso_usuario (id_usuario, idioma, nivel) VALUES (?, ?, ?)";
+    $sql_insert_progresso = "INSERT INTO progresso_usuario (id_usuario, idioma, nivel, data_inicio, ultima_atividade) VALUES (?, ?, ?, NOW(), NOW())";
     $stmt_insert = $conn->prepare($sql_insert_progresso);
     $stmt_insert->bind_param("iss", $id_usuario, $idioma_inicial, $nivel_inicial);
    
@@ -43,6 +65,48 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["idioma_inicial"])) {
     $stmt_insert->close();
 }
 
+// Processa troca de idioma
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["trocar_idioma"])) {
+    $novo_idioma = $_POST["novo_idioma"];
+    
+    // Verifica se o usuário já tem progresso neste idioma
+    $sql_check_progresso = "SELECT COUNT(*) as count FROM progresso_usuario WHERE id_usuario = ? AND idioma = ?";
+    $stmt_check = $conn->prepare($sql_check_progresso);
+    $stmt_check->bind_param("is", $id_usuario, $novo_idioma);
+    $stmt_check->execute();
+    $result_check = $stmt_check->get_result()->fetch_assoc();
+    $stmt_check->close();
+    
+    if ($result_check['count'] > 0) {
+        // Usuário já tem progresso, apenas atualiza última atividade
+        $sql_update_atividade = "UPDATE progresso_usuario SET ultima_atividade = NOW() WHERE id_usuario = ? AND idioma = ?";
+        $stmt_update = $conn->prepare($sql_update_atividade);
+        $stmt_update->bind_param("is", $id_usuario, $novo_idioma);
+        $stmt_update->execute();
+        $stmt_update->close();
+        
+        // Redireciona para o painel com o novo idioma
+        $database->closeConnection();
+        header("Location: painel.php");
+        exit();
+    } else {
+        // Usuário não tem progresso, criar entrada inicial e redirecionar para quiz
+        $sql_insert_novo = "INSERT INTO progresso_usuario (id_usuario, idioma, nivel, data_inicio, ultima_atividade) VALUES (?, ?, 'A1', NOW(), NOW())";
+        $stmt_insert_novo = $conn->prepare($sql_insert_novo);
+        $stmt_insert_novo->bind_param("is", $id_usuario, $novo_idioma);
+        
+        if ($stmt_insert_novo->execute()) {
+            $stmt_insert_novo->close();
+            $database->closeConnection();
+            header("Location: quiz.php?idioma=$novo_idioma");
+            exit();
+        } else {
+            $erro_troca = "Erro ao adicionar novo idioma. Tente novamente.";
+        }
+        $stmt_insert_novo->close();
+    }
+}
+
 // Tenta obter o idioma e o nível da URL (se veio do pop-up de resultados)
 if (isset($_GET["idioma"]) && isset($_GET["nivel_escolhido"])) {
     $idioma_escolhido = $_GET["idioma"];
@@ -56,8 +120,8 @@ if (isset($_GET["idioma"]) && isset($_GET["nivel_escolhido"])) {
     $stmt_update_nivel->close();
 
 } else {
-    // Se não veio da URL, busca o último idioma e nível do banco de dados
-    $sql_progresso = "SELECT idioma, nivel FROM progresso_usuario WHERE id_usuario = ? ORDER BY id DESC LIMIT 1";
+    // Se não veio da URL, busca o último idioma ativo (por última atividade)
+    $sql_progresso = "SELECT idioma, nivel FROM progresso_usuario WHERE id_usuario = ? ORDER BY ultima_atividade DESC LIMIT 1";
     $stmt_progresso = $conn->prepare($sql_progresso);
     $stmt_progresso->bind_param("i", $id_usuario);
     $stmt_progresso->execute();
@@ -358,6 +422,89 @@ $database->closeConnection();
             <a href="flashcards.php" class="list-group-item">
                 <i class="fas fa-layer-group"></i> Flash Cards
             </a>
+            <div class="list-group-item">
+                <div class="dropdown">
+                    <a href="#" class="text-decoration-none text-white d-flex align-items-center" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-language me-2" style="color: var(--amarelo-detalhe); width: 20px; text-align: center;"></i> Trocar Idioma
+                    </a>
+                    <ul class="dropdown-menu">
+                        <?php 
+                        $idiomas_ja_estudados = array_column($idiomas_usuario, 'idioma');
+                        $tem_outros_idiomas = false;
+                        $tem_novos_idiomas = false;
+                        
+
+                        
+                        // Verificar se há outros idiomas já estudados
+                        foreach ($idiomas_usuario as $idioma_user) {
+                            if ($idioma_user['idioma'] !== $idioma_escolhido) {
+                                $tem_outros_idiomas = true;
+                                break;
+                            }
+                        }
+                        
+                        // Verificar se há novos idiomas disponíveis (excluindo todos os já estudados)
+                        foreach ($idiomas_disponiveis as $idioma_disponivel) {
+                            if (!in_array($idioma_disponivel, $idiomas_ja_estudados) && !empty($idioma_disponivel)) {
+                                $tem_novos_idiomas = true;
+                                break;
+                            }
+                        }
+                        ?>
+                        
+                        <!-- Idioma Atual -->
+                        <li><h6 class="dropdown-header">Idioma Atual</h6></li>
+                        <li>
+                            <span class="dropdown-item-text">
+                                <i class="fas fa-check-circle me-2 text-success"></i><?php echo htmlspecialchars($idiomas_display[$idioma_escolhido] ?? $idioma_escolhido); ?> (<?php echo htmlspecialchars($nivel_usuario); ?>)
+                            </span>
+                        </li>
+                        
+                        <?php if ($tem_outros_idiomas || $tem_novos_idiomas): ?>
+                            <li><hr class="dropdown-divider"></li>
+                        <?php endif; ?>
+                        
+                        <?php if ($tem_outros_idiomas): ?>
+                            <li><h6 class="dropdown-header">Meus Outros Idiomas</h6></li>
+                            <?php foreach ($idiomas_usuario as $idioma_user): ?>
+                                <?php if ($idioma_user['idioma'] !== $idioma_escolhido): ?>
+                                    <li>
+                                        <a href="#" class="dropdown-item" onclick="trocarIdiomaAjax('<?php echo htmlspecialchars($idioma_user['idioma']); ?>')">
+                                            <i class="fas fa-exchange-alt me-2"></i><?php echo htmlspecialchars($idiomas_display[$idioma_user['idioma']] ?? $idioma_user['idioma']); ?> (<?php echo htmlspecialchars($idioma_user['nivel']); ?>)
+                                        </a>
+                                    </li>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                            <?php if ($tem_novos_idiomas): ?>
+                                <li><hr class="dropdown-divider"></li>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                        
+                        <?php if ($tem_novos_idiomas): ?>
+                            <li><h6 class="dropdown-header">Adicionar Novo Idioma</h6></li>
+                            <?php foreach ($idiomas_disponiveis as $idioma_disponivel): ?>
+                                <?php 
+                                $ja_estudado = in_array($idioma_disponivel, $idiomas_ja_estudados);
+                                $nao_vazio = !empty($idioma_disponivel);
+
+                                ?>
+                                <?php if (!$ja_estudado && $nao_vazio): ?>
+                                    <li>
+                                        <a href="#" class="dropdown-item" onclick="trocarIdiomaAjax('<?php echo htmlspecialchars($idioma_disponivel); ?>')">
+                                            <i class="fas fa-plus me-2"></i><?php echo htmlspecialchars($idiomas_display[$idioma_disponivel] ?? $idioma_disponivel); ?> (Novo)
+                                        </a>
+                                    </li>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                        
+                        <?php if (!$tem_outros_idiomas && !$tem_novos_idiomas): ?>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><span class="dropdown-item-text text-muted">Nenhum outro idioma disponível</span></li>
+                        <?php endif; ?>
+                    </ul>
+                </div>
+            </div>
             <a href="perfil.php" class="list-group-item">
                 <i class="fas fa-cog"></i> Configurações
             </a>
@@ -387,9 +534,9 @@ $database->closeConnection();
                                     <label for="idioma_inicial" class="form-label">Escolha seu idioma</label>
                                     <select class="form-select" id="idioma_inicial" name="idioma_inicial" required>
                                         <option value="" disabled selected>Selecione um idioma</option>
-                                        <option value="Ingles">Inglês</option>
-                                        <option value="Japones">Japonês</option>
-                                        <option value="Coreano">Coreano</option>
+                                        <?php foreach ($idiomas_disponiveis as $idioma_disp): ?>
+                                            <option value="<?php echo htmlspecialchars($idioma_disp); ?>"><?php echo htmlspecialchars($idiomas_display[$idioma_disp] ?? $idioma_disp); ?></option>
+                                        <?php endforeach; ?>
                                     </select>
                                 </div>
                                 <div class="d-grid gap-2">
@@ -402,7 +549,7 @@ $database->closeConnection();
                     <!-- Painel normal para usuários com progresso -->
                     <div class="card mb-4">
                         <div class="card-header text-center">
-                            <h2>Seu Caminho de Aprendizado em <?php echo htmlspecialchars($idioma_escolhido); ?></h2>
+                            <h2>Seu Caminho de Aprendizado em <?php echo htmlspecialchars($idiomas_display[$idioma_escolhido] ?? $idioma_escolhido); ?></h2>
                         </div>
                         <div class="card-body text-center">
                             <p class="fs-4">Seu nível atual é: <span class="badge bg-success"><?php echo htmlspecialchars($nivel_usuario); ?></span></p>
@@ -1331,12 +1478,57 @@ $database->closeConnection();
         modalBlocos.show();
     };
 
+    // ==================== FUNCIONALIDADES DE TROCA DE IDIOMAS ====================
+    
+    // Função para trocar idioma via AJAX
+    window.trocarIdiomaAjax = function(novoIdioma) {
+        // Mostrar indicador de carregamento na sidebar
+        const sidebarText = document.querySelector('.sidebar .dropdown a');
+        const originalText = sidebarText ? sidebarText.innerHTML : '';
+        if (sidebarText) {
+            sidebarText.innerHTML = '<i class="fas fa-spinner fa-spin me-2" style="color: var(--amarelo-detalhe); width: 20px; text-align: center;"></i> Trocando...';
+        }
+        
+        const formData = new FormData();
+        formData.append('action', 'trocar_idioma');
+        formData.append('idioma', novoIdioma);
+        
+        fetch('../controller/IdiomaController.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Recarregar a página para mostrar o novo idioma
+                window.location.reload();
+            } else if (data.redirect_quiz) {
+                // Redirecionar para o quiz de nivelamento
+                window.location.href = `quiz.php?idioma=${novoIdioma}`;
+            } else {
+                // Restaurar texto em caso de erro
+                if (sidebarText) {
+                    sidebarText.innerHTML = originalText;
+                }
+                alert('Erro: ' + data.message);
+            }
+        })
+        .catch(error => {
+            // Restaurar texto em caso de erro
+            if (sidebarText) {
+                sidebarText.innerHTML = originalText;
+            }
+            console.error('Erro:', error);
+            alert('Erro de conexão. Tente novamente.');
+        });
+    };
+    
     // ==================== FUNCIONALIDADES DE FLASHCARDS ====================
        
     // Função para abrir modal de adicionar palavra
     window.abrirModalAdicionarPalavra = function() {
         document.getElementById('formAdicionarPalavra').reset();
-        document.getElementById('palavraIdioma').value = '<?php echo htmlspecialchars($idioma_escolhido ?? "Ingles"); ?>';
+        document.getElementById('palavraIdioma').value = '<?php echo htmlspecialchars($idioma_escolhido ?? "Inglês"); ?>';
         document.getElementById('palavraNivel').value = '<?php echo htmlspecialchars($nivel_usuario ?? "A1"); ?>';
         modalAdicionarPalavra.show();
     };

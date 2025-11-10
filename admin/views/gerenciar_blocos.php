@@ -1549,12 +1549,14 @@ FOREIGN KEY (bloco_id) REFERENCES blocos(id) ON DELETE SET NULL;</pre>
                                                                    class="btn btn-outline-warning" title="Editar Bloco">
                                                                     <i class="fas fa-edit"></i>
                                                                 </a>
-                                                                <a href="gerenciar_blocos.php?caminho_id=<?php echo $caminho_id; ?>&excluir_bloco=<?php echo $bloco['id']; ?>" 
-                                                                   class="btn btn-outline-danger" 
+                                                                <button type="button" class="btn btn-outline-danger" 
                                                                    title="Excluir Bloco"
-                                                                   onclick="return confirm('Tem certeza que deseja excluir este bloco?')">
+                                                                   data-bs-toggle="modal" 
+                                                                   data-bs-target="#confirmModal"
+                                                                   data-bloco-id="<?php echo $bloco['id']; ?>"
+                                                                   data-bloco-nome="<?php echo htmlspecialchars($bloco['titulo']); ?>">
                                                                     <i class="fas fa-trash"></i>
-                                                                </a>
+                                                                </button>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1638,6 +1640,51 @@ FOREIGN KEY (bloco_id) REFERENCES blocos(id) ON DELETE SET NULL;</pre>
             <i class="fas fa-sign-out-alt"></i>
         </a>
     </nav>
+
+    <!-- Modal de Confirmação -->
+    <div class="modal fade" id="confirmModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                        Confirmar Exclusão
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Tem certeza que deseja excluir o bloco <strong id="blocoNome"></strong>?</p>
+                    <p class="text-muted small mb-0">Esta ação não pode ser desfeita.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Cancelar
+                    </button>
+                    <a href="#" id="confirmDelete" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>Excluir
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Script para modal de confirmação
+        document.addEventListener('DOMContentLoaded', function() {
+            const confirmModal = document.getElementById('confirmModal');
+            const blocoNome = document.getElementById('blocoNome');
+            const confirmDelete = document.getElementById('confirmDelete');
+            
+            confirmModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const blocoId = button.getAttribute('data-bloco-id');
+                const nome = button.getAttribute('data-bloco-nome');
+                
+                blocoNome.textContent = nome;
+                confirmDelete.href = `gerenciar_blocos.php?caminho_id=<?php echo $caminho_id; ?>&excluir_bloco=${blocoId}`;
+            });
+        });
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

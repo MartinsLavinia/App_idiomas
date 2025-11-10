@@ -610,8 +610,8 @@ if ($percentual >= 80) {
             loadingOverlay.classList.remove('d-none');
             loadingOverlay.classList.add('d-flex');
             
-            // Redireciona imediatamente sem delay
-            window.location.href = `painel.php?idioma=<?php echo htmlspecialchars($idioma_quiz); ?>&nivel_escolhido=${nivel}&acertos=<?php echo $acertos; ?>&total=<?php echo $total_perguntas; ?>&percentual=<?php echo $percentual; ?>`;
+            // Redireciona para o painel com o idioma e nível escolhidos
+            window.location.href = `painel.php?idioma=<?php echo htmlspecialchars($idioma_quiz); ?>&nivel_escolhido=${nivel}`;
         }
 
         // Modifica o evento beforeunload para não bloquear quando o redirecionamento é permitido
