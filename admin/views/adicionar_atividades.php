@@ -105,7 +105,6 @@ function adicionarExercicio($conn, $caminhoId, $blocoId, $ordem, $tipo_exercicio
             $categoria = 'audicao';
             break;
 
-        case 'texto_livre':
         case 'completar':
             $categoria = 'escrita';
             break;
@@ -219,21 +218,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
                 break;
 
-            case 'texto_livre':
-                if (empty($_POST['resposta_esperada'])) {
-                    $mensagem = '<div class="alert alert-danger">Resposta esperada é obrigatória.</div>';
-                } else {
-                    $alternativas_aceitas = !empty($_POST['alternativas_aceitas']) ? 
-                        array_map('trim', explode(',', $_POST['alternativas_aceitas'])) : 
-                        [$_POST['resposta_esperada']];
-                    $conteudo = json_encode([
-                        'resposta_correta' => $_POST['resposta_esperada'],
-                        'alternativas_aceitas' => $alternativas_aceitas,
-                        'dica' => $_POST['dica_texto'] ?? ''
-                    ], JSON_UNESCAPED_UNICODE);
-                    $sucesso_insercao = true;
-                }
-                break;
+
 
             case 'completar':
                 if (empty($_POST['frase_completar']) || empty($_POST['resposta_completar'])) {
@@ -259,63 +244,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 if (empty($_POST['frase_listening']) || empty($_POST['listening_opcao1']) || empty($_POST['listening_opcao2']) || !isset($_POST['listening_alt_correta'])) {
                     $mensagem = '<div class="alert alert-danger">Frase, pelo menos 2 opções e a indicação da resposta correta são obrigatórios para listening.</div>';
                 } else {
-                    try {
-                        // Gerar áudio obrigatoriamente
-                        $audio_url = '';
-                        $frase = trim($_POST['frase_listening']);
-                        $idioma = $_POST['idioma_audio'] ?? 'en-us';
-                        
-                        if (file_exists(__DIR__ . '/../../src/Services/AudioService.php')) {
-                            require_once __DIR__ . '/../../src/Services/AudioService.php';
-                            
-                            if (!class_exists('\App\Services\AudioService')) {
-                                spl_autoload_register(function ($class) {
-                                    $file = __DIR__ . '/../../src/' . str_replace(['App\\', '\\'], ['', '/'], $class) . '.php';
-                                    if (file_exists($file)) {
-                                        require $file;
-                                    }
-                                });
-                            }
-                            
-                            $audioService = new \App\Services\AudioService();
-                            $audio_url = $audioService->gerarAudio($frase, $idioma);
-                            
-                            // Verificar se o arquivo foi criado
-                            $audio_path = __DIR__ . '/../../' . ltrim($audio_url, '/');
-                            if (!file_exists($audio_path)) {
-                                throw new Exception('Falha ao criar arquivo de áudio');
-                            }
-                        } else {
-                            throw new Exception('AudioService não encontrado');
-                        }
-                        
-                        $opcoes = [
-                            trim($_POST['listening_opcao1']),
-                            trim($_POST['listening_opcao2'])
-                        ];
-                        
-                        if (!empty($_POST['listening_opcao3'])) $opcoes[] = trim($_POST['listening_opcao3']);
-                        if (!empty($_POST['listening_opcao4'])) $opcoes[] = trim($_POST['listening_opcao4']);
-                        
-                        $resposta_correta_index = (int)($_POST['listening_alt_correta'] ?? 0);
-                        
-                        $conteudo = json_encode([
-                            'frase_original' => $frase,
-                            'audio_url' => $audio_url,
-                            'opcoes' => $opcoes,
-                            'resposta_correta' => $resposta_correta_index,
-                            'explicacao' => $_POST['explicacao_listening'] ?? '',
-                            'transcricao' => $frase,
-                            'dicas_compreensao' => 'Ouça com atenção e foque nas palavras-chave.',
-                            'idioma' => $idioma,
-                            'tipo_exercicio' => 'listening'
-                        ], JSON_UNESCAPED_UNICODE);
-                        
-                        $sucesso_insercao = true;
-                        
-                    } catch (Exception $e) {
-                        $mensagem = '<div class="alert alert-danger">Erro ao processar listening: ' . $e->getMessage() . '</div>';
+                    $frase = trim($_POST['frase_listening']);
+                    $idioma = $_POST['idioma_audio'] ?? 'en-us';
+                    
+                    // Coletar opções (incluindo vazias para manter índices corretos)
+                    $opcoes = [
+                        trim($_POST['listening_opcao1']),
+                        trim($_POST['listening_opcao2']),
+                        !empty($_POST['listening_opcao3']) ? trim($_POST['listening_opcao3']) : '',
+                        !empty($_POST['listening_opcao4']) ? trim($_POST['listening_opcao4']) : ''
+                    ];
+                    
+                    // Remover opções vazias do final
+                    while (count($opcoes) > 2 && end($opcoes) === '') {
+                        array_pop($opcoes);
                     }
+                    
+                    $resposta_correta_index = (int)($_POST['listening_alt_correta'] ?? 0);
+                    
+                    // Validar se o índice da resposta correta é válido
+                    if ($resposta_correta_index >= count($opcoes)) {
+                        $resposta_correta_index = 0; // Fallback para primeira opção
+                    }
+                    
+                    $conteudo = json_encode([
+                        'frase_original' => $frase,
+                        'opcoes' => $opcoes,
+                        'resposta_correta' => $resposta_correta_index,
+                        'explicacao' => $_POST['explicacao_listening'] ?? '',
+                        'transcricao' => $frase,
+                        'dicas_compreensao' => 'Ouça com atenção e foque nas palavras-chave.',
+                        'idioma' => $idioma,
+                        'tipo_exercicio' => 'listening'
+                    ], JSON_UNESCAPED_UNICODE);
+                    
+                    $sucesso_insercao = true;
                 }
                 break;
 
@@ -349,7 +312,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($sucesso_insercao && $conteudo) {
             $exercicio_id = adicionarExercicio($conn, $caminho_id, $bloco_id, $ordem, $tipo_exercicio, $pergunta, $conteudo);
             if ($exercicio_id) {
-                $_SESSION['mensagem_sucesso'] = 'Exercício de ' . $tipo_exercicio . ' adicionado com sucesso!';
+                $tipo_exercicio_display = str_replace('_', ' ', ucfirst($tipo_exercicio));
+                $_SESSION['mensagem_sucesso'] = 'Exercício de ' . $tipo_exercicio_display . ' adicionado com sucesso!';
                 header("Location: adicionar_atividades.php?unidade_id=" . $unidade_id);
                 exit();
             } else {
@@ -1120,7 +1084,6 @@ $database->closeConnection();
                             <label for="tipo_exercicio" class="form-label">Subtipo do Exercício</label>
                             <select class="form-select" id="tipo_exercicio" name="tipo_exercicio" required>
                                 <option value="multipla_escolha" <?php echo ($post_tipo_exercicio == "multipla_escolha") ? "selected" : ""; ?>>Múltipla Escolha</option>
-                                <option value="texto_livre" <?php echo ($post_tipo_exercicio == "texto_livre") ? "selected" : ""; ?>>Texto Livre (Completar)</option>
                                 <option value="completar" <?php echo ($post_tipo_exercicio == "completar") ? "selected" : ""; ?>>Completar Frase</option>
                                 <option value="listening" <?php echo ($post_tipo_exercicio == "listening") ? "selected" : ""; ?>>Exercício de Listening</option>
                             </select>
@@ -1177,23 +1140,7 @@ $database->closeConnection();
                                     </div>
                                 </div>
 
-                                <!-- Campos para Texto Livre -->
-                                <div id="campos-texto" class="subtipo-campos" style="display: none;">
-                                    <h5>Configuração - Texto Livre</h5>
-                                    <div class="mb-3">
-                                        <label for="resposta_esperada" class="form-label">Resposta Esperada *</label>
-                                        <input type="text" class="form-control" id="resposta_esperada" name="resposta_esperada" value="<?php echo htmlspecialchars($post_resposta_esperada); ?>">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="alternativas_aceitas" class="form-label">Alternativas Aceitas (separadas por vírgula)</label>
-                                        <input type="text" class="form-control" id="alternativas_aceitas" name="alternativas_aceitas" value="<?php echo htmlspecialchars($post_alternativas_aceitas); ?>">
-                                        <div class="form-text">Ex: resposta um, resposta dois. Inclua a resposta esperada aqui também.</div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="dica_texto" class="form-label">Dica (Opcional)</label>
-                                        <input type="text" class="form-control" id="dica_texto" name="dica_texto" value="<?php echo htmlspecialchars($post_dica_texto); ?>">
-                                    </div>
-                                </div>
+
 
                                 <!-- Campos para Completar Frase -->
                                 <div id="campos-completar" class="subtipo-campos" style="display: none;">
@@ -1451,10 +1398,7 @@ $database->closeConnection();
                     case "multipla_escolha":
                         if (camposMultipla) camposMultipla.style.display = "block";
                         break;
-                    case "texto_livre":
-                        if (camposTexto) camposTexto.style.display = "block";
-                        setRequired(document.getElementById('resposta_esperada'), true);
-                        break;
+
                     case "completar":
                         if (camposCompletar) camposCompletar.style.display = "block";
                         setRequired(document.getElementById('frase_completar'), true);
@@ -1583,13 +1527,7 @@ $database->closeConnection();
                 }
                 break;
 
-            case 'texto_livre':
-                const respostaEsperada = document.getElementById('resposta_esperada').value;
-                if (!respostaEsperada.trim()) {
-                    isValid = false;
-                    errorMessage = 'A resposta esperada é obrigatória para texto livre.';
-                }
-                break;
+
 
             case 'completar':
                 const fraseCompletar = document.getElementById('frase_completar').value;

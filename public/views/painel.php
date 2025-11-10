@@ -275,6 +275,18 @@ $database->closeConnection();
             margin-bottom: 20px;
             border: 2px solid #e9ecef;
         }
+        
+        /* Garantir que inputs funcionem corretamente */
+        #respostaCompletar, #respostaTextoLivre {
+            pointer-events: auto !important;
+            cursor: text !important;
+            user-select: text !important;
+        }
+        
+        .form-control {
+            pointer-events: auto !important;
+            cursor: text !important;
+        }
 
         .audio-controls {
             display: flex;
@@ -1174,9 +1186,20 @@ $database->closeConnection();
             conteudo_tipo_exercicio: conteudo.tipo_exercicio,
             conteudo: conteudo,
             opcoes: conteudo.opcoes,
+            opcoes_length: conteudo.opcoes ? conteudo.opcoes.length : 'undefined',
             resposta_correta: conteudo.resposta_correta,
-            audio_url: conteudo.audio_url
+            frase_original: conteudo.frase_original
         });
+        
+        // Log específico para listening
+        if (tipoExercicio === 'listening' || tipoExercicio === 'audicao') {
+            console.log('LISTENING DEBUG:', {
+                tem_opcoes: !!(conteudo.opcoes),
+                opcoes_array: Array.isArray(conteudo.opcoes),
+                opcoes_content: conteudo.opcoes,
+                opcoes_filtradas: conteudo.opcoes ? conteudo.opcoes.filter(o => o && o.trim() !== '') : []
+            });
+        }
 
         // RENDERIZAR CONTEÚDO BASEADO NO TIPO CORRETO
         if (tipoExercicio === "multipla_escolha") {
@@ -1187,13 +1210,15 @@ $database->closeConnection();
             htmlConteudo += renderizarCompletar(conteudo);
 
         } else if (tipoExercicio === "listening" || tipoExercicio === "audicao") {
-            // Para listening, verificar qual estrutura usar
-            if (conteudo.opcoes && Array.isArray(conteudo.opcoes)) {
+            // Para listening, sempre usar renderizarListeningOpcoes se tiver opcoes
+            if (conteudo.opcoes && Array.isArray(conteudo.opcoes) && conteudo.opcoes.length > 0) {
                 htmlConteudo += renderizarListeningOpcoes(conteudo);
             } else if (conteudo.alternativas && Array.isArray(conteudo.alternativas)) {
                 htmlConteudo += renderizarMultiplaEscolha(conteudo);
             } else {
-                htmlConteudo += renderizarListening(conteudo);
+                // Fallback para exercícios mal configurados
+                htmlConteudo += `<div class="alert alert-warning">Exercício de listening mal configurado. Estrutura de opções não encontrada.</div>`;
+                console.error('Exercício de listening sem opções válidas:', conteudo);
             }
         } else {
             // Fallback - usar múltipla escolha se tiver alternativas
@@ -1286,16 +1311,21 @@ $database->closeConnection();
                 <div class="listening-options">
         `;
         
-        opcoes.forEach((opcao, index) => {
-            if (opcao && opcao.trim() !== '') {
-                html += `
-                    <button type="button" class="btn btn-option btn-resposta" 
-                            data-id="${index}" onclick="selecionarResposta(this)">
-                        ${opcao.trim()}
-                    </button>
-                `;
-            }
-        });
+        // Garantir que as opções sejam renderizadas mesmo se algumas estiverem vazias
+        if (opcoes && opcoes.length > 0) {
+            opcoes.forEach((opcao, index) => {
+                if (opcao && opcao.trim() !== '') {
+                    html += `
+                        <button type="button" class="btn btn-option btn-resposta" 
+                                data-id="${index}" onclick="selecionarResposta(this)">
+                            ${opcao.trim()}
+                        </button>
+                    `;
+                }
+            });
+        } else {
+            html += '<p class="text-danger">Erro: Nenhuma opção encontrada para este exercício.</p>';
+        }
         
         html += `</div></div>`;
         return html;
@@ -1347,10 +1377,10 @@ $database->closeConnection();
     function renderizarMultiplaEscolha(conteudo) {
         let html = '<div class="d-grid gap-2">';
         if (conteudo.alternativas && Array.isArray(conteudo.alternativas)) {
-            conteudo.alternativas.forEach(alt => {
+            conteudo.alternativas.forEach((alt, index) => {
                 html += `
                     <button type="button" class="btn btn-outline-primary btn-resposta text-start" 
-                            data-id="${alt.id || alt.texto}" onclick="selecionarResposta(this)">
+                            data-id="${index}" onclick="selecionarResposta(this)">
                         ${alt.texto}
                     </button>
                 `;
@@ -1377,13 +1407,13 @@ $database->closeConnection();
         const placeholderCompletar = conteudo.placeholder || 'Digite sua resposta...';
         const dica = conteudo.dica || '';
         
-        const fraseRenderizada = fraseCompletar.replace(/_____+/g, 
-            `<input type="text" class="form-control d-inline-block w-auto mx-1" id="respostaCompletar" placeholder="${placeholderCompletar}" value="">`);
-
         return `
             <div class="mb-3">
                 <label for="respostaCompletar" class="form-label">Complete a frase:</label>
-                <p class="fs-5">${fraseRenderizada}</p>
+                <div class="mb-3">
+                    <p class="fs-5 mb-3">${fraseCompletar}</p>
+                    <input type="text" class="form-control" id="respostaCompletar" placeholder="${placeholderCompletar}" style="pointer-events: auto; cursor: text;">
+                </div>
                 ${dica ? `<div class="form-text text-muted"><i class="fas fa-lightbulb me-1"></i>${dica}</div>` : ''}
             </div>
         `;
@@ -1432,7 +1462,15 @@ $database->closeConnection();
         });
         button.classList.remove("btn-outline-primary");
         button.classList.add("selected", "btn-primary");
-        respostaSelecionada = button.dataset.id;
+        
+        // Para múltipla escolha, usar o índice numérico
+        if (button.dataset.id && !isNaN(button.dataset.id)) {
+            respostaSelecionada = parseInt(button.dataset.id);
+        } else {
+            respostaSelecionada = button.dataset.id;
+        }
+        
+        console.log('Resposta processada:', respostaSelecionada);
     };
 
     window.enviarResposta = function() {
@@ -1446,6 +1484,14 @@ $database->closeConnection();
             const textareaResposta = document.getElementById('respostaTextoLivre');
             if (textareaResposta) {
                 respostaSelecionada = textareaResposta.value.trim();
+            }
+        }
+        
+        // Para exercícios de completar, pegar valor do input
+        if (!respostaSelecionada) {
+            const inputCompletar = document.getElementById('respostaCompletar');
+            if (inputCompletar) {
+                respostaSelecionada = inputCompletar.value.trim();
             }
         }
         

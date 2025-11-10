@@ -50,10 +50,14 @@ try {
     error_log('Processando exercício ID: ' . $exercicio_id . ', Categoria: ' . $categoria . ', Tipo: ' . $tipo);
     
     // Processar resposta baseado no tipo
-    if ($categoria === 'audicao' || $tipo === 'listening' || (isset($conteudo['tipo_exercicio']) && $conteudo['tipo_exercicio'] === 'listening')) {
+    if ($categoria === 'audicao' || $tipo === 'listening' || (isset($conteudo['tipo_exercicio']) && $conteudo['tipo_exercicio'] === 'listening') || isset($conteudo['opcoes'])) {
         $resultado = processarListening($resposta, $conteudo);
     } else if ($categoria === 'fala') {
         $resultado = processarFala($resposta, $conteudo);
+    } else if (isset($conteudo['resposta_correta']) && !isset($conteudo['alternativas'])) {
+        $resultado = processarTextoLivre($resposta, $conteudo);
+    } else if (isset($conteudo['frase_completar'])) {
+        $resultado = processarCompletar($resposta, $conteudo);
     } else {
         $resultado = processarMultiplaEscolha($resposta, $conteudo);
     }
@@ -88,14 +92,26 @@ function processarListening($resposta, $conteudo) {
     error_log('Processando listening - Resposta: ' . $resposta);
     error_log('Conteúdo: ' . json_encode($conteudo));
     
-    // Verificar estrutura de opções (novo formato)
-    if (isset($conteudo['opcoes']) && isset($conteudo['resposta_correta'])) {
+    // Verificar estrutura de opções (formato listening)
+    if (isset($conteudo['opcoes']) && is_array($conteudo['opcoes'])) {
         $resposta_index = intval($resposta);
-        $correto_index = intval($conteudo['resposta_correta']);
-        $correto = ($resposta_index === $correto_index);
+        $opcoes = array_values(array_filter($conteudo['opcoes'])); // Remove opções vazias
         
-        $opcoes = $conteudo['opcoes'];
-        $resposta_texto = isset($opcoes[$resposta_index]) ? $opcoes[$resposta_index] : 'Opção inválida';
+        // Determinar resposta correta
+        $correto_index = isset($conteudo['resposta_correta']) ? intval($conteudo['resposta_correta']) : 0;
+        
+        // Validar se o índice da resposta é válido
+        if ($resposta_index < 0 || $resposta_index >= count($opcoes)) {
+            return [
+                'success' => true,
+                'correto' => false,
+                'explicacao' => '❌ Resposta inválida selecionada.',
+                'alternativa_correta_id' => $correto_index
+            ];
+        }
+        
+        $correto = ($resposta_index === $correto_index);
+        $resposta_texto = $opcoes[$resposta_index];
         $correta_texto = isset($opcoes[$correto_index]) ? $opcoes[$correto_index] : 'Opção não encontrada';
         
         // Obter texto original do áudio
@@ -116,7 +132,18 @@ function processarListening($resposta, $conteudo) {
         ];
     }
     
-    return processarMultiplaEscolha($resposta, $conteudo);
+    // Se não tem estrutura de opções, tentar alternativas
+    if (isset($conteudo['alternativas']) && is_array($conteudo['alternativas'])) {
+        return processarMultiplaEscolha($resposta, $conteudo);
+    }
+    
+    // Fallback - exercício mal configurado
+    return [
+        'success' => true,
+        'correto' => false,
+        'explicacao' => '❌ Exercício de listening mal configurado - estrutura de opções não encontrada.',
+        'alternativa_correta_id' => 0
+    ];
 }
 
 function processarFala($resposta, $conteudo) {
@@ -179,6 +206,56 @@ function processarMultiplaEscolha($resposta, $conteudo) {
         'alternativa_correta_id' => $correto_index,
         'resposta_selecionada' => $resposta_texto,
         'resposta_correta' => $correta_texto
+    ];
+}
+
+function processarTextoLivre($resposta, $conteudo) {
+    $resposta_correta = $conteudo['resposta_correta'] ?? '';
+    $alternativas_aceitas = $conteudo['alternativas_aceitas'] ?? [$resposta_correta];
+    
+    $resposta_normalizada = strtolower(trim($resposta));
+    $correto = false;
+    
+    foreach ($alternativas_aceitas as $alternativa) {
+        if (strtolower(trim($alternativa)) === $resposta_normalizada) {
+            $correto = true;
+            break;
+        }
+    }
+    
+    return [
+        'success' => true,
+        'correto' => $correto,
+        'explicacao' => $correto ? 
+            '✅ Correto! Sua resposta está correta.' : 
+            '❌ Incorreto. A resposta esperada é: "' . $resposta_correta . '"',
+        'resposta_correta' => $resposta_correta,
+        'resposta_usuario' => $resposta
+    ];
+}
+
+function processarCompletar($resposta, $conteudo) {
+    $resposta_correta = $conteudo['resposta_correta'] ?? '';
+    $alternativas_aceitas = $conteudo['alternativas_aceitas'] ?? [$resposta_correta];
+    
+    $resposta_normalizada = strtolower(trim($resposta));
+    $correto = false;
+    
+    foreach ($alternativas_aceitas as $alternativa) {
+        if (strtolower(trim($alternativa)) === $resposta_normalizada) {
+            $correto = true;
+            break;
+        }
+    }
+    
+    return [
+        'success' => true,
+        'correto' => $correto,
+        'explicacao' => $correto ? 
+            '✅ Correto! Você completou a frase corretamente.' : 
+            '❌ Incorreto. A resposta correta é: "' . $resposta_correta . '"',
+        'resposta_correta' => $resposta_correta,
+        'resposta_usuario' => $resposta
     ];
 }
 

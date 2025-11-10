@@ -62,16 +62,52 @@ if (!$caminho_info) {
     exit();
 }
 
-// Consulta para obter exercícios
+// Consulta para obter exercícios com tipo determinado
 $exercicios = [];
-$sql_exercicios = "SELECT id, ordem, tipo, pergunta FROM exercicios WHERE caminho_id = ? ORDER BY ordem";
+$sql_exercicios = "SELECT id, ordem, tipo, pergunta, conteudo FROM exercicios WHERE caminho_id = ? ORDER BY ordem";
 $stmt_exercicios = $conn->prepare($sql_exercicios);
 
 if ($stmt_exercicios) {
     $stmt_exercicios->bind_param("i", $caminho_id);
     $stmt_exercicios->execute();
     $result_exercicios = $stmt_exercicios->get_result();
-    $exercicios = $result_exercicios->fetch_all(MYSQLI_ASSOC);
+    $exercicios_raw = $result_exercicios->fetch_all(MYSQLI_ASSOC);
+    
+    // Processar cada exercício para determinar o tipo correto
+    foreach ($exercicios_raw as $exercicio) {
+        $conteudo = json_decode($exercicio['conteudo'], true) ?: [];
+        
+        // Determinar tipo real do exercício
+        $tipo_real = 'Múltipla Escolha';
+        if (isset($conteudo['tipo_exercicio'])) {
+            switch ($conteudo['tipo_exercicio']) {
+                case 'listening':
+                    $tipo_real = 'Áudio';
+                    break;
+                case 'completar':
+                    $tipo_real = 'Completar';
+                    break;
+
+                case 'multipla_escolha':
+                default:
+                    $tipo_real = 'Múltipla Escolha';
+                    break;
+            }
+        } elseif (isset($conteudo['frase_original']) || isset($conteudo['audio_url'])) {
+            $tipo_real = 'Áudio';
+        } elseif (isset($conteudo['frase_completar'])) {
+            $tipo_real = 'Completar';
+
+        }
+        
+        $exercicios[] = [
+            'id' => $exercicio['id'],
+            'ordem' => $exercicio['ordem'],
+            'tipo' => $tipo_real,
+            'pergunta' => $exercicio['pergunta']
+        ];
+    }
+    
     $stmt_exercicios->close();
 }
 
@@ -740,7 +776,26 @@ $database->closeConnection();
                                     <td><?php echo htmlspecialchars($exercicio['id']); ?></td>
                                     <td><?php echo htmlspecialchars($exercicio['ordem']); ?></td>
                                     <td>
-                                        <span class="badge-modern"><?php echo htmlspecialchars($exercicio['tipo']); ?></span>
+                                        <?php 
+                                        $badge_class = 'badge-modern';
+                                        $tipo_display = htmlspecialchars($exercicio['tipo']);
+                                        
+                                        // Cores específicas por tipo
+                                        switch ($exercicio['tipo']) {
+                                            case 'Áudio':
+                                                $badge_class = 'badge bg-warning text-dark';
+                                                break;
+                                            case 'Completar':
+                                                $badge_class = 'badge bg-info text-dark';
+                                                break;
+
+                                            case 'Múltipla Escolha':
+                                            default:
+                                                $badge_class = 'badge bg-primary';
+                                                break;
+                                        }
+                                        ?>
+                                        <span class="<?php echo $badge_class; ?>"><?php echo $tipo_display; ?></span>
                                     </td>
                                     <td title="<?php echo htmlspecialchars($exercicio['pergunta']); ?>">
                                         <?php echo htmlspecialchars(substr($exercicio['pergunta'], 0, 50)) . '...'; ?>

@@ -39,6 +39,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $tipo_exercicio = $_POST['tipo_exercicio'] ?? 'multipla_escolha';
     $pergunta = $_POST['pergunta'];
     $conteudo = null;
+    $categoria = 'gramatica'; // padrão
+
+    // Definir categoria baseada no tipo_exercicio
+    switch ($tipo_exercicio) {
+        case 'listening':
+            $categoria = 'audicao';
+            break;
+        case 'completar':
+            $categoria = 'escrita';
+            break;
+        case 'multipla_escolha':
+        default:
+            $categoria = 'gramatica';
+            break;
+    }
 
     // Constrói o conteúdo JSON com base no tipo de exercício
     switch ($tipo) {
@@ -60,15 +75,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         'explicacao' => $_POST['explicacao'] ?? ''
                     ], JSON_UNESCAPED_UNICODE);
                 }
-            } elseif ($tipo_exercicio === 'texto_livre') {
-                $alternativas_aceitas = !empty($_POST['alternativas_aceitas']) ? 
-                    array_map('trim', explode(',', $_POST['alternativas_aceitas'])) : 
-                    [$_POST['resposta_esperada']];
-                $conteudo = json_encode([
-                    'resposta_correta' => $_POST['resposta_esperada'],
-                    'alternativas_aceitas' => $alternativas_aceitas,
-                    'dica' => $_POST['dica_texto'] ?? ''
-                ], JSON_UNESCAPED_UNICODE);
             } elseif ($tipo_exercicio === 'completar') {
                 $alternativas_aceitas = !empty($_POST['alternativas_completar']) ? 
                     array_map('trim', explode(',', $_POST['alternativas_completar'])) : 
@@ -80,22 +86,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     'dica' => $_POST['dica_completar'] ?? '',
                     'placeholder' => $_POST['placeholder_completar'] ?? 'Digite sua resposta...'
                 ], JSON_UNESCAPED_UNICODE);
-            } elseif ($tipo_exercicio === 'fala') {
-                $palavras_chave = !empty($_POST['palavras_chave']) ? 
-                    array_map('trim', explode(',', $_POST['palavras_chave'])) : 
-                    [];
+            } elseif ($tipo_exercicio === 'listening') {
+                $opcoes = [
+                    trim($_POST['listening_opcao1']),
+                    trim($_POST['listening_opcao2'])
+                ];
+                if (!empty($_POST['listening_opcao3'])) $opcoes[] = trim($_POST['listening_opcao3']);
+                if (!empty($_POST['listening_opcao4'])) $opcoes[] = trim($_POST['listening_opcao4']);
+                
                 $conteudo = json_encode([
-                    'frase_esperada' => $_POST['frase_esperada'],
-                    'pronuncia_fonetica' => $_POST['pronuncia_fonetica'] ?? '',
-                    'palavras_chave' => $palavras_chave,
-                    'tolerancia_erro' => 0.8
-                ], JSON_UNESCAPED_UNICODE);
-            } elseif ($tipo_exercicio === 'audicao') {
-                $conteudo = json_encode([
-                    'audio_url' => $_POST['audio_url'],
-                    'transcricao' => $_POST['transcricao'],
-                    'pergunta_audio' => $_POST['pergunta_audio'],
-                    'resposta_correta' => $_POST['resposta_audio_correta']
+                    'frase_original' => $_POST['frase_listening'],
+                    'opcoes' => $opcoes,
+                    'resposta_correta' => (int)($_POST['listening_alt_correta'] ?? 0),
+                    'explicacao' => $_POST['explicacao_listening'] ?? '',
+                    'transcricao' => $_POST['frase_listening'],
+                    'dicas_compreensao' => 'Ouça com atenção e foque nas palavras-chave.',
+                    'idioma' => $_POST['idioma_audio'] ?? 'en-us',
+                    'tipo_exercicio' => 'listening'
                 ], JSON_UNESCAPED_UNICODE);
             }
             break;
@@ -112,17 +119,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             break;
     }
 
-    // Atualiza o exercício na tabela, usando Prepared Statement
-    $sql_update = "UPDATE exercicios SET ordem = ?, tipo = ?, pergunta = ?, conteudo = ? WHERE id = ?";
+    // Atualiza o exercício na tabela, incluindo categoria
+    $sql_update = "UPDATE exercicios SET ordem = ?, tipo = ?, pergunta = ?, conteudo = ?, categoria = ? WHERE id = ?";
     $stmt_update = $conn->prepare($sql_update);
-    $stmt_update->bind_param("isssi", $ordem, $tipo, $pergunta, $conteudo, $exercicio_id);
+    $stmt_update->bind_param("issssi", $ordem, $tipo, $pergunta, $conteudo, $categoria, $exercicio_id);
     
     if ($stmt_update->execute()) {
-        $mensagem = '<div class="alert alert-success">Exercício atualizado com sucesso!</div>';
+        $_SESSION['mensagem_sucesso'] = 'Exercício atualizado com sucesso!';
+        header("Location: editar_exercicio.php?id=" . $exercicio_id);
+        exit();
     } else {
         $mensagem = '<div class="alert alert-danger">Erro ao atualizar exercício: ' . $stmt_update->error . '</div>';
     }
     $stmt_update->close();
+}
+
+// Exibir mensagem de sucesso se existir
+if (isset($_SESSION['mensagem_sucesso'])) {
+    $mensagem = '<div class="alert alert-success alert-dismissible" id="alertSucesso"><i class="fas fa-check-circle me-2"></i>' . $_SESSION['mensagem_sucesso'] . '</div>';
+    unset($_SESSION['mensagem_sucesso']);
 }
 
 // BUSCA AS INFORMAÇÕES DO EXERCÍCIO EXISTENTE PARA PREENCHER O FORMULÁRIO
@@ -151,12 +166,10 @@ $tipo_exercicio_detectado = 'multipla_escolha'; // padrão
 if ($exercicio['tipo'] === 'normal' && $conteudo_array) {
     if (isset($conteudo_array['frase_completar'])) {
         $tipo_exercicio_detectado = 'completar';
-    } elseif (isset($conteudo_array['frase_esperada'])) {
-        $tipo_exercicio_detectado = 'fala';
-    } elseif (isset($conteudo_array['audio_url'])) {
-        $tipo_exercicio_detectado = 'audicao';
-    } elseif (isset($conteudo_array['resposta_correta']) && !isset($conteudo_array['alternativas'])) {
-        $tipo_exercicio_detectado = 'texto_livre';
+    } elseif (isset($conteudo_array['opcoes']) && isset($conteudo_array['frase_original'])) {
+        $tipo_exercicio_detectado = 'listening';
+    } elseif (isset($conteudo_array['tipo_exercicio']) && $conteudo_array['tipo_exercicio'] === 'listening') {
+        $tipo_exercicio_detectado = 'listening';
     } elseif (isset($conteudo_array['alternativas'])) {
         $tipo_exercicio_detectado = 'multipla_escolha';
     }
@@ -950,10 +963,8 @@ body {
                             <label for="tipo_exercicio" class="form-label">Subtipo do Exercício</label>
                             <select class="form-select" id="tipo_exercicio" name="tipo_exercicio" required>
                                 <option value="multipla_escolha" <?php echo ($tipo_exercicio_detectado == 'multipla_escolha') ? 'selected' : ''; ?>>Múltipla Escolha</option>
-                                <option value="texto_livre" <?php echo ($tipo_exercicio_detectado == 'texto_livre') ? 'selected' : ''; ?>>Texto Livre</option>
                                 <option value="completar" <?php echo ($tipo_exercicio_detectado == 'completar') ? 'selected' : ''; ?>>Completar Frase</option>
-                                <option value="fala" <?php echo ($tipo_exercicio_detectado == 'fala') ? 'selected' : ''; ?>>Exercício de Fala</option>
-                                <option value="audicao" <?php echo ($tipo_exercicio_detectado == 'audicao') ? 'selected' : ''; ?>>Exercício de Audição</option>
+                                <option value="listening" <?php echo ($tipo_exercicio_detectado == 'listening') ? 'selected' : ''; ?>>Exercício de Listening</option>
                             </select>
                         </div>
                         <div class="mb-3">
@@ -1094,24 +1105,41 @@ body {
                                     </div>
                                 </div>
                                 
-                                <!-- Campos para Audição -->
-                                <div id="campos-audicao" class="subtipo-campos" style="display: none;">
-                                    <h5>Configuração - Exercício de Audição</h5>
+                                <!-- Campos para Listening -->
+                                <div id="campos-listening" class="subtipo-campos" style="display: none;">
+                                    <h5>Configuração - Exercício de Listening</h5>
                                     <div class="mb-3">
-                                        <label for="audio_url" class="form-label">URL do Áudio</label>
-                                        <input type="url" class="form-control" id="audio_url" name="audio_url" value="<?php echo isset($conteudo_array['audio_url']) ? htmlspecialchars($conteudo_array['audio_url']) : ''; ?>">
+                                        <label for="frase_listening" class="form-label">Frase para Gerar Áudio *</label>
+                                        <textarea class="form-control" id="frase_listening" name="frase_listening" rows="3"><?php echo isset($conteudo_array['frase_original']) ? htmlspecialchars($conteudo_array['frase_original']) : ''; ?></textarea>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="transcricao" class="form-label">Transcrição do Áudio</label>
-                                        <textarea class="form-control" id="transcricao" name="transcricao"><?php echo isset($conteudo_array['transcricao']) ? htmlspecialchars($conteudo_array['transcricao']) : ''; ?></textarea>
+                                        <label for="idioma_audio" class="form-label">Idioma do Áudio *</label>
+                                        <select class="form-select" id="idioma_audio" name="idioma_audio">
+                                            <option value="en-us" <?php echo (isset($conteudo_array['idioma']) && $conteudo_array['idioma'] == 'en-us') ? 'selected' : ''; ?>>Inglês (EUA)</option>
+                                            <option value="en-gb" <?php echo (isset($conteudo_array['idioma']) && $conteudo_array['idioma'] == 'en-gb') ? 'selected' : ''; ?>>Inglês (UK)</option>
+                                            <option value="es-es" <?php echo (isset($conteudo_array['idioma']) && $conteudo_array['idioma'] == 'es-es') ? 'selected' : ''; ?>>Espanhol</option>
+                                            <option value="fr-fr" <?php echo (isset($conteudo_array['idioma']) && $conteudo_array['idioma'] == 'fr-fr') ? 'selected' : ''; ?>>Francês</option>
+                                            <option value="de-de" <?php echo (isset($conteudo_array['idioma']) && $conteudo_array['idioma'] == 'de-de') ? 'selected' : ''; ?>>Alemão</option>
+                                        </select>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="pergunta_audio" class="form-label">Pergunta sobre o Áudio</label>
-                                        <input type="text" class="form-control" id="pergunta_audio" name="pergunta_audio" value="<?php echo isset($conteudo_array['pergunta_audio']) ? htmlspecialchars($conteudo_array['pergunta_audio']) : ''; ?>">
+                                        <label class="form-label">Opções de Resposta *</label>
+                                        <?php
+                                        $opcoes_listening = isset($conteudo_array['opcoes']) ? $conteudo_array['opcoes'] : ['', '', '', ''];
+                                        $resposta_correta = isset($conteudo_array['resposta_correta']) ? (int)$conteudo_array['resposta_correta'] : 0;
+                                        for ($i = 0; $i < 4; $i++):
+                                        ?>
+                                        <div class="input-group mb-2">
+                                            <div class="input-group-text">
+                                                <input type="radio" name="listening_alt_correta" value="<?php echo $i; ?>" <?php echo ($resposta_correta == $i) ? 'checked' : ''; ?> title="Marcar como correta">
+                                            </div>
+                                            <input type="text" class="form-control" name="listening_opcao<?php echo $i+1; ?>" placeholder="Opção <?php echo $i+1; ?><?php echo $i > 1 ? ' (Opcional)' : ''; ?>" value="<?php echo isset($opcoes_listening[$i]) ? htmlspecialchars($opcoes_listening[$i]) : ''; ?>" <?php echo $i < 2 ? 'required' : ''; ?>>
+                                        </div>
+                                        <?php endfor; ?>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="resposta_audio_correta" class="form-label">Resposta Correta</label>
-                                        <input type="text" class="form-control" id="resposta_audio_correta" name="resposta_audio_correta" value="<?php echo isset($conteudo_array['resposta_correta']) ? htmlspecialchars($conteudo_array['resposta_correta']) : ''; ?>">
+                                        <label for="explicacao_listening" class="form-label">Explicação (Opcional)</label>
+                                        <textarea class="form-control" id="explicacao_listening" name="explicacao_listening" rows="2"><?php echo isset($conteudo_array['explicacao']) ? htmlspecialchars($conteudo_array['explicacao']) : ''; ?></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -1213,8 +1241,7 @@ body {
         const camposMultipla = document.getElementById('campos-multipla');
         const camposTexto = document.getElementById('campos-texto');
         const camposCompletar = document.getElementById('campos-completar');
-        const camposFala = document.getElementById('campos-fala');
-        const camposAudicao = document.getElementById('campos-audicao');
+        const camposListening = document.getElementById('campos-listening');
 
         function mostrarCampos() {
             // Esconder todos os campos principais
@@ -1226,8 +1253,7 @@ body {
             camposMultipla.style.display = 'none';
             camposTexto.style.display = 'none';
             camposCompletar.style.display = 'none';
-            camposFala.style.display = 'none';
-            camposAudicao.style.display = 'none';
+            camposListening.style.display = 'none';
 
             if (tipoSelect.value === 'normal') {
                 camposNormal.style.display = 'block';
@@ -1237,17 +1263,11 @@ body {
                     case 'multipla_escolha':
                         camposMultipla.style.display = 'block';
                         break;
-                    case 'texto_livre':
-                        camposTexto.style.display = 'block';
-                        break;
                     case 'completar':
                         camposCompletar.style.display = 'block';
                         break;
-                    case 'fala':
-                        camposFala.style.display = 'block';
-                        break;
-                    case 'audicao':
-                        camposAudicao.style.display = 'block';
+                    case 'listening':
+                        camposListening.style.display = 'block';
                         break;
                 }
             } else if (tipoSelect.value === 'especial') {
@@ -1263,6 +1283,16 @@ body {
         // Listeners
         tipoSelect.addEventListener('change', mostrarCampos);
         tipoExercicioSelect.addEventListener('change', mostrarCampos);
+        
+        // Auto-hide success message
+        const alertSucesso = document.getElementById('alertSucesso');
+        if (alertSucesso) {
+            setTimeout(() => {
+                alertSucesso.style.transition = 'opacity 0.5s';
+                alertSucesso.style.opacity = '0';
+                setTimeout(() => alertSucesso.remove(), 500);
+            }, 5000);
+        }
     });
 
     function adicionarAlternativa() {
