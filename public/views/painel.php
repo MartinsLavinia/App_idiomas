@@ -282,6 +282,11 @@ $database->closeConnection();
             justify-content: center;
             margin-top: 10px;
         }
+        
+        .audio-controls .btn {
+            pointer-events: auto;
+            cursor: pointer;
+        }
 
         .listening-options {
             display: grid;
@@ -296,6 +301,8 @@ $database->closeConnection();
             border-radius: 8px;
             transition: all 0.3s ease;
             background: white;
+            cursor: pointer;
+            pointer-events: auto;
         }
 
         .btn-option:hover {
@@ -307,6 +314,30 @@ $database->closeConnection();
             border-color: #007bff;
             background: #007bff;
             color: white;
+        }
+        
+        audio {
+            pointer-events: auto;
+            cursor: pointer;
+        }
+        
+        audio::-webkit-media-controls {
+            pointer-events: auto;
+        }
+        
+        audio::-webkit-media-controls-panel {
+            pointer-events: auto;
+        }
+        
+        .tts-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .tts-container .btn {
+            min-width: 200px;
+            font-size: 1.1rem;
+            padding: 12px 24px;
         }
 
         /* Cards de unidade */
@@ -516,6 +547,17 @@ $database->closeConnection();
 
     <div class="main-content">
         <div class="container-fluid mt-4">
+        
+        <!-- Botão de teste de áudio -->
+        <div class="alert alert-info mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-info-circle me-2"></i>Teste de Áudio:</span>
+                <button type="button" class="btn btn-sm btn-primary" onclick="speakText('Hello, this is a test', 'en-us')">
+                    <i class="fas fa-volume-up me-1"></i>Testar Áudio
+                </button>
+            </div>
+        </div>
+        
         <div class="row justify-content-center">
             <div class="col-md-11">
                 <?php if ($mostrar_selecao_idioma): ?>
@@ -1161,6 +1203,8 @@ $database->closeConnection();
                 htmlConteudo += renderizarTextoLivre(conteudo);
             }
         }
+        
+        console.log('HTML gerado para exercício:', htmlConteudo.substring(0, 200) + '...');
 
         conteudoExercicioDiv.innerHTML = htmlConteudo;
         document.getElementById("btnEnviarResposta").style.display = "block";
@@ -1169,10 +1213,18 @@ $database->closeConnection();
         const feedbackDiv = document.getElementById("feedbackExercicio");
         if (feedbackDiv) feedbackDiv.remove();
         
+        // Verificar se os botões de áudio foram criados corretamente
+        const audioButtons = conteudoExercicioDiv.querySelectorAll('button[onclick*="speakText"]');
+        console.log('Botões de áudio encontrados:', audioButtons.length);
+        audioButtons.forEach((btn, i) => {
+            console.log(`Botão ${i}:`, btn.onclick ? btn.onclick.toString() : 'sem onclick');
+        });
+        
 
     }
 
     function determinarTipoExercicioCorrigido(exercicio, conteudo) {
+        // Verificar tipo_exercicio no conteúdo
         if (conteudo?.tipo_exercicio) {
             const tipo = conteudo.tipo_exercicio.toLowerCase();
             if (['listening', 'multipla_escolha', 'texto_livre', 'completar'].includes(tipo)) {
@@ -1180,9 +1232,33 @@ $database->closeConnection();
             }
         }
         
+        // Verificar categoria
         if (exercicio.categoria === 'audicao') return 'listening';
-        if (conteudo?.opcoes && conteudo?.resposta_correta !== undefined) return 'listening';
-        if (conteudo?.alternativas) return 'multipla_escolha';
+        
+        // Verificar se tem áudio e opções (listening)
+        if (conteudo?.audio_url && conteudo?.opcoes && Array.isArray(conteudo.opcoes)) {
+            return 'listening';
+        }
+        
+        // Verificar se tem frase_original e opcoes (listening novo formato)
+        if (conteudo?.frase_original && conteudo?.opcoes) {
+            return 'listening';
+        }
+        
+        // Verificar múltipla escolha
+        if (conteudo?.alternativas && Array.isArray(conteudo.alternativas)) {
+            return 'multipla_escolha';
+        }
+        
+        // Verificar texto livre
+        if (conteudo?.resposta_correta && !conteudo?.frase_completar) {
+            return 'texto_livre';
+        }
+        
+        // Verificar completar
+        if (conteudo?.frase_completar) {
+            return 'completar';
+        }
         
         return 'multipla_escolha';
     }
@@ -1190,26 +1266,32 @@ $database->closeConnection();
     // ==================== FUNÇÕES DE RENDERIZAÇÃO DE EXERCÍCIOS ====================
 
     function renderizarListeningOpcoes(conteudo) {
-        const audioUrl = conteudo.audio_url || '';
         const opcoes = conteudo.opcoes || [];
+        const text = conteudo.frase_original || conteudo.transcricao || '';
+        const lang = conteudo.idioma || 'en-us';
+        
+        console.log('Renderizando listening com:', { text, lang, opcoes });
         
         let html = `
             <div class="audio-player-container">
                 <h6 class="text-center mb-3">🎧 Exercício de Listening</h6>
                 <div class="text-center mb-4">
-                    <audio controls class="w-100 mb-3">
-                        <source src="${audioUrl}" type="audio/mpeg">
-                    </audio>
+                    <p class="mb-3">Ouça o áudio e selecione a opção correta:</p>
+                    <div class="tts-container">
+                        <button type="button" class="btn btn-primary btn-lg" onclick="speakText('${text.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${lang}')">
+                            <i class="fas fa-volume-up me-2"></i>Ouvir Áudio
+                        </button>
+                    </div>
                 </div>
                 <div class="listening-options">
         `;
         
         opcoes.forEach((opcao, index) => {
-            if (opcao?.trim()) {
+            if (opcao && opcao.trim() !== '') {
                 html += `
                     <button type="button" class="btn btn-option btn-resposta" 
                             data-id="${index}" onclick="selecionarResposta(this)">
-                        ${opcao}
+                        ${opcao.trim()}
                     </button>
                 `;
             }
@@ -1220,33 +1302,25 @@ $database->closeConnection();
     }
 
     function renderizarListening(conteudo) {
-        const audioUrl = conteudo.audio_url || conteudo.arquivo_audio || '';
+        const text = conteudo.frase_original || conteudo.transcricao || '';
+        const lang = conteudo.idioma || 'en-us';
+        
+        console.log('Renderizando listening básico com:', { text, lang });
         
         let html = `
             <div class="audio-player-container">
                 <h6 class="text-center mb-3">🎧 Exercício de Listening</h6>
                 <div class="text-center mb-4">
                     <h6>Ouça o áudio e selecione a opção correta:</h6>
-                    <audio controls class="w-100 mb-3" id="audioPlayerListening">
-                        <source src="${audioUrl}" type="audio/mpeg">
-                        Seu navegador não suporta o elemento de áudio.
-                    </audio>
-                    <div class="audio-controls">
-                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('audioPlayerListening').play()">
-                            <i class="fas fa-play me-1"></i>Reproduzir
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('audioPlayerListening').pause()">
-                            <i class="fas fa-pause me-1"></i>Pausar
-                        </button>
-                        <button type="button" class="btn btn-outline-info btn-sm" onclick="document.getElementById('audioPlayerListening').currentTime = 0">
-                            <i class="fas fa-redo me-1"></i>Reiniciar
+                    <div class="tts-container">
+                        <button type="button" class="btn btn-primary btn-lg" onclick="speakText('${text.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${lang}')">
+                            <i class="fas fa-volume-up me-2"></i>Ouvir Áudio
                         </button>
                     </div>
                 </div>
                 <div class="listening-options">
         `;
         
-        // Mostrar opções de resposta
         if (conteudo.opcoes && Array.isArray(conteudo.opcoes)) {
             conteudo.opcoes.forEach((opcao, index) => {
                 if (opcao && opcao.trim() !== '') {
@@ -1351,6 +1425,7 @@ $database->closeConnection();
 
     // Função para selecionar resposta (botão de múltipla escolha)
     window.selecionarResposta = function(button) {
+        console.log('Resposta selecionada:', button.dataset.id, button.textContent);
         document.querySelectorAll(".btn-resposta").forEach(btn => {
             btn.classList.remove("selected", "btn-primary");
             btn.classList.add("btn-outline-primary");
@@ -1521,6 +1596,83 @@ $database->closeConnection();
             console.error('Erro:', error);
             alert('Erro de conexão. Tente novamente.');
         });
+    };
+    
+    // ==================== FUNÇÕES DE ÁUDIO ====================
+    
+    window.speakText = function(text, lang) {
+        console.log('speakText chamado:', text, lang);
+        
+        if (!text || text.trim() === '') {
+            alert('Nenhum texto para reproduzir');
+            return;
+        }
+        
+        if ('speechSynthesis' in window) {
+            // Cancelar qualquer fala anterior
+            window.speechSynthesis.cancel();
+            
+            // Aguardar um pouco para garantir que cancelou
+            setTimeout(() => {
+                const utterance = new SpeechSynthesisUtterance(text.trim());
+                
+                const langMap = {
+                    'en-us': 'en-US',
+                    'en-gb': 'en-GB', 
+                    'pt-br': 'pt-BR',
+                    'es-es': 'es-ES',
+                    'fr-fr': 'fr-FR',
+                    'de-de': 'de-DE',
+                    'ja-jp': 'ja-JP',
+                    'ko-kr': 'ko-KR'
+                };
+                
+                utterance.lang = langMap[lang] || langMap['en-us'] || 'en-US';
+                utterance.rate = 0.8;
+                utterance.pitch = 1;
+                utterance.volume = 1;
+                
+                utterance.onstart = function() {
+                    console.log('Áudio iniciado');
+                };
+                
+                utterance.onend = function() {
+                    console.log('Áudio finalizado');
+                };
+                
+                utterance.onerror = function(event) {
+                    console.error('Erro no áudio:', event);
+                    alert('Erro ao reproduzir áudio. Tente novamente.');
+                };
+                
+                console.log('Iniciando síntese de voz...');
+                window.speechSynthesis.speak(utterance);
+            }, 100);
+        } else {
+            alert('Seu navegador não suporta síntese de voz.');
+        }
+    };
+    
+    window.playAudio = function(audioId) {
+        const audio = document.getElementById(audioId);
+        if (audio) {
+            audio.play().catch(e => console.log('Erro ao reproduzir áudio:', e));
+        }
+    };
+    
+    window.pauseAudio = function(audioId) {
+        const audio = document.getElementById(audioId);
+        if (audio) {
+            audio.pause();
+        }
+    };
+    
+    window.restartAudio = function(audioId) {
+        const audio = document.getElementById(audioId);
+        if (audio) {
+            audio.currentTime = 0;
+            audio.play().catch(e => console.log('Erro ao reproduzir áudio:', e));
+        }
     };
     
     // ==================== FUNCIONALIDADES DE FLASHCARDS ====================

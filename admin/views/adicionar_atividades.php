@@ -20,6 +20,12 @@ if (!isset($_GET['unidade_id']) || !is_numeric($_GET['unidade_id'])) {
 $unidade_id = $_GET['unidade_id'];
 $mensagem = '';
 
+// Exibir mensagem de sucesso se existir
+if (isset($_SESSION['mensagem_sucesso'])) {
+    $mensagem = '<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>' . $_SESSION['mensagem_sucesso'] . '</div>';
+    unset($_SESSION['mensagem_sucesso']);
+}
+
 $database = new Database();
 $conn = $database->conn;
 $listeningModel = new ListeningModel($database);
@@ -114,8 +120,9 @@ function adicionarExercicio($conn, $caminhoId, $blocoId, $ordem, $tipo_exercicio
     if ($stmt) {
         $stmt->bind_param("iiissss", $caminhoId, $blocoId, $ordem, $tipoEnum, $pergunta, $conteudo, $categoria);
         if ($stmt->execute()) {
+            $exercicio_id = $conn->insert_id;
             $stmt->close();
-            return true;
+            return $exercicio_id;
         } else {
             error_log("Erro ao adicionar exercício: " . $stmt->error);
             $stmt->close();
@@ -253,37 +260,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $mensagem = '<div class="alert alert-danger">Frase, pelo menos 2 opções e a indicação da resposta correta são obrigatórios para listening.</div>';
                 } else {
                     try {
-                        // Usar sistema de áudio simplificado para evitar conflitos
+                        // Gerar áudio obrigatoriamente
                         $audio_url = '';
+                        $frase = trim($_POST['frase_listening']);
+                        $idioma = $_POST['idioma_audio'] ?? 'en-us';
                         
-                        // Tentar usar o sistema novo se disponível
                         if (file_exists(__DIR__ . '/../../src/Services/AudioService.php')) {
-                            try {
-                                require_once __DIR__ . '/../../src/Services/AudioService.php';
-                                
-                                // Autoload simplificado
-                                if (!class_exists('\App\Services\AudioService')) {
-                                    spl_autoload_register(function ($class) {
-                                        $file = __DIR__ . '/../../src/' . str_replace(['App\\', '\\'], ['', '/'], $class) . '.php';
-                                        if (file_exists($file)) {
-                                            require $file;
-                                        }
-                                    });
-                                }
-                                
-                                $audioService = new \App\Services\AudioService();
-                                $audio_url = $audioService->gerarAudio(
-                                    $_POST['frase_listening'], 
-                                    $_POST['idioma_audio'] ?? 'en-us'
-                                );
-                            } catch (Exception $audioError) {
-                                // Fallback: usar sistema antigo ou URL placeholder
-                                $audio_url = '/App_idiomas/audios/placeholder_' . md5($_POST['frase_listening']) . '.mp3';
-                                error_log('Erro no AudioService: ' . $audioError->getMessage());
+                            require_once __DIR__ . '/../../src/Services/AudioService.php';
+                            
+                            if (!class_exists('\App\Services\AudioService')) {
+                                spl_autoload_register(function ($class) {
+                                    $file = __DIR__ . '/../../src/' . str_replace(['App\\', '\\'], ['', '/'], $class) . '.php';
+                                    if (file_exists($file)) {
+                                        require $file;
+                                    }
+                                });
+                            }
+                            
+                            $audioService = new \App\Services\AudioService();
+                            $audio_url = $audioService->gerarAudio($frase, $idioma);
+                            
+                            // Verificar se o arquivo foi criado
+                            $audio_path = __DIR__ . '/../../' . ltrim($audio_url, '/');
+                            if (!file_exists($audio_path)) {
+                                throw new Exception('Falha ao criar arquivo de áudio');
                             }
                         } else {
-                            // Fallback: gerar URL placeholder
-                            $audio_url = '/App_idiomas/audios/placeholder_' . md5($_POST['frase_listening']) . '.mp3';
+                            throw new Exception('AudioService não encontrado');
                         }
                         
                         $opcoes = [
@@ -296,23 +299,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         
                         $resposta_correta_index = (int)($_POST['listening_alt_correta'] ?? 0);
                         
-                        // Estrutura corrigida para listening
                         $conteudo = json_encode([
-                            'frase_original' => $_POST['frase_listening'],
+                            'frase_original' => $frase,
                             'audio_url' => $audio_url,
                             'opcoes' => $opcoes,
                             'resposta_correta' => $resposta_correta_index,
                             'explicacao' => $_POST['explicacao_listening'] ?? '',
-                            'transcricao' => $_POST['frase_listening'],
+                            'transcricao' => $frase,
                             'dicas_compreensao' => 'Ouça com atenção e foque nas palavras-chave.',
-                            'idioma' => $_POST['idioma_audio'] ?? 'en-us',
+                            'idioma' => $idioma,
                             'tipo_exercicio' => 'listening'
                         ], JSON_UNESCAPED_UNICODE);
                         
                         $sucesso_insercao = true;
                         
                     } catch (Exception $e) {
-                        $mensagem = '<div class="alert alert-danger">Erro ao gerar áudio: ' . $e->getMessage() . '</div>';
+                        $mensagem = '<div class="alert alert-danger">Erro ao processar listening: ' . $e->getMessage() . '</div>';
                     }
                 }
                 break;
@@ -347,24 +349,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($sucesso_insercao && $conteudo) {
             $exercicio_id = adicionarExercicio($conn, $caminho_id, $bloco_id, $ordem, $tipo_exercicio, $pergunta, $conteudo);
             if ($exercicio_id) {
-                $mensagem = '<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>Exercício de ' . $tipo_exercicio . ' adicionado com sucesso! ID: ' . $exercicio_id . '</div>';
-                
-                // Limpar apenas os campos do formulário, não todos os POST
-                $_POST['pergunta'] = '';
-
-                $_POST['frase_listening'] = '';
-                $_POST['resposta_esperada'] = '';
-                $_POST['frase_completar'] = '';
-                $_POST['resposta_completar'] = '';
-                $_POST['explicacao'] = '';
-                $_POST['explicacao_listening'] = '';
-                
-                // Manter os selects preenchidos
-                $post_caminho_id = $_POST["caminho_id"];
-                $post_bloco_id = $_POST["bloco_id"];
-                $post_ordem = $_POST["ordem"];
-                $post_tipo = $_POST["tipo"];
-                $post_tipo_exercicio = $_POST["tipo_exercicio"];
+                $_SESSION['mensagem_sucesso'] = 'Exercício de ' . $tipo_exercicio . ' adicionado com sucesso!';
+                header("Location: adicionar_atividades.php?unidade_id=" . $unidade_id);
+                exit();
             } else {
                 $mensagem = '<div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i>Erro ao adicionar exercício no banco de dados. Verifique os logs para mais detalhes.</div>';
             }
@@ -1432,18 +1419,15 @@ $database->closeConnection();
         function atualizarCampos() {
             const conteudoCampos = document.getElementById('conteudo-campos');
             
-            // Esconder container principal
-            conteudoCampos.style.display = "none";
-            
-            // Esconder todos os campos
-            camposNormal.style.display = "none";
-            camposEspecial.style.display = "none";
-            camposQuiz.style.display = "none";
-            camposMultipla.style.display = "none";
-            camposTexto.style.display = "none";
-            camposCompletar.style.display = "none";
-            camposAudicao.style.display = "none";
-            camposListening.style.display = "none";
+            // Esconder todos os campos (com verificação de null)
+            if (camposNormal) camposNormal.style.display = "none";
+            if (camposEspecial) camposEspecial.style.display = "none";
+            if (camposQuiz) camposQuiz.style.display = "none";
+            if (camposMultipla) camposMultipla.style.display = "none";
+            if (camposTexto) camposTexto.style.display = "none";
+            if (camposCompletar) camposCompletar.style.display = "none";
+            if (camposAudicao) camposAudicao.style.display = "none";
+            if (camposListening) camposListening.style.display = "none";
 
             // Resetar todos os 'required'
             setRequired(document.getElementById('resposta_esperada'), false);
@@ -1457,45 +1441,43 @@ $database->closeConnection();
             setRequired(document.getElementById('link_video'), false);
             setRequired(document.getElementById('pergunta_extra'), false);
 
-            // Mostrar campos apenas se tipo e subtipo estiverem selecionados
-            if (tipoSelect.value && tipoExercicioSelect.value) {
-                conteudoCampos.style.display = "block";
+            // Mostrar container principal sempre
+            if (conteudoCampos) conteudoCampos.style.display = "block";
                 
-                if (tipoSelect.value === "normal") {
-                    camposNormal.style.display = "block";
-                    
-                    switch (tipoExercicioSelect.value) {
-                        case "multipla_escolha":
-                            camposMultipla.style.display = "block";
-                            break;
-                        case "texto_livre":
-                            camposTexto.style.display = "block";
-                            setRequired(document.getElementById('resposta_esperada'), true);
-                            break;
-                        case "completar":
-                            camposCompletar.style.display = "block";
-                            setRequired(document.getElementById('frase_completar'), true);
-                            setRequired(document.getElementById('resposta_completar'), true);
-                            break;
-                        case "listening":
-                            camposListening.style.display = "block";
-                            setRequired(document.getElementById('frase_listening'), true);
-                            setRequired(document.querySelector('input[name="listening_opcao1"]'), true);
-                            setRequired(document.querySelector('input[name="listening_opcao2"]'), true);
-                            break;
-                        case "audicao":
-                            camposAudicao.style.display = "block";
-                            setRequired(document.getElementById('audio_url'), true);
-                            setRequired(document.getElementById('resposta_audio_correta'), true);
-                            break;
-                    }
-                } else if (tipoSelect.value === "especial") {
-                    camposEspecial.style.display = "block";
-                    setRequired(document.getElementById('link_video'), true);
-                    setRequired(document.getElementById('pergunta_extra'), true);
-                } else if (tipoSelect.value === "quiz") {
-                    camposQuiz.style.display = "block";
+            if (tipoSelect.value === "normal") {
+                if (camposNormal) camposNormal.style.display = "block";
+                
+                switch (tipoExercicioSelect.value) {
+                    case "multipla_escolha":
+                        if (camposMultipla) camposMultipla.style.display = "block";
+                        break;
+                    case "texto_livre":
+                        if (camposTexto) camposTexto.style.display = "block";
+                        setRequired(document.getElementById('resposta_esperada'), true);
+                        break;
+                    case "completar":
+                        if (camposCompletar) camposCompletar.style.display = "block";
+                        setRequired(document.getElementById('frase_completar'), true);
+                        setRequired(document.getElementById('resposta_completar'), true);
+                        break;
+                    case "listening":
+                        if (camposListening) camposListening.style.display = "block";
+                        setRequired(document.getElementById('frase_listening'), true);
+                        setRequired(document.querySelector('input[name="listening_opcao1"]'), true);
+                        setRequired(document.querySelector('input[name="listening_opcao2"]'), true);
+                        break;
+                    case "audicao":
+                        if (camposAudicao) camposAudicao.style.display = "block";
+                        setRequired(document.getElementById('audio_url'), true);
+                        setRequired(document.getElementById('resposta_audio_correta'), true);
+                        break;
                 }
+            } else if (tipoSelect.value === "especial") {
+                if (camposEspecial) camposEspecial.style.display = "block";
+                setRequired(document.getElementById('link_video'), true);
+                setRequired(document.getElementById('pergunta_extra'), true);
+            } else if (tipoSelect.value === "quiz") {
+                if (camposQuiz) camposQuiz.style.display = "block";
             }
         }
 
@@ -1648,6 +1630,16 @@ $database->closeConnection();
             }
         }
     });
+
+    // Auto-hide success message
+    const successAlert = document.querySelector('.alert-success');
+    if (successAlert) {
+        setTimeout(() => {
+            successAlert.style.transition = 'opacity 0.5s';
+            successAlert.style.opacity = '0';
+            setTimeout(() => successAlert.remove(), 500);
+        }, 5000);
+    }
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

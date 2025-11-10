@@ -4,6 +4,10 @@
  * Corrige problemas de geração de áudio
  */
 
+// Disable error display to prevent HTML in JSON response
+ini_set('display_errors', 0);
+error_reporting(0);
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
@@ -43,6 +47,11 @@ try {
         $idioma = 'en-us'; // Fallback
     }
     
+    // Verificar se a classe existe
+    if (!class_exists('\App\Services\AudioService')) {
+        throw new Exception('Serviço de áudio não disponível');
+    }
+    
     // Criar serviço de áudio
     $audioService = new \App\Services\AudioService();
     
@@ -58,13 +67,28 @@ try {
     ], JSON_UNESCAPED_UNICODE);
     
 } catch (Exception $e) {
+    // Log error but don't output it to prevent HTML in JSON
     error_log('Erro na geração de áudio: ' . $e->getMessage());
     
-    http_response_code(400);
+    http_response_code(200); // Keep 200 to prevent browser errors
     echo json_encode([
         'success' => false,
-        'message' => $e->getMessage(),
+        'message' => 'Erro ao gerar áudio. Tente novamente.',
+        'audio_url' => null
+    ], JSON_UNESCAPED_UNICODE);
+} catch (Error $e) {
+    // Handle fatal errors
+    error_log('Erro fatal na geração de áudio: ' . $e->getMessage());
+    
+    http_response_code(200);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Erro interno. Tente novamente.',
         'audio_url' => null
     ], JSON_UNESCAPED_UNICODE);
 }
+?>
+<?php
+// Ensure no output after this point
+exit();
 ?>

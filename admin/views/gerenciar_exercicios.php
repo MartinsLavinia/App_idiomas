@@ -750,9 +750,9 @@ $database->closeConnection();
                                             <a href="editar_exercicio.php?id=<?php echo htmlspecialchars($exercicio['id']); ?>" class="btn-action btn-edit" title="Editar">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <a href="eliminar_exercicio.php?id=<?php echo htmlspecialchars($exercicio['id']); ?>" class="btn-action btn-delete" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir este exercício?');">
+                                            <button type="button" class="btn-action btn-delete" title="Excluir" data-bs-toggle="modal" data-bs-target="#confirmModal" data-exercise-id="<?php echo htmlspecialchars($exercicio['id']); ?>">
                                                 <i class="fas fa-trash"></i>
-                                            </a>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -782,14 +782,51 @@ $database->closeConnection();
         </div>
     </div>
 
+    <!-- Modal de Confirmação -->
+    <div class="modal fade" id="confirmModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar Exclusão</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    Tem certeza que deseja excluir este exercício?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <a href="#" id="confirmDelete" class="btn btn-danger">Excluir</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Adiciona animação de entrada para as linhas da tabela
         document.addEventListener('DOMContentLoaded', function() {
             const rows = document.querySelectorAll('.modern-table tbody tr');
             rows.forEach((row, index) => {
                 row.style.animationDelay = `${index * 0.1}s`;
             });
+
+            // Modal confirmation
+            const confirmModal = document.getElementById('confirmModal');
+            confirmModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const exerciseId = button.getAttribute('data-exercise-id');
+                const confirmLink = document.getElementById('confirmDelete');
+                confirmLink.href = 'eliminar_exercicio.php?id=' + exerciseId;
+            });
+
+            // Auto-hide success message
+            const successAlert = document.querySelector('.alert-success');
+            if (successAlert) {
+                setTimeout(() => {
+                    successAlert.style.transition = 'opacity 0.5s';
+                    successAlert.style.opacity = '0';
+                    setTimeout(() => successAlert.remove(), 500);
+                }, 5000);
+            }
         });
     </script>
 </body>
