@@ -57,6 +57,8 @@ if ($stmt_idiomas) {
 }
 
 ?>
+
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -97,8 +99,7 @@ if ($stmt_idiomas) {
             font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
             background: var(--cinza-claro);
             color: var(--preto-texto);
-            min-height: 100vh;
-            animation: fadeIn 1s ease-in-out;
+            min-height: 100vh;          
         }
 
         @keyframes fadeIn {
@@ -369,7 +370,7 @@ body:has(.sidebar.active) .menu-toggle:hover,
         padding: 20px 10px;
     }
 }
-        .btn-warning {
+        .btn-salvar-quiz{
             background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
             color: var(--preto-texto);
             box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
@@ -377,7 +378,7 @@ body:has(.sidebar.active) .menu-toggle:hover,
             border: none;
         }
 
-        .btn-warning:hover {
+        .btn-salvar-quiz:hover {
             background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
             transform: translateY(-2px);
             box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
@@ -785,7 +786,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 Gerenciar idiomas simples
             </h2>
 
-            <a href="#" class="btn btn-warning mb-4" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
+            <a href="#" class="btn btn-salvar-quiz mb-4" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
                 <i class="fas fa-plus-circle me-2"></i>Gerenciar idiomas
             </a>
 
@@ -812,25 +813,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <div class="card-body">
                     <form action="adicionar_idioma_completo.php?page=<?php echo $pagina_atual + 1; ?>" method="POST">
-                        <?php
-                        // --- INÍCIO DA CORREÇÃO ---
-                        // Adiciona campos ocultos para preservar os dados das páginas anteriores.
-                        if (isset($_SESSION['quiz_data']) && is_array($_SESSION['quiz_data'])) {
-                            foreach ($_SESSION['quiz_data'] as $index => $data) {
-                                // Apenas adiciona os campos das páginas anteriores, não da atual.
-                                if ($index < $offset_inicial) {
-                                    echo '<input type="hidden" name="pergunta_' . $index . '" value="' . htmlspecialchars($data['pergunta']) . '">';
-                                    echo '<input type="hidden" name="opcao_a_' . $index . '" value="' . htmlspecialchars($data['opcao_a']) . '">';
-                                    echo '<input type="hidden" name="opcao_b_' . $index . '" value="' . htmlspecialchars($data['opcao_b']) . '">';
-                                    echo '<input type="hidden" name="opcao_c_' . $index . '" value="' . htmlspecialchars($data['opcao_c']) . '">';
-                                    echo '<input type="hidden" name="opcao_d_' . $index . '" value="' . htmlspecialchars($data['opcao_d']) . '">';
-                                    echo '<input type="hidden" name="resposta_correta_' . $index . '" value="' . htmlspecialchars($data['resposta_correta']) . '">';
-                                }
-                            }
-                        }
-                        // --- FIM DA CORREÇÃO ---
-                        ?>
-
                         <?php if ($pagina_atual === 1): ?>
                         <div class="mb-3">
                             <label for="idioma_novo_completo" class="form-label">Nome do Idioma</label>
@@ -904,7 +886,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </nav>
 
                         <div class="d-flex justify-content-end gap-2 mt-3">
-                                <button type="submit" class="btn btn-warning">Salvar Idioma e Quiz (Fim)</button>
+                                <button type="submit" class="btn btn-salvar-quiz" style="font-weight: 500px;">Salvar Idioma e Quiz (Fim)</button>
                         </div>
                     </form>
                 </div>
