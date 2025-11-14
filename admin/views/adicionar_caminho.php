@@ -7,11 +7,13 @@ session_start();
 include_once __DIR__ . '/../../conexao.php';
 
 // Verificar se é uma requisição AJAX
-$isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
+$isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') || 
+          (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
 
 // Para requisições AJAX, definir header JSON imediatamente
 if ($isAjax) {
     header('Content-Type: application/json; charset=utf-8');
+    header('Cache-Control: no-cache, must-revalidate');
 }
 
 if (!isset($_SESSION['id_admin'])) {

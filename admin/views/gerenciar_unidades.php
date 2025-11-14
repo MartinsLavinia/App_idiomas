@@ -807,9 +807,9 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="page-header flex-column flex-sm-row">
                 <h2 class="mb-0"><i class="fas fa-cubes"></i> Gerenciar Unidades</h2>
                 <div class="action-buttons">
-                    <a href="adicionar_unidade.php" class="btn btn-warning">
+                    <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#addUnidadeModal" onclick="console.log('Botão clicado')">
                         <i class="fas fa-plus-circle"></i> Adicionar Nova Unidade
-                    </a>
+                    </button>
                 </div>
             </div>
 
@@ -936,6 +936,75 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 
+    <!-- Modal para Adicionar Unidade -->
+    <div class="modal fade" id="addUnidadeModal" tabindex="-1" aria-labelledby="addUnidadeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addUnidadeModalLabel">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        Adicionar Nova Unidade
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="formAddUnidade" action="adicionar_unidade.php" method="POST">
+                    <div class="modal-body">
+                        <div id="alertUnidade"></div>
+                        <div class="mb-3">
+                            <label for="nome_unidade" class="form-label">Nome da Unidade</label>
+                            <input type="text" class="form-control" id="nome_unidade" name="nome_unidade" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="descricao" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="descricao" name="descricao" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="nivel" class="form-label">Nível</label>
+                            <select class="form-select" id="nivel" name="nivel">
+                                <option value="">Selecione o nível</option>
+                                <option value="A1">A1 - Iniciante</option>
+                                <option value="A2">A2 - Básico</option>
+                                <option value="B1">B1 - Intermediário</option>
+                                <option value="B2">B2 - Intermediário Superior</option>
+                                <option value="C1">C1 - Avançado</option>
+                                <option value="C2">C2 - Proficiente</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="numero_unidade" class="form-label">Número da Unidade</label>
+                            <input type="number" class="form-control" id="numero_unidade" name="numero_unidade" min="1">
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_idioma" class="form-label">Idioma</label>
+                            <select class="form-select" id="id_idioma" name="id_idioma" required>
+                                <option value="">Selecione um idioma</option>
+                                <?php
+                                // Buscar idiomas para o modal
+                                $database_modal = new Database();
+                                $conn_modal = $database_modal->conn;
+                                $sql_idiomas_modal = "SELECT id, nome_idioma FROM idiomas ORDER BY nome_idioma";
+                                $result_idiomas_modal = $conn_modal->query($sql_idiomas_modal);
+                                if ($result_idiomas_modal && $result_idiomas_modal->num_rows > 0) {
+                                    while ($idioma = $result_idiomas_modal->fetch_assoc()) {
+                                        echo '<option value="' . $idioma['id'] . '">' . htmlspecialchars($idioma['nome_idioma']) . '</option>';
+                                    }
+                                }
+                                $database_modal->closeConnection();
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-warning" id="btnAddUnidade">
+                            <i class="fas fa-save me-2"></i>Adicionar Unidade
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Auto-dismiss alerts após 5 segundos
@@ -948,6 +1017,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 5000);
             });
             
+            // Debug: verificar se modal existe
+            const modal = document.getElementById('addUnidadeModal');
+            console.log('Modal encontrado:', modal ? 'Sim' : 'Não');
+            
             // Modal de confirmação de exclusão
             const confirmDeleteModal = document.getElementById('confirmDeleteModal');
             if (confirmDeleteModal) {
@@ -958,6 +1031,64 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     document.getElementById('unidadeNome').textContent = unidadeNome;
                     document.getElementById('confirmDeleteBtn').href = 'eliminar_unidade.php?id=' + unidadeId;
+                });
+            }
+            
+            // Formulário de adicionar unidade via AJAX
+            const formAddUnidade = document.getElementById('formAddUnidade');
+            if (formAddUnidade) {
+                formAddUnidade.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const formData = new FormData(this);
+                    const btnAddUnidade = document.getElementById('btnAddUnidade');
+                    const alertUnidade = document.getElementById('alertUnidade');
+                    
+                    btnAddUnidade.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Adicionando...';
+                    btnAddUnidade.disabled = true;
+                    alertUnidade.innerHTML = '';
+                    
+                    fetch('adicionar_unidade.php', {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alertUnidade.innerHTML = `
+                                <div class="alert alert-success alert-dismissible fade show">
+                                    <i class="fas fa-check-circle me-2"></i>${data.message}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            `;
+                            formAddUnidade.reset();
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            alertUnidade.innerHTML = `
+                                <div class="alert alert-danger alert-dismissible fade show">
+                                    <i class="fas fa-exclamation-circle me-2"></i>${data.message}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch(error => {
+                        alertUnidade.innerHTML = `
+                            <div class="alert alert-danger alert-dismissible fade show">
+                                <i class="fas fa-exclamation-circle me-2"></i>Erro ao adicionar unidade. Tente novamente.
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        `;
+                    })
+                    .finally(() => {
+                        btnAddUnidade.innerHTML = '<i class="fas fa-save me-2"></i>Adicionar Unidade';
+                        btnAddUnidade.disabled = false;
+                    });
                 });
             }
         });

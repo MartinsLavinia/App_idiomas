@@ -230,13 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <div class="main-content" id="mainContent">
         <div class="container-fluid mt-4">
-            <?php
-            if (isset($_GET["message_type"]) && isset($_GET["message_content"])) {
-                $message_type = htmlspecialchars($_GET["message_type"]);
-                $message_content = htmlspecialchars(urldecode($_GET["message_content"]));
-                echo '<div class="alert alert-' . ($message_type == 'success' ? 'success' : 'danger') . ' mt-3">' . $message_content . '</div>';
-            }
-            ?>
+
             <div class="row mb-4" style="display: inline-flex;flex-flow: row nowrap;align-items: flex-start;justify-content: flex-start; width:80%">
                         <h2 class="mb-4">Gerenciar Caminhos de Aprendizagem</h2>
                         <a href="#" class="btn btn-warning mb-4" data-bs-toggle="modal" data-bs-target="#addCaminhoModal" style="width: 220px; padding:15px">
@@ -513,6 +507,18 @@ document.addEventListener('DOMContentLoaded', function() {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
+        // Auto-dismiss alerts após 5 segundos
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 5000);
+            });
+        });
+    </script>
+    <script>
         // Script para o modal de confirmação de exclusão
         document.addEventListener('DOMContentLoaded', function() {
             const deleteButtons = document.querySelectorAll('.delete-btn');
@@ -545,15 +551,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Mostrar loading
                 spinner.classList.remove('d-none');
-                btnText.textContent = 'Adicionando...';
+                btnAddCaminho.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Adicionando...';
                 btnAddCaminho.disabled = true;
                 alertCaminho.innerHTML = '';
 
                 fetch('adicionar_caminho.php', {
                     method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
                     body: formData
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro na resposta do servidor');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         alertCaminho.innerHTML = `
@@ -585,8 +599,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     `;
                 })
                 .finally(() => {
-                    spinner.classList.add('d-none');
-                    btnText.textContent = 'Adicionar';
+                    btnAddCaminho.innerHTML = 'Adicionar';
                     btnAddCaminho.disabled = false;
                 });
             });

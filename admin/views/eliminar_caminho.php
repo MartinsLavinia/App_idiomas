@@ -7,8 +7,8 @@ if (!isset($_SESSION['id_admin'])) {
     exit();
 }
 
-// aceita só POST
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+// aceita GET e POST
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $_SERVER['REQUEST_METHOD'] !== 'GET') {
     header("Location: gerenciar_caminho.php?status=error&message=" . urlencode("Método inválido."));
     exit();
 }
@@ -31,7 +31,7 @@ if (!class_exists('Database')) {
     exit();
 }
 
-$id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
+$id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT) ?: filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 if (!$id) {
     header("Location: gerenciar_caminho.php?status=error&message=" . urlencode("ID inválido."));
     exit();
@@ -53,12 +53,15 @@ try {
     $database->closeConnection();
 
     if ($affected > 0) {
-        header("Location: gerenciar_caminho.php?status=success&message=" . urlencode("Caminho eliminado com sucesso."));
+        $_SESSION['success'] = "Caminho eliminado com sucesso!";
+        header("Location: gerenciar_caminho.php");
     } else {
-        header("Location: gerenciar_caminho.php?status=error&message=" . urlencode("Caminho não encontrado ou já excluído."));
+        $_SESSION['error'] = "Caminho não encontrado ou já excluído.";
+        header("Location: gerenciar_caminho.php");
     }
     exit();
 } catch (Throwable $e) {
-    header("Location: gerenciar_caminho.php?status=error&message=" . urlencode("Erro ao eliminar: " . $e->getMessage()));
+    $_SESSION['error'] = "Erro ao eliminar: " . $e->getMessage();
+    header("Location: gerenciar_caminho.php");
     exit();
 }

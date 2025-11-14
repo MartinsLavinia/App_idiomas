@@ -1,8 +1,18 @@
 <?php
 session_start();
-include_once __DIR__ . '/../config/conexao.php';
+include_once __DIR__ . '/../../conexao.php';
+
+$isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
+
+if ($isAjax) {
+    header('Content-Type: application/json; charset=utf-8');
+}
 
 if (!isset($_SESSION['id_admin'])) {
+    if ($isAjax) {
+        echo json_encode(['success' => false, 'message' => 'Não autorizado']);
+        exit();
+    }
     header("Location: login_admin.php");
     exit();
 }
@@ -21,29 +31,38 @@ if ($result_idiomas->num_rows > 0) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nome_unidade = trim($_POST['nome_unidade']);
-    $descricao = trim($_POST['descricao']);
+    $descricao = trim($_POST['descricao'] ?? '');
+    $nivel = trim($_POST['nivel'] ?? '');
+    $numero_unidade = !empty($_POST['numero_unidade']) ? intval($_POST['numero_unidade']) : null;
     $id_idioma = $_POST['id_idioma'];
 
     if (empty($nome_unidade) || empty($id_idioma)) {
-        $_SESSION['error'] = "Nome da unidade e idioma são obrigatórios.";
+        $response = ['success' => false, 'message' => 'Nome da unidade e idioma são obrigatórios.'];
     } else {
         try {
-            $sql_insert = "INSERT INTO unidades (nome_unidade, descricao, id_idioma) VALUES (?, ?, ?)";
+            $sql_insert = "INSERT INTO unidades (nome_unidade, descricao, nivel, numero_unidade, id_idioma) VALUES (?, ?, ?, ?, ?)";
             $stmt_insert = $conn->prepare($sql_insert);
-            $stmt_insert->bind_param("ssi", $nome_unidade, $descricao, $id_idioma);
+            $stmt_insert->bind_param("sssii", $nome_unidade, $descricao, $nivel, $numero_unidade, $id_idioma);
 
             if ($stmt_insert->execute()) {
-                $_SESSION['success'] = "Unidade '$nome_unidade' adicionada com sucesso!";
+                $response = ['success' => true, 'message' => "Unidade '$nome_unidade' adicionada com sucesso!"];
             } else {
-                $_SESSION['error'] = "Erro ao adicionar a unidade: " . $conn->error;
+                $response = ['success' => false, 'message' => 'Erro ao adicionar a unidade: ' . $conn->error];
             }
             $stmt_insert->close();
         } catch (Exception $e) {
-            $_SESSION['error'] = "Erro ao processar a solicitação: " . $e->getMessage();
+            $response = ['success' => false, 'message' => 'Erro ao processar a solicitação: ' . $e->getMessage()];
         }
     }
-    header("Location: gerenciar_unidades.php");
-    exit();
+    
+    if ($isAjax) {
+        echo json_encode($response);
+        exit();
+    } else {
+        $_SESSION[$response['success'] ? 'success' : 'error'] = $response['message'];
+        header("Location: gerenciar_unidades.php");
+        exit();
+    }
 }
 
 $database->closeConnection();
