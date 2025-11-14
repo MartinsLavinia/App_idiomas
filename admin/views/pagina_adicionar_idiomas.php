@@ -786,9 +786,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 Gerenciar idiomas simples
             </h2>
 
-            <a href="#" class="btn btn-salvar-quiz mb-4" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
-                <i class="fas fa-plus-circle me-2"></i>Gerenciar idiomas
-            </a>
+            <div class="d-flex gap-2 mb-4">
+                <a href="#" class="btn btn-salvar-quiz" data-bs-toggle="modal" data-bs-target="#gerenciarIdiomasModal">
+                    <i class="fas fa-plus-circle me-2"></i>Gerenciar idiomas
+                </a>
+                <?php if (isset($_SESSION['quiz_data']) && !empty($_SESSION['quiz_data'])): ?>
+                <a href="limpar_dados_temporarios.php" class="btn btn-outline-danger" onclick="return confirm('Tem certeza que deseja limpar todos os dados salvos do formulário?')">
+                    <i class="fas fa-trash me-2"></i>Limpar Dados Salvos
+                </a>
+                <?php endif; ?>
+            </div>
 
             <!-- Notificações -->
             <?php if (isset($_SESSION['success'])): ?>
@@ -806,17 +813,33 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             <?php unset($_SESSION['error']); ?>
             <?php endif; ?>
+            
+            <?php if (isset($_SESSION['quiz_data']) && !empty($_SESSION['quiz_data'])): ?>
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <i class="fas fa-info-circle"></i> 
+                Você tem dados salvos de um formulário anterior. 
+                <strong><?php echo count($_SESSION['quiz_data']); ?> pergunta(s)</strong> já preenchida(s).
+                <?php if (isset($_SESSION['idioma_novo'])): ?>
+                    Idioma: <strong><?php echo htmlspecialchars($_SESSION['idioma_novo']); ?></strong>
+                <?php endif; ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <?php endif; ?>
 
             <div class="card">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Adicionar Novo Idioma com Quiz (Página <?php echo $pagina_atual . ' de ' . $total_paginas; ?>)</h5>
+                    <div class="progress mt-2" style="height: 8px;">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: <?php echo ($pagina_atual / $total_paginas) * 100; ?>%" aria-valuenow="<?php echo $pagina_atual; ?>" aria-valuemin="0" aria-valuemax="<?php echo $total_paginas; ?>"></div>
+                    </div>
+                    <small class="text-light mt-1 d-block">Progresso: <?php echo $pagina_atual; ?>/<?php echo $total_paginas; ?> páginas (<?php echo round(($pagina_atual / $total_paginas) * 100); ?>%)</small>
                 </div>
                 <div class="card-body">
-                    <form action="adicionar_idioma_completo.php?page=<?php echo $pagina_atual + 1; ?>" method="POST">
+                    <form action="adicionar_idioma_completo.php?page=<?php echo $pagina_atual + 1; ?>" method="POST" id="quizForm">
                         <?php if ($pagina_atual === 1): ?>
                         <div class="mb-3">
                             <label for="idioma_novo_completo" class="form-label">Nome do Idioma</label>
-                            <input type="text" class="form-control" id="idioma_novo_completo" name="idioma" placeholder="Ex: Espanhol" required>
+                            <input type="text" class="form-control" id="idioma_novo_completo" name="idioma" placeholder="Ex: Espanhol" value="<?php echo isset($_SESSION['idioma_novo']) ? htmlspecialchars($_SESSION['idioma_novo']) : ''; ?>" required>
                         </div>
                         <hr>
                         <?php endif; ?>
@@ -825,40 +848,42 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         <p class="text-muted">A resposta correta para cada pergunta deve ser "A", "B", "C" ou "D".</p>
                         
-                        <?php for ($i = $offset_inicial; $i < $offset_inicial + $limit && $i <= $total_perguntas; $i++): ?>
+                        <?php for ($i = $offset_inicial; $i < $offset_inicial + $limit && $i <= $total_perguntas; $i++): 
+                            $saved_data = isset($_SESSION['quiz_data'][$i]) ? $_SESSION['quiz_data'][$i] : [];
+                        ?>
                         <div class="card mb-3">
                             <div class="card-header">Pergunta #<?php echo $i; ?></div>
                             <div class="card-body">
                                 <div class="mb-3">
                                     <label for="pergunta_<?php echo $i; ?>" class="form-label">Pergunta</label>
-                                    <textarea class="form-control" id="pergunta_<?php echo $i; ?>" name="pergunta_<?php echo $i; ?>" rows="2" required></textarea>
+                                    <textarea class="form-control" id="pergunta_<?php echo $i; ?>" name="pergunta_<?php echo $i; ?>" rows="2" required><?php echo isset($saved_data['pergunta']) ? htmlspecialchars($saved_data['pergunta']) : ''; ?></textarea>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-3 mb-3">
                                         <label for="opcao_a_<?php echo $i; ?>" class="form-label">Opção A</label>
-                                        <input type="text" class="form-control" id="opcao_a_<?php echo $i; ?>" name="opcao_a_<?php echo $i; ?>" required>
+                                        <input type="text" class="form-control" id="opcao_a_<?php echo $i; ?>" name="opcao_a_<?php echo $i; ?>" value="<?php echo isset($saved_data['opcao_a']) ? htmlspecialchars($saved_data['opcao_a']) : ''; ?>" required>
                                     </div>
                                     <div class="col-md-3 mb-3">
                                         <label for="opcao_b_<?php echo $i; ?>" class="form-label">Opção B</label>
-                                        <input type="text" class="form-control" id="opcao_b_<?php echo $i; ?>" name="opcao_b_<?php echo $i; ?>" required>
+                                        <input type="text" class="form-control" id="opcao_b_<?php echo $i; ?>" name="opcao_b_<?php echo $i; ?>" value="<?php echo isset($saved_data['opcao_b']) ? htmlspecialchars($saved_data['opcao_b']) : ''; ?>" required>
                                     </div>
                                     <div class="col-md-3 mb-3">
                                         <label for="opcao_c_<?php echo $i; ?>" class="form-label">Opção C</label>
-                                        <input type="text" class="form-control" id="opcao_c_<?php echo $i; ?>" name="opcao_c_<?php echo $i; ?>" required>
+                                        <input type="text" class="form-control" id="opcao_c_<?php echo $i; ?>" name="opcao_c_<?php echo $i; ?>" value="<?php echo isset($saved_data['opcao_c']) ? htmlspecialchars($saved_data['opcao_c']) : ''; ?>" required>
                                     </div>
                                     <div class="col-md-3 mb-3">
                                         <label for="opcao_d_<?php echo $i; ?>" class="form-label">Opção D</label>
-                                        <input type="text" class="form-control" id="opcao_d_<?php echo $i; ?>" name="opcao_d_<?php echo $i; ?>" required>
+                                        <input type="text" class="form-control" id="opcao_d_<?php echo $i; ?>" name="opcao_d_<?php echo $i; ?>" value="<?php echo isset($saved_data['opcao_d']) ? htmlspecialchars($saved_data['opcao_d']) : ''; ?>" required>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <label for="resposta_correta_<?php echo $i; ?>" class="form-label">Resposta Correta</label>
                                     <select id="resposta_correta_<?php echo $i; ?>" name="resposta_correta_<?php echo $i; ?>" class="form-select" required>
                                         <option value="">Selecione a resposta correta</option>
-                                        <option value="A">Opção A</option>
-                                        <option value="B">Opção B</option>
-                                        <option value="C">Opção C</option>
-                                        <option value="D">Opção D</option>
+                                        <option value="A" <?php echo (isset($saved_data['resposta_correta']) && $saved_data['resposta_correta'] === 'A') ? 'selected' : ''; ?>>Opção A</option>
+                                        <option value="B" <?php echo (isset($saved_data['resposta_correta']) && $saved_data['resposta_correta'] === 'B') ? 'selected' : ''; ?>>Opção B</option>
+                                        <option value="C" <?php echo (isset($saved_data['resposta_correta']) && $saved_data['resposta_correta'] === 'C') ? 'selected' : ''; ?>>Opção C</option>
+                                        <option value="D" <?php echo (isset($saved_data['resposta_correta']) && $saved_data['resposta_correta'] === 'D') ? 'selected' : ''; ?>>Opção D</option>
                                     </select>
                                 </div>
                             </div>
@@ -870,23 +895,33 @@ document.addEventListener('DOMContentLoaded', function() {
                         <nav aria-label="Navegação de Páginas">
                             <ul class="pagination justify-content-center">
                                 <li class="page-item <?php echo ($pagina_atual <= 1) ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="?page=<?php echo $pagina_atual - 1; ?>">Anterior</a>
+                                    <a class="page-link" href="#" onclick="<?php echo ($pagina_atual > 1) ? 'navegarPagina(' . ($pagina_atual - 1) . ')' : ''; ?>; return false;">Anterior</a>
                                 </li>
                                 
                                 <?php for ($p = 1; $p <= $total_paginas; $p++): ?>
                                 <li class="page-item <?php echo ($p == $pagina_atual) ? 'active' : ''; ?>">
-                                    <a class="page-link" href="?page=<?php echo $p; ?>"><?php echo $p; ?></a>
+                                    <a class="page-link" href="#" onclick="navegarPagina(<?php echo $p; ?>); return false;"><?php echo $p; ?></a>
                                 </li>
                                 <?php endfor; ?>
                                 
                                 <li class="page-item <?php echo ($pagina_atual >= $total_paginas) ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="?page=<?php echo $pagina_atual + 1; ?>">Próximo</a>
+                                    <a class="page-link" href="#" onclick="<?php echo ($pagina_atual < $total_paginas) ? 'navegarPagina(' . ($pagina_atual + 1) . ')' : ''; ?>; return false;">Próximo</a>
                                 </li>
                             </ul>
                         </nav>
 
-                        <div class="d-flex justify-content-end gap-2 mt-3">
+                        <div class="d-flex justify-content-between gap-2 mt-3">
+                            <?php if ($pagina_atual > 1): ?>
+                                <button type="button" class="btn btn-secondary" onclick="salvarEVoltar()">← Página Anterior</button>
+                            <?php else: ?>
+                                <div></div>
+                            <?php endif; ?>
+                            
+                            <?php if ($pagina_atual < $total_paginas): ?>
+                                <button type="button" class="btn btn-salvar-quiz" onclick="salvarEContinuar()">Salvar e Continuar →</button>
+                            <?php else: ?>
                                 <button type="submit" class="btn btn-salvar-quiz" style="font-weight: 500px;">Salvar Idioma e Quiz (Fim)</button>
+                            <?php endif; ?>
                         </div>
                     </form>
                 </div>
@@ -991,6 +1026,63 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Função para salvar dados via AJAX
+        function salvarDadosPagina() {
+            const form = document.getElementById('quizForm');
+            const formData = new FormData(form);
+            
+            return fetch('salvar_temporario.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    throw new Error(data.message || 'Erro ao salvar dados');
+                }
+                return data;
+            });
+        }
+        
+        // Função para salvar e continuar para próxima página
+        function salvarEContinuar() {
+            salvarDadosPagina()
+                .then(() => {
+                    window.location.href = '?page=<?php echo $pagina_atual + 1; ?>';
+                })
+                .catch(error => {
+                    alert('Erro ao salvar: ' + error.message);
+                });
+        }
+        
+        // Função para salvar e voltar para página anterior
+        function salvarEVoltar() {
+            salvarDadosPagina()
+                .then(() => {
+                    window.location.href = '?page=<?php echo $pagina_atual - 1; ?>';
+                })
+                .catch(error => {
+                    alert('Erro ao salvar: ' + error.message);
+                });
+        }
+        
+        // Função para navegar para qualquer página
+        function navegarPagina(pagina) {
+            salvarDadosPagina()
+                .then(() => {
+                    window.location.href = '?page=' + pagina;
+                })
+                .catch(error => {
+                    alert('Erro ao salvar: ' + error.message);
+                });
+        }
+        
+        // Auto-salvar a cada 30 segundos
+        setInterval(() => {
+            salvarDadosPagina().catch(() => {});
+        }, 30000);
+    </script>
     <script>
         // Menu hamburguer functionality
         document.addEventListener('DOMContentLoaded', function() {

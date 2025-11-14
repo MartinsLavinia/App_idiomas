@@ -78,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // 4. Se não for a última página, redireciona para a próxima página do formulário
     if ($proxima_pagina <= $total_paginas) {
-        // Redireciona de volta para a página de idiomas, que agora exibirá a próxima página do quiz
+        $_SESSION['success'] = "Dados da página $pagina_atual salvos com sucesso!";
         header("Location: pagina_adicionar_idiomas.php?page=$proxima_pagina");
         exit();
     }
