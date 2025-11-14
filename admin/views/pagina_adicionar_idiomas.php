@@ -791,9 +791,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     <i class="fas fa-plus-circle me-2"></i>Gerenciar idiomas
                 </a>
                 <?php if (isset($_SESSION['quiz_data']) && !empty($_SESSION['quiz_data'])): ?>
-                <a href="limpar_dados_temporarios.php" class="btn btn-outline-danger" onclick="return confirm('Tem certeza que deseja limpar todos os dados salvos do formulário?')">
+                <button class="btn btn-outline-danger" onclick="confirmarLimpeza()">
                     <i class="fas fa-trash me-2"></i>Limpar Dados Salvos
-                </a>
+                </button>
                 <?php endif; ?>
             </div>
 
@@ -1025,7 +1025,97 @@ document.addEventListener('DOMContentLoaded', function() {
 
     </div>
 
+    <!-- Container de Toasts -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" id="toastContainer">
+        <!-- Os toasts serão inseridos aqui dinamicamente -->
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Função para mostrar toast
+        function mostrarToast(mensagem, tipo = 'info') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toastId = 'toast-' + Date.now();
+            
+            const iconMap = {
+                'success': 'fa-check-circle',
+                'danger': 'fa-exclamation-triangle',
+                'warning': 'fa-exclamation-circle',
+                'info': 'fa-info-circle'
+            };
+            
+            const toastHtml = `
+                <div id="${toastId}" class="toast align-items-center text-bg-${tipo} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="fas ${iconMap[tipo]} me-2"></i>${mensagem}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+            
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+            const toastElement = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastElement, { delay: 5000 });
+            toast.show();
+            
+            // Remove o toast do DOM após ser ocultado
+            toastElement.addEventListener('hidden.bs.toast', function() {
+                toastElement.remove();
+            });
+        }
+        
+        // Função para confirmar limpeza dos dados
+        function confirmarLimpeza() {
+            
+            // Criar toast personalizado com botões
+            const toastContainer = document.getElementById('toastContainer');
+            const toastId = 'toast-confirm-' + Date.now();
+            
+            const toastHtml = `
+                <div id="${toastId}" class="toast border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false" style="background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); border-left: 5px solid #f39c12 !important;">
+                    <div class="toast-header" style="background: linear-gradient(135deg, #f39c12, #e67e22); color: white; border: none;">
+                        <i class="fas fa-exclamation-triangle me-2" style="color: #fff;"></i>
+                        <strong class="me-auto">Confirmação Necessária</strong>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body" style="padding: 1.5rem; color: #856404;">
+                        <div class="mb-3">
+                            <i class="fas fa-trash-alt me-2" style="color: #e74c3c;"></i>
+                            <strong>Tem certeza que deseja limpar todos os dados salvos?</strong>
+                        </div>
+                        <div class="text-muted mb-3" style="font-size: 0.9rem;">
+                            Esta ação não pode ser desfeita e todos os dados do formulário serão perdidos.
+                        </div>
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button type="button" class="btn btn-success btn-sm px-3" onclick="confirmarLimpezaFinal('${toastId}')" style="box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);">
+                                <i class="fas fa-check me-1"></i>Sim, Limpar
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="toast" style="box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);">
+                                <i class="fas fa-times me-1"></i>Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+            const toastElement = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+        }
+        
+        // Função para confirmar limpeza final
+        function confirmarLimpezaFinal(toastId) {
+            const toastElement = document.getElementById(toastId);
+            const toast = bootstrap.Toast.getInstance(toastElement);
+            toast.hide();
+            
+            mostrarToast('Limpando dados...', 'info');
+            window.location.href = 'limpar_dados_temporarios.php';
+        }
+    </script>
     <script>
         // Função para salvar dados via AJAX
         function salvarDadosPagina() {
@@ -1052,7 +1142,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.location.href = '?page=<?php echo $pagina_atual + 1; ?>';
                 })
                 .catch(error => {
-                    alert('Erro ao salvar: ' + error.message);
+                    mostrarToast('Erro ao salvar: ' + error.message, 'danger');
                 });
         }
         
@@ -1063,7 +1153,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.location.href = '?page=<?php echo $pagina_atual - 1; ?>';
                 })
                 .catch(error => {
-                    alert('Erro ao salvar: ' + error.message);
+                    mostrarToast('Erro ao salvar: ' + error.message, 'danger');
                 });
         }
         
@@ -1074,7 +1164,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.location.href = '?page=' + pagina;
                 })
                 .catch(error => {
-                    alert('Erro ao salvar: ' + error.message);
+                    mostrarToast('Erro ao salvar: ' + error.message, 'danger');
                 });
         }
         
