@@ -23,6 +23,20 @@ if ($result_idiomas && $result_idiomas->num_rows > 0) {
 $database_idiomas->closeConnection();
 // --- FIM DA BUSCA DE IDIOMAS ---
 
+// Função para verificar força da senha
+function verificarForcaSenha($senha) {
+    $score = 0;
+    
+    // Critérios de pontuação
+    if (strlen($senha) >= 8) $score++;       // Comprimento mínimo
+    if (preg_match('/[a-z]/', $senha)) $score++;     // Letras minúsculas
+    if (preg_match('/[A-Z]/', $senha)) $score++;     // Letras maiúsculas
+    if (preg_match('/[0-9]/', $senha)) $score++;     // Números
+    if (preg_match('/[^a-zA-Z0-9]/', $senha)) $score++; // Caracteres especiais
+    
+    return $score;
+}
+
 // Lógica de cadastro
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
@@ -35,50 +49,57 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $senha = $_POST['senha'];
     $idioma = $_POST['idioma'];
 
-    // 1. VERIFICAÇÃO: Verifica se o e-mail já existe no banco de dados.
-    $sql_check_email = "SELECT id FROM usuarios WHERE email = ?";
-    $stmt_check = $conn->prepare($sql_check_email);
-    $stmt_check->bind_param("s", $email);
-    $stmt_check->execute();
-    $result_check = $stmt_check->get_result();
-
-    if ($result_check->num_rows > 0) {
-        // Se o e-mail já existe, define a mensagem de erro.
-        $erro_cadastro = "Este e-mail já está cadastrado. Por favor, tente fazer login.";
+    // 1. VERIFICAÇÃO DA FORÇA DA SENHA
+    $forca_senha = verificarForcaSenha($senha);
+    
+    if ($forca_senha <= 2) {
+        $erro_cadastro = "Senha muito fraca. Sua senha deve conter pelo menos 8 caracteres, incluindo letras maiúsculas, minúsculas, números e caracteres especiais.";
     } else {
-        // 2. CADASTRO: Se o e-mail não existe, procede com a inserção do usuário.
-        $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
+        // 2. VERIFICAÇÃO: Verifica se o e-mail já existe no banco de dados.
+        $sql_check_email = "SELECT id FROM usuarios WHERE email = ?";
+        $stmt_check = $conn->prepare($sql_check_email);
+        $stmt_check->bind_param("s", $email);
+        $stmt_check->execute();
+        $result_check = $stmt_check->get_result();
 
-        // Prepare e execute a inserção na tabela 'usuarios'
-        $sql_usuario = "INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)";
-        $stmt_usuario = $conn->prepare($sql_usuario);
-        $stmt_usuario->bind_param("sss", $nome, $email, $senha_hash);
-
-        if ($stmt_usuario->execute()) {
-            // Se o cadastro do usuário for bem-sucedido, pegue o ID dele
-            $id_usuario = $conn->insert_id;
-            
-            // Prepare e execute a inserção na tabela 'progresso_usuario'
-            $sql_progresso = "INSERT INTO progresso_usuario (id_usuario, idioma, nivel) VALUES (?, ?, ?)";
-            $stmt_progresso = $conn->prepare($sql_progresso);
-            $nivel_inicial = "A1";
-            $stmt_progresso->bind_param("iss", $id_usuario, $idioma, $nivel_inicial);
-
-            if ($stmt_progresso->execute()) {
-                // Sucesso: inicia a sessão e redireciona para o quiz
-                $_SESSION['id_usuario'] = $id_usuario;
-                // Salva o nome do usuário na sessão para personalização no painel
-                $_SESSION['nome_usuario'] = $nome; 
-                header("Location: quiz.php?idioma=$idioma");
-                exit(); 
-            } else {
-                $erro_cadastro = "Erro ao registrar o progresso: " . $stmt_progresso->error;
-            }
-            $stmt_progresso->close();
+        if ($result_check->num_rows > 0) {
+            // Se o e-mail já existe, define a mensagem de erro.
+            $erro_cadastro = "Este e-mail já está cadastrado. Por favor, tente fazer login.";
         } else {
-            $erro_cadastro = "Erro no cadastro do usuário: " . $stmt_usuario->error;
+            // 3. CADASTRO: Se o e-mail não existe e senha é forte, procede com a inserção do usuário.
+            $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
+
+            // Prepare e execute a inserção na tabela 'usuarios'
+            $sql_usuario = "INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)";
+            $stmt_usuario = $conn->prepare($sql_usuario);
+            $stmt_usuario->bind_param("sss", $nome, $email, $senha_hash);
+
+            if ($stmt_usuario->execute()) {
+                // Se o cadastro do usuário for bem-sucedido, pegue o ID dele
+                $id_usuario = $conn->insert_id;
+                
+                // Prepare e execute a inserção na tabela 'progresso_usuario'
+                $sql_progresso = "INSERT INTO progresso_usuario (id_usuario, idioma, nivel) VALUES (?, ?, ?)";
+                $stmt_progresso = $conn->prepare($sql_progresso);
+                $nivel_inicial = "A1";
+                $stmt_progresso->bind_param("iss", $id_usuario, $idioma, $nivel_inicial);
+
+                if ($stmt_progresso->execute()) {
+                    // Sucesso: inicia a sessão e redireciona para o quiz
+                    $_SESSION['id_usuario'] = $id_usuario;
+                    // Salva o nome do usuário na sessão para personalização no painel
+                    $_SESSION['nome_usuario'] = $nome; 
+                    header("Location: quiz.php?idioma=$idioma");
+                    exit(); 
+                } else {
+                    $erro_cadastro = "Erro ao registrar o progresso: " . $stmt_progresso->error;
+                }
+                $stmt_progresso->close();
+            } else {
+                $erro_cadastro = "Erro no cadastro do usuário: " . $stmt_usuario->error;
+            }
+            $stmt_usuario->close();
         }
-        $stmt_usuario->close();
     }
     
     // Feche a conexão usando o método da classe
@@ -126,6 +147,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .text-weak { color: #dc3545; }
         .text-medium { color: #ffc107; }
         .text-strong { color: #198754; }
+        
+        /* Estilo para botão desabilitado */
+        .btn-disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        /* Mensagem de senha fraca */
+        .weak-password-message {
+            color: #dc3545;
+            font-size: 0.8rem;
+            margin-top: -0.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
     </style>
 </head>
 
@@ -158,7 +196,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
         <?php endif; ?>
 
-        <form action="cadastro.php" method="POST">
+        <form action="cadastro.php" method="POST" id="form-cadastro">
             <div class="input-group">
                 <input type="text" id="nome" name="nome" placeholder="Nome Completo" required>
             </div>
@@ -175,6 +213,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
                 <div id="strength-text" class="strength-text"></div>
             </div>
+            
+            <!-- Mensagem de senha fraca -->
+            <div id="weak-password-message" class="weak-password-message">
+                Senha fraca. Crie uma senha mais forte.
+            </div>
+            
             <div class="input-group">
                 <label for="idioma" style="display:none;">Escolha seu primeiro idioma</label>
                 <select class="form-select" id="idioma" name="idioma" required>
@@ -187,7 +231,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </select>
             </div>
 
-            <button type="submit" class="btn-login">Cadastrar e Começar Quiz</button>
+            <button type="submit" class="btn-login" id="btn-cadastrar">Cadastrar e Começar Quiz</button>
         </form>
 
         <div class="social-login">
@@ -210,9 +254,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         const senhaInput = document.getElementById('senha');
         const strengthFill = document.getElementById('strength-fill');
         const strengthText = document.getElementById('strength-text');
+        const btnCadastrar = document.getElementById('btn-cadastrar');
+        const formCadastro = document.getElementById('form-cadastro');
+        const weakPasswordMessage = document.getElementById('weak-password-message');
 
-        senhaInput.addEventListener('input', function() {
-            const senha = this.value;
+        let forcaSenhaAtual = 0;
+
+        function atualizarForcaSenha(senha) {
             let score = 0;
             let feedback = '';
 
@@ -220,7 +268,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 score = 0;
                 feedback = '';
             } else {
-                // Critérios de pontuação
+                // Critérios de pontuação (mesmos do PHP)
                 if (senha.length >= 8) score++;       // Comprimento
                 if (/[a-z]/.test(senha)) score++;     // Letras minúsculas
                 if (/[A-Z]/.test(senha)) score++;     // Letras maiúsculas
@@ -235,22 +283,59 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             if (senha.length === 0) {
                 strengthText.textContent = '';
+                weakPasswordMessage.style.display = 'none';
             } else if (score <= 2) {
                 feedback = 'Senha fraca';
                 strengthFill.classList.add('strength-weak');
                 strengthText.className = 'strength-text text-weak';
+                weakPasswordMessage.style.display = 'block';
             } else if (score <= 4) {
                 feedback = 'Senha média';
                 strengthFill.classList.add('strength-medium');
                 strengthText.className = 'strength-text text-medium';
+                weakPasswordMessage.style.display = 'none';
             } else {
                 feedback = 'Senha forte';
                 strengthFill.classList.add('strength-strong');
                 strengthText.className = 'strength-text text-strong';
+                weakPasswordMessage.style.display = 'none';
             }
 
             strengthText.textContent = feedback;
+            forcaSenhaAtual = score;
+
+            // Atualiza estado do botão
+            atualizarEstadoBotao();
+        }
+
+        function atualizarEstadoBotao() {
+            if (forcaSenhaAtual <= 2 && senhaInput.value.length > 0) {
+                btnCadastrar.disabled = true;
+                btnCadastrar.classList.add('btn-disabled');
+                btnCadastrar.title = 'A senha é muito fraca. Melhore sua senha para continuar.';
+            } else {
+                btnCadastrar.disabled = false;
+                btnCadastrar.classList.remove('btn-disabled');
+                btnCadastrar.title = '';
+            }
+        }
+
+        senhaInput.addEventListener('input', function() {
+            atualizarForcaSenha(this.value);
         });
+
+        // Validação no envio do formulário (segunda camada de segurança)
+        formCadastro.addEventListener('submit', function(e) {
+            const senha = senhaInput.value;
+            if (forcaSenhaAtual <= 2) {
+                e.preventDefault();
+                alert('Por favor, escolha uma senha mais forte. Sua senha deve conter pelo menos 8 caracteres, incluindo letras maiúsculas, minúsculas, números e caracteres especiais.');
+                senhaInput.focus();
+            }
+        });
+
+        // Inicializa o estado do botão
+        atualizarEstadoBotao();
     });
     </script>
     <script>
