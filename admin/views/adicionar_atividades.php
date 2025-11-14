@@ -90,12 +90,29 @@ function getBlocosByCaminhos($conn, array $caminhoIds) {
 }
 
 function adicionarExercicio($conn, $caminhoId, $blocoId, $ordem, $tipo_exercicio, $pergunta, $conteudo) {
+    // Verificar quantas atividades já existem no bloco (apenas normais)
+    $sql_count = "SELECT COUNT(*) as total FROM exercicios WHERE bloco_id = ? AND tipo = 'normal'";
+    $stmt_count = $conn->prepare($sql_count);
+    $stmt_count->bind_param("i", $blocoId);
+    $stmt_count->execute();
+    $result_count = $stmt_count->get_result()->fetch_assoc();
+    $total_atividades_normais = $result_count['total'];
+    $stmt_count->close();
+    
     // Mapear tipo_exercicio para o ENUM da coluna 'tipo'
     $tipoEnum = 'normal'; // padrão
     if ($tipo_exercicio === 'especial') {
         $tipoEnum = 'especial';
+        // Atividades especiais sempre ficam por último (ordem 999)
+        $ordem = 999;
     } elseif ($tipo_exercicio === 'quiz') {
         $tipoEnum = 'quiz';
+    } else {
+        // Para atividades normais, verificar se já tem 12
+        if ($total_atividades_normais >= 12) {
+            error_log("Bloco já possui o máximo de 12 atividades normais");
+            return false;
+        }
     }
     
     // Definir categoria baseada no tipo_exercicio
@@ -104,7 +121,6 @@ function adicionarExercicio($conn, $caminhoId, $blocoId, $ordem, $tipo_exercicio
         case 'listening':
             $categoria = 'audicao';
             break;
-
         case 'completar':
             $categoria = 'escrita';
             break;
@@ -313,11 +329,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $exercicio_id = adicionarExercicio($conn, $caminho_id, $bloco_id, $ordem, $tipo_exercicio, $pergunta, $conteudo);
             if ($exercicio_id) {
                 $tipo_exercicio_display = str_replace('_', ' ', ucfirst($tipo_exercicio));
-                $_SESSION['mensagem_sucesso'] = 'Exercício de ' . $tipo_exercicio_display . ' adicionado com sucesso!';
+                if ($tipo_exercicio === 'especial') {
+                    $_SESSION['mensagem_sucesso'] = 'Atividade especial adicionada com sucesso! Ela aparecerá após o usuário completar as 12 atividades normais do bloco.';
+                } else {
+                    $_SESSION['mensagem_sucesso'] = 'Exercício de ' . $tipo_exercicio_display . ' adicionado com sucesso!';
+                }
                 header("Location: adicionar_atividades.php?unidade_id=" . $unidade_id);
                 exit();
             } else {
-                $mensagem = '<div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i>Erro ao adicionar exercício no banco de dados. Verifique os logs para mais detalhes.</div>';
+                // Verificar se o erro foi por limite de atividades normais
+                $sql_check = "SELECT COUNT(*) as total FROM exercicios WHERE bloco_id = ? AND tipo = 'normal'";
+                $stmt_check = $conn->prepare($sql_check);
+                $stmt_check->bind_param("i", $bloco_id);
+                $stmt_check->execute();
+                $result_check = $stmt_check->get_result()->fetch_assoc();
+                $stmt_check->close();
+                
+                if ($result_check['total'] >= 12 && $tipo_exercicio !== 'especial') {
+                    $mensagem = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>Este bloco já possui o máximo de 12 atividades normais. Você pode adicionar atividades especiais ou escolher outro bloco.</div>';
+                } else {
+                    $mensagem = '<div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i>Erro ao adicionar exercício no banco de dados. Verifique os logs para mais detalhes.</div>';
+                }
             }
         }
     }
@@ -1062,21 +1094,15 @@ $database->closeConnection();
                         </script>
                         <?php endif; ?>
 
-                        <!-- Campo Ordem -->
-                        <div class="mb-3">
-                            <label for="ordem" class="form-label">Ordem do Exercício no Bloco</label>
-                            <input type="number" class="form-control" id="ordem" name="ordem" value="<?php echo htmlspecialchars($post_ordem); ?>" required>
-                            <div class="form-text">Define a sequência em que este exercício aparecerá dentro do bloco selecionado</div>
-                        </div>
-
                         <!-- Campo Tipo -->
                         <div class="mb-3">
                             <label for="tipo" class="form-label">Tipo de Exercício</label>
-                            <select class="form-select" id="tipo" name="tipo" required>
+                            <select class="form-select" id="tipo" name="tipo" required onchange="toggleOrdemField()">
                                 <option value="normal" <?php echo ($post_tipo == "normal") ? "selected" : ""; ?>>Normal</option>
-                                <option value="especial" <?php echo ($post_tipo == "especial") ? "selected" : ""; ?>>Especial (Vídeo/Áudio)</option>
+                                <option value="especial" <?php echo ($post_tipo == "especial") ? "selected" : ""; ?>>Especial (Vídeo/Áudio) - Aparece após completar o bloco</option>
                                 <option value="quiz" <?php echo ($post_tipo == "quiz") ? "selected" : ""; ?>>Quiz</option>
                             </select>
+                            <div class="form-text">Atividades especiais só aparecem quando o usuário completa todas as atividades normais do bloco.</div>
                         </div>
                         
                         <!-- Campo Subtipo -->
@@ -1087,6 +1113,13 @@ $database->closeConnection();
                                 <option value="completar" <?php echo ($post_tipo_exercicio == "completar") ? "selected" : ""; ?>>Completar Frase</option>
                                 <option value="listening" <?php echo ($post_tipo_exercicio == "listening") ? "selected" : ""; ?>>Exercício de Listening</option>
                             </select>
+                        </div>
+
+                        <!-- Campo Ordem -->
+                        <div class="mb-3" id="campo-ordem">
+                            <label for="ordem" class="form-label">Ordem do Exercício no Bloco</label>
+                            <input type="number" class="form-control" id="ordem" name="ordem" value="<?php echo htmlspecialchars($post_ordem); ?>" min="1" max="12">
+                            <div class="form-text">Define a sequência em que este exercício aparecerá dentro do bloco (1-12).</div>
                         </div>
 
                         <!-- Campo Pergunta -->
@@ -1429,6 +1462,7 @@ $database->closeConnection();
         tipoExercicioSelect.addEventListener("change", atualizarCampos);
         
         atualizarCampos();
+        toggleOrdemField(); // Inicializar o campo ordem
 
         const initialCaminhoId = document.getElementById('caminho_id').value;
         if (initialCaminhoId) {
@@ -1568,6 +1602,27 @@ $database->closeConnection();
             }
         }
     });
+
+    // Função para controlar o campo ordem baseado no tipo
+    function toggleOrdemField() {
+        const tipoSelect = document.getElementById('tipo');
+        const campoOrdem = document.getElementById('campo-ordem');
+        const inputOrdem = document.getElementById('ordem');
+        
+        if (tipoSelect && campoOrdem && inputOrdem) {
+            if (tipoSelect.value === 'especial') {
+                campoOrdem.style.display = 'none';
+                inputOrdem.required = false;
+                inputOrdem.value = '999'; // Valor padrão para especiais
+            } else {
+                campoOrdem.style.display = 'block';
+                inputOrdem.required = true;
+                if (inputOrdem.value === '999') {
+                    inputOrdem.value = ''; // Limpar se era especial
+                }
+            }
+        }
+    }
 
     // Auto-hide success message
     const successAlert = document.querySelector('.alert-success');
