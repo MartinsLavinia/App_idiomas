@@ -12,6 +12,23 @@ if (!isset($_SESSION["id_usuario"])) {
 $id_usuario = $_SESSION["id_usuario"];
 $nome_usuario = $_SESSION["nome_usuario"] ?? "usuário";
 $id_deck = intval($_GET['deck'] ?? 0);
+
+// Crie uma instância da classe Database para obter a conexão
+$database = new Database();
+$conn = $database->conn;
+
+// Buscar foto do usuário
+$sql_foto_usuario = "SELECT foto_perfil FROM usuarios WHERE id = ?";
+$stmt_foto = $conn->prepare($sql_foto_usuario);
+$stmt_foto->bind_param("i", $id_usuario);
+$stmt_foto->execute();
+$resultado_foto = $stmt_foto->get_result()->fetch_assoc();
+$stmt_foto->close();
+
+$foto_usuario = $resultado_foto['foto_perfil'] ?? null;
+
+// Feche a conexão
+$database->closeConnection();
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -395,7 +412,11 @@ $id_deck = intval($_GET['deck'] ?? 0);
 <body>
     <div class="sidebar">
         <div class="profile">
-            <i class="fas fa-user-circle"></i>
+            <?php if ($foto_usuario): ?>
+                <img src="../../<?php echo htmlspecialchars($foto_usuario); ?>" alt="Foto de perfil" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; border: 3px solid var(--amarelo-detalhe);">
+            <?php else: ?>
+                <i class="fas fa-user-circle"></i>
+            <?php endif; ?>
             <h5><?php echo htmlspecialchars($nome_usuario); ?></h5>
             <small>Usuário</small>
         </div>

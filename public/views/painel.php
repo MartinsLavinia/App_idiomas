@@ -21,6 +21,16 @@ $nivel_usuario = null;
 $nome_usuario = $_SESSION["nome_usuario"] ?? "usuário";
 $mostrar_selecao_idioma = false;
 
+// Buscar foto do usuário
+$sql_foto_usuario = "SELECT foto_perfil FROM usuarios WHERE id = ?";
+$stmt_foto = $conn->prepare($sql_foto_usuario);
+$stmt_foto->bind_param("i", $id_usuario);
+$stmt_foto->execute();
+$resultado_foto = $stmt_foto->get_result()->fetch_assoc();
+$stmt_foto->close();
+
+$foto_usuario = $resultado_foto['foto_perfil'] ?? null;
+
 // Buscar idiomas disponíveis do banco de dados
 $sql_idiomas_disponiveis = "SELECT nome_idioma FROM idiomas ORDER BY nome_idioma ASC";
 $result_idiomas = $conn->query($sql_idiomas_disponiveis);
@@ -447,7 +457,11 @@ $database->closeConnection();
 <body>
     <div class="sidebar">
         <div class="profile">
-            <i class="fas fa-user-circle"></i>
+            <?php if ($foto_usuario): ?>
+                <img src="../../<?php echo htmlspecialchars($foto_usuario); ?>" alt="Foto de perfil" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; border: 3px solid var(--amarelo-detalhe);">
+            <?php else: ?>
+                <i class="fas fa-user-circle"></i>
+            <?php endif; ?>
             <h5><?php echo htmlspecialchars($nome_usuario); ?></h5>
             <small>Usuário</small>
         </div>
@@ -539,7 +553,7 @@ $database->closeConnection();
                     </ul>
                 </div>
             </div>
-            <a href="perfil.php" class="list-group-item">
+            <a href="editar_perfil_usuario.php" class="list-group-item">
                 <i class="fas fa-cog"></i> Configurações
             </a>
             <a href="../../logout.php" class="list-group-item mt-auto">
@@ -551,15 +565,7 @@ $database->closeConnection();
     <div class="main-content">
         <div class="container-fluid mt-4">
         
-        <!-- Botão de teste de áudio -->
-        <div class="alert alert-info mb-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <span><i class="fas fa-info-circle me-2"></i>Teste de Áudio:</span>
-                <button type="button" class="btn btn-sm btn-primary" onclick="speakText('Hello, this is a test', 'en-us')">
-                    <i class="fas fa-volume-up me-1"></i>Testar Áudio
-                </button>
-            </div>
-        </div>
+
         
         <div class="row justify-content-center">
             <div class="col-md-11">

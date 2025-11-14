@@ -16,6 +16,16 @@ $nome_usuario = $_SESSION["nome_usuario"] ?? "usuário";
 $database = new Database();
 $conn = $database->conn;
 
+// Buscar foto do usuário
+$sql_foto_usuario = "SELECT foto_perfil FROM usuarios WHERE id = ?";
+$stmt_foto = $conn->prepare($sql_foto_usuario);
+$stmt_foto->bind_param("i", $id_usuario);
+$stmt_foto->execute();
+$resultado_foto = $stmt_foto->get_result()->fetch_assoc();
+$stmt_foto->close();
+
+$foto_usuario = $resultado_foto['foto_perfil'] ?? null;
+
 // Busca o idioma e nível atual do usuário
 $sql_progresso = "SELECT idioma, nivel FROM progresso_usuario WHERE id_usuario = ? ORDER BY id DESC LIMIT 1";
 $stmt_progresso = $conn->prepare($sql_progresso);
@@ -571,7 +581,11 @@ $database->closeConnection();
 <body>
     <div class="sidebar">
         <div class="profile">
-            <i class="fas fa-user-circle"></i>
+            <?php if ($foto_usuario): ?>
+                <img src="../../<?php echo htmlspecialchars($foto_usuario); ?>" alt="Foto de perfil" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; border: 3px solid var(--amarelo-detalhe);">
+            <?php else: ?>
+                <i class="fas fa-user-circle"></i>
+            <?php endif; ?>
             <h5><?php echo htmlspecialchars($nome_usuario); ?></h5>
             <small>Usuário</small>
         </div>
