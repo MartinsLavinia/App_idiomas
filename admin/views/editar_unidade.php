@@ -129,9 +129,10 @@ $database->closeConnection();
                     </div>
                     <div class="card-body">
                         <?php if (isset($_SESSION['error'])): ?>
-                            <div class="alert alert-danger">
+                            <div class="alert alert-danger alert-dismissible fade show">
                                 <i class="fas fa-exclamation-circle me-2"></i>
                                 <?= $_SESSION['error']; unset($_SESSION['error']); ?>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             </div>
                         <?php endif; ?>
                         
@@ -192,5 +193,16 @@ $database->closeConnection();
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 5000);
+            });
+        });
+    </script>
 </body>
 </html>
