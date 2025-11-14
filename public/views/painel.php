@@ -961,6 +961,8 @@ $database->closeConnection();
     let exercicioIndex = 0;
     let respostaSelecionada = null;
     let palavrasCarregadas = [];
+    let exerciciosEspeciais = [];
+    let exerciciosEspeciaisAdicionados = false;
 
     // ==================== INICIALIZAÇÃO ====================
     document.addEventListener('DOMContentLoaded', function() {
@@ -1115,7 +1117,33 @@ $database->closeConnection();
                 console.log('Exercícios recebidos:', data);
                 if (data.success) {
                     if (data.exercicios && data.exercicios.length > 0) {
-                        exerciciosLista = data.exercicios;
+                        // Separar exercícios normais dos especiais
+                        const exerciciosNormais = data.exercicios.filter(ex => ex.tipo !== 'especial');
+                        const exerciciosEspeciais = data.exercicios.filter(ex => ex.tipo === 'especial');
+                        
+                        console.log('Exercícios separados:', {
+                            normais: exerciciosNormais.length,
+                            especiais: exerciciosEspeciais.length,
+                            total: data.exercicios.length
+                        });
+                        
+                        // Ordenar exercícios normais por tipo e depois por ordem
+                        exerciciosNormais.sort((a, b) => {
+                            const tipoA = a.categoria || 'gramatica';
+                            const tipoB = b.categoria || 'gramatica';
+                            
+                            if (tipoA !== tipoB) {
+                                return tipoA.localeCompare(tipoB);
+                            }
+                            return (a.ordem || 0) - (b.ordem || 0);
+                        });
+                        
+                        // Iniciar apenas com exercícios normais
+                        exerciciosLista = exerciciosNormais;
+                        
+                        // Armazenar exercícios especiais para usar depois
+                        window.exerciciosEspeciais = exerciciosEspeciais;
+                        exerciciosEspeciaisAdicionados = false;
                         exercicioIndex = 0;
                         carregarExercicio(exercicioIndex);
                         modalBlocos.hide();
@@ -1508,9 +1536,34 @@ $database->closeConnection();
         if (exercicioIndex < exerciciosLista.length) {
             carregarExercicio(exercicioIndex);
         } else {
-            alert("Parabéns! Você completou todos os exercícios deste bloco.");
-            modalExercicios.hide();
-            modalBlocos.show();
+            // Verificar se há exercícios especiais para mostrar
+            if (window.exerciciosEspeciais && window.exerciciosEspeciais.length > 0 && !exerciciosEspeciaisAdicionados) {
+                // Adicionar exercícios especiais à lista
+                exerciciosLista = [...exerciciosLista, ...window.exerciciosEspeciais];
+                exerciciosEspeciaisAdicionados = true;
+                
+                // Mostrar mensagem especial
+                const conteudoExercicioDiv = document.getElementById("conteudoExercicio");
+                conteudoExercicioDiv.innerHTML = `
+                    <div class="text-center">
+                        <div class="alert alert-success">
+                            <h5><i class="fas fa-star me-2"></i>Parabéns!</h5>
+                            <p>Você completou todas as atividades normais do bloco!</p>
+                            <p>Agora você tem acesso a atividades especiais de aprofundamento.</p>
+                        </div>
+                        <button class="btn btn-warning btn-lg" onclick="carregarExercicio(${exercicioIndex})">
+                            <i class="fas fa-play me-2"></i>Iniciar Atividades Especiais
+                        </button>
+                    </div>
+                `;
+                
+                document.getElementById("btnEnviarResposta").style.display = "none";
+                document.getElementById("btnProximoExercicio").style.display = "none";
+            } else {
+                alert("Parabéns! Você completou todos os exercícios deste bloco.");
+                modalExercicios.hide();
+                modalBlocos.show();
+            }
         }
     };
 
@@ -1671,14 +1724,14 @@ $database->closeConnection();
             if (data.success) {
                 modalAdicionarPalavra.hide();
                 carregarPalavras();
-                alert('Palavra adicionada com sucesso!');
+                mostrarToast('Palavra adicionada com sucesso!', 'success');
             } else {
-                alert('Erro: ' + data.message);
+                mostrarToast('Erro: ' + data.message, 'danger');
             }
         })
         .catch(error => {
             console.error('Erro:', error);
-            alert('Erro de conexão. Tente novamente.');
+            mostrarToast('Erro de conexão. Tente novamente.', 'danger');
         });
     };
        
@@ -1832,13 +1885,14 @@ $database->closeConnection();
         .then(data => {
             if (data.success) {
                 carregarPalavras();
+                mostrarToast('Status atualizado com sucesso!', 'success');
             } else {
-                alert('Erro: ' + data.message);
+                mostrarToast('Erro: ' + data.message, 'danger');
             }
         })
         .catch(error => {
             console.error('Erro:', error);
-            alert('Erro de conexão. Tente novamente.');
+            mostrarToast('Erro de conexão. Tente novamente.', 'danger');
         });
     };
        
@@ -1867,14 +1921,15 @@ $database->closeConnection();
                 modalConfirmarExclusao.hide();
                 if (data.success) {
                     carregarPalavras();
+                    mostrarToast('Palavra excluída com sucesso!', 'success');
                 } else {
-                    alert('Erro: ' + data.message);
+                    mostrarToast('Erro: ' + data.message, 'danger');
                 }
             })
             .catch(error => {
                 modalConfirmarExclusao.hide();
                 console.error('Erro:', error);
-                alert('Erro de conexão. Tente novamente.');
+                mostrarToast('Erro de conexão. Tente novamente.', 'danger');
             });
         });
         modalConfirmarExclusao.show();
@@ -1892,9 +1947,48 @@ $database->closeConnection();
             </div>
         `;
     };
+    
+    // Função para mostrar toast
+    window.mostrarToast = function(mensagem, tipo = 'info') {
+        const toastContainer = document.getElementById('toastContainer');
+        const toastId = 'toast-' + Date.now();
+        
+        const iconMap = {
+            'success': 'fa-check-circle',
+            'danger': 'fa-exclamation-triangle',
+            'warning': 'fa-exclamation-circle',
+            'info': 'fa-info-circle'
+        };
+        
+        const toastHtml = `
+            <div id="${toastId}" class="toast align-items-center text-bg-${tipo} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fas ${iconMap[tipo]} me-2"></i>${mensagem}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        `;
+        
+        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+        const toastElement = document.getElementById(toastId);
+        const toast = new bootstrap.Toast(toastElement, { delay: 5000 });
+        toast.show();
+        
+        // Remove o toast do DOM após ser ocultado
+        toastElement.addEventListener('hidden.bs.toast', function() {
+            toastElement.remove();
+        });
+    };
 
     </script>
     
+    <!-- Container de Toasts -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" id="toastContainer">
+        <!-- Os toasts serão inseridos aqui dinamicamente -->
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
