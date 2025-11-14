@@ -265,8 +265,6 @@ $database->closeConnection();
             padding: 20px;
         }
 
-
-
         /* Estilos para exercícios de listening */
         .audio-player-container {
             background: #f8f9fa;
@@ -370,8 +368,6 @@ $database->closeConnection();
             border-radius: 4px;
         }
 
-
-
         /* Estilos para preview de flashcards */
         .flashcard-preview {
             width: 100%;
@@ -422,8 +418,6 @@ $database->closeConnection();
             font-size: 1.1rem;
         }
     </style>
-    
-
     
     <script>
         // Verificar se está em HTTPS ou localhost
@@ -476,8 +470,6 @@ $database->closeConnection();
                         $tem_outros_idiomas = false;
                         $tem_novos_idiomas = false;
                         
-
-                        
                         // Verificar se há outros idiomas já estudados
                         foreach ($idiomas_usuario as $idioma_user) {
                             if ($idioma_user['idioma'] !== $idioma_escolhido) {
@@ -529,7 +521,6 @@ $database->closeConnection();
                                 <?php 
                                 $ja_estudado = in_array($idioma_disponivel, $idiomas_ja_estudados);
                                 $nao_vazio = !empty($idioma_disponivel);
-
                                 ?>
                                 <?php if (!$ja_estudado && $nao_vazio): ?>
                                     <li>
@@ -607,6 +598,42 @@ $database->closeConnection();
                         </div>
                         <div class="card-body text-center">
                             <p class="fs-4">Seu nível atual é: <span class="badge bg-success"><?php echo htmlspecialchars($nivel_usuario); ?></span></p>
+                            
+                            <!-- UNIDADES MOVIDAS PARA AQUI - DEBAIXO DO "SEU NÍVEL ATUAL É" -->
+                            <div class="mt-4">
+                           
+                                <div class="row">
+                                    <?php if (count($unidades) > 0): ?>
+                                        <?php foreach ($unidades as $unidade): ?>
+                                            <div class="col-md-6 mb-3">
+                                                <div class="card unidade-card h-100" 
+                                                     data-unidade-id="<?php echo $unidade['id']; ?>"
+                                                     data-unidade-titulo="<?php echo htmlspecialchars($unidade['nome_unidade']); ?>"
+                                                     data-unidade-numero="<?php echo $unidade['numero_unidade']; ?>">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">
+                                                            <i class="fas fa-book-open me-2"></i>
+                                                            Unidade <?php echo htmlspecialchars($unidade["numero_unidade"]); ?>
+                                                        </h5>
+                                                        <h6 class="card-subtitle mb-2 text-muted"><?php echo htmlspecialchars($unidade["nome_unidade"]); ?></h6>
+                                                        <p class="card-text"><?php echo htmlspecialchars($unidade["descricao"]); ?></p>
+                                                        <div class="progress progress-bar-custom">
+                                                            <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                                        </div>
+                                                        <small class="text-muted">0% concluído</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <div class="col-12">
+                                            <div class="alert alert-info" role="alert">
+                                                Nenhuma unidade encontrada para este nível e idioma.
+                                            </div>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -625,7 +652,7 @@ $database->closeConnection();
                                     </p>
                                 </div>
 
-                                <!-- Coluna dos botões (um abaixo do outro) -->
+                                <!-- Coluna dos botões -->
                                 <div class="col-md-4 text-end">
                                     <div class="d-flex gap-2">
                                         <a href="flashcards.php" class="btn btn-warning">
@@ -664,15 +691,14 @@ $database->closeConnection();
                                         </div>
                                         <div class="col-md-auto">
                                             <button class="btn btn-light btn-sm w-auto" onclick="abrirModalAdicionarPalavra()">
-                                        <i class="fas fa-plus me-2"></i>Adicionar Palavra
-                                    </button>
+                                                <i class="fas fa-plus me-2"></i>Adicionar Palavra
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="card-body">
-                           
                             <!-- Lista de Palavras -->
                             <div id="listaPalavras" class="row">
                                 <div class="col-12 text-center">
@@ -684,173 +710,140 @@ $database->closeConnection();
                             </div>
                         </div>
                     </div>
-
-                    <h4>Unidades do Nível <?php echo htmlspecialchars($nivel_usuario); ?></h4>
-                    <div class="row">
-                        <?php if (count($unidades) > 0): ?>
-                            <?php foreach ($unidades as $unidade): ?>
-                                <div class="col-md-6 mb-3">
-                                    <div class="card unidade-card h-100" 
-                                         data-unidade-id="<?php echo $unidade['id']; ?>"
-                                         data-unidade-titulo="<?php echo htmlspecialchars($unidade['nome_unidade']); ?>"
-                                         data-unidade-numero="<?php echo $unidade['numero_unidade']; ?>">
-                                        <div class="card-body">
-                                            <h5 class="card-title">
-                                                <i class="fas fa-book-open me-2"></i>
-                                                Unidade <?php echo htmlspecialchars($unidade["numero_unidade"]); ?>
-                                            </h5>
-                                            <h6 class="card-subtitle mb-2 text-muted"><?php echo htmlspecialchars($unidade["nome_unidade"]); ?></h6>
-                                            <p class="card-text"><?php echo htmlspecialchars($unidade["descricao"]); ?></p>
-                                            <div class="progress progress-bar-custom">
-                                                <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                                            </div>
-                                            <small class="text-muted">0% concluído</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <div class="col-12">
-                                <div class="alert alert-info" role="alert">
-                                    Nenhuma unidade encontrada para este nível e idioma.
-                                </div>
-                            </div>
-                        <?php endif; ?>
-                    </div>
                 <?php endif; ?>
             </div>
         </div>
         </div>
     </div>
 
-   <!-- Modal Adicionar Palavra ATUALIZADO -->
-<div class="modal fade" id="modalAdicionarPalavra" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-plus me-2"></i>Adicionar Nova Palavra/Flashcard
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <form id="formAdicionarPalavra">
-                            <input type="hidden" id="palavraId" name="id_flashcard">
-                            
-                            <div class="mb-3">
-                                <label for="palavraFrente" class="form-label">Frente do Card *</label>
-                                <textarea class="form-control" id="palavraFrente" name="palavra_frente" rows="3" required placeholder="Digite a palavra/frase na língua estrangeira"><?php echo htmlspecialchars($palavra_frente ?? ''); ?></textarea>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="palavraVerso" class="form-label">Verso do Card *</label>
-                                <textarea class="form-control" id="palavraVerso" name="palavra_verso" rows="3" required placeholder="Digite a tradução ou significado"><?php echo htmlspecialchars($palavra_verso ?? ''); ?></textarea>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="palavraDica" class="form-label">Dica (opcional)</label>
-                                <textarea class="form-control" id="palavraDica" name="dica" rows="2" placeholder="Digite uma dica para ajudar na memorização"><?php echo htmlspecialchars($dica ?? ''); ?></textarea>
-                            </div>
-                            
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="palavraDificuldade" class="form-label">Dificuldade</label>
-                                        <select class="form-select" id="palavraDificuldade" name="dificuldade">
-                                            <option value="facil">Fácil</option>
-                                            <option value="medio" selected>Médio</option>
-                                            <option value="dificil">Difícil</option>
-                                        </select>
+    <!-- Modal Adicionar Palavra -->
+    <div class="modal fade" id="modalAdicionarPalavra" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus me-2"></i>Adicionar Nova Palavra/Flashcard
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <form id="formAdicionarPalavra">
+                                <input type="hidden" id="palavraId" name="id_flashcard">
+                                
+                                <div class="mb-3">
+                                    <label for="palavraFrente" class="form-label">Frente do Card *</label>
+                                    <textarea class="form-control" id="palavraFrente" name="palavra_frente" rows="3" required placeholder="Digite a palavra/frase na língua estrangeira"><?php echo htmlspecialchars($palavra_frente ?? ''); ?></textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="palavraVerso" class="form-label">Verso do Card *</label>
+                                    <textarea class="form-control" id="palavraVerso" name="palavra_verso" rows="3" required placeholder="Digite a tradução ou significado"><?php echo htmlspecialchars($palavra_verso ?? ''); ?></textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="palavraDica" class="form-label">Dica (opcional)</label>
+                                    <textarea class="form-control" id="palavraDica" name="dica" rows="2" placeholder="Digite uma dica para ajudar na memorização"><?php echo htmlspecialchars($dica ?? ''); ?></textarea>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="palavraDificuldade" class="form-label">Dificuldade</label>
+                                            <select class="form-select" id="palavraDificuldade" name="dificuldade">
+                                                <option value="facil">Fácil</option>
+                                                <option value="medio" selected>Médio</option>
+                                                <option value="dificil">Difícil</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="palavraOrdem" class="form-label">Ordem</label>
+                                            <input type="number" class="form-control" id="palavraOrdem" name="ordem_no_deck" min="0" value="0">
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="palavraOrdem" class="form-label">Ordem</label>
-                                        <input type="number" class="form-control" id="palavraOrdem" name="ordem_no_deck" min="0" value="0">
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="palavraIdioma" class="form-label">Idioma</label>
+                                            <select class="form-select" id="palavraIdioma" name="idioma">
+                                                <option value="Ingles">Inglês</option>
+                                                <option value="Japones">Japonês</option>
+                                                <option value="Coreano">Coreano</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="palavraNivel" class="form-label">Nível</label>
+                                            <select class="form-select" id="palavraNivel" name="nivel">
+                                                <option value="A1">A1</option>
+                                                <option value="A2">A2</option>
+                                                <option value="B1">B1</option>
+                                                <option value="B2">B2</option>
+                                                <option value="C1">C1</option>
+                                                <option value="C2">C2</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="palavraIdioma" class="form-label">Idioma</label>
-                                        <select class="form-select" id="palavraIdioma" name="idioma">
-                                            <option value="Ingles">Inglês</option>
-                                            <option value="Japones">Japonês</option>
-                                            <option value="Coreano">Coreano</option>
-                                        </select>
+                                
+                                <div class="mb-3">
+                                    <label for="palavraCategoria" class="form-label">Categoria (opcional)</label>
+                                    <input type="text" class="form-control" id="palavraCategoria" name="categoria" placeholder="Ex: Verbos, Substantivos, Cumprimentos">
+                                </div>
+                                
+                                <!-- Campos para imagens e áudios (futuro) -->
+                                <div class="mb-3">
+                                    <label class="form-label">Mídia (em desenvolvimento)</label>
+                                    <div class="text-muted small">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Suporte para imagens e áudios será adicionado em breve.
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="palavraNivel" class="form-label">Nível</label>
-                                        <select class="form-select" id="palavraNivel" name="nivel">
-                                            <option value="A1">A1</option>
-                                            <option value="A2">A2</option>
-                                            <option value="B1">B1</option>
-                                            <option value="B2">B2</option>
-                                            <option value="C1">C1</option>
-                                            <option value="C2">C2</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="palavraCategoria" class="form-label">Categoria (opcional)</label>
-                                <input type="text" class="form-control" id="palavraCategoria" name="categoria" placeholder="Ex: Verbos, Substantivos, Cumprimentos">
-                            </div>
-                            
-                            <!-- Campos para imagens e áudios (futuro) -->
-                            <div class="mb-3">
-                                <label class="form-label">Mídia (em desenvolvimento)</label>
-                                <div class="text-muted small">
-                                    <i class="fas fa-info-circle me-1"></i>
-                                    Suporte para imagens e áudios será adicionado em breve.
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Preview do Flashcard</label>
-                        <div class="flashcard-preview" id="palavraPreview" onclick="virarPreviewPalavra()">
-                            <div class="flashcard-inner">
-                                <div class="flashcard-front">
-                                    <div id="previewPalavraFrente">Digite o conteúdo da frente</div>
-                                </div>
-                                <div class="flashcard-back">
-                                    <div id="previewPalavraVerso">Digite o conteúdo do verso</div>
-                                </div>
-                            </div>
+                            </form>
                         </div>
-                        <div class="text-center">
-                            <small class="text-muted">Clique no card para virar</small>
-                        </div>
-                        
-                        <!-- Dica preview -->
-                        <div class="mt-3" id="previewDicaContainer" style="display: none;">
-                            <div class="alert alert-info py-2">
-                                <small>
-                                    <i class="fas fa-lightbulb me-1"></i>
-                                    <span id="previewPalavraDica">Dica aparecerá aqui</span>
-                                </small>
+                        <div class="col-md-6">
+                            <label class="form-label">Preview do Flashcard</label>
+                            <div class="flashcard-preview" id="palavraPreview" onclick="virarPreviewPalavra()">
+                                <div class="flashcard-inner">
+                                    <div class="flashcard-front">
+                                        <div id="previewPalavraFrente">Digite o conteúdo da frente</div>
+                                    </div>
+                                    <div class="flashcard-back">
+                                        <div id="previewPalavraVerso">Digite o conteúdo do verso</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <small class="text-muted">Clique no card para virar</small>
+                            </div>
+                            
+                            <!-- Dica preview -->
+                            <div class="mt-3" id="previewDicaContainer" style="display: none;">
+                                <div class="alert alert-info py-2">
+                                    <small>
+                                        <i class="fas fa-lightbulb me-1"></i>
+                                        <span id="previewPalavraDica">Dica aparecerá aqui</span>
+                                    </small>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" onclick="salvarPalavra()">
-                    <i class="fas fa-save me-2"></i>Salvar Palavra
-                </button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="salvarPalavra()">
+                        <i class="fas fa-save me-2"></i>Salvar Palavra
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     <!-- Modal Blocos da Unidade -->
     <div class="modal fade" id="modalBlocos" tabindex="-1" aria-labelledby="modalBlocosLabel" aria-hidden="true">
@@ -962,7 +955,6 @@ $database->closeConnection();
     let exercicioIndex = 0;
     let respostaSelecionada = null;
     let palavrasCarregadas = [];
-
 
     // ==================== INICIALIZAÇÃO ====================
     document.addEventListener('DOMContentLoaded', function() {
@@ -1244,8 +1236,6 @@ $database->closeConnection();
         audioButtons.forEach((btn, i) => {
             console.log(`Botão ${i}:`, btn.onclick ? btn.onclick.toString() : 'sem onclick');
         });
-        
-
     }
 
     function determinarTipoExercicioCorrigido(exercicio, conteudo) {
@@ -1331,49 +1321,6 @@ $database->closeConnection();
         return html;
     }
 
-    function renderizarListening(conteudo) {
-        const text = conteudo.frase_original || conteudo.transcricao || '';
-        const lang = conteudo.idioma || 'en-us';
-        
-        console.log('Renderizando listening básico com:', { text, lang });
-        
-        let html = `
-            <div class="audio-player-container">
-                <h6 class="text-center mb-3">🎧 Exercício de Listening</h6>
-                <div class="text-center mb-4">
-                    <h6>Ouça o áudio e selecione a opção correta:</h6>
-                    <div class="tts-container">
-                        <button type="button" class="btn btn-primary btn-lg" onclick="speakText('${text.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${lang}')">
-                            <i class="fas fa-volume-up me-2"></i>Ouvir Áudio
-                        </button>
-                    </div>
-                </div>
-                <div class="listening-options">
-        `;
-        
-        if (conteudo.opcoes && Array.isArray(conteudo.opcoes)) {
-            conteudo.opcoes.forEach((opcao, index) => {
-                if (opcao && opcao.trim() !== '') {
-                    html += `
-                        <button type="button" class="btn btn-option btn-resposta" 
-                                data-id="${index}" onclick="selecionarResposta(this)">
-                            ${opcao}
-                        </button>
-                    `;
-                }
-            });
-        }
-        
-        html += `
-                </div>
-            </div>
-        `;
-        
-        return html;
-    }
-
-
-
     function renderizarMultiplaEscolha(conteudo) {
         let html = '<div class="d-grid gap-2">';
         if (conteudo.alternativas && Array.isArray(conteudo.alternativas)) {
@@ -1418,38 +1365,6 @@ $database->closeConnection();
             </div>
         `;
     }
-
-    function renderizarAudicao(conteudo) {
-        const audioUrl = conteudo.audio_url || '';
-        const transcricao = conteudo.transcricao || '';
-        
-        return `
-            <div class="audio-player-container">
-                <h6 class="text-center mb-3">🎧 Exercício de Audição</h6>
-                <div class="text-center mb-4">
-                    <audio controls class="w-100 mb-3" id="audioPlayerAudicao">
-                        <source src="${audioUrl}" type="audio/mpeg">
-                        Seu navegador não suporta o elemento de áudio.
-                    </audio>
-                    <div class="audio-controls">
-                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('audioPlayerAudicao').play()">
-                            <i class="fas fa-play me-1"></i>Reproduzir
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('audioPlayerAudicao').pause()">
-                            <i class="fas fa-pause me-1"></i>Pausar
-                        </button>
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label for="respostaAudicao" class="form-label">O que você entendeu?</label>
-                    <textarea id="respostaAudicao" class="form-control" rows="4" placeholder="Descreva o que você ouviu..."></textarea>
-                    ${transcricao ? `<div class="form-text text-muted"><i class="fas fa-eye me-1"></i>Transcrição disponível após resposta</div>` : ''}
-                </div>
-            </div>
-        `;
-    }
-
-
 
     // ==================== FUNÇÕES DE RESPOSTA ====================
 
@@ -1696,28 +1611,6 @@ $database->closeConnection();
             }, 100);
         } else {
             alert('Seu navegador não suporta síntese de voz.');
-        }
-    };
-    
-    window.playAudio = function(audioId) {
-        const audio = document.getElementById(audioId);
-        if (audio) {
-            audio.play().catch(e => console.log('Erro ao reproduzir áudio:', e));
-        }
-    };
-    
-    window.pauseAudio = function(audioId) {
-        const audio = document.getElementById(audioId);
-        if (audio) {
-            audio.pause();
-        }
-    };
-    
-    window.restartAudio = function(audioId) {
-        const audio = document.getElementById(audioId);
-        if (audio) {
-            audio.currentTime = 0;
-            audio.play().catch(e => console.log('Erro ao reproduzir áudio:', e));
         }
     };
     
@@ -1994,47 +1887,6 @@ $database->closeConnection();
         `;
     };
 
-    </script>
-    
-    <script>
-        // Fix inline para garantir que funciona
-        document.addEventListener('click', function(e) {
-            const opcao = e.target;
-            
-            if (opcao.classList.contains('option-audio') || opcao.classList.contains('alternativa')) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                const container = opcao.closest('.exercicio-container, [id^="exercicio-"]') || document;
-                
-                // Limpar
-                container.querySelectorAll('.option-audio, .alternativa').forEach(o => {
-                    o.style.cssText = '';
-                });
-                container.querySelectorAll('.feedback-message, .explicacao').forEach(el => el.remove());
-                
-                const todas = container.querySelectorAll('.option-audio, .alternativa');
-                const indice = Array.from(todas).indexOf(opcao);
-                
-                if (indice === 0) {
-                    opcao.style.cssText = 'background: #d4edda !important; color: #155724 !important; border: 2px solid #28a745 !important;';
-                    const explicacao = document.createElement('div');
-                    explicacao.innerHTML = '<div class="alert alert-success mt-3">✅ Correto! Você acertou.</div>';
-                    container.appendChild(explicacao);
-                } else {
-                    opcao.style.cssText = 'background: #f8d7da !important; color: #721c24 !important; border: 2px solid #dc3545 !important;';
-                    if (todas[0]) {
-                        todas[0].style.cssText = 'background: #d4edda !important; color: #155724 !important; border: 2px solid #28a745 !important;';
-                    }
-                    const explicacao = document.createElement('div');
-                    explicacao.innerHTML = '<div class="alert alert-info mt-3">❌ Incorreto. A resposta correta é a primeira opção.</div>';
-                    container.appendChild(explicacao);
-                }
-                return false;
-            }
-            
-
-        });
     </script>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
