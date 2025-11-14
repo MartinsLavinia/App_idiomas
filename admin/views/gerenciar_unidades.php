@@ -876,9 +876,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                             <a href="editar_unidade.php?id=<?= $unidade['id']; ?>" class="btn btn-primary">
                                                 <i class="fas fa-edit"></i> Editar
                                             </a>
-                                            <a href="eliminar_unidade.php?id=<?= $unidade['id']; ?>" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja eliminar esta unidade?');">
+                                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-id="<?= $unidade['id']; ?>" data-nome="<?= htmlspecialchars($unidade['nome_unidade']); ?>">
                                                 <i class="fas fa-trash"></i> Eliminar
-                                            </a>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -901,7 +901,40 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 
-    <!-- bottom-nav removido; mobile usa menu hambúrguer -->
+    <!-- Modal de Confirmação de Exclusão -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteModalLabel">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                        Confirmar Exclusão
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-3">
+                        <i class="fas fa-trash-alt text-danger" style="font-size: 3rem;"></i>
+                    </div>
+                    <p class="text-center mb-3">
+                        Tem certeza que deseja eliminar a unidade <strong id="unidadeNome"></strong>?
+                    </p>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Esta ação não pode ser desfeita e pode afetar caminhos de aprendizagem associados.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </button>
+                    <a href="#" id="confirmDeleteBtn" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Eliminar Unidade
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -914,6 +947,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     bsAlert.close();
                 }, 5000);
             });
+            
+            // Modal de confirmação de exclusão
+            const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+            if (confirmDeleteModal) {
+                confirmDeleteModal.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget;
+                    const unidadeId = button.getAttribute('data-id');
+                    const unidadeNome = button.getAttribute('data-nome');
+                    
+                    document.getElementById('unidadeNome').textContent = unidadeNome;
+                    document.getElementById('confirmDeleteBtn').href = 'eliminar_unidade.php?id=' + unidadeId;
+                });
+            }
         });
     </script>
     
