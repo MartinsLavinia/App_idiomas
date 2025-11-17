@@ -231,8 +231,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $token_valido) {
                             <label for="nova_senha" class="form-label">
                                 <strong>🔒 Nova Senha</strong>
                             </label>
-                            <input type="password" class="form-control" id="nova_senha" name="nova_senha" 
-                                   placeholder="Digite sua nova senha" required minlength="6">
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="nova_senha" name="nova_senha" 
+                                    placeholder="Digite sua nova senha" required minlength="6" style="border-right: none;">
+                                <span class="input-group-text" onclick="togglePasswordVisibility('nova_senha')" style="cursor: pointer; border-left: none; background: transparent;">
+                                    <i class="fa fa-eye" id="toggleIcon_nova_senha"></i>
+                                </span>
+                            </div>
                             
                             <div class="password-strength">
                                 <div class="strength-bar">
@@ -254,8 +259,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $token_valido) {
                             <label for="confirmar_senha" class="form-label">
                                 <strong>🔒 Confirmar Nova Senha</strong>
                             </label>
-                            <input type="password" class="form-control" id="confirmar_senha" name="confirmar_senha" 
-                                   placeholder="Digite novamente sua nova senha" required>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="confirmar_senha" name="confirmar_senha" 
+                                    placeholder="Digite novamente sua nova senha" required style="border-right: none;">
+                                <span class="input-group-text" onclick="togglePasswordVisibility('confirmar_senha')" style="cursor: pointer; border-left: none; background: transparent;">
+                                    <i class="fa fa-eye" id="toggleIcon_confirmar_senha"></i>
+                                </span>
+                            </div>
                             <div class="form-text" id="passwordMatch"></div>
                         </div>
                         
@@ -314,8 +324,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $token_valido) {
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const novaSenha = document.getElementById('nova_senha');
+    document.addEventListener('DOMContentLoaded', function() {
+            window.togglePasswordVisibility = function(fieldId) {
+                const passwordField = document.getElementById(fieldId);
+                const toggleIcon = document.getElementById('toggleIcon_' + fieldId);
+                if (passwordField.type === 'password') {
+                    passwordField.type = 'text';
+                    toggleIcon.classList.remove('fa-eye');
+                    toggleIcon.classList.add('fa-eye-slash');
+                } else {
+                    passwordField.type = 'password';
+                    toggleIcon.classList.remove('fa-eye-slash');
+                    toggleIcon.classList.add('fa-eye');
+                }
+            }
+
+        const novaSenha = document.getElementById('nova_senha');
             const confirmarSenha = document.getElementById('confirmar_senha');
             const btnRedefinir = document.getElementById('btnRedefinir');
             const strengthBar = document.getElementById('strengthBar');
@@ -323,7 +347,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $token_valido) {
             const passwordMatch = document.getElementById('passwordMatch');
             
             if (!novaSenha) return; // Se não há formulário, sair
-            
+
             // Verificar força da senha
             function checkPasswordStrength(password) {
                 let strength = 0;
@@ -331,7 +355,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $token_valido) {
                     length: password.length >= 6,
                     letter: /[a-zA-Z]/.test(password),
                     number: /\d/.test(password),
-                    special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+                    special: /[!@#$%^&*(),.?":{}|<>]/.test(password) 
                 };
                 
                 // Atualizar indicadores visuais dos requisitos
@@ -339,7 +363,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $token_valido) {
                 document.getElementById('req-letter').classList.toggle('met', requirements.letter);
                 document.getElementById('req-number').classList.toggle('met', requirements.number);
                 
-                // Calcular força
+            // Calcular força
                 if (requirements.length) strength += 25;
                 if (requirements.letter) strength += 25;
                 if (requirements.number) strength += 25;
@@ -347,7 +371,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $token_valido) {
                 
                 // Atualizar barra de força
                 strengthBar.style.width = strength + '%';
-                strengthBar.className = 'strength-fill';
+            strengthFill.className = 'strength-fill';
                 
                 if (strength < 50) {
                     strengthBar.classList.add('strength-weak');
@@ -364,7 +388,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $token_valido) {
                 }
                 
                 return requirements.length && requirements.letter && requirements.number;
-            }
+        }
             
             // Verificar se as senhas coincidem
             function checkPasswordMatch() {
@@ -385,7 +409,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $token_valido) {
                     return false;
                 }
             }
-            
+
             // Habilitar/desabilitar botão
             function updateSubmitButton() {
                 const strongPassword = checkPasswordStrength(novaSenha.value);
@@ -418,7 +442,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $token_valido) {
                 // Desabilitar botão para evitar múltiplos envios
                 btnRedefinir.disabled = true;
                 btnRedefinir.innerHTML = '⏳ Redefinindo...';
-            });
+        });
             
             // Auto-focus no primeiro campo
             novaSenha.focus();

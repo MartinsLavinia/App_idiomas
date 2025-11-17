@@ -79,7 +79,10 @@ ob_end_flush();
             <input type="email" id="email" name="email" placeholder="E-mail" required>
         </div>
         <div class="input-group">
-            <input type="password" id="senha" name="senha" placeholder="Senha" required>
+            <input type="password" id="senha" name="senha" placeholder="Senha" required style="border-right: none;">
+            <span class="input-group-text" onclick="togglePasswordVisibility('senha')" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.4); border-left: none; cursor: pointer;">
+                <i class="fa fa-eye" id="toggleIcon_senha"></i>
+            </span>
         </div>
         <button type="submit" class="btn-login" id="btnLogin">
             <span id="btnText">Entrar</span>
@@ -106,6 +109,20 @@ ob_end_flush();
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script>
 // Particle animation script
+        function togglePasswordVisibility(fieldId) {
+            const passwordField = document.getElementById(fieldId);
+            const toggleIcon = document.getElementById('toggleIcon_' + fieldId);
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+
         const canvas = document.getElementById('particles-js');
         const ctx = canvas.getContext('2d');
         let particles = [];

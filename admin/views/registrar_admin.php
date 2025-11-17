@@ -197,7 +197,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     placeholder="Nome de Usuário" required>
             </div>
             <div class="mb-3">
-                <input type="password" class="form-control" id="senha" name="senha" placeholder="Senha" required>
+                <input type="password" class="form-control" id="senha" name="senha" placeholder="Senha" required style="border-right: none;">
+                <span class="input-group-text" onclick="togglePasswordVisibility('senha')" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.4); border-left: none; cursor: pointer; display: inline-block; width: 13%; float: right; height: 44px; margin-top: -44px;">
+                    <i class="fa fa-eye" id="toggleIcon_senha"></i>
+                </span>
             </div>
             <button type="submit" class="btn-login" id="btnLogin">
                 <span id="btnText">Cadastrar</span>
@@ -225,6 +228,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+    function togglePasswordVisibility(fieldId) {
+        const passwordField = document.getElementById(fieldId);
+        const toggleIcon = document.getElementById('toggleIcon_' + fieldId);
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordField.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+
     document.querySelector("form").addEventListener("submit", function() {
         const btnLogin = document.getElementById("btnLogin");
         const btnText = document.getElementById("btnText");

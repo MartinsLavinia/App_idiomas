@@ -247,7 +247,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <input type="text" id="nome_usuario" name="nome_usuario" placeholder="Nome de Usuário" required>
             </div>
             <div class="input-group">
-                <input type="password" id="senha" name="senha" placeholder="Senha" required>
+                <input type="password" id="senha" name="senha" placeholder="Senha" required style="border-right: none;">
+                <span class="input-group-text" onclick="togglePasswordVisibility('senha')" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.4); border-left: none; cursor: pointer;">
+                    <i class="fa fa-eye" id="toggleIcon_senha"></i>
+                </span>
             </div>
             <div class="links-container text-end">
                 <a href="esqueci_senha_admin.php">Esqueci a senha</a>
@@ -281,6 +284,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.1)" />
         </g>
     </svg>
+
+    <script>
+        function togglePasswordVisibility(fieldId) {
+            const passwordField = document.getElementById(fieldId);
+            const toggleIcon = document.getElementById('toggleIcon_' + fieldId);
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+    </script>
 </body>
 
 </html>

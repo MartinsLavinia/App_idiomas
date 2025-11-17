@@ -204,7 +204,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <input type="email" id="email" name="email" placeholder="E-mail" required>
             </div>
             <div class="input-group">
-                <input type="password" id="senha" name="senha" placeholder="Senha" required>
+                <input type="password" id="senha" name="senha" placeholder="Senha" required style="border-right: none;">
+                 <span class="input-group-text" onclick="togglePasswordVisibility('senha')" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.4); border-left: none; cursor: pointer;">
+                    <i class="fa fa-eye" id="toggleIcon_senha"></i>
+                </span>
             </div>
             <!-- Medidor de Força da Senha -->
             <div class="password-strength-meter">
@@ -249,6 +252,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+    function togglePasswordVisibility(fieldId) {
+        const passwordField = document.getElementById(fieldId);
+        const toggleIcon = document.getElementById('toggleIcon_' + fieldId);
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordField.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+
     // --- LÓGICA DO MEDIDOR DE FORÇA DA SENHA ---
     document.addEventListener('DOMContentLoaded', function() {
         const senhaInput = document.getElementById('senha');
