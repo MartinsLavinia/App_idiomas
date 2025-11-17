@@ -50,6 +50,15 @@ $sql_usuarios = "
         u.data_registro,
         u.ultimo_login,
         u.ativo,
+        CASE 
+            WHEN u.ultimo_login IS NULL THEN 'Nunca logou'
+            WHEN u.ultimo_login < DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 'Inativo há mais de 30 dias'
+            ELSE 'Ativo'
+        END as status_login,
+        CASE 
+            WHEN u.ultimo_login IS NULL THEN NULL
+            ELSE DATEDIFF(NOW(), u.ultimo_login)
+        END as dias_sem_login,
         COALESCE(
             (SELECT qr2.nivel_resultado 
              FROM quiz_resultados qr2 
@@ -58,11 +67,11 @@ $sql_usuarios = "
              LIMIT 1), 
             'Não avaliado'
         ) as nivel_atual,
-        COUNT(DISTINCT pu.caminho_id) as caminhos_iniciados,
-        AVG(pu.progresso) as progresso_medio
+        COUNT(DISTINCT CASE WHEN pu.progresso > 0 THEN pu.caminho_id END) as caminhos_iniciados,
+        COALESCE(AVG(CASE WHEN pu.progresso > 0 THEN pu.progresso END), 0) as progresso_medio
     FROM usuarios u
     LEFT JOIN progresso_usuario pu ON u.id = pu.id_usuario
-    WHERE 1=1
+    WHERE u.ativo = 1
 ";
 
 $params = [];
@@ -81,6 +90,9 @@ if (!empty($filtro_email)) {
 }
 
 if ($filtro_status !== '') {
+    if ($filtro_status === '0') {
+        $sql_usuarios = str_replace('WHERE u.ativo = 1', 'WHERE 1=1', $sql_usuarios);
+    }
     $sql_usuarios .= " AND u.ativo = ?";
     $params[] = $filtro_status;
     $types .= 'i';
@@ -117,13 +129,15 @@ $stmt_usuarios->execute();
 $usuarios = $stmt_usuarios->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt_usuarios->close();
 
-// Estatísticas rápidas - Valores fixos conforme solicitado
-$stats = [
-    'total_usuarios' => 5,
-    'usuarios_ativos' => 5,
-    'ativos_semana' => 0,
-    'novos_mes' => 5
-];
+// Estatísticas rápidas - Calculadas dinamicamente
+$sql_stats = "SELECT 
+    COUNT(*) as total_usuarios,
+    SUM(CASE WHEN ativo = 1 THEN 1 ELSE 0 END) as usuarios_ativos,
+    SUM(CASE WHEN ultimo_login >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 1 ELSE 0 END) as ativos_semana,
+    SUM(CASE WHEN data_registro >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1 ELSE 0 END) as novos_mes
+    FROM usuarios";
+$result_stats = $conn->query($sql_stats);
+$stats = $result_stats->fetch_assoc();
 
 $database->closeConnection();
 ?>
@@ -1024,25 +1038,25 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="row mb-4">
                 <div class="col-md-3">
                     <div class="stats-card text-center">
-                        <h3>5</h3>
+                        <h3><?php echo $stats['total_usuarios']; ?></h3>
                         <p><i class="fas fa-users" style="color: var(--amarelo-detalhe);"></i> Total de Usuários</p>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stats-card text-center">
-                        <h3>5</h3>
+                        <h3><?php echo $stats['usuarios_ativos']; ?></h3>
                         <p><i class="fas fa-user-check"></i> Contas Ativas</p>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stats-card text-center">
-                        <h3>0</h3>
+                        <h3><?php echo $stats['ativos_semana']; ?></h3>
                         <p><i class="fas fa-calendar-week"></i> Ativos esta Semana</p>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stats-card text-center">
-                        <h3>5</h3>
+                        <h3><?php echo $stats['novos_mes']; ?></h3>
                         <p><i class="fas fa-user-plus"></i> Novos este Mês</p>
                     </div>
                 </div>
@@ -1141,12 +1155,15 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <td>
                                             <?php if ($usuario['caminhos_iniciados'] > 0): ?>
                                                 <small><?php echo $usuario['caminhos_iniciados']; ?> caminhos</small><br>
-                                                <div class="progress" style="height: 5px;">
-                                                    <div class="progress-bar" style="width: <?php echo round($usuario['progresso_medio'] ?? 0); ?>%"></div>
+                                                <div class="progress mb-1" style="height: 8px;">
+                                                    <div class="progress-bar bg-warning" style="width: <?php echo round($usuario['progresso_medio'] ?? 0); ?>%"></div>
                                                 </div>
-                                                <small class="text-muted"><?php echo round($usuario['progresso_medio'] ?? 0); ?>%</small>
+                                                <small class="text-muted"><?php echo round($usuario['progresso_medio'] ?? 0); ?>% concluído</small>
                                             <?php else: ?>
-                                                <small class="text-muted">Nenhum progresso</small>
+                                                <div class="progress mb-1" style="height: 8px;">
+                                                    <div class="progress-bar bg-secondary" style="width: 0%"></div>
+                                                </div>
+                                                <small class="text-muted">0% - Não iniciado</small>
                                             <?php endif; ?>
                                         </td>
                                         <td>
@@ -1154,14 +1171,50 @@ document.addEventListener('DOMContentLoaded', function() {
                                         </td>
                                         <td>
                                             <?php if ($usuario['ultimo_login']): ?>
-                                                <small><?php echo date('d/m/Y H:i', strtotime($usuario['ultimo_login'])); ?></small>
+                                                <?php 
+                                                $dias_sem_login = $usuario['dias_sem_login'];
+                                                if ($dias_sem_login >= 30): 
+                                                ?>
+                                                    <small class="text-danger">
+                                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                                        <?php echo date('d/m/Y H:i', strtotime($usuario['ultimo_login'])); ?>
+                                                        <br><span class="badge bg-danger">Há <?php echo $dias_sem_login; ?> dias</span>
+                                                    </small>
+                                                <?php elseif ($dias_sem_login == 0): ?>
+                                                    <small class="text-success">
+                                                        <i class="fas fa-clock me-1"></i>
+                                                        <?php echo date('d/m/Y H:i', strtotime($usuario['ultimo_login'])); ?>
+                                                        <br><span class="badge bg-success">Hoje</span>
+                                                    </small>
+                                                <?php else: ?>
+                                                    <small class="text-success">
+                                                        <i class="fas fa-clock me-1"></i>
+                                                        <?php echo date('d/m/Y H:i', strtotime($usuario['ultimo_login'])); ?>
+                                                        <br><span class="badge bg-success">Há <?php echo $dias_sem_login; ?> dias</span>
+                                                    </small>
+                                                <?php endif; ?>
                                             <?php else: ?>
-                                                <small class="text-muted">Nunca</small>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-times-circle me-1"></i>
+                                                    Nunca logou
+                                                </small>
                                             <?php endif; ?>
                                         </td>
                                         <td>
-                                            <span class="badge status-badge bg-<?php echo $usuario['ativo'] ? 'success' : 'danger'; ?>">
-                                                <?php echo $usuario['ativo'] ? 'Ativo' : 'Inativo'; ?>
+                                            <?php 
+                                            $status_real = $usuario['status_login'];
+                                            $cor_badge = 'secondary';
+                                            if ($status_real === 'Ativo') {
+                                                $cor_badge = 'success';
+                                            } elseif ($status_real === 'Inativo há mais de 30 dias') {
+                                                $cor_badge = 'danger';
+                                                $status_real = 'Inativo';
+                                            } elseif ($status_real === 'Nunca logou') {
+                                                $cor_badge = 'warning';
+                                            }
+                                            ?>
+                                            <span class="badge status-badge bg-<?php echo $cor_badge; ?>">
+                                                <?php echo $status_real; ?>
                                             </span>
                                         </td>
                                         <td>

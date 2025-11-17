@@ -53,7 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt_update->bind_param("ssisssi", $titulo, $nivel, $ordem, $conteudo, $resumo, $palavras_chave, $teoria_id);
             
             if ($stmt_update->execute()) {
-                $mensagem = '<div class="alert alert-success">Teoria atualizada com sucesso!</div>';
+                $mensagem = '<div class="alert alert-success" id="mensagemSucesso">Teoria atualizada com sucesso!</div>';
             } else {
                 $mensagem = '<div class="alert alert-danger">Erro ao atualizar teoria: ' . $stmt_update->error . '</div>';
             }
@@ -378,6 +378,90 @@ if (!$teoria) {
             transform: scale(0.98);
         }
 
+        /* Estilos para Tópicos */
+        .topico-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .topico-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .topico-numero {
+            background: var(--roxo-principal);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .btn-remover-topico {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .tabela-container {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .tabela-editor {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .tabela-editor th, .tabela-editor td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .tabela-editor th {
+            background: #e9ecef;
+            font-weight: 600;
+        }
+
+        .tabela-editor input {
+            border: none;
+            width: 100%;
+            padding: 4px;
+            background: transparent;
+        }
+
+        .tabela-controls {
+            margin-top: 0.5rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
     </style>
 </head>
 <body>
@@ -559,11 +643,50 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="form-text">Palavras-chave separadas por vírgula para facilitar a busca</div>
                     </div>
 
-                    <!-- Campo Conteúdo -->
-                    <div class="mb-4">
-                        <label for="conteudo" class="form-label required-field">Conteúdo da Teoria</label>
-                        <textarea class="form-control" id="conteudo" name="conteudo" rows="20" required style="min-height: 400px;"><?php echo htmlspecialchars($teoria['conteudo']); ?></textarea>
-                        <div class="form-text">Conteúdo completo da teoria. Você pode usar HTML para formatação.</div>
+                    <!-- Tipo de Conteúdo -->
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Conteúdo</label>
+                        <div class="d-flex gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="tipo_conteudo" id="textoLivre" value="texto" checked onchange="alterarTipoConteudo()">
+                                <label class="form-check-label" for="textoLivre">
+                                    <i class="fas fa-align-left me-2"></i>Texto Livre
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="tipo_conteudo" id="topicos" value="topicos" onchange="alterarTipoConteudo()">
+                                <label class="form-check-label" for="topicos">
+                                    <i class="fas fa-list me-2"></i>Tópicos
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Conteúdo Texto Livre -->
+                    <div id="conteudoTexto" class="mb-4">
+                        <label for="conteudo" class="form-label required-field">Conteúdo Completo</label>
+                        <textarea class="form-control" id="conteudo" name="conteudo" rows="20" style="min-height: 400px;"><?php echo htmlspecialchars($teoria['conteudo']); ?></textarea>
+                        <div class="form-text">Conteúdo completo da teoria.</div>
+                    </div>
+
+                    <!-- Conteúdo Tópicos -->
+                    <div id="conteudoTopicos" class="mb-4" style="display: none;">
+                        <label class="form-label required-field">Tópicos da Teoria</label>
+                        <div id="listaTopicos">
+                            <!-- Tópicos serão adicionados aqui -->
+                        </div>
+                        <div class="d-flex gap-2 mt-3">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="adicionarTopico()">
+                                <i class="fas fa-plus me-2"></i>Adicionar Tópico
+                            </button>
+                            <button type="button" class="btn btn-outline-success btn-sm" onclick="adicionarTabela()">
+                                <i class="fas fa-table me-2"></i>Adicionar Tabela
+                            </button>
+                            <button type="button" class="btn btn-outline-info btn-sm" onclick="adicionarTabelaEmTopico()">
+                                <i class="fas fa-plus-square me-2"></i>Tabela em Tópico
+                            </button>
+                        </div>
+                        <input type="hidden" id="topicosData" name="topicos_data">
                     </div>
 
                     <!-- Botões de Ação -->
@@ -582,21 +705,488 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        let contadorTopicos = 0;
+        let topicos = [];
+        let contadorTabelas = 0;
+
+        // Detectar tipo de conteúdo ao carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            const conteudo = document.getElementById('conteudo').value;
+            if (conteudo && /^\d+\..+/m.test(conteudo)) {
+                document.getElementById('topicos').checked = true;
+                alterarTipoConteudo();
+                carregarTopicosExistentes(conteudo);
+            }
+        });
+
+        // Alterar tipo de conteúdo
+        function alterarTipoConteudo() {
+            const tipoTexto = document.getElementById('textoLivre').checked;
+            const conteudoTexto = document.getElementById('conteudoTexto');
+            const conteudoTopicos = document.getElementById('conteudoTopicos');
+            const campoConteudo = document.getElementById('conteudo');
+            
+            if (tipoTexto) {
+                conteudoTexto.style.display = 'block';
+                conteudoTopicos.style.display = 'none';
+                campoConteudo.required = true;
+            } else {
+                conteudoTexto.style.display = 'none';
+                conteudoTopicos.style.display = 'block';
+                campoConteudo.required = false;
+                if (topicos.length === 0) {
+                    adicionarTopico();
+                }
+            }
+        }
+
+        // Carregar tópicos existentes
+        function carregarTopicosExistentes(conteudo) {
+            const linhas = conteudo.split('\n');
+            let topicoAtual = null;
+            
+            linhas.forEach(linha => {
+                linha = linha.trim();
+                if (!linha) return;
+                
+                if (/^\d+\..+/.test(linha)) {
+                    if (topicoAtual) {
+                        topicos.push(topicoAtual);
+                    }
+                    const numero = linha.match(/^(\d+)\./)[1];
+                    const titulo = linha.replace(/^\d+\.\s*/, '');
+                    topicoAtual = { id: ++contadorTopicos, titulo, conteudo: '', tipo: 'texto' };
+                } else {
+                    if (topicoAtual) {
+                        topicoAtual.conteudo += (topicoAtual.conteudo ? '\n' : '') + linha;
+                    }
+                }
+            });
+            
+            if (topicoAtual) {
+                topicos.push(topicoAtual);
+            }
+            
+            renderizarTopicos();
+        }
+
+        // Adicionar novo tópico
+        function adicionarTopico() {
+            const novoTopico = {
+                id: ++contadorTopicos,
+                titulo: '',
+                conteudo: '',
+                tipo: 'texto'
+            };
+            topicos.push(novoTopico);
+            renderizarTopicos();
+        }
+
+        // Adicionar tabela
+        function adicionarTabela() {
+            const novaTabela = {
+                id: ++contadorTopicos,
+                titulo: 'Tabela',
+                tipo: 'tabela',
+                linhas: 3,
+                colunas: 3,
+                dados: Array(3).fill().map(() => Array(3).fill('')),
+                standalone: false,
+                posicao: 'lado'
+            };
+            topicos.push(novaTabela);
+            renderizarTopicos();
+        }
+
+        // Adicionar tabela em tópico existente
+        function adicionarTabelaEmTopico() {
+            const topicosTexto = topicos.filter(t => t.tipo === 'texto');
+            if (topicosTexto.length === 0) {
+                alert('Crie pelo menos um tópico antes de adicionar uma tabela.');
+                return;
+            }
+            
+            let opcoes = 'Escolha o tópico:\n';
+            topicosTexto.forEach((topico, index) => {
+                opcoes += `${index + 1}. ${topico.titulo || 'Tópico sem título'}\n`;
+            });
+            
+            const escolha = prompt(opcoes + '\nDigite o número do tópico:');
+            const indice = parseInt(escolha) - 1;
+            
+            if (indice >= 0 && indice < topicosTexto.length) {
+                const topicoEscolhido = topicosTexto[indice];
+                if (!topicoEscolhido.tabelas) {
+                    topicoEscolhido.tabelas = [];
+                }
+                
+                const novaTabela = {
+                    id: Date.now(),
+                    titulo: 'Tabela',
+                    linhas: 3,
+                    colunas: 3,
+                    dados: Array(3).fill().map(() => Array(3).fill('')),
+                    posicao: 'lado'
+                };
+                
+                topicoEscolhido.tabelas.push(novaTabela);
+                renderizarTopicos();
+            }
+        }
+
+        // Remover tópico
+        function removerTopico(id) {
+            topicos = topicos.filter(t => t.id !== id);
+            renderizarTopicos();
+        }
+
+        // Renderizar lista de tópicos
+        function renderizarTopicos() {
+            const container = document.getElementById('listaTopicos');
+            container.innerHTML = '';
+            
+            topicos.forEach((item, index) => {
+                if (item.tipo === 'texto') {
+                    const topicoHTML = `
+                        <div class="topico-item">
+                            <button type="button" class="btn-remover-topico" onclick="removerTopico(${item.id})">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            <div class="topico-header">
+                                <div class="topico-numero">${index + 1}</div>
+                                <input type="text" class="form-control" placeholder="Título do tópico" 
+                                       value="${item.titulo}" onchange="atualizarTopico(${item.id}, 'titulo', this.value)">
+                            </div>
+                            <textarea class="form-control" rows="4" placeholder="Conteúdo do tópico" 
+                                      onchange="atualizarTopico(${item.id}, 'conteudo', this.value)">${item.conteudo}</textarea>
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-success" onclick="adicionarTabelaNoTopico(${item.id})">
+                                    <i class="fas fa-table me-1"></i>Adicionar Tabela
+                                </button>
+                            </div>
+                            ${item.tabelas ? item.tabelas.map(tabela => `
+                                <div class="mt-3 p-2 border rounded">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <input type="text" class="form-control form-control-sm" value="${tabela.titulo}" 
+                                               onchange="atualizarTabelaNoTopico(${item.id}, ${tabela.id}, 'titulo', this.value)" 
+                                               placeholder="Título da tabela">
+                                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removerTabelaDoTopico(${item.id}, ${tabela.id})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Posição da tabela:</label>
+                                        <select class="form-select form-select-sm" onchange="atualizarTabelaNoTopico(${item.id}, ${tabela.id}, 'posicao', this.value)">
+                                            <option value="antes" ${tabela.posicao === 'antes' ? 'selected' : ''}>Antes das informações</option>
+                                            <option value="lado" ${tabela.posicao === 'lado' ? 'selected' : ''}>Ao lado das informações</option>
+                                            <option value="depois" ${tabela.posicao === 'depois' ? 'selected' : ''}>Depois das informações</option>
+                                        </select>
+                                    </div>
+                                    ${gerarTabelaEditor(tabela)}
+                                    <div class="mt-2">
+                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="adicionarLinhaTabela(${tabela.id})">
+                                            <i class="fas fa-plus"></i> Linha
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="adicionarColunaTabela(${tabela.id})">
+                                            <i class="fas fa-plus"></i> Coluna
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('') : ''}
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', topicoHTML);
+                } else if (item.tipo === 'tabela') {
+                    const tabelaHTML = `
+                        <div class="topico-item">
+                            <button type="button" class="btn-remover-topico" onclick="removerTopico(${item.id})">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            <div class="topico-header">
+                                <div class="topico-numero"><i class="fas fa-table"></i></div>
+                                <input type="text" class="form-control" placeholder="Título da tabela" 
+                                       value="${item.titulo}" onchange="atualizarTopico(${item.id}, 'titulo', this.value)">
+                            </div>
+                            <div class="mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="standalone-${item.id}" 
+                                           ${item.standalone ? 'checked' : ''} 
+                                           onchange="atualizarTopico(${item.id}, 'standalone', this.checked)">
+                                    <label class="form-check-label" for="standalone-${item.id}">
+                                        Tabela independente (não dentro de tópico)
+                                    </label>
+                                </div>
+                                <div class="mt-2">
+                                    <label class="form-label">Posição da tabela:</label>
+                                    <select class="form-select form-select-sm" onchange="atualizarTopico(${item.id}, 'posicao', this.value)">
+                                        <option value="antes" ${item.posicao === 'antes' ? 'selected' : ''}>Antes das informações</option>
+                                        <option value="lado" ${item.posicao === 'lado' ? 'selected' : ''}>Ao lado das informações</option>
+                                        <option value="depois" ${item.posicao === 'depois' ? 'selected' : ''}>Depois das informações</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="tabela-container">
+                                ${gerarTabelaEditor(item)}
+                                <div class="tabela-controls">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="adicionarLinha(${item.id})">
+                                        <i class="fas fa-plus"></i> Linha
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="adicionarColuna(${item.id})">
+                                        <i class="fas fa-plus"></i> Coluna
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', tabelaHTML);
+                }
+            });
+            
+            atualizarDadosTopicos();
+        }
+
+        // Gerar editor de tabela
+        function gerarTabelaEditor(tabela) {
+            let html = '<table class="tabela-editor">';
+            
+            for (let i = 0; i < tabela.linhas; i++) {
+                html += '<tr>';
+                for (let j = 0; j < tabela.colunas; j++) {
+                    const valor = tabela.dados[i] && tabela.dados[i][j] ? tabela.dados[i][j] : '';
+                    const tag = i === 0 ? 'th' : 'td';
+                    html += `<${tag}><input type="text" value="${valor}" oninput="atualizarCelula(${tabela.id}, ${i}, ${j}, this.value)"></${tag}>`;
+                }
+                html += '</tr>';
+            }
+            
+            html += '</table>';
+            return html;
+        }
+
+        // Atualizar dados do tópico
+        function atualizarTopico(id, campo, valor) {
+            const item = topicos.find(t => t.id === id);
+            if (item) {
+                item[campo] = valor;
+                atualizarDadosTopicos();
+            }
+        }
+
+        // Atualizar célula da tabela
+        function atualizarCelula(id, linha, coluna, valor) {
+            // Procurar em tabelas dentro de tópicos
+            for (let topico of topicos) {
+                if (topico.tabelas) {
+                    const tabela = topico.tabelas.find(t => t.id === id);
+                    if (tabela) {
+                        if (!tabela.dados) tabela.dados = [];
+                        if (!tabela.dados[linha]) tabela.dados[linha] = [];
+                        tabela.dados[linha][coluna] = valor;
+                        atualizarDadosTopicos();
+                        return;
+                    }
+                }
+            }
+            
+            // Procurar em tabelas independentes
+            const tabela = topicos.find(t => t.id === id && t.tipo === 'tabela');
+            if (tabela) {
+                if (!tabela.dados) tabela.dados = [];
+                if (!tabela.dados[linha]) tabela.dados[linha] = [];
+                tabela.dados[linha][coluna] = valor;
+                atualizarDadosTopicos();
+            }
+        }
+
+        // Adicionar linha à tabela
+        function adicionarLinha(id) {
+            const tabela = topicos.find(t => t.id === id);
+            if (tabela && tabela.tipo === 'tabela') {
+                tabela.linhas++;
+                tabela.dados.push(Array(tabela.colunas).fill(''));
+                renderizarTopicos();
+            }
+        }
+
+        // Adicionar coluna à tabela
+        function adicionarColuna(id) {
+            const tabela = topicos.find(t => t.id === id);
+            if (tabela && tabela.tipo === 'tabela') {
+                tabela.colunas++;
+                tabela.dados.forEach(linha => linha.push(''));
+                renderizarTopicos();
+            }
+        }
+
+        // Adicionar tabela diretamente no tópico
+        function adicionarTabelaNoTopico(topicoId) {
+            const topico = topicos.find(t => t.id === topicoId);
+            if (topico) {
+                if (!topico.tabelas) {
+                    topico.tabelas = [];
+                }
+                
+                const novaTabela = {
+                    id: Date.now(),
+                    titulo: 'Tabela',
+                    linhas: 3,
+                    colunas: 3,
+                    dados: Array(3).fill().map(() => Array(3).fill('')),
+                    posicao: 'lado'
+                };
+                
+                topico.tabelas.push(novaTabela);
+                renderizarTopicos();
+            }
+        }
+
+        // Adicionar linha à tabela dentro do tópico
+        function adicionarLinhaTabela(tabelaId) {
+            for (let topico of topicos) {
+                if (topico.tabelas) {
+                    const tabela = topico.tabelas.find(t => t.id === tabelaId);
+                    if (tabela) {
+                        tabela.linhas++;
+                        if (!tabela.dados) tabela.dados = [];
+                        tabela.dados.push(Array(tabela.colunas).fill(''));
+                        renderizarTopicos();
+                        return;
+                    }
+                }
+            }
+            // Fallback para tabelas independentes
+            const tabela = topicos.find(t => t.id === tabelaId);
+            if (tabela && tabela.tipo === 'tabela') {
+                tabela.linhas++;
+                if (!tabela.dados) tabela.dados = [];
+                tabela.dados.push(Array(tabela.colunas).fill(''));
+                renderizarTopicos();
+            }
+        }
+
+        // Adicionar coluna à tabela dentro do tópico
+        function adicionarColunaTabela(tabelaId) {
+            for (let topico of topicos) {
+                if (topico.tabelas) {
+                    const tabela = topico.tabelas.find(t => t.id === tabelaId);
+                    if (tabela) {
+                        tabela.colunas++;
+                        if (!tabela.dados) tabela.dados = [];
+                        for (let i = 0; i < tabela.linhas; i++) {
+                            if (!tabela.dados[i]) tabela.dados[i] = [];
+                            tabela.dados[i].push('');
+                        }
+                        renderizarTopicos();
+                        return;
+                    }
+                }
+            }
+            // Fallback para tabelas independentes
+            const tabela = topicos.find(t => t.id === tabelaId);
+            if (tabela && tabela.tipo === 'tabela') {
+                tabela.colunas++;
+                if (!tabela.dados) tabela.dados = [];
+                for (let i = 0; i < tabela.linhas; i++) {
+                    if (!tabela.dados[i]) tabela.dados[i] = [];
+                    tabela.dados[i].push('');
+                }
+                renderizarTopicos();
+            }
+        }
+
+        // Remover tabela de um tópico
+        function removerTabelaDoTopico(topicoId, tabelaId) {
+            const topico = topicos.find(t => t.id === topicoId);
+            if (topico && topico.tabelas) {
+                topico.tabelas = topico.tabelas.filter(t => t.id !== tabelaId);
+                renderizarTopicos();
+            }
+        }
+
+        // Atualizar propriedades de tabela dentro de tópico
+        function atualizarTabelaNoTopico(topicoId, tabelaId, campo, valor) {
+            const topico = topicos.find(t => t.id === topicoId);
+            if (topico && topico.tabelas) {
+                const tabela = topico.tabelas.find(t => t.id === tabelaId);
+                if (tabela) {
+                    tabela[campo] = valor;
+                    atualizarDadosTopicos();
+                }
+            }
+        }
+
+        // Atualizar campo hidden com dados dos tópicos
+        function atualizarDadosTopicos() {
+            document.getElementById('topicosData').value = JSON.stringify(topicos);
+        }
+
+        // Validar formulário antes do envio
+        function validarFormulario(event) {
+            if (document.getElementById('topicos').checked) {
+                if (topicos.length === 0) {
+                    event.preventDefault();
+                    alert('Adicione pelo menos um tópico.');
+                    return false;
+                }
+                
+                // Gerar conteúdo final dos tópicos
+                let conteudoFinal = '';
+                topicos.forEach((item, index) => {
+                    if (item.tipo === 'texto') {
+                        conteudoFinal += `${index + 1}. ${item.titulo}\n${item.conteudo}\n`;
+                        // Adicionar tabelas do tópico
+                        if (item.tabelas && item.tabelas.length > 0) {
+                            item.tabelas.forEach(tabela => {
+                                conteudoFinal += `\n${tabela.titulo}:\n`;
+                                for (let i = 0; i < tabela.linhas; i++) {
+                                    let linha = '';
+                                    for (let j = 0; j < tabela.colunas; j++) {
+                                        const valor = tabela.dados[i] && tabela.dados[i][j] ? tabela.dados[i][j] : '';
+                                        linha += valor + (j < tabela.colunas - 1 ? ' | ' : '');
+                                    }
+                                    conteudoFinal += linha + '\n';
+                                }
+                            });
+                        }
+                        conteudoFinal += '\n';
+                    } else if (item.tipo === 'tabela') {
+                        if (item.standalone) {
+                            conteudoFinal += `TABELA: ${item.titulo}\n`;
+                        } else {
+                            conteudoFinal += `${index + 1}. ${item.titulo}\n`;
+                        }
+                        // Converter tabela para texto
+                        for (let i = 0; i < item.linhas; i++) {
+                            let linha = '';
+                            for (let j = 0; j < item.colunas; j++) {
+                                const valor = item.dados[i] && item.dados[i][j] ? item.dados[i][j] : '';
+                                linha += valor + (j < item.colunas - 1 ? ' | ' : '');
+                            }
+                            conteudoFinal += linha + '\n';
+                        }
+                        conteudoFinal += '\n';
+                    }
+                });
+                document.getElementById('conteudo').value = conteudoFinal;
+            }
+        }
+
         // Validação do formulário
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.querySelector('form');
-            form.addEventListener('submit', function(e) {
-                const titulo = document.getElementById('titulo').value.trim();
-                const nivel = document.getElementById('nivel').value;
-                const ordem = document.getElementById('ordem').value;
-                const conteudo = document.getElementById('conteudo').value.trim();
-
-                if (!titulo || !nivel || !ordem || !conteudo) {
-                    e.preventDefault();
-                    alert('Por favor, preencha todos os campos obrigatórios.');
-                    return false;
-                }
-            });
+            form.addEventListener('submit', validarFormulario);
+            
+            // Auto-hide success message after 5 seconds
+            const mensagemSucesso = document.getElementById('mensagemSucesso');
+            if (mensagemSucesso) {
+                setTimeout(() => {
+                    mensagemSucesso.style.transition = 'opacity 0.5s ease';
+                    mensagemSucesso.style.opacity = '0';
+                    setTimeout(() => {
+                        mensagemSucesso.remove();
+                    }, 500);
+                }, 5000);
+            }
         });
     </script>
 </body>
