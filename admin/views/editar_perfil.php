@@ -191,61 +191,71 @@ $database->closeConnection();
 
         body { 
             font-family: 'Poppins', sans-serif; 
-            background: linear-gradient(135deg, var(--cinza-claro) 0%, #e3f2fd 100%);
+            background: linear-gradient(135deg, var(--cinza-claro) 0%, #ffffffff 100%);
             min-height: 100vh;
             line-height: 1.6;
         }
 
-        /* Navbar igual ao primeiro código */
-        .navbar {
-            background: transparent !important;
-            border-bottom: 3px solid var(--amarelo-detalhe);
-            box-shadow: 0 4px 15px rgba(255, 238, 0, 0.38);
-        }
+       .navbar {
+    background-color: transparent !important;
+    border-bottom: 3px solid var(--amarelo-detalhe);
+    box-shadow: 0 4px 15px rgba(255, 238, 0, 0.38);
+}
 
-        .navbar-brand {
-            font-weight: 700;
-            letter-spacing: 1px;
-        }
+.navbar-brand {
+    margin-left: auto;
+    margin-right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+}
 
-        .btn-outline-light {
-            color: var(--amarelo-detalhe);
-            border-color: var(--amarelo-detalhe);
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
+.navbar-brand .logo-header {
+    height: 70px;
+    width: auto;
+    display: block;
+}
 
-        .btn-outline-light:hover {
-            background-color: var(--amarelo-detalhe);
-            color: var(--preto-texto);
-        }
+.navbar {
+    display: flex;
+    align-items: center;
+}
 
-        /* Ajuste da logo no header */
-        .navbar-brand {
-            margin-left: auto;
-            margin-right: 0;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            width: 100%;
-        }
-        .navbar-brand .logo-header {
-            height: 70px;
-            width: auto;
-            display: block;
-        }
+        
+.btn-outline-light {
+    color: var(--amarelo-detalhe);
+    border-color: var(--amarelo-detalhe);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
 
-        .settings-icon {
-            color: var(--roxo-principal) !important;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            font-size: 1.2rem;
-        }
+.btn-outline-light:hover {
+    background-color: var(--amarelo-detalhe);
+    color: var(--preto-texto);
+}
 
-        .settings-icon:hover {
-            color: var(--roxo-principal) !important;
-            transform: rotate(90deg);
-        }
+.settings-icon {
+    color: var(--roxo-principal) !important;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    font-size: 1.2rem;
+}
+
+.settings-icon:hover {
+    color: var(--roxo-escuro) !important;
+    transform: rotate(90deg);
+}
+
+.logout-icon {
+    color: var(--roxo-principal) !important;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.logout-icon:hover {
+    color: var(--roxo-escuro) !important;
+}
 
         /* Container principal */
         .profile-container { 
@@ -792,8 +802,8 @@ $database->closeConnection();
             padding: 12px 20px;
             font-size: 1rem;
             min-height: 48px;
-            width: 100%;
             border-color: rgba(17, 17, 17, 1);
+            width: 100%;
         }
 
         .btn-cancelar-alteracoes::before {
@@ -801,8 +811,9 @@ $database->closeConnection();
         }
 
         .btn-cancelar-alteracoes:hover {
-            background: rgba(144, 144, 144, 0.06);
+            background: rgba(144, 144, 144, 0.12);
             color: var(--cinza-escuro);
+            border-color:  var(--cinza-escuro);
         }
 
         .btn-cancelar-alteracoes:active {
@@ -1048,20 +1059,21 @@ $database->closeConnection();
         <div class="spinner"></div>
     </div>
 
-    <!-- Navbar igual ao primeiro código -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container d-flex justify-content-between align-items-center">
-            <div></div>
-            <div class="d-flex align-items-center" style="gap: 24px;">
-                <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
-                    <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
-                </a>
-                <a href="editar_perfil.php" class="settings-icon">
-                    <i class="fas fa-cog fa-lg"></i>
-                </a>
-            </div>
+   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid d-flex justify-content-end align-items-center">
+        <div class="d-flex align-items-center" style="gap: 24px;">
+            <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
+                <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
+            </a>
+            <a href="editar_perfil.php" class="settings-icon">
+                <i class="fas fa-cog fa-lg"></i>
+            </a>
+            <a href="logout.php" class="logout-icon" title="Sair">
+                <i class="fas fa-sign-out-alt fa-lg"></i>
+            </a>
         </div>
-    </nav>
+    </div>
+</nav>
 
   <div class="profile-container">
     <!-- Breadcrumb -->
@@ -1571,5 +1583,7 @@ $database->closeConnection();
             loadingOverlay.style.display = 'flex';
         });
     </script>
+
+    
 </body>
 </html>

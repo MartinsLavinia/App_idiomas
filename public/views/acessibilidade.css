@@ -1,0 +1,460 @@
+/* Botão de Acessibilidade */
+    .accessibility-widget {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 10000;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .accessibility-toggle {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7c3aed, #a855f7);
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+.accessibility-toggle:hover, .accessibility-toggle:focus-visible {
+    outline: none;
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(45, 62, 143, 1);
+}
+
+.accessibility-panel {
+    position: absolute;
+    bottom: 60px;
+    right: 0;
+    width: 320px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    padding: 10px 15px 15px 15px;
+    font-size: 14px;
+    z-index: 10001;
+    color: #222;
+}
+
+.accessibility-header {
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+}
+
+.accessibility-header h3 {
+    margin: 0;
+    color: white;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: background 0.3s ease;
+}
+
+.close-btn:hover, .close-btn:focus-visible {
+    background: rgba(255, 255, 255, 0.25);
+    outline: none;
+}
+
+/* GRID DOS BOTÕES - TAMANHO CONSISTENTE */
+.accessibility-options {
+    padding: 10px 5px 0 5px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 95px;
+    gap: 10px;
+    justify-items: stretch;
+}
+
+.option-btn {
+    background: white;
+    border: 2px solid #d5d9db;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    padding: 8px 6px;
+    font-size: 13px;
+    color: #2d3e8f;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+    user-select: none;
+    box-shadow: 0 1px 1px rgb(0 0 0 / 0.05);
+    font-weight: 600;
+    height: 95px;
+    min-height: 95px;
+    max-height: 95px;
+    width: 100%;
+    box-sizing: border-box;
+    gap: 0;
+}
+
+.option-btn i {
+    font-size: 28px;
+    margin-bottom: 0;
+    color: #2d3e8f;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.option-btn:hover, .option-btn:focus-visible {
+    background: #e1e8f8;
+    border-color: #1a2980;
+    box-shadow: 0 2px 6px rgb(26 41 128 / 0.25);
+    outline: none;
+    transform: translateY(-2px);
+}
+
+.option-btn[aria-pressed="true"] {
+    background: #3952a3;
+    color: white;
+    border-color: #1a2980;
+}
+
+.option-btn[aria-pressed="true"] i {
+    color: white;
+}
+
+.reset-btn {
+    background: #f5f5f7;
+    border-color: #c9c9d7;
+    color: #71717a;
+}
+
+.reset-btn:hover, .reset-btn:focus-visible {
+    background: #d6d6e1;
+    border-color: #71717a;
+    color: #1a1a28;
+}
+
+/* CONTAINERS E SUBMENUS */
+.option-btn-container {
+    position: relative;
+    height: 95px;
+}
+
+/* SUBMENUS ESTILIZADOS */
+.submenu {
+    display: none;
+    position: absolute;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 15px;
+    z-index: 10002;
+    width: 280px;
+    top: -150px;
+    left: 0;
+    border: 2px solid #e1e8f8;
+}
+
+.submenu.active {
+    display: block;
+}
+
+.submenu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    color: #2d3e8f;
+    margin-bottom: 12px;
+    font-size: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e1e8f8;
+}
+
+.submenu-close {
+    background: none;
+    border: none;
+    color: #2d3e8f;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.submenu-close:hover {
+    background: #e1e8f8;
+    color: #3952a3;
+}
+
+/* CONTROLES DESLIZANTES NOS SUBMENUS */
+.slider-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: space-between;
+    margin: 15px 0;
+}
+
+.slider-btn {
+    background: #e1e8f8;
+    border: 1px solid #d5d9db;
+    border-radius: 6px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #2d3e8f;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.slider-btn:hover {
+    background: #3952a3;
+    color: white;
+    border-color: #2d3e8f;
+}
+
+.slider-wrapper {
+    flex: 1;
+    position: relative;
+}
+
+.slider-track {
+    position: relative;
+    height: 8px;
+    background: #e1e8f8;
+    border-radius: 4px;
+    overflow: visible;
+}
+
+.slider-fill {
+    position: absolute;
+    height: 100%;
+    background: linear-gradient(90deg, #2d3e8f, #3952a3);
+    border-radius: 4px;
+    width: 0%;
+    transition: width 0.2s ease;
+}
+
+/* SLIDER COM BOLINHA VISÍVEL */
+.slider {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    z-index: 2;
+    opacity: 1;
+    -webkit-appearance: none;
+    background: transparent;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #2d3e8f;
+    cursor: pointer;
+    border: 3px solid white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    transition: all 0.2s ease;
+}
+
+.slider::-webkit-slider-thumb:hover {
+    background: #3952a3;
+    transform: scale(1.1);
+}
+
+.slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #2d3e8f;
+    cursor: pointer;
+    border: 3px solid white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    transition: all 0.2s ease;
+}
+
+.slider::-moz-range-thumb:hover {
+    background: #3952a3;
+    transform: scale(1.1);
+}
+
+.slider-value {
+    font-size: 12px;
+    font-weight: 600;
+    color: #2d3e8f;
+    text-align: center;
+    margin-top: 8px;
+}
+
+/* BOTÕES DO SUBMENU DE ALINHAMENTO */
+.submenu-btn {
+    width: 100%;
+    padding: 10px 12px;
+    margin: 6px 0;
+    background: white;
+    border: 1px solid #d5d9db;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #2d3e8f;
+}
+
+.submenu-btn:hover {
+    background: #e1e8f8;
+    border-color: #2d3e8f;
+}
+
+.submenu-btn i {
+    font-size: 14px;
+    width: 16px;
+}
+
+/* CLASSES PARA FUNCIONALIDADES */
+.contrast-mode {
+    filter: contrast(1.8) brightness(1.1) !important;
+    background-color: #000000 !important;
+    color: #ffffff !important;
+}
+
+.contrast-mode * {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border-color: #ffffff !important;
+}
+
+.contrast-mode a {
+    color: #ffff00 !important;
+}
+
+.contrast-mode button {
+    background-color: #333333 !important;
+    color: #ffffff !important;
+    border-color: #ffffff !important;
+}
+
+.highlight-links a, .highlight-links button {
+    outline: 2px solid #00ffff !important;
+    box-shadow: 0 0 8px #00ffff !important;
+    position: relative;
+}
+
+.pause-animations * {
+    animation-play-state: paused !important;
+    transition: none !important;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Open+Dyslexic&display=swap');
+
+.dyslexia-friendly {
+    font-family: 'Open Dyslexic', Arial, sans-serif !important;
+    letter-spacing: 0.12em !important;
+    word-spacing: 0.2em !important;
+}
+
+.text-spacing {
+    letter-spacing: 0.12em !important;
+    word-spacing: 0.3em !important;
+}
+
+.text-align-left * {
+    text-align: left !important;
+}
+
+.text-align-center * {
+    text-align: center !important;
+}
+
+.text-align-justify * {
+    text-align: justify !important;
+}
+
+.tooltip-enabled a[title], .tooltip-enabled button[title] {
+    position: relative;
+    outline: none;
+}
+
+.tooltip-enabled a[title]:hover::after,
+.tooltip-enabled button[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2d3e8f;
+    color: white;
+    padding: 5px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    font-size: 11px;
+    z-index: 2000;
+    opacity: 0.95;
+    pointer-events: none;
+    font-weight: 600;
+}
+
+.accessibility-widget.moved {
+    right: auto !important;
+    left: 20px !important;
+    top: 20px !important;
+    bottom: auto !important;
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 400px) {
+    .accessibility-widget {
+        right: 5px;
+        width: 300px;
+    }
+    
+    .accessibility-panel {
+        width: 300px;
+    }
+    
+    .submenu {
+        width: 260px;
+        left: -130px;
+    }
+}
+
+/* Estilo para o botão de parar leitura */
+#stop-reading-btn {
+    background: #dc3545 !important;
+    color: white !important;
+    border-color: #dc3545 !important;
+}
+
+#stop-reading-btn:hover {
+    background: #c82333 !important;
+    border-color: #bd2130 !important;
+}
+
+#stop-reading-btn i {
+    color: white !important;
+}

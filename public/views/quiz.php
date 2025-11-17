@@ -106,23 +106,53 @@ $database->closeConnection();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz de Nivelamento - <?php echo htmlspecialchars($idioma_quiz); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+     <link rel="icon" type="image/png" href="../../imagens/mini-esquilo.png">
     <style>
         /* Paleta de Cores */
 :root {
-    --roxo-principal: #5e3b8b; /* Roxo escuro e profundo */
-    --roxo-claro: #8a6aae;    /* Roxo mais suave para toques */
-    --amarelo-destaque: #f5c531; /* Amarelo vibrante e energizante */
+    --roxo-principal: #6a0dad;
+    --roxo-escuro: #4c087c;
+    --amarelo-detalhe: #ffd700;
     --amarelo-botao: #ffd700;
     --amarelo-hover: #e7c500;
-    --amarelo-claro: #fcf1d0;    /* Amarelo muito suave, quase creme */
-    --branco-fundo: #f8f9fa;     /* Fundo branco suave */
-    --cinza-texto: #444;       /* Cinza escuro para textos */
-    --gradiente-btn: linear-gradient(45deg, #f5c531, #ffec8b); /* Gradiente amarelo mais suave */
-    --gradiente-btn-hover: linear-gradient(45deg, #7a54a3, #5e3b8b); /* Gradiente roxo para hover */
-    --gradiente-progresso: linear-gradient(90deg, #fff9b0, #ffe344, #ffc107); /* Gradiente para a barra de progresso */
+    --branco: #ffffff;
+    --preto-texto: #212529;
+    --cinza-claro: #f8f9fa;
+    --cinza-medio: #dee2e6;
 }
 
-body {
+.header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #fff;
+            border-bottom: 1px solid #ddd;
+        }
+        .logo-img {
+            height: 80px; /* Tamanho médio */
+        }
+        .btn-voltar {
+       background: linear-gradient(135deg, #7c3aed, #a855f7);
+        color: white;
+        border: none;
+       padding: 0.5rem 1.5rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        font-family: 'Inter', sans-serif;
+        }
+   .btn-voltar:hover{
+     background: linear-gradient(135deg, #4c087c 0%, #8a2be2 100%);
+            border-color: #8a2be2;
+            color: white;
+            box-shadow: 0 6px 20px rgba(36, 31, 194, 0.4);
+            transform: translateY(-3px) scale(1.05);
+   }
+
+
+        body {
     background-color: var(--branco-fundo);
     font-family: 'Poppins', sans-serif;
     color: var(--cinza-texto);
@@ -131,7 +161,7 @@ body {
 
 /* Container principal */
 .container {
-    padding-top: 3rem;
+    padding-top: 80px; /* Ajuste para o header fixo */
     padding-bottom: 3rem;
 }
 
@@ -147,7 +177,7 @@ body {
 
 /* Header do quiz */
 .quiz-header {
-    background: linear-gradient(45deg, #5e3b8b, #7a54a3);
+    background: linear-gradient(45deg, var(--roxo-principal), var(--roxo-escuro));
     color: #fff;
     padding: 2.5rem !important;
     border-radius: 1.5rem 1.5rem 0 0;
@@ -220,11 +250,11 @@ body {
 /* NOVO: Efeito de destaque ao selecionar a alternativa */
 .form-check.alternativa-selecionada {
     background-color: #fff;
-    border-color: var(--amarelo-destaque);
+    border-color: var(--amarelo-detalhe);
     box-shadow: 0 4px 8px rgba(245, 197, 49, 0.2);
 }
 .form-check:hover {
-    border-color: var(--roxo-claro);
+    border-color: var(--roxo-escuro);
 }
 
 .form-check-label {
@@ -267,7 +297,7 @@ body {
 
 /* NOVO: Estilo do 'radio button' quando checado */
 .form-check input[type="radio"]:checked + .form-check-label::before {
-    background-color: var(--roxo-principal); /* Bolinha roxa */
+    background-color: var(--roxo-principal);
     border-color: var(--roxo-principal);
 }
 
@@ -288,14 +318,14 @@ body {
 
 /* Botão amarelo principal */
 .btn-submit {
-    background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
+    background: var(--amarelo-botao);
     color: var(--cinza-texto);
     box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
     min-width: 180px;
 }
 
 .btn-submit:hover {
-    background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
+    background: var(--amarelo-hover);
     transform: translateY(-2px);
     box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
     color: var(--cinza-texto);
@@ -405,6 +435,15 @@ body {
     </style>
 </head>
 <body>
+
+<div class="header-container">
+    <img src="../../imagens/logo-idiomas.png" alt="Logo" class="logo-img">
+
+   <a href="../../index.php" class="btn btn-voltar">
+    <i class="fas fa-home" style="font-family: arial"></i> Voltar ao página inicial
+</a>
+
+</div>
 
 <div class="modal fade" id="confirmarModal" tabindex="-1" aria-labelledby="confirmarModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
