@@ -1,4 +1,8 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 session_start();
 include_once __DIR__ . '/../../conexao.php';
 
@@ -68,6 +72,36 @@ $sql_usuarios_por_nivel = "
             ELSE 7
         END
 ";
+
+/*Para funcionar no site do felipe tem que substituir por esse codigo
+ Usuários por nível (baseado no último quiz realizado)
+$sql_usuarios_por_nivel = "
+    SELECT 
+        COALESCE(nivel_final, 'Sem nível') as nivel,
+        COUNT(*) as quantidade
+    FROM (
+        SELECT 
+            u.id,
+            (SELECT qr.nivel_resultado 
+             FROM quiz_resultados qr 
+             WHERE qr.id_usuario = u.id 
+             ORDER BY qr.data_realizacao DESC 
+             LIMIT 1) as nivel_final
+        FROM usuarios u
+    ) as usuarios_com_nivel
+    GROUP BY COALESCE(nivel_final, 'Sem nível')
+    ORDER BY
+        CASE COALESCE(nivel_final, 'Sem nível')
+            WHEN 'A1' THEN 1
+            WHEN 'A2' THEN 2
+            WHEN 'B1' THEN 3
+            WHEN 'B2' THEN 4
+            WHEN 'C1' THEN 5
+            WHEN 'C2' THEN 6
+            ELSE 7
+        END
+";
+*/
 $result_niveis = $conn->query($sql_usuarios_por_nivel);
 $usuarios_por_nivel = [];
 if ($result_niveis) {
