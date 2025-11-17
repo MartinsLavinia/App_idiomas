@@ -273,9 +273,150 @@ $database->closeConnection();
         .main-content {
             margin-left: 250px;
             padding: 20px;
+            position: relative; /* Necessário para z-index funcionar */
+            z-index: 1; /* Garante que o conteúdo principal não se sobreponha a modais ou outros elementos */
         }
 
         /* Estilos para exercícios de listening */
+
+/* INÍCIO DOS NOVOS ESTILOS PARA TEORIAS */
+/* Estilos para o Modal de Teorias */
+.modal-teorias .modal-header {
+    background-color: var(--roxo-principal);
+    color: var(--branco);
+    border-bottom: none;
+}
+
+.modal-teorias {
+    z-index: 1060; /* z-index maior que o da sidebar */
+}
+
+.modal-teorias .modal-title {
+    font-weight: 600;
+}
+
+.modal-teorias .modal-body {
+    padding: 20px;
+    background-color: var(--cinza-claro);
+}
+
+/* Estilos para o Card de Teoria */
+.teoria-card {
+    border-radius: 15px;
+    padding: 20px;
+    color: var(--branco); /* Texto branco para contraste com o gradiente */
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%; /* Garante que todos os cards tenham a mesma altura */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.teoria-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.teoria-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.teoria-numero {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 5px 12px;
+    border-radius: 10px;
+    line-height: 1;
+}
+
+.teoria-nivel {
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 5px;
+    background-color: var(--amarelo-detalhe);
+    color: var(--preto-texto);
+}
+
+.teoria-card-body {
+    flex-grow: 1;
+}
+
+.teoria-titulo {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.teoria-resumo {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.teoria-card-footer {
+    text-align: right;
+    font-size: 1.2rem;
+}
+
+.teoria-card-footer i {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Estilos para o Modal de Conteúdo da Teoria */
+.modal-teoria-conteudo .modal-header {
+    background-color: var(--roxo-escuro);
+    color: var(--branco);
+    border-bottom: none;
+}
+
+.modal-teoria-conteudo .modal-body {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--preto-texto);
+}
+
+/* Estilização do Conteúdo (para o formatarConteudoTeoria) */
+.conteudo-teoria h1, .conteudo-teoria h2, .conteudo-teoria h3 {
+    color: var(--roxo-principal);
+    border-bottom: 2px solid var(--amarelo-detalhe);
+    padding-bottom: 5px;
+    margin-top: 20px;
+    margin-bottom: 15px;
+}
+
+.conteudo-teoria p {
+    margin-bottom: 15px;
+}
+
+.conteudo-teoria ul, .conteudo-teoria ol {
+    padding-left: 25px;
+    margin-bottom: 15px;
+}
+
+.conteudo-teoria code {
+    background-color: #f0f0f0;
+    padding: 2px 5px;
+    border-radius: 5px;
+    font-family: monospace;
+}
+
+.conteudo-teoria pre {
+    background-color: #2d2d2d;
+    color: #f8f8f2;
+    padding: 15px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin-bottom: 20px;
+}
+/* FIM DOS NOVOS ESTILOS PARA TEORIAS */
+
         .audio-player-container {
             background: #f8f9fa;
             border-radius: 10px;
@@ -376,6 +517,191 @@ $database->closeConnection();
         .progress-bar-custom {
             height: 8px;
             border-radius: 4px;
+        }
+
+        /* Estilos para cards de teoria */
+        .teoria-card {
+            border-radius: 15px;
+            padding: 1.5rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .teoria-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .teoria-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .teoria-card:hover::before {
+            left: 100%;
+        }
+        
+        .teoria-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .teoria-numero {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .teoria-nivel {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        .teoria-card-body {
+            flex: 1;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .teoria-titulo {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            line-height: 1.3;
+        }
+        
+        .teoria-resumo {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            line-height: 1.4;
+            margin: 0;
+        }
+        
+        .teoria-card-footer {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-top: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .teoria-card-footer i {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            transition: transform 0.3s ease;
+        }
+        
+        .teoria-card:hover .teoria-card-footer i {
+            transform: translateX(5px);
+            opacity: 1;
+        }
+        
+        /* Estilos para conteúdo da teoria - Design limpo */
+        .teoria-conteudo {
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 2rem;
+            background: #ffffff;
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.7;
+            color: #333;
+            font-size: 1rem;
+        }
+        
+        /* Estilos para tópicos numerados - 2 colunas */
+        .topicos-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 1rem 0;
+        }
+        
+        .topico-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .topico-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .topico-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .topico-numero {
+            background: var(--roxo-principal);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .topico-titulo {
+            color: var(--roxo-principal);
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .topico-conteudo {
+            color: #555;
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .topicos-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Texto simples sem tópicos */
+        .teoria-texto-simples {
+            white-space: pre-wrap;
+            line-height: 1.7;
+            color: #333;
         }
 
         /* Estilos para preview de flashcards */
@@ -638,6 +964,28 @@ $database->closeConnection();
                                             </div>
                                         </div>
                                     <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seção Teorias -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h5 class="card-title mb-2">
+                                        <i class="fas fa-book-open me-2 text-primary"></i>
+                                        Teorias e Conceitos
+                                    </h5>
+                                    <p class="card-text text-muted mb-0">
+                                        Acesse o conteúdo teórico do seu nível atual
+                                    </p>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <button class="btn btn-primary" onclick="abrirTeorias()">
+                                        <i class="fas fa-book me-2"></i>Ver Teorias
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -927,6 +1275,53 @@ $database->closeConnection();
         </div>
     </div>
 
+    <!-- Modal Teorias -->
+    <div class="modal fade" id="modalTeorias" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-book-open me-2"></i>Teorias - <?php echo htmlspecialchars($idiomas_display[$idioma_escolhido] ?? $idioma_escolhido); ?> (<?php echo htmlspecialchars($nivel_usuario); ?>)
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="listaTeorias">
+                        <div class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Carregando...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Carregando teorias...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Teoria Individual -->
+    <div class="modal fade" id="modalTeoriaConteudo" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tituloTeoriaConteudo">
+                        <i class="fas fa-book me-2"></i>Teoria
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body teoria-conteudo" id="conteudoTeoria">
+                    <!-- Conteúdo da teoria será carregado aqui -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-primary" id="btnIniciarExercicios" style="display: none;" onclick="iniciarExerciciosAposTeoria()">
+                        <i class="fas fa-play me-2"></i>Iniciar Exercícios
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal de Confirmação de Exclusão -->
     <div class="modal fade" id="modalConfirmarExclusao" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -954,6 +1349,9 @@ $database->closeConnection();
     let modalExercicios = null;
     let modalAdicionarPalavra = null;
     let modalConfirmarExclusao = null;
+    let modalTeorias = null;
+    let modalTeoriaConteudo = null;
+    let blocoParaIniciar = null;
     let unidadeAtual = null;
     let blocoAtual = null;
     let exercicioAtual = null;
@@ -968,11 +1366,20 @@ $database->closeConnection();
     document.addEventListener('DOMContentLoaded', function() {
         console.log('=== INICIALIZANDO PAINEL ===');
         
+        // DEBUG: Verificar se os elementos existem
+        console.log('=== DEBUG PAINEL ===');
+        console.log('Cards de unidade:', document.querySelectorAll('.unidade-card').length);
+        console.log('Modal blocos:', document.getElementById('modalBlocos'));
+        console.log('Modal exercícios:', document.getElementById('modalExercicios'));
+        console.log('Modal teorias:', document.getElementById('modalTeorias'));
+        
         // Inicialização dos modais
         modalBlocos = new bootstrap.Modal(document.getElementById('modalBlocos'));
         modalExercicios = new bootstrap.Modal(document.getElementById('modalExercicios'));
         modalAdicionarPalavra = new bootstrap.Modal(document.getElementById('modalAdicionarPalavra'));
         modalConfirmarExclusao = new bootstrap.Modal(document.getElementById('modalConfirmarExclusao'));
+        modalTeorias = new bootstrap.Modal(document.getElementById('modalTeorias'));
+        modalTeoriaConteudo = new bootstrap.Modal(document.getElementById('modalTeoriaConteudo'));
 
         // Configurar event listeners para cards de unidades
         configurarEventListenersUnidades();
@@ -994,6 +1401,11 @@ $database->closeConnection();
         console.log(`Encontrados ${unidadeCards.length} cards de unidade`);
         
         unidadeCards.forEach((card, index) => {
+            // Testar clique nos cards
+            card.addEventListener('click', function() {
+                console.log(`Card ${index} clicado:`, this.getAttribute('data-unidade-id'));
+            });
+            
             card.addEventListener('click', function() {
                 const unidadeId = this.getAttribute('data-unidade-id');
                 const titulo = this.getAttribute('data-unidade-titulo');
@@ -1030,8 +1442,8 @@ $database->closeConnection();
         
         unidadeAtual = unidadeId;
         document.getElementById("tituloBlocos").textContent = `Blocos da Unidade ${numeroUnidade}: ${tituloUnidade}`;
-       
-        // Carregar blocos via AJAX
+   
+        // CORREÇÃO: URL corrigida
         fetch(`../../admin/controller/get_blocos.php?unidade_id=${unidadeId}`)
             .then(response => {
                 if (!response.ok) {
@@ -1050,7 +1462,7 @@ $database->closeConnection();
             })
             .catch(error => {
                 console.error("Erro ao carregar blocos:", error);
-                alert("Erro de rede ao carregar blocos: " + error.message);
+                alert("Erro de rede ao carregar blocos. Verifique o console para detalhes.");
             });
     };
 
@@ -1103,9 +1515,125 @@ $database->closeConnection();
         console.log('Abrindo exercícios para bloco:', blocoId, tituloBloco);
         
         blocoAtual = blocoId;
+        blocoParaIniciar = { id: blocoId, titulo: tituloBloco };
+        
+        // Primeiro verificar se há teoria para este bloco
+        verificarTeoriaDoBloco(blocoId, tituloBloco);
+    };
+    
+    // Função para verificar se há teoria para o bloco
+    function verificarTeoriaDoBloco(blocoId, tituloBloco) {
+        // CORREÇÃO: URL corrigida
+        fetch(`../../admin/controller/get_teoria_bloco.php?bloco_id=${blocoId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.teoria) {
+                    // Há teoria, mostrar primeiro
+                    mostrarTeoriaDoBloco(data.teoria, tituloBloco);
+                } else {
+                    // Não há teoria, ir direto para exercícios
+                    iniciarExerciciosAposTeoria();
+                }
+            })
+            .catch(error => {
+                console.log('Nenhuma teoria encontrada, iniciando exercícios:', error);
+                iniciarExerciciosAposTeoria();
+            });
+    }
+    
+    // Função para formatar conteúdo da teoria
+    function formatarConteudoTeoria(conteudo) {
+        if (!conteudo) return '<p class="text-muted">Nenhum conteúdo disponível.</p>';
+        
+        // Detectar se é formato de tópicos (numerado)
+        const linhas = conteudo.split('\n');
+        let temTopicos = false;
+        let conteudoFormatado = '';
+        let topicoAtual = null;
+        
+        // Verificar se tem tópicos numerados
+        for (let linha of linhas) {
+            if (/^\d+\..+/.test(linha.trim())) {
+                temTopicos = true;
+                break;
+            }
+        }
+        
+        if (temTopicos) {
+            // Processar como tópicos em grid
+            let topicos = [];
+            
+            linhas.forEach(linha => {
+                linha = linha.trim();
+                if (!linha) return;
+                
+                if (/^\d+\..+/.test(linha)) {
+                    // Finalizar tópico anterior
+                    if (topicoAtual) {
+                        topicos.push(topicoAtual);
+                    }
+                    
+                    // Novo tópico
+                    const numero = linha.match(/^(\d+)\./)[1];
+                    const titulo = linha.replace(/^\d+\.\s*/, '');
+                    topicoAtual = { numero, titulo, conteudo: '' };
+                } else {
+                    // Conteúdo do tópico
+                    if (topicoAtual) {
+                        topicoAtual.conteudo += (topicoAtual.conteudo ? '\n' : '') + linha;
+                    }
+                }
+            });
+            
+            // Adicionar último tópico
+            if (topicoAtual) {
+                topicos.push(topicoAtual);
+            }
+            
+            // Gerar HTML em grid
+            conteudoFormatado = '<div class="topicos-container">';
+            topicos.forEach(topico => {
+                conteudoFormatado += `
+                    <div class="topico-item">
+                        <div class="topico-header">
+                            <div class="topico-numero">${topico.numero}</div>
+                            <h4 class="topico-titulo">${topico.titulo}</h4>
+                        </div>
+                        <p class="topico-conteudo">${topico.conteudo.replace(/\n/g, '<br>')}</p>
+                    </div>
+                `;
+            });
+            conteudoFormatado += '</div>';
+        } else {
+            // Texto simples
+            conteudoFormatado = `<div class="teoria-texto-simples">${conteudo}</div>`;
+        }
+        
+        return conteudoFormatado;
+    }
+    
+    // Função para mostrar teoria do bloco
+    function mostrarTeoriaDoBloco(teoria, tituloBloco) {
+        document.getElementById('tituloTeoriaConteudo').innerHTML = `
+            <i class="fas fa-book me-2"></i>${teoria.titulo} - ${tituloBloco}
+        `;
+        document.getElementById('conteudoTeoria').innerHTML = formatarConteudoTeoria(teoria.conteudo);
+        document.getElementById('btnIniciarExercicios').style.display = 'block';
+        modalTeoriaConteudo.show();
+    }
+    
+    // Função para iniciar exercícios após teoria
+    window.iniciarExerciciosAposTeoria = function() {
+        if (modalTeoriaConteudo) modalTeoriaConteudo.hide();
+        
+        if (!blocoParaIniciar) return;
+        
+        const blocoId = blocoParaIniciar.id;
+        const tituloBloco = blocoParaIniciar.titulo;
+        
         document.getElementById("tituloExercicios").textContent = `Exercícios: ${tituloBloco}`;
-       
-        // Carregar exercícios via AJAX - usando get_exercicio.php com bloco_id
+   
+        // CORREÇÃO: URL corrigida
         fetch(`../../admin/controller/get_exercicio.php?bloco_id=${blocoId}`)
             .then(response => {
                 if (!response.ok) {
@@ -1117,33 +1645,7 @@ $database->closeConnection();
                 console.log('Exercícios recebidos:', data);
                 if (data.success) {
                     if (data.exercicios && data.exercicios.length > 0) {
-                        // Separar exercícios normais dos especiais
-                        const exerciciosNormais = data.exercicios.filter(ex => ex.tipo !== 'especial');
-                        const exerciciosEspeciais = data.exercicios.filter(ex => ex.tipo === 'especial');
-                        
-                        console.log('Exercícios separados:', {
-                            normais: exerciciosNormais.length,
-                            especiais: exerciciosEspeciais.length,
-                            total: data.exercicios.length
-                        });
-                        
-                        // Ordenar exercícios normais por tipo e depois por ordem
-                        exerciciosNormais.sort((a, b) => {
-                            const tipoA = a.categoria || 'gramatica';
-                            const tipoB = b.categoria || 'gramatica';
-                            
-                            if (tipoA !== tipoB) {
-                                return tipoA.localeCompare(tipoB);
-                            }
-                            return (a.ordem || 0) - (b.ordem || 0);
-                        });
-                        
-                        // Iniciar apenas com exercícios normais
-                        exerciciosLista = exerciciosNormais;
-                        
-                        // Armazenar exercícios especiais para usar depois
-                        window.exerciciosEspeciais = exerciciosEspeciais;
-                        exerciciosEspeciaisAdicionados = false;
+                        exerciciosLista = data.exercicios;
                         exercicioIndex = 0;
                         carregarExercicio(exercicioIndex);
                         modalBlocos.hide();
@@ -1157,7 +1659,7 @@ $database->closeConnection();
             })
             .catch(error => {
                 console.error("Erro ao carregar exercícios:", error);
-                alert("Erro de rede ao carregar exercícios: " + error.message);
+                alert("Erro de rede ao carregar exercícios. Verifique o console.");
             });
     };
 
@@ -1560,9 +2062,11 @@ $database->closeConnection();
                 document.getElementById("btnEnviarResposta").style.display = "none";
                 document.getElementById("btnProximoExercicio").style.display = "none";
             } else {
-                alert("Parabéns! Você completou todos os exercícios deste bloco.");
+                mostrarMensagemSucessoBloco();
                 modalExercicios.hide();
-                modalBlocos.show();
+                setTimeout(() => {
+                    modalBlocos.show();
+                }, 2000);
             }
         }
     };
@@ -1948,6 +2452,170 @@ $database->closeConnection();
         `;
     };
     
+    // Função para mostrar mensagem de sucesso do bloco
+    window.mostrarMensagemSucessoBloco = function() {
+        const conteudoExercicioDiv = document.getElementById("conteudoExercicio");
+        conteudoExercicioDiv.innerHTML = `
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-trophy" style="font-size: 4rem; color: #ffd700;"></i>
+                </div>
+                <h3 class="text-success mb-3">
+                    <i class="fas fa-check-circle me-2"></i>Parabéns!
+                </h3>
+                <p class="fs-5 mb-4">Você completou todos os exercícios deste bloco com sucesso!</p>
+                <div class="alert alert-success d-inline-block">
+                    <i class="fas fa-star me-2"></i>
+                    Bloco concluído! Continue sua jornada de aprendizado.
+                </div>
+                <div class="mt-4">
+                    <div class="spinner-border text-primary me-2" role="status" style="width: 1rem; height: 1rem;">
+                        <span class="visually-hidden">Carregando...</span>
+                    </div>
+                    <small class="text-muted">Retornando aos blocos...</small>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById("btnEnviarResposta").style.display = "none";
+        document.getElementById("btnProximoExercicio").style.display = "none";
+        
+        // Mostrar toast adicional
+        mostrarToast('Bloco completado! Parabéns pelo seu progresso!', 'success');
+    };
+
+    // CORREÇÃO: Função exibirTeorias completa
+    function exibirTeorias(teorias) {
+        const container = document.getElementById('listaTeorias');
+        
+        if (!teorias || teorias.length === 0) {
+            container.innerHTML = `
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Nenhuma teoria encontrada para seu nível atual.
+                </div>
+            `;
+            return;
+        }
+
+        let html = '<div class="row">';
+        teorias.forEach((teoria, index) => {
+            const gradientColors = [
+                'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+            ];
+            const gradient = gradientColors[index % gradientColors.length];
+            
+            html += `
+                <div class="col-md-6 mb-3">
+                    <div class="teoria-card" onclick="abrirTeoriaConteudo(${teoria.id}, '${teoria.titulo.replace(/'/g, "\\'")}')"
+                         style="background: ${gradient};">
+                        <div class="teoria-card-header">
+                            <div class="teoria-numero">${index + 1}</div>
+                            <span class="teoria-nivel">${teoria.nivel || '<?php echo htmlspecialchars($nivel_usuario); ?>'}</span>
+                        </div>
+                        <div class="teoria-card-body">
+                            <h5 class="teoria-titulo">${teoria.titulo}</h5>
+                            <p class="teoria-resumo">${teoria.resumo || 'Clique para ver o conteúdo completo'}</p>
+                        </div>
+                        <div class="teoria-card-footer">
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    // Função para abrir modal de teorias
+    window.abrirTeorias = function() {
+        const container = document.getElementById('listaTeorias');
+        container.innerHTML = `
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Carregando...</span>
+                </div>
+                <p class="mt-2 text-muted">Carregando teorias...</p>
+            </div>
+        `;
+        
+        modalTeorias.show();
+        
+        // Carregar teorias do nível atual
+        fetch(`../controller/get_teorias.php?nivel=<?php echo htmlspecialchars($nivel_usuario ?? 'A1'); ?>`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    exibirTeorias(data.teorias);
+                } else {
+                    container.innerHTML = `
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Nenhuma teoria encontrada para seu nível atual.
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar teorias:', error);
+                container.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Erro ao carregar teorias. Tente novamente.
+                    </div>
+                `;
+            });
+    };
+    
+    // Função para abrir conteúdo de uma teoria
+    window.abrirTeoriaConteudo = function(teoriaId, titulo) {
+        document.getElementById('tituloTeoriaConteudo').innerHTML = `
+            <i class="fas fa-book me-2"></i>${titulo}
+        `;
+        document.getElementById('conteudoTeoria').innerHTML = `
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Carregando...</span>
+                </div>
+                <p class="mt-2 text-muted">Carregando conteúdo...</p>
+            </div>
+        `;
+        document.getElementById('btnIniciarExercicios').style.display = 'none';
+        
+        modalTeorias.hide();
+        modalTeoriaConteudo.show();
+        
+        // Carregar conteúdo da teoria
+        fetch(`../controller/get_teoria_conteudo.php?id=${teoriaId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('conteudoTeoria').innerHTML = formatarConteudoTeoria(data.teoria.conteudo);
+                } else {
+                    document.getElementById('conteudoTeoria').innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Erro ao carregar conteúdo da teoria.
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar teoria:', error);
+                document.getElementById('conteudoTeoria').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Erro ao carregar conteúdo da teoria.
+                    </div>
+                `;
+            });
+    };
+
+
+
     // Função para mostrar toast
     window.mostrarToast = function(mensagem, tipo = 'info') {
         const toastContainer = document.getElementById('toastContainer');

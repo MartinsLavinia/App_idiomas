@@ -92,12 +92,7 @@ if (!$teoria) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="../../imagens/mini-esquilo.png">
-    <script src="https://cdn.tiny.cloud/1/YOUR_API_KEY/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
-    <!-- 
-        ATENÇÃO, ADMINISTRADOR: 
-        Para remover o aviso do TinyMCE, substitua 'YOUR_API_KEY' no link acima pela sua chave de API do TinyMCE.
-        Você pode obter uma chave de API gratuita em https://www.tiny.cloud/auth/signup/
-    -->
+
     <style>
     <?php include __DIR__ . '/gerenciamento.css'; ?>
     
@@ -530,9 +525,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             <label for="nivel" class="form-label required-field">Nível</label>
                             <select class="form-select" id="nivel" name="nivel" required>
                                 <option value="">Selecione o nível</option>
-                                <option value="Iniciante" <?php echo ($teoria['nivel'] == 'Iniciante') ? 'selected' : ''; ?>>Iniciante</option>
-                                <option value="Intermediário" <?php echo ($teoria['nivel'] == 'Intermediário') ? 'selected' : ''; ?>>Intermediário</option>
-                                <option value="Avançado" <?php echo ($teoria['nivel'] == 'Avançado') ? 'selected' : ''; ?>>Avançado</option>
+                                <option value="A1" <?php echo ($teoria['nivel'] == 'A1') ? 'selected' : ''; ?>>A1 - Iniciante</option>
+                                <option value="A2" <?php echo ($teoria['nivel'] == 'A2') ? 'selected' : ''; ?>>A2 - Básico</option>
+                                <option value="B1" <?php echo ($teoria['nivel'] == 'B1') ? 'selected' : ''; ?>>B1 - Intermediário</option>
+                                <option value="B2" <?php echo ($teoria['nivel'] == 'B2') ? 'selected' : ''; ?>>B2 - Intermediário Avançado</option>
+                                <option value="C1" <?php echo ($teoria['nivel'] == 'C1') ? 'selected' : ''; ?>>C1 - Avançado</option>
+                                <option value="C2" <?php echo ($teoria['nivel'] == 'C2') ? 'selected' : ''; ?>>C2 - Proficiente</option>
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -564,7 +562,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <!-- Campo Conteúdo -->
                     <div class="mb-4">
                         <label for="conteudo" class="form-label required-field">Conteúdo da Teoria</label>
-                        <textarea class="form-control" id="conteudo" name="conteudo" rows="15" required><?php echo htmlspecialchars($teoria['conteudo']); ?></textarea>
+                        <textarea class="form-control" id="conteudo" name="conteudo" rows="20" required style="min-height: 400px;"><?php echo htmlspecialchars($teoria['conteudo']); ?></textarea>
                         <div class="form-text">Conteúdo completo da teoria. Você pode usar HTML para formatação.</div>
                     </div>
 
@@ -584,25 +582,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Inicializar TinyMCE para o campo de conteúdo
-        tinymce.init({
-            selector: '#conteudo',
-            height: 400,
-            menubar: false,
-            plugins: [
-                'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-                'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                'insertdatetime', 'media', 'table', 'help', 'wordcount'
-            ],
-            toolbar: 'undo redo | blocks | ' +
-                'bold italic forecolor | alignleft aligncenter ' +
-                'alignright alignjustify | bullist numlist outdent indent | ' +
-                'removeformat | help',
-            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
-            branding: false,
-            statusbar: false
-        });
-
         // Validação do formulário
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.querySelector('form');
@@ -610,7 +589,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const titulo = document.getElementById('titulo').value.trim();
                 const nivel = document.getElementById('nivel').value;
                 const ordem = document.getElementById('ordem').value;
-                const conteudo = tinymce.get('conteudo').getContent().trim();
+                const conteudo = document.getElementById('conteudo').value.trim();
 
                 if (!titulo || !nivel || !ordem || !conteudo) {
                     e.preventDefault();
