@@ -1,6 +1,6 @@
 <?php
 include_once __DIR__ . '/../../conexao.php';
-require "config_esquicisenha.ini";
+require_once __DIR__ . "/config_esquecisenhau.php";
 ini_set("SMTP", "smtp.eb.mil.br");
 $nome = $_POST["nome"];
 $email = $_POST["email"];

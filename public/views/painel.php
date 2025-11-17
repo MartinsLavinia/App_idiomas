@@ -147,9 +147,9 @@ if (isset($_GET["idioma"]) && isset($_GET["nivel_escolhido"])) {
     }
 }
 
-// Busca unidades apenas se o usuário tem progresso
+// Busca apenas a primeira unidade se o usuário tem progresso
 if (!$mostrar_selecao_idioma) {
-    $sql_unidades = "SELECT * FROM unidades WHERE idioma = ? AND nivel = ? ORDER BY numero_unidade ASC";
+    $sql_unidades = "SELECT * FROM unidades WHERE idioma = ? AND nivel = ? ORDER BY numero_unidade ASC LIMIT 1";
     $stmt_unidades = $conn->prepare($sql_unidades);
     $stmt_unidades->bind_param("ss", $idioma_escolhido, $nivel_usuario);
     $stmt_unidades->execute();
@@ -501,22 +501,77 @@ $database->closeConnection();
             padding: 12px 24px;
         }
 
-        /* Cards de unidade */
-        .unidade-card {
-            cursor: pointer;
+        /* Cards de blocos com estados */
+        .bloco-card {
             transition: all 0.3s ease;
             border: 2px solid transparent;
         }
-
-        .unidade-card:hover {
+        
+        .bloco-card-disponivel {
+            cursor: pointer;
+            border-color: #007bff;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+        }
+        
+        .bloco-card-disponivel:hover {
             transform: translateY(-5px);
-            border-color: var(--roxo-principal);
-            box-shadow: 0 5px 15px rgba(106, 13, 173, 0.3);
+            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+            border-color: #0056b3;
+        }
+        
+        .bloco-card-concluido {
+            cursor: pointer;
+            border-color: #28a745;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fff8 100%);
+        }
+        
+        .bloco-card-concluido:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.2);
+        }
+        
+        .bloco-card-bloqueado {
+            cursor: not-allowed;
+            border-color: #6c757d;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            opacity: 0.6;
+        }
+        
+        .bloco-card-bloqueado .card-title,
+        .bloco-card-bloqueado .card-text {
+            color: #6c757d !important;
+        }
+        
+        /* Container de unidades */
+        .unidade-container {
+            border-left: 4px solid var(--roxo-principal);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .unidade-container .card-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-bottom: 2px solid var(--amarelo-detalhe);
         }
 
         .progress-bar-custom {
             height: 8px;
             border-radius: 4px;
+        }
+        
+        /* Badges de status dos blocos */
+        .badge {
+            font-size: 0.7rem;
+            padding: 0.35rem 0.6rem;
+        }
+        
+        /* Progress bar menor */
+        .bloco-card .progress {
+            height: 6px;
+        }
+        
+        /* Texto menor nos blocos */
+        .bloco-card small {
+            font-size: 0.75rem;
         }
 
         /* Estilos para cards de teoria */
@@ -651,11 +706,18 @@ $database->closeConnection();
             border-radius: 10px;
             padding: 1.5rem;
             transition: all 0.3s ease;
+            min-height: fit-content;
         }
         
         .topico-item:hover {
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             transform: translateY(-2px);
+        }
+        
+        /* Tópicos com tabelas ocupam largura total */
+        .topico-item.com-tabela {
+            grid-column: 1 / -1;
+            max-width: none;
         }
         
         .topico-header {
@@ -703,6 +765,87 @@ $database->closeConnection();
             line-height: 1.7;
             color: #333;
         }
+
+        /* Estilos para tabelas nas teorias */
+        .teoria-tabela {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+
+        .teoria-tabela h5 {
+            color: var(--roxo-principal);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .teoria-tabela table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+
+        .teoria-tabela th {
+            background: var(--roxo-principal);
+            color: white;
+            padding: 8px 10px;
+            text-align: left;
+            font-weight: 600;
+            border: none;
+            font-size: 0.85rem;
+        }
+
+        .teoria-tabela td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: top;
+            font-size: 0.85rem;
+        }
+
+        .teoria-tabela tr:last-child td {
+            border-bottom: none;
+        }
+
+        .teoria-tabela tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .teoria-tabela tr:hover {
+            background-color: #e3f2fd;
+        }
+
+        /* Layout melhorado para tópicos com tabelas */
+        .topico-content-wrapper {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .topico-texto {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .topico-tabelas {
+            flex: 1;
+            min-width: 0;
+        }
+
+        @media (max-width: 768px) {
+            .topico-content-wrapper {
+                flex-direction: column;
+            }
+        }
+
+
 
         /* Estilos para preview de flashcards */
         .flashcard-preview {
@@ -926,46 +1069,31 @@ $database->closeConnection();
                     <!-- Painel normal para usuários com progresso -->
                     <div class="card mb-4">
                         <div class="card-header text-center">
-                            <h2>Seu Caminho de Aprendizado em <?php echo htmlspecialchars($idiomas_display[$idioma_escolhido] ?? $idioma_escolhido); ?></h2>
+                            <?php if (count($unidades) > 0): ?>
+                                <?php $unidade = $unidades[0]; ?>
+                                <h2>Unidade <?php echo htmlspecialchars($unidade["numero_unidade"]); ?>: <?php echo htmlspecialchars($unidade["nome_unidade"]); ?></h2>
+                                <p class="text-muted mb-1"><?php echo htmlspecialchars($unidade["descricao"]); ?></p>
+                                <p class="fs-5">Caminho: <?php echo htmlspecialchars($idiomas_display[$idioma_escolhido] ?? $idioma_escolhido); ?> - <span class="badge bg-success"><?php echo htmlspecialchars($nivel_usuario); ?></span></p>
+                            <?php else: ?>
+                                <h2>Seu Caminho de Aprendizado em <?php echo htmlspecialchars($idiomas_display[$idioma_escolhido] ?? $idioma_escolhido); ?></h2>
+                                <p class="fs-4">Seu nível atual é: <span class="badge bg-success"><?php echo htmlspecialchars($nivel_usuario); ?></span></p>
+                            <?php endif; ?>
                         </div>
-                        <div class="card-body text-center">
-                            <p class="fs-4">Seu nível atual é: <span class="badge bg-success"><?php echo htmlspecialchars($nivel_usuario); ?></span></p>
-                            
-                            <!-- UNIDADES MOVIDAS PARA AQUI - DEBAIXO DO "SEU NÍVEL ATUAL É" -->
-                            <div class="mt-4">
-                           
-                                <div class="row">
-                                    <?php if (count($unidades) > 0): ?>
-                                        <?php foreach ($unidades as $unidade): ?>
-                                            <div class="col-md-6 mb-3">
-                                                <div class="card unidade-card h-100" 
-                                                     data-unidade-id="<?php echo $unidade['id']; ?>"
-                                                     data-unidade-titulo="<?php echo htmlspecialchars($unidade['nome_unidade']); ?>"
-                                                     data-unidade-numero="<?php echo $unidade['numero_unidade']; ?>">
-                                                    <div class="card-body">
-                                                        <h5 class="card-title">
-                                                            <i class="fas fa-book-open me-2"></i>
-                                                            Unidade <?php echo htmlspecialchars($unidade["numero_unidade"]); ?>
-                                                        </h5>
-                                                        <h6 class="card-subtitle mb-2 text-muted"><?php echo htmlspecialchars($unidade["nome_unidade"]); ?></h6>
-                                                        <p class="card-text"><?php echo htmlspecialchars($unidade["descricao"]); ?></p>
-                                                        <div class="progress progress-bar-custom">
-                                                            <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                                                        </div>
-                                                        <small class="text-muted">0% concluído</small>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        <?php endforeach; ?>
-                                    <?php else: ?>
-                                        <div class="col-12">
-                                            <div class="alert alert-info" role="alert">
-                                                Nenhuma unidade encontrada para este nível e idioma.
-                                            </div>
+                        <div class="card-body">
+                            <?php if (count($unidades) > 0): ?>
+                                <div id="blocos-unidade-<?php echo $unidade['id']; ?>" class="row">
+                                    <div class="col-12 text-center">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Carregando blocos...</span>
                                         </div>
-                                    <?php endif; ?>
+                                        <p class="mt-2 text-muted">Carregando blocos da unidade...</p>
+                                    </div>
                                 </div>
-                            </div>
+                            <?php else: ?>
+                                <div class="alert alert-info" role="alert">
+                                    Nenhuma unidade encontrada para este nível e idioma.
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
 
@@ -1361,17 +1489,11 @@ $database->closeConnection();
     let palavrasCarregadas = [];
     let exerciciosEspeciais = [];
     let exerciciosEspeciaisAdicionados = false;
+    let caminhoAtual = 1; // Default path ID
 
     // ==================== INICIALIZAÇÃO ====================
     document.addEventListener('DOMContentLoaded', function() {
         console.log('=== INICIALIZANDO PAINEL ===');
-        
-        // DEBUG: Verificar se os elementos existem
-        console.log('=== DEBUG PAINEL ===');
-        console.log('Cards de unidade:', document.querySelectorAll('.unidade-card').length);
-        console.log('Modal blocos:', document.getElementById('modalBlocos'));
-        console.log('Modal exercícios:', document.getElementById('modalExercicios'));
-        console.log('Modal teorias:', document.getElementById('modalTeorias'));
         
         // Inicialização dos modais
         modalBlocos = new bootstrap.Modal(document.getElementById('modalBlocos'));
@@ -1381,11 +1503,11 @@ $database->closeConnection();
         modalTeorias = new bootstrap.Modal(document.getElementById('modalTeorias'));
         modalTeoriaConteudo = new bootstrap.Modal(document.getElementById('modalTeoriaConteudo'));
 
-        // Configurar event listeners para cards de unidades
-        configurarEventListenersUnidades();
-
         // Configurar event listeners para preview de flashcards
         configurarPreviewFlashcards();
+
+        // Carregar blocos de todas as unidades
+        carregarBlocosTodasUnidades();
 
         // Carrega palavras do usuário ao inicializar
         if (typeof carregarPalavras === 'function') {
@@ -1395,34 +1517,127 @@ $database->closeConnection();
         console.log('Painel inicializado com sucesso');
     });
 
-    // ==================== CONFIGURAÇÃO DOS EVENT LISTENERS ====================
-    function configurarEventListenersUnidades() {
-        const unidadeCards = document.querySelectorAll('.unidade-card');
-        console.log(`Encontrados ${unidadeCards.length} cards de unidade`);
+    // ==================== FUNÇÕES DE CARREGAMENTO DE BLOCOS ====================
+    
+    // Carregar blocos da unidade atual
+    function carregarBlocosTodasUnidades() {
+        const container = document.querySelector('[id^="blocos-unidade-"]');
+        if (container) {
+            const unidadeId = container.id.replace('blocos-unidade-', '');
+            carregarBlocosUnidade(unidadeId);
+        }
+    }
+    
+    // Carregar blocos de uma unidade específica
+    function carregarBlocosUnidade(unidadeId) {
+        const container = document.getElementById(`blocos-unidade-${unidadeId}`);
         
-        unidadeCards.forEach((card, index) => {
-            // Testar clique nos cards
-            card.addEventListener('click', function() {
-                console.log(`Card ${index} clicado:`, this.getAttribute('data-unidade-id'));
-            });
-            
-            card.addEventListener('click', function() {
-                const unidadeId = this.getAttribute('data-unidade-id');
-                const titulo = this.getAttribute('data-unidade-titulo');
-                const numero = this.getAttribute('data-unidade-numero');
-                
-                console.log(`Clicado na unidade:`, {unidadeId, titulo, numero});
-                
-                if (unidadeId && titulo && numero) {
-                    abrirUnidade(parseInt(unidadeId), titulo, parseInt(numero));
+        fetch(`../../admin/controller/get_blocos.php?unidade_id=${unidadeId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    exibirBlocosUnidade(data.blocos, container, unidadeId);
                 } else {
-                    console.error('Dados da unidade não encontrados:', {unidadeId, titulo, numero});
-                    alert('Erro: Dados da unidade não encontrados.');
+                    container.innerHTML = `
+                        <div class="col-12">
+                            <div class="alert alert-info" role="alert">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Nenhum bloco encontrado para esta unidade.
+                            </div>
+                        </div>
+                    `;
                 }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar blocos:', error);
+                container.innerHTML = `
+                    <div class="col-12">
+                        <div class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Erro ao carregar blocos desta unidade.
+                        </div>
+                    </div>
+                `;
             });
+    }
+    
+    // Exibir blocos de uma unidade com sistema de desbloqueio
+    function exibirBlocosUnidade(blocos, container, unidadeId) {
+        if (!blocos || blocos.length === 0) {
+            container.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Nenhum bloco encontrado para esta unidade.
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        // Determinar qual bloco está disponível (primeiro não concluído)
+        let blocoDisponivel = 0;
+        for (let i = 0; i < blocos.length; i++) {
+            const concluido = blocos[i].progresso?.concluido || false;
+            if (!concluido) {
+                blocoDisponivel = i;
+                break;
+            }
+            if (i === blocos.length - 1 && concluido) {
+                blocoDisponivel = blocos.length; // Todos concluídos
+            }
+        }
+        
+        blocos.forEach((bloco, index) => {
+            const progresso = bloco.progresso?.progresso_percentual || 0;
+            const concluido = bloco.progresso?.concluido || false;
+            const atividadesConcluidas = bloco.progresso?.atividades_concluidas || 0;
+            const totalAtividades = bloco.progresso?.total_atividades || bloco.total_atividades || 0;
+            
+            // Determinar se o bloco está disponível
+            const disponivel = index <= blocoDisponivel;
+            const bloqueado = !disponivel;
+            
+            const col = document.createElement('div');
+            col.className = 'col-md-4 mb-3';
+            
+            const cardClass = bloqueado ? 'bloco-card-bloqueado' : (concluido ? 'bloco-card-concluido' : 'bloco-card-disponivel');
+            const clickHandler = bloqueado ? '' : `onclick="abrirExercicios(${bloco.id}, '${bloco.nome_bloco.replace(/'/g, "\\\'")}')" style="cursor: pointer;"`;
+            
+            col.innerHTML = `
+                <div class="card bloco-card h-100 ${cardClass}" ${clickHandler}>
+                    <div class="card-body text-center">
+                        ${bloqueado ? 
+                            '<i class="fas fa-lock bloco-icon mb-2" style="font-size: 1.5rem; color: #6c757d;"></i>' :
+                            (concluido ? 
+                                '<i class="fas fa-check-circle bloco-icon mb-2" style="font-size: 1.5rem; color: #28a745;"></i>' :
+                                '<i class="fas fa-play-circle bloco-icon mb-2" style="font-size: 1.5rem; color: #007bff;"></i>'
+                            )
+                        }
+                        <h5 class="card-title">${bloco.nome_bloco}</h5>
+                        <p class="card-text text-muted">${bloco.descricao || 'Descrição não disponível'}</p>
+                        
+                        ${bloqueado ? 
+                            '<div class="alert alert-warning py-1 mb-1"><small><i class="fas fa-lock me-1"></i>Complete o anterior</small></div>' :
+                            `<div class="progress progress-bar-custom mb-1">
+                                <div class="progress-bar ${concluido ? 'bg-success' : ''}" role="progressbar" 
+                                     style="width: ${progresso}%" aria-valuenow="${progresso}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small class="text-muted">${atividadesConcluidas}/${totalAtividades} atividades (${progresso}%)</small>`
+                        }
+                        
+                        ${concluido ? '<div class="mt-2"><span class="badge bg-success"><i class="fas fa-check me-1"></i>Concluído</span></div>' : ''}
+                        ${!bloqueado && !concluido && index === blocoDisponivel ? '<div class="mt-2"><span class="badge bg-primary"><i class="fas fa-play me-1"></i>Disponível</span></div>' : ''}
+                    </div>
+                </div>
+            `;
+            container.appendChild(col);
         });
     }
 
+    // ==================== CONFIGURAÇÃO DOS EVENT LISTENERS ====================
     function configurarPreviewFlashcards() {
         // Atualizar preview quando os campos mudarem
         const frenteInput = document.getElementById('palavraFrente');
@@ -1521,6 +1736,13 @@ $database->closeConnection();
         verificarTeoriaDoBloco(blocoId, tituloBloco);
     };
     
+    // Função para recarregar blocos após completar um exercício
+    window.recarregarBlocosAposCompletar = function() {
+        setTimeout(() => {
+            carregarBlocosTodasUnidades();
+        }, 1000);
+    };
+    
     // Função para verificar se há teoria para o bloco
     function verificarTeoriaDoBloco(blocoId, tituloBloco) {
         // CORREÇÃO: URL corrigida
@@ -1576,14 +1798,33 @@ $database->closeConnection();
                     // Novo tópico
                     const numero = linha.match(/^(\d+)\./)[1];
                     const titulo = linha.replace(/^\d+\.\s*/, '');
-                    topicoAtual = { numero, titulo, conteudo: '' };
+                    topicoAtual = { numero, titulo, conteudo: '', tabelas: [] };
+                } else if (linha.includes('|') && topicoAtual) {
+                    // Detectar tabela (formato: col1 | col2 | col3)
+                    if (!topicoAtual.tabelaAtual) {
+                        topicoAtual.tabelaAtual = [];
+                    }
+                    const colunas = linha.split('|').map(col => col.trim());
+                    topicoAtual.tabelaAtual.push(colunas);
                 } else {
+                    // Finalizar tabela se existir
+                    if (topicoAtual && topicoAtual.tabelaAtual) {
+                        topicoAtual.tabelas.push(topicoAtual.tabelaAtual);
+                        delete topicoAtual.tabelaAtual;
+                    }
+                    
                     // Conteúdo do tópico
                     if (topicoAtual) {
                         topicoAtual.conteudo += (topicoAtual.conteudo ? '\n' : '') + linha;
                     }
                 }
             });
+            
+            // Finalizar última tabela se existir
+            if (topicoAtual && topicoAtual.tabelaAtual) {
+                topicoAtual.tabelas.push(topicoAtual.tabelaAtual);
+                delete topicoAtual.tabelaAtual;
+            }
             
             // Adicionar último tópico
             if (topicoAtual) {
@@ -1592,24 +1833,160 @@ $database->closeConnection();
             
             // Gerar HTML em grid
             conteudoFormatado = '<div class="topicos-container">';
-            topicos.forEach(topico => {
+            topicos.forEach((topico, index) => {
+                const temTabelas = topico.tabelas && topico.tabelas.length > 0;
                 conteudoFormatado += `
-                    <div class="topico-item">
+                    <div class="topico-item ${temTabelas ? 'com-tabela' : ''}">
                         <div class="topico-header">
                             <div class="topico-numero">${topico.numero}</div>
                             <h4 class="topico-titulo">${topico.titulo}</h4>
                         </div>
-                        <p class="topico-conteudo">${topico.conteudo.replace(/\n/g, '<br>')}</p>
-                    </div>
                 `;
+                
+                if (temTabelas) {
+                    // Tabelas antes do texto
+                    const tabelasAntes = topico.tabelas.filter(t => t.posicao === 'antes');
+                    if (tabelasAntes.length > 0) {
+                        conteudoFormatado += '<div class="topico-tabelas mb-3">';
+                        tabelasAntes.forEach((tabela, tabelaIndex) => {
+                            conteudoFormatado += gerarHTMLTabela(tabela, `${index}-antes-${tabelaIndex}`);
+                        });
+                        conteudoFormatado += '</div>';
+                    }
+                    
+                    // Conteúdo com tabelas ao lado
+                    const tabelasLado = topico.tabelas.filter(t => !t.posicao || t.posicao === 'lado');
+                    if (tabelasLado.length > 0) {
+                        conteudoFormatado += '<div class="topico-content-wrapper">';
+                        conteudoFormatado += '<div class="topico-texto">';
+                        conteudoFormatado += `<p class="topico-conteudo">${topico.conteudo.replace(/\n/g, '<br>')}</p>`;
+                        conteudoFormatado += '</div>';
+                        conteudoFormatado += '<div class="topico-tabelas">';
+                        tabelasLado.forEach((tabela, tabelaIndex) => {
+                            conteudoFormatado += gerarHTMLTabela(tabela, `${index}-lado-${tabelaIndex}`);
+                        });
+                        conteudoFormatado += '</div></div>';
+                    } else {
+                        conteudoFormatado += `<p class="topico-conteudo">${topico.conteudo.replace(/\n/g, '<br>')}</p>`;
+                    }
+                    
+                    // Tabelas depois do texto
+                    const tabelasDepois = topico.tabelas.filter(t => t.posicao === 'depois');
+                    if (tabelasDepois.length > 0) {
+                        conteudoFormatado += '<div class="topico-tabelas mt-3">';
+                        tabelasDepois.forEach((tabela, tabelaIndex) => {
+                            conteudoFormatado += gerarHTMLTabela(tabela, `${index}-depois-${tabelaIndex}`);
+                        });
+                        conteudoFormatado += '</div>';
+                    }
+                } else {
+                    conteudoFormatado += `<p class="topico-conteudo">${topico.conteudo.replace(/\n/g, '<br>')}</p>`;
+                }
+                
+                conteudoFormatado += '</div>';
             });
             conteudoFormatado += '</div>';
         } else {
-            // Texto simples
-            conteudoFormatado = `<div class="teoria-texto-simples">${conteudo}</div>`;
+            // Texto simples - verificar se tem tabelas independentes
+            if (conteudo.includes('|')) {
+                conteudoFormatado = processarTabelasIndependentes(conteudo);
+            } else {
+                conteudoFormatado = `<div class="teoria-texto-simples">${conteudo}</div>`;
+            }
         }
         
         return conteudoFormatado;
+    }
+    
+    // Função para gerar HTML da tabela
+    function gerarHTMLTabela(tabela, tabelaId) {
+        let html = `<div class="teoria-tabela"><table id="tabela-${tabelaId}">`;
+        
+        tabela.forEach((linha, linhaIndex) => {
+            const tag = linhaIndex === 0 ? 'th' : 'td';
+            html += '<tr>';
+            linha.forEach(celula => {
+                html += `<${tag}>${celula}</${tag}>`;
+            });
+            html += '</tr>';
+        });
+        
+        html += '</table></div>';
+        return html;
+    }
+    
+    // Função para processar tabelas independentes
+    function processarTabelasIndependentes(conteudo) {
+        const linhas = conteudo.split('\n');
+        let html = '';
+        let tabelaAtual = [];
+        let tabelaIndex = 0;
+        
+        linhas.forEach(linha => {
+            linha = linha.trim();
+            if (linha.includes('|')) {
+                const colunas = linha.split('|').map(col => col.trim());
+                tabelaAtual.push(colunas);
+            } else {
+                // Finalizar tabela se existir
+                if (tabelaAtual.length > 0) {
+                    const tabelaId = `tabela-independente-${tabelaIndex++}`;
+                    html += `
+                        <div class="teoria-tabela">
+                            <table id="${tabelaId}">
+                    `;
+                    
+                    tabelaAtual.forEach((linhaTabela, linhaIndex) => {
+                        const tag = linhaIndex === 0 ? 'th' : 'td';
+                        html += '<tr>';
+                        linhaTabela.forEach(celula => {
+                            html += `<${tag}>${celula}</${tag}>`;
+                        });
+                        html += '</tr>';
+                    });
+                    
+                    html += `
+                            </table>
+                            <button class="btn-tabela-expand" onclick="expandirTabela('${tabelaId}')">
+                                <i class="fas fa-expand me-1"></i>Expandir
+                            </button>
+                        </div>
+                    `;
+                    
+                    tabelaAtual = [];
+                }
+                
+                // Adicionar texto normal
+                if (linha) {
+                    html += `<p>${linha}</p>`;
+                }
+            }
+        });
+        
+        // Finalizar última tabela se existir
+        if (tabelaAtual.length > 0) {
+            const tabelaId = `tabela-independente-${tabelaIndex}`;
+            html += `
+                <div class="teoria-tabela">
+                    <table id="${tabelaId}">
+            `;
+            
+            tabelaAtual.forEach((linhaTabela, linhaIndex) => {
+                const tag = linhaIndex === 0 ? 'th' : 'td';
+                html += '<tr>';
+                linhaTabela.forEach(celula => {
+                    html += `<${tag}>${celula}</${tag}>`;
+                });
+                html += '</tr>';
+            });
+            
+            html += `
+                    </table>
+                </div>
+            `;
+        }
+        
+        return html || `<div class="teoria-texto-simples">${conteudo}</div>`;
     }
     
     // Função para mostrar teoria do bloco
@@ -2065,7 +2442,7 @@ $database->closeConnection();
                 mostrarMensagemSucessoBloco();
                 modalExercicios.hide();
                 setTimeout(() => {
-                    modalBlocos.show();
+                    recarregarBlocosAposCompletar();
                 }, 2000);
             }
         }
@@ -2074,7 +2451,7 @@ $database->closeConnection();
     // Função para voltar para blocos
     window.voltarParaBlocos = function() {
         modalExercicios.hide();
-        modalBlocos.show();
+        recarregarBlocosAposCompletar();
     };
 
     // ==================== FUNCIONALIDADES DE TROCA DE IDIOMAS ====================
@@ -2482,6 +2859,25 @@ $database->closeConnection();
         
         // Mostrar toast adicional
         mostrarToast('Bloco completado! Parabéns pelo seu progresso!', 'success');
+        
+        // Atualizar progresso do caminho
+        fetch('../controller/update_progress.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `caminho_id=${caminhoAtual}&tipo=bloco`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Progresso atualizado:', data.progresso + '%');
+                if (data.concluido) {
+                    mostrarToast('🎉 Caminho concluído! Parabéns!', 'success');
+                }
+            }
+        })
+        .catch(error => console.error('Erro ao atualizar progresso:', error));
     };
 
     // CORREÇÃO: Função exibirTeorias completa
@@ -2613,6 +3009,8 @@ $database->closeConnection();
                 `;
             });
     };
+
+
 
 
 

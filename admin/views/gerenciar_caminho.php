@@ -1191,6 +1191,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <a href="gerenciar_blocos.php?caminho_id=<?php echo htmlspecialchars($caminho['id']); ?>" class="btn btn-info">
                                             <i class="fas fa-eye"></i> Ver Blocos
                                         </a>
+                                        <a href="exercicios_especiais.php?caminho_id=<?php echo htmlspecialchars($caminho['id']); ?>" class="btn btn-warning">
+                                            <i class="fas fa-star"></i> Exercícios Especiais
+                                        </a>
                                         <a href="editar_caminho.php?id=<?php echo htmlspecialchars($caminho['id']); ?>" class="btn btn-primary">
                                             <i class="fas fa-edit"></i> Editar
                                         </a>

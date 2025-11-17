@@ -10,17 +10,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST['email']);
     $senha = $_POST['senha'];
 
-    $sql = "SELECT id, nome, senha FROM usuarios WHERE email = ?";
+    $sql = "SELECT id, nome, senha, ativo FROM usuarios WHERE email = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $stmt->store_result();
 
     if ($stmt->num_rows > 0) {
-        $stmt->bind_result($id_usuario, $nome_usuario, $senha_hash);
+        $stmt->bind_result($id_usuario, $nome_usuario, $senha_hash, $ativo);
         $stmt->fetch();
-
-        if (password_verify($senha, $senha_hash)) {
+        
+        if (!$ativo) {
+            $erro_login = "Sua conta foi desativada. Entre em contato com o administrador.";
+        } elseif (password_verify($senha, $senha_hash)) {
+            // Update last login
+            $sql_update_login = "UPDATE usuarios SET ultimo_login = NOW() WHERE id = ?";
+            $stmt_update = $conn->prepare($sql_update_login);
+            $stmt_update->bind_param("i", $id_usuario);
+            $stmt_update->execute();
+            $stmt_update->close();
+            
             $_SESSION['id_usuario'] = $id_usuario;
             $_SESSION['nome_usuario'] = $nome_usuario;
             header("Location: painel.php");

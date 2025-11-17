@@ -786,6 +786,72 @@ $database_foto->closeConnection();
             font-weight: 500;
         }
 
+        /* Estilos para Tabelas */
+        .tabela-container {
+            background: #e8f4f8;
+            border: 1px solid #b3d9e6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .tabela-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .tabela-numero {
+            background: #28a745;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .tabela-editor table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0.5rem;
+        }
+
+        .tabela-editor th, .tabela-editor td {
+            border: 1px solid #dee2e6;
+            padding: 0.5rem;
+            text-align: left;
+        }
+
+        .tabela-editor th {
+            background-color: #e9ecef;
+            font-weight: 600;
+        }
+
+        .tabela-editor input {
+            border: none;
+            background: transparent;
+            width: 100%;
+            padding: 0.25rem;
+        }
+
+        .tabela-controles {
+            margin-top: 0.5rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-tabela {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+            border-radius: 4px;
+        }
+
         /* Responsividade */
         @media (max-width: 768px) {
             .main-container {
@@ -863,9 +929,8 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- Overlay para mobile -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container d-flex justify-content-between align-items-center">
-            <div></div>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid d-flex justify-content-end align-items-center">
             <div class="d-flex align-items-center" style="gap: 24px;">
                 <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
                     <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
@@ -1044,9 +1109,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div id="listaTopicos">
                                     <!-- Tópicos serão adicionados aqui -->
                                 </div>
-                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="adicionarTopico()">
-                                    <i class="fas fa-plus me-2"></i>Adicionar Tópico
-                                </button>
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="adicionarTopico()">
+                                        <i class="fas fa-plus me-2"></i>Adicionar Tópico
+                                    </button>
+                                    <button type="button" class="btn btn-outline-success btn-sm" onclick="adicionarTabela()">
+                                        <i class="fas fa-table me-2"></i>Adicionar Tabela
+                                    </button>
+                                </div>
                                 <input type="hidden" id="topicosData" name="topicos_data">
                             </div>
                         </div>
@@ -1070,7 +1140,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     <script>
         let contadorTopicos = 0;
+        let contadorTabelas = 0;
         let topicos = [];
+        let tabelas = [];
 
         // Alterar tipo de conteúdo
         function alterarTipoConteudo() {
@@ -1099,9 +1171,34 @@ document.addEventListener('DOMContentLoaded', function() {
             const novoTopico = {
                 id: contadorTopicos,
                 titulo: '',
-                conteudo: ''
+                conteudo: '',
+                tipo: 'topico'
             };
             topicos.push(novoTopico);
+            renderizarTopicos();
+        }
+
+        // Adicionar nova tabela
+        function adicionarTabela() {
+            contadorTabelas++;
+            const novaTabela = {
+                id: contadorTabelas,
+                titulo: '',
+                linhas: 3,
+                colunas: 3,
+                dados: [],
+                tipo: 'tabela',
+                standalone: false,
+                posicao: 'lado'
+            };
+            // Inicializar dados da tabela
+            for (let i = 0; i < novaTabela.linhas; i++) {
+                novaTabela.dados[i] = [];
+                for (let j = 0; j < novaTabela.colunas; j++) {
+                    novaTabela.dados[i][j] = '';
+                }
+            }
+            topicos.push(novaTabela);
             renderizarTopicos();
         }
 
@@ -1116,25 +1213,97 @@ document.addEventListener('DOMContentLoaded', function() {
             const container = document.getElementById('listaTopicos');
             container.innerHTML = '';
             
-            topicos.forEach((topico, index) => {
-                const topicoHTML = `
-                    <div class="topico-item">
-                        <button type="button" class="btn-remover-topico" onclick="removerTopico(${topico.id})">
-                            <i class="fas fa-times"></i>
-                        </button>
-                        <div class="topico-header">
-                            <div class="topico-numero">${index + 1}</div>
-                            <input type="text" class="form-control" placeholder="Título do tópico" 
-                                   value="${topico.titulo}" onchange="atualizarTopico(${topico.id}, 'titulo', this.value)">
+            topicos.forEach((item, index) => {
+                if (item.tipo === 'topico') {
+                    const topicoHTML = `
+                        <div class="topico-item">
+                            <button type="button" class="btn-remover-topico" onclick="removerTopico(${item.id})">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            <div class="topico-header">
+                                <div class="topico-numero">${index + 1}</div>
+                                <input type="text" class="form-control" placeholder="Título do tópico" 
+                                       value="${item.titulo}" onchange="atualizarTopico(${item.id}, 'titulo', this.value)">
+                            </div>
+                            <textarea class="form-control" rows="4" placeholder="Conteúdo do tópico" 
+                                      onchange="atualizarTopico(${item.id}, 'conteudo', this.value)">${item.conteudo}</textarea>
                         </div>
-                        <textarea class="form-control" rows="4" placeholder="Conteúdo do tópico" 
-                                  onchange="atualizarTopico(${topico.id}, 'conteudo', this.value)">${topico.conteudo}</textarea>
-                    </div>
-                `;
-                container.insertAdjacentHTML('beforeend', topicoHTML);
+                    `;
+                    container.insertAdjacentHTML('beforeend', topicoHTML);
+                } else if (item.tipo === 'tabela') {
+                    const tabelaHTML = criarHTMLTabela(item, index);
+                    container.insertAdjacentHTML('beforeend', tabelaHTML);
+                }
             });
             
             atualizarDadosTopicos();
+        }
+
+        // Criar HTML da tabela
+        function criarHTMLTabela(tabela, index) {
+            let tabelaHTML = `
+                <div class="tabela-container">
+                    <button type="button" class="btn-remover-topico" onclick="removerTopico(${tabela.id})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <div class="tabela-header">
+                        <div class="tabela-numero">${index + 1}</div>
+                        <input type="text" class="form-control" placeholder="Título da tabela" 
+                               value="${tabela.titulo}" onchange="atualizarTopico(${tabela.id}, 'titulo', this.value)">
+                    </div>
+                    <div class="mb-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="standalone-${tabela.id}" 
+                                   ${tabela.standalone ? 'checked' : ''} 
+                                   onchange="atualizarTopico(${tabela.id}, 'standalone', this.checked)">
+                            <label class="form-check-label" for="standalone-${tabela.id}">
+                                Tabela independente (não dentro de tópico)
+                            </label>
+                        </div>
+                        <div class="mt-2">
+                            <label class="form-label">Posição da tabela:</label>
+                            <select class="form-select form-select-sm" onchange="atualizarTopico(${tabela.id}, 'posicao', this.value)">
+                                <option value="antes" ${tabela.posicao === 'antes' ? 'selected' : ''}>Antes das informações</option>
+                                <option value="lado" ${tabela.posicao === 'lado' ? 'selected' : ''}>Ao lado das informações</option>
+                                <option value="depois" ${tabela.posicao === 'depois' ? 'selected' : ''}>Depois das informações</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="tabela-editor">
+                        <table>
+            `;
+            
+            for (let i = 0; i < tabela.linhas; i++) {
+                tabelaHTML += '<tr>';
+                for (let j = 0; j < tabela.colunas; j++) {
+                    const tag = i === 0 ? 'th' : 'td';
+                    const valor = tabela.dados[i] && tabela.dados[i][j] ? tabela.dados[i][j] : '';
+                    tabelaHTML += `<${tag}><input type="text" value="${valor}" onchange="atualizarCelulaTabela(${tabela.id}, ${i}, ${j}, this.value)"></${tag}>`;
+                }
+                tabelaHTML += '</tr>';
+            }
+            
+            tabelaHTML += `
+                        </table>
+                        <div class="tabela-controles">
+                            <button type="button" class="btn btn-outline-primary btn-tabela" onclick="adicionarLinhaTabela(${tabela.id})">
+                                <i class="fas fa-plus"></i> Linha
+                            </button>
+                            <button type="button" class="btn btn-outline-primary btn-tabela" onclick="adicionarColunaTabela(${tabela.id})">
+                                <i class="fas fa-plus"></i> Coluna
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-tabela" onclick="removerLinhaTabela(${tabela.id})">
+                                <i class="fas fa-minus"></i> Linha
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-tabela" onclick="removerColunaTabela(${tabela.id})">
+                                <i class="fas fa-minus"></i> Coluna
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return tabelaHTML;
         }
 
         // Atualizar dados do tópico
@@ -1146,9 +1315,80 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
+        // Atualizar célula da tabela
+        function atualizarCelulaTabela(id, linha, coluna, valor) {
+            const tabela = topicos.find(t => t.id === id);
+            if (tabela && tabela.tipo === 'tabela') {
+                if (!tabela.dados[linha]) tabela.dados[linha] = [];
+                tabela.dados[linha][coluna] = valor;
+                atualizarDadosTopicos();
+            }
+        }
+
+        // Adicionar linha à tabela
+        function adicionarLinhaTabela(id) {
+            const tabela = topicos.find(t => t.id === id);
+            if (tabela && tabela.tipo === 'tabela') {
+                tabela.linhas++;
+                if (!tabela.dados) tabela.dados = [];
+                tabela.dados.push(Array(tabela.colunas).fill(''));
+                renderizarTopicos();
+            }
+        }
+
+        // Adicionar coluna à tabela
+        function adicionarColunaTabela(id) {
+            const tabela = topicos.find(t => t.id === id);
+            if (tabela && tabela.tipo === 'tabela') {
+                tabela.colunas++;
+                if (!tabela.dados) tabela.dados = [];
+                for (let i = 0; i < tabela.linhas; i++) {
+                    if (!tabela.dados[i]) tabela.dados[i] = [];
+                    tabela.dados[i].push('');
+                }
+                renderizarTopicos();
+            }
+        }
+
+        // Remover linha da tabela
+        function removerLinhaTabela(id) {
+            const tabela = topicos.find(t => t.id === id);
+            if (tabela && tabela.tipo === 'tabela' && tabela.linhas > 1) {
+                tabela.linhas--;
+                tabela.dados.pop();
+                renderizarTopicos();
+            }
+        }
+
+        // Remover coluna da tabela
+        function removerColunaTabela(id) {
+            const tabela = topicos.find(t => t.id === id);
+            if (tabela && tabela.tipo === 'tabela' && tabela.colunas > 1) {
+                tabela.colunas--;
+                for (let i = 0; i < tabela.linhas; i++) {
+                    if (tabela.dados[i]) {
+                        tabela.dados[i].pop();
+                    }
+                }
+                renderizarTopicos();
+            }
+        }
+
         // Atualizar campo hidden com dados dos tópicos
         function atualizarDadosTopicos() {
             document.getElementById('topicosData').value = JSON.stringify(topicos);
+        }
+
+        // Atualizar propriedades de tabela dentro de tópico
+        function atualizarTabelaNoTopico(topicoId, tabelaId, campo, valor) {
+            const topico = topicos.find(t => t.id === topicoId);
+            if (topico && topico.tabelas) {
+                const tabela = topico.tabelas.find(t => t.id === tabelaId);
+                if (tabela) {
+                    tabela[campo] = valor;
+                    atualizarDadosTopicos();
+                }
+            }
         }
 
         // Preview do conteúdo
@@ -1170,14 +1410,33 @@ document.addEventListener('DOMContentLoaded', function() {
             if (document.getElementById('textoLivre').checked) {
                 conteudo = document.getElementById('conteudo').value;
             } else {
-                // Gerar preview dos tópicos
+                // Gerar preview dos tópicos e tabelas
                 conteudo = '<div class="topicos-preview">';
-                topicos.forEach((topico, index) => {
-                    if (topico.titulo || topico.conteudo) {
+                topicos.forEach((item, index) => {
+                    if (item.tipo === 'topico' && (item.titulo || item.conteudo)) {
                         conteudo += `
                             <div class="mb-4">
-                                <h5><span class="topico-tag">${index + 1}</span> ${topico.titulo || 'Tópico sem título'}</h5>
-                                <p>${topico.conteudo || 'Sem conteúdo'}</p>
+                                <h5><span class="topico-tag">${index + 1}</span> ${item.titulo || 'Tópico sem título'}</h5>
+                                <p>${item.conteudo || 'Sem conteúdo'}</p>
+                            </div>
+                        `;
+                    } else if (item.tipo === 'tabela' && item.titulo) {
+                        conteudo += `
+                            <div class="mb-4">
+                                <h5><span class="topico-tag">${index + 1}</span> ${item.titulo || 'Tabela sem título'}</h5>
+                                <table class="table table-bordered">
+                        `;
+                        for (let i = 0; i < item.linhas; i++) {
+                            conteudo += '<tr>';
+                            for (let j = 0; j < item.colunas; j++) {
+                                const tag = i === 0 ? 'th' : 'td';
+                                const valor = item.dados[i] && item.dados[i][j] ? item.dados[i][j] : '';
+                                conteudo += `<${tag}>${valor}</${tag}>`;
+                            }
+                            conteudo += '</tr>';
+                        }
+                        conteudo += `
+                                </table>
                             </div>
                         `;
                     }
@@ -1224,11 +1483,27 @@ document.addEventListener('DOMContentLoaded', function() {
                     alert('Adicione pelo menos um tópico com conteúdo.');
                     return false;
                 }
-                // Gerar conteúdo final dos tópicos
+                // Gerar conteúdo final dos tópicos e tabelas
                 let conteudoFinal = '';
-                topicos.forEach((topico, index) => {
-                    if (topico.titulo.trim() || topico.conteudo.trim()) {
-                        conteudoFinal += `${index + 1}. ${topico.titulo}\n${topico.conteudo}\n\n`;
+                topicos.forEach((item, index) => {
+                    if (item.tipo === 'topico' && (item.titulo.trim() || item.conteudo.trim())) {
+                        conteudoFinal += `${index + 1}. ${item.titulo}\n${item.conteudo}\n\n`;
+                    } else if (item.tipo === 'tabela' && item.titulo.trim()) {
+                        if (item.standalone) {
+                            conteudoFinal += `TABELA: ${item.titulo}\n`;
+                        } else {
+                            conteudoFinal += `${index + 1}. ${item.titulo}\n`;
+                        }
+                        // Adicionar dados da tabela
+                        for (let i = 0; i < item.linhas; i++) {
+                            let linha = '';
+                            for (let j = 0; j < item.colunas; j++) {
+                                const valor = item.dados[i] && item.dados[i][j] ? item.dados[i][j] : '';
+                                linha += valor + (j < item.colunas - 1 ? ' | ' : '');
+                            }
+                            conteudoFinal += linha + '\n';
+                        }
+                        conteudoFinal += '\n';
                     }
                 });
                 document.getElementById('conteudo').value = conteudoFinal;
