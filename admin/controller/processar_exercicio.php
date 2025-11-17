@@ -147,7 +147,12 @@ function processarResposta($resposta_usuario, $conteudo, $tipo_exercicio) {
         case 'arrastar_soltar':
             return processarArrastarSoltar($resposta_usuario, $conteudo);
         case 'completar':
-            return processarCompletar($resposta_usuario, $conteudo);
+            // Verificar se realmente é exercício de completar
+            if (isset($conteudo['frase_completar']) || isset($conteudo['respostas_corretas'])) {
+                return processarCompletar($resposta_usuario, $conteudo);
+            }
+            // Se não é completar real, processar como múltipla escolha
+            return processarMultiplaEscolha($resposta_usuario, $conteudo);
         case 'listening':
         case 'audicao':
             return processarListening($resposta_usuario, $conteudo);
@@ -192,27 +197,38 @@ function normalizarTipoExercicio($tipo) {
 function processarListening($resposta_usuario, $conteudo) {
     error_log("Processando listening (sistema legado) - Conteúdo: " . json_encode($conteudo));
     
-    // Verificar se é um exercício de listening com estrutura de opções
+    // Verificar se realmente tem áudio (listening verdadeiro)
+    if (isset($conteudo['audio_url']) || isset($conteudo['arquivo_audio'])) {
+        // É um exercício de listening real
+        if (isset($conteudo['opcoes']) && is_array($conteudo['opcoes']) && isset($conteudo['resposta_correta'])) {
+            error_log("Listening real com opções");
+            return processarListeningOpcoes($resposta_usuario, $conteudo);
+        }
+        
+        if (isset($conteudo['alternativas']) && is_array($conteudo['alternativas'])) {
+            error_log("Listening real com alternativas");
+            return processarMultiplaEscolha($resposta_usuario, $conteudo);
+        }
+    }
+    
+    // Se não tem áudio, pode ser exercício mal categorizado
+    error_log("Exercício categorizado como listening mas sem áudio - redirecionando");
+    
+    // Verificar se tem estrutura de opções (pode ser completar)
     if (isset($conteudo['opcoes']) && is_array($conteudo['opcoes']) && isset($conteudo['resposta_correta'])) {
-        error_log("Usando processarListeningOpcoes");
+        error_log("Redirecionando para processarListeningOpcoes");
         return processarListeningOpcoes($resposta_usuario, $conteudo);
     }
     
-    // Se não tem opções, verificar se tem alternativas (Multipla Escolha padrão)
+    // Se tem alternativas, processar como múltipla escolha
     if (isset($conteudo['alternativas']) && is_array($conteudo['alternativas'])) {
-        error_log("Usando processarMultiplaEscolha para listening");
+        error_log("Redirecionando para processarMultiplaEscolha");
         return processarMultiplaEscolha($resposta_usuario, $conteudo);
     }
     
-    // Se não tem nenhuma estrutura válida, retornar erro
-    error_log("Listening mal configurado - sem opções ou alternativas");
-    return [
-        'success' => false,
-        'correto' => false,
-        'explicacao' => '❌ Incorreto! Exercício mal configurado. Verifique as opções ou alternativas.',
-        'pontuacao' => 0,
-        'alternativa_correta_id' => null
-    ];
+    // Se não tem nenhuma estrutura válida, processar como múltipla escolha padrão
+    error_log("Exercício sem estrutura válida - usando múltipla escolha padrão");
+    return processarMultiplaEscolha($resposta_usuario, $conteudo);
 }
 
 // FUNÇÃO CORRIGIDA para processar listening com opções
@@ -295,30 +311,10 @@ function processarMultiplaEscolha($resposta_usuario, $conteudo) {
     global $conn;
     
     if (!isset($conteudo['alternativas']) || empty($conteudo['alternativas'])) {
-        $exercicio_id = $_POST['exercicio_id'] ?? null;
-        if ($exercicio_id) {
-            $sql = "SELECT conteudo FROM exercicios WHERE id = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("i", $exercicio_id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $row = $result->fetch_assoc();
-            $stmt->close();
-            
-            if ($row) {
-                $conteudo_db = json_decode($row['conteudo'], true);
-                if ($conteudo_db && isset($conteudo_db['alternativas'])) {
-                    $conteudo['alternativas'] = $conteudo_db['alternativas'];
-                }
-            }
-        }
-    }
-    
-    if (!isset($conteudo['alternativas']) || empty($conteudo['alternativas'])) {
         return [
             'success' => true,
             'correto' => false,
-            'explicacao' => '❌ Incorreto! Exercício mal configurado.',
+            'explicacao' => '❌ Incorreto! Exercício sem alternativas configuradas.',
             'pontuacao' => 0,
             'alternativa_correta_id' => null
         ];
@@ -424,13 +420,68 @@ function processarCompletar($resposta_usuario, $conteudo) {
     // Lógica de correção de completar lacunas
     $respostas_corretas = $conteudo['respostas_corretas'] ?? [];
     
-    // Assumindo que $resposta_usuario é um array de respostas
-    $correto = (count(array_diff($respostas_corretas, $resposta_usuario)) === 0 && count(array_diff($resposta_usuario, $respostas_corretas)) === 0);
+    // Se resposta_usuario é string, converter para array
+    if (is_string($resposta_usuario)) {
+        $resposta_usuario = [$resposta_usuario];
+    }
+    
+    // Verificar se todas as respostas estão corretas
+    $correto = true;
+    if (count($resposta_usuario) !== count($respostas_corretas)) {
+        $correto = false;
+    } else {
+        for ($i = 0; $i < count($respostas_corretas); $i++) {
+            $resposta_esperada = strtolower(trim($respostas_corretas[$i]));
+            $resposta_dada = strtolower(trim($resposta_usuario[$i] ?? ''));
+            
+            if ($resposta_esperada !== $resposta_dada) {
+                $correto = false;
+                break;
+            }
+        }
+    }
     
     return [
         'success' => true,
         'correto' => $correto,
-        'explicacao' => $correto ? '✅ Correto!' : '❌ Incorreto. As respostas corretas são: ' . implode(', ', $respostas_corretas),
+        'explicacao' => $correto ? 
+            '✅ Correto! Você completou todas as lacunas corretamente.' : 
+            '❌ Incorreto. As respostas corretas são: ' . implode(', ', $respostas_corretas),
+        'pontuacao' => $correto ? 100 : 0
+    ];
+}
+
+function processarCompletarLacunas($resposta_usuario, $conteudo) {
+    $respostas_corretas = $conteudo['respostas_corretas'] ?? [];
+    
+    // Se resposta_usuario é string, converter para array
+    if (is_string($resposta_usuario)) {
+        $resposta_usuario = [$resposta_usuario];
+    }
+    
+    // Verificar se todas as respostas estão corretas
+    $correto = true;
+    if (count($resposta_usuario) !== count($respostas_corretas)) {
+        $correto = false;
+    } else {
+        for ($i = 0; $i < count($respostas_corretas); $i++) {
+            $resposta_esperada = strtolower(trim($respostas_corretas[$i]));
+            $resposta_dada = strtolower(trim($resposta_usuario[$i] ?? ''));
+            
+            if ($resposta_esperada !== $resposta_dada) {
+                $correto = false;
+                break;
+            }
+        }
+    }
+    
+    return [
+        'success' => true,
+        'correto' => $correto,
+        'explicacao' => $correto ? 
+            '✅ Correto! Você completou todas as lacunas corretamente.' : 
+            '❌ Incorreto. As respostas corretas são: ' . implode(', ', $respostas_corretas),
+        'respostas_corretas' => $respostas_corretas,
         'pontuacao' => $correto ? 100 : 0
     ];
 }
