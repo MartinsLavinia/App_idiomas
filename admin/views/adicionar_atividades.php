@@ -1209,8 +1209,8 @@ $database->closeConnection();
                                     <div class="mb-3">
                                         <label for="frase_listening" class="form-label">Frase para Gerar Áudio *</label>
                                         <textarea class="form-control" id="frase_listening" name="frase_listening" rows="3" 
-                                                placeholder="Digite a frase que será convertida em áudio automaticamente"><?php echo htmlspecialchars($post_frase_listening); ?></textarea>
-                                        <div class="form-text">Esta frase será convertida em áudio automaticamente usando API de text-to-speech</div>
+                                                placeholder="Digite a frase que os alunos irão ouvir..."><?php echo htmlspecialchars($post_frase_listening); ?></textarea>
+                                        <div class="form-text">Esta frase será convertida em áudio para o exercício de listening</div>
                                     </div>
                                     
                                     <div class="mb-3">
@@ -1263,11 +1263,14 @@ $database->closeConnection();
                                     <div class="mb-3">
                                         <label class="form-label">Prévia do Áudio</label>
                                         <div id="audioPreview" class="audio-preview text-center">
-                                            <p class="text-muted">O áudio será gerado automaticamente após digitar a frase</p>
+                                            <p class="text-muted">Digite uma frase e clique em "Testar Áudio" para ouvir a pronúncia</p>
                                         </div>
                                         <button type="button" class="btn btn-outline-primary btn-sm" onclick="testarAudio()">
                                             <i class="fas fa-play me-1"></i>Testar Áudio
                                         </button>
+                                        <small class="form-text text-muted d-block mt-1">
+                                            <i class="fas fa-info-circle me-1"></i>Usa a síntese de voz do navegador para preview
+                                        </small>
                                     </div>
                                 </div>
                             </div>
@@ -1468,6 +1471,28 @@ $database->closeConnection();
         if (initialCaminhoId) {
             carregarBlocos(initialCaminhoId, <?php echo !empty($post_bloco_id) ? $post_bloco_id : 'null'; ?>);
         }
+        
+        // Auto-preview para listening
+        const fraseListening = document.getElementById('frase_listening');
+        if (fraseListening) {
+            let timeoutId;
+            fraseListening.addEventListener('input', function() {
+                clearTimeout(timeoutId);
+                const preview = document.getElementById('audioPreview');
+                if (this.value.trim() && preview) {
+                    timeoutId = setTimeout(() => {
+                        preview.innerHTML = `
+                            <p class="text-info"><i class="fas fa-volume-up me-1"></i>Frase pronta para teste: "${this.value.trim()}"</p>
+                            <button type="button" class="btn btn-sm btn-success" onclick="testarAudio()">
+                                <i class="fas fa-play me-1"></i>Reproduzir Agora
+                            </button>
+                        `;
+                    }, 1000);
+                } else if (preview) {
+                    preview.innerHTML = '<p class="text-muted">Digite uma frase e clique em "Testar Áudio" para ouvir a pronúncia</p>';
+                }
+            });
+        }
     });
     
     function adicionarAlternativa() {
@@ -1487,8 +1512,8 @@ $database->closeConnection();
         container.appendChild(novaAlternativa);
     }
 
-    // Função para testar áudio do listening
-    async function testarAudio() {
+    // Função para testar áudio do listening usando Web Speech API
+    function testarAudio() {
         const frase = document.getElementById('frase_listening').value;
         const idioma = document.getElementById('idioma_audio').value;
         
@@ -1500,35 +1525,71 @@ $database->closeConnection();
         const preview = document.getElementById('audioPreview');
         if (!preview) return;
         
+        // Verificar se o navegador suporta Web Speech API
+        if (!('speechSynthesis' in window)) {
+            preview.innerHTML = '<p class="text-warning"><i class="fas fa-exclamation-triangle me-1"></i>Seu navegador não suporta síntese de voz.</p>';
+            return;
+        }
+        
         preview.innerHTML = '<div class="spinner-border text-primary" role="status"></div><p>Gerando áudio...</p>';
         
         try {
-            const formData = new FormData();
-            formData.append('frase', frase.trim());
-            formData.append('idioma', idioma.trim());
+            // Parar qualquer fala anterior
+            speechSynthesis.cancel();
             
-            const response = await fetch('../controller/gerar_audio_api.php', {
-                method: 'POST',
-                body: formData
-            });
+            // Criar utterance
+            const utterance = new SpeechSynthesisUtterance(frase);
             
-            const data = await response.json();
+            // Mapear idiomas
+            const langMap = {
+                'en-us': 'en-US',
+                'en-gb': 'en-GB', 
+                'es-es': 'es-ES',
+                'fr-fr': 'fr-FR',
+                'de-de': 'de-DE',
+                'pt-br': 'pt-BR'
+            };
             
-            if (data.success) {
+            utterance.lang = langMap[idioma] || 'en-US';
+            utterance.rate = 0.8;
+            utterance.pitch = 1;
+            utterance.volume = 0.7;
+            
+            utterance.onstart = function() {
                 preview.innerHTML = `
-                    <audio controls autoplay class="w-100" oncanplay="this.volume=0.5">
-                        <source src="${data.audio_url}?t=${new Date().getTime()}" type="audio/mpeg">
-                        Seu navegador não suporta o elemento de áudio.
-                    </audio>
-                    <p class="mt-2 text-success"><small><i class="fas fa-check me-1"></i>Áudio gerado com sucesso!</small></p>
+                    <div class="d-flex align-items-center justify-content-center mb-2">
+                        <button type="button" class="btn btn-danger btn-sm me-2" onclick="speechSynthesis.cancel()">
+                            <i class="fas fa-stop"></i> Parar
+                        </button>
+                        <span class="text-primary"><i class="fas fa-volume-up me-1"></i>Reproduzindo áudio...</span>
+                    </div>
+                    <p class="text-muted small">Frase: "${frase}"</p>
                 `;
-            } else {
-                preview.innerHTML = `<p class="text-danger"><i class="fas fa-times me-1"></i>Não foi possível gerar o áudio. Tente novamente.</p>`;
-                console.error('API Error:', data.message);
-            }
+            };
+            
+            utterance.onend = function() {
+                preview.innerHTML = `
+                    <div class="d-flex align-items-center justify-content-center mb-2">
+                        <button type="button" class="btn btn-primary btn-sm me-2" onclick="testarAudio()">
+                            <i class="fas fa-play"></i> Reproduzir Novamente
+                        </button>
+                    </div>
+                    <p class="text-success small"><i class="fas fa-check me-1"></i>Áudio reproduzido com sucesso!</p>
+                    <p class="text-muted small">Frase: "${frase}"</p>
+                `;
+            };
+            
+            utterance.onerror = function(event) {
+                console.error('Erro na síntese de voz:', event.error);
+                preview.innerHTML = `<p class="text-danger"><i class="fas fa-times me-1"></i>Erro ao reproduzir áudio: ${event.error}</p>`;
+            };
+            
+            // Reproduzir
+            speechSynthesis.speak(utterance);
+            
         } catch (error) {
             console.error('Erro ao testar áudio:', error);
-            preview.innerHTML = `<p class="text-danger"><i class="fas fa-times me-1"></i>Erro de comunicação ao gerar áudio.</p>`;
+            preview.innerHTML = `<p class="text-danger"><i class="fas fa-times me-1"></i>Erro ao gerar áudio.</p>`;
         }
     }
 

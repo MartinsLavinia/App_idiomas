@@ -192,9 +192,13 @@ function determinarTipoExercicio($row, $conteudo) {
     
     // PRIORIDADE 3: Analisar o conteúdo para determinar o tipo
     if (is_array($conteudo)) {
-        // Verificar se é exercício de listening
-        if (isset($conteudo['audio_url']) || isset($conteudo['arquivo_audio']) || 
-            (isset($conteudo['opcoes']) && isset($conteudo['resposta_correta']))) {
+        // Verificar se é exercício de completar PRIMEIRO
+        if (isset($conteudo['frase_completar']) || 
+            (isset($conteudo['tipo_exercicio']) && $conteudo['tipo_exercicio'] === 'completar')) {
+            return 'completar';
+        }
+        // Verificar se é exercício de listening (apenas se tem áudio)
+        elseif (isset($conteudo['audio_url']) || isset($conteudo['arquivo_audio'])) {
             return 'listening';
         }
         // Verificar se é exercício de fala
@@ -206,9 +210,15 @@ function determinarTipoExercicio($row, $conteudo) {
         elseif (isset($conteudo['alternativas']) && is_array($conteudo['alternativas'])) {
             return 'multipla_escolha';
         }
-        // Verificar se é completar
-        elseif (isset($conteudo['frase_completar'])) {
-            return 'completar';
+        // Se tem opções mas não é listening, pode ser completar
+        elseif (isset($conteudo['opcoes']) && isset($conteudo['resposta_correta'])) {
+            // Verificar se tem contexto de completar
+            if (isset($conteudo['pergunta']) && 
+                (strpos(strtolower($conteudo['pergunta']), 'complete') !== false ||
+                 strpos(strtolower($conteudo['pergunta']), 'completar') !== false)) {
+                return 'completar';
+            }
+            return 'multipla_escolha'; // Default para opções
         }
     }
     

@@ -964,7 +964,7 @@ body {
                             <select class="form-select" id="tipo_exercicio" name="tipo_exercicio" required>
                                 <option value="multipla_escolha" <?php echo ($tipo_exercicio_detectado == 'multipla_escolha') ? 'selected' : ''; ?>>Múltipla Escolha</option>
                                 <option value="completar" <?php echo ($tipo_exercicio_detectado == 'completar') ? 'selected' : ''; ?>>Completar Frase</option>
-                                <option value="listening" <?php echo ($tipo_exercicio_detectado == 'listening') ? 'selected' : ''; ?>>Exercício de Listening</option>
+                                <option value="listening" <?php echo ($tipo_exercicio_detectado == 'listening') ? 'selected' : ''; ?>>Exercício de Áudio/Listening</option>
                             </select>
                         </div>
                         <div class="mb-3">
@@ -1107,7 +1107,7 @@ body {
                                 
                                 <!-- Campos para Listening -->
                                 <div id="campos-listening" class="subtipo-campos" style="display: none;">
-                                    <h5>Configuração - Exercício de Listening</h5>
+                                    <h5>Configuração - Exercício de Áudio/Listening (Não é Múltipla Escolha)</h5>
                                     <div class="mb-3">
                                         <label for="frase_listening" class="form-label">Frase para Gerar Áudio *</label>
                                         <textarea class="form-control" id="frase_listening" name="frase_listening" rows="3"><?php echo isset($conteudo_array['frase_original']) ? htmlspecialchars($conteudo_array['frase_original']) : ''; ?></textarea>
@@ -1133,7 +1133,7 @@ body {
                                             <div class="input-group-text">
                                                 <input type="radio" name="listening_alt_correta" value="<?php echo $i; ?>" <?php echo ($resposta_correta == $i) ? 'checked' : ''; ?> title="Marcar como correta">
                                             </div>
-                                            <input type="text" class="form-control" name="listening_opcao<?php echo $i+1; ?>" placeholder="Opção <?php echo $i+1; ?><?php echo $i > 1 ? ' (Opcional)' : ''; ?>" value="<?php echo isset($opcoes_listening[$i]) ? htmlspecialchars($opcoes_listening[$i]) : ''; ?>" <?php echo $i < 2 ? 'required' : ''; ?>>
+                                            <input type="text" class="form-control" name="listening_opcao<?php echo $i+1; ?>" placeholder="Opção <?php echo $i+1; ?><?php echo $i > 1 ? ' (Opcional)' : ''; ?>" value="<?php echo isset($opcoes_listening[$i]) ? htmlspecialchars($opcoes_listening[$i]) : ''; ?>">
                                         </div>
                                         <?php endfor; ?>
                                     </div>
@@ -1163,7 +1163,9 @@ body {
                             </div>
                         </div>
                         
-                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                        <button type="submit" class="btn btn-primary" id="btn-salvar">
+                            <i class="fas fa-save me-2"></i>Salvar Alterações
+                        </button>
                     </form>
                 </div>
             </div>
@@ -1254,6 +1256,11 @@ body {
             camposTexto.style.display = 'none';
             camposCompletar.style.display = 'none';
             camposListening.style.display = 'none';
+            
+            // Remover required de todos os campos primeiro
+            document.querySelectorAll('.subtipo-campos input, .subtipo-campos textarea, .subtipo-campos select').forEach(campo => {
+                campo.removeAttribute('required');
+            });
 
             if (tipoSelect.value === 'normal') {
                 camposNormal.style.display = 'block';
@@ -1265,24 +1272,79 @@ body {
                         break;
                     case 'completar':
                         camposCompletar.style.display = 'block';
+                        // Adicionar required aos campos visíveis de completar
+                        document.getElementById('frase_completar').setAttribute('required', 'required');
+                        document.getElementById('resposta_completar').setAttribute('required', 'required');
                         break;
                     case 'listening':
                         camposListening.style.display = 'block';
+                        // Adicionar required aos campos visíveis de listening
+                        document.getElementById('frase_listening').setAttribute('required', 'required');
+                        document.getElementById('idioma_audio').setAttribute('required', 'required');
                         break;
                 }
             } else if (tipoSelect.value === 'especial') {
                 camposEspecial.style.display = 'block';
+                document.getElementById('link_video').setAttribute('required', 'required');
             } else if (tipoSelect.value === 'quiz') {
                 camposQuiz.style.display = 'block';
+                document.getElementById('quiz_id').setAttribute('required', 'required');
             }
         }
         
         // Inicializar
-        mostrarCampos();
+        setTimeout(() => {
+            mostrarCampos();
+        }, 100);
 
         // Listeners
         tipoSelect.addEventListener('change', mostrarCampos);
         tipoExercicioSelect.addEventListener('change', mostrarCampos);
+        
+        // Garantir que o formulário seja submetido corretamente
+        const form = document.querySelector('form');
+        const btnSalvar = document.getElementById('btn-salvar');
+        
+        if (form && btnSalvar) {
+            form.addEventListener('submit', function(e) {
+                // Validação básica
+                const pergunta = document.getElementById('pergunta').value.trim();
+                const ordem = document.getElementById('ordem').value.trim();
+                const tipo = document.getElementById('tipo').value;
+                const tipoExercicio = document.getElementById('tipo_exercicio').value;
+                
+                if (!pergunta || !ordem) {
+                    e.preventDefault();
+                    alert('Por favor, preencha todos os campos obrigatórios.');
+                    return false;
+                }
+                
+                // Validação específica para exercícios de listening
+                if (tipo === 'normal' && tipoExercicio === 'listening') {
+                    const fraseListening = document.getElementById('frase_listening').value.trim();
+                    const opcao1 = document.querySelector('input[name="listening_opcao1"]').value.trim();
+                    const opcao2 = document.querySelector('input[name="listening_opcao2"]').value.trim();
+                    const altCorreta = document.querySelector('input[name="listening_alt_correta"]:checked');
+                    
+                    if (!fraseListening || !opcao1 || !opcao2 || !altCorreta) {
+                        e.preventDefault();
+                        alert('Para exercícios de listening, preencha: frase, pelo menos 2 opções e marque a resposta correta.');
+                        return false;
+                    }
+                }
+                
+                // Garantir que apenas campos visíveis tenham required
+                document.querySelectorAll('.subtipo-campos').forEach(container => {
+                    if (container.style.display === 'none') {
+                        container.querySelectorAll('input, textarea, select').forEach(campo => {
+                            campo.removeAttribute('required');
+                        });
+                    }
+                });
+                
+                return true;
+            });
+        }
         
         // Auto-hide success message
         const alertSucesso = document.getElementById('alertSucesso');
