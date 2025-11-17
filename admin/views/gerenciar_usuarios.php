@@ -41,7 +41,7 @@ $filtro_email = isset($_GET['email']) ? trim($_GET['email']) : '';
 $filtro_status = isset($_GET['status']) ? $_GET['status'] : '';
 $filtro_nivel = isset($_GET['nivel']) ? $_GET['nivel'] : '';
 
-// Query base para buscar usuários
+// Query base para buscar usuários - CORRIGIDA
 $sql_usuarios = "
     SELECT 
         u.id,
@@ -50,17 +50,17 @@ $sql_usuarios = "
         u.data_registro,
         u.ultimo_login,
         u.ativo,
-        COALESCE(qr.nivel_resultado, 'Não avaliado') as nivel_atual,
+        COALESCE(
+            (SELECT qr2.nivel_resultado 
+             FROM quiz_resultados qr2 
+             WHERE qr2.id_usuario = u.id 
+             ORDER BY qr2.data_realizacao DESC 
+             LIMIT 1), 
+            'Não avaliado'
+        ) as nivel_atual,
         COUNT(DISTINCT pu.caminho_id) as caminhos_iniciados,
         AVG(pu.progresso) as progresso_medio
     FROM usuarios u
-    LEFT JOIN (
-        SELECT 
-            id_usuario,
-            nivel_resultado,
-            ROW_NUMBER() OVER (PARTITION BY id_usuario ORDER BY data_realizacao DESC) as rn
-        FROM quiz_resultados
-    ) qr ON u.id = qr.id_usuario AND qr.rn = 1
     LEFT JOIN progresso_usuario pu ON u.id = pu.id_usuario
     WHERE 1=1
 ";
@@ -88,15 +88,24 @@ if ($filtro_status !== '') {
 
 if (!empty($filtro_nivel)) {
     if ($filtro_nivel === 'Não avaliado') {
-        $sql_usuarios .= " AND qr.nivel_resultado IS NULL";
+        $sql_usuarios .= " AND NOT EXISTS (
+            SELECT 1 FROM quiz_resultados qr3 
+            WHERE qr3.id_usuario = u.id
+        )";
     } else {
-        $sql_usuarios .= " AND qr.nivel_resultado = ?";
+        $sql_usuarios .= " AND EXISTS (
+            SELECT 1 FROM quiz_resultados qr4 
+            WHERE qr4.id_usuario = u.id 
+            AND qr4.nivel_resultado = ?
+            ORDER BY qr4.data_realizacao DESC 
+            LIMIT 1
+        )";
         $params[] = $filtro_nivel;
         $types .= 's';
     }
 }
 
-$sql_usuarios .= " GROUP BY u.id, u.nome, u.email, u.data_registro, u.ultimo_login, u.ativo, qr.nivel_resultado";
+$sql_usuarios .= " GROUP BY u.id, u.nome, u.email, u.data_registro, u.ultimo_login, u.ativo";
 $sql_usuarios .= " ORDER BY u.data_registro DESC";
 
 $stmt_usuarios = $conn->prepare($sql_usuarios);

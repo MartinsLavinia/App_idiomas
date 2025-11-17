@@ -16,17 +16,23 @@ $conn = $database->conn;
 $sql_user = "
     SELECT 
         u.*,
-        COALESCE(qr.nivel_resultado, 'Não avaliado') as nivel_atual,
-        qr.data_realizacao as data_ultimo_quiz
+        COALESCE(
+            (SELECT qr2.nivel_resultado 
+             FROM quiz_resultados qr2 
+             WHERE qr2.id_usuario = u.id 
+             ORDER BY qr2.data_realizacao DESC 
+             LIMIT 1), 
+            'Não avaliado'
+        ) as nivel_atual,
+        COALESCE(
+            (SELECT qr3.data_realizacao 
+             FROM quiz_resultados qr3 
+             WHERE qr3.id_usuario = u.id 
+             ORDER BY qr3.data_realizacao DESC 
+             LIMIT 1), 
+            NULL
+        ) as data_ultimo_quiz
     FROM usuarios u
-    LEFT JOIN (
-        SELECT 
-            id_usuario,
-            nivel_resultado,
-            data_realizacao,
-            ROW_NUMBER() OVER (PARTITION BY id_usuario ORDER BY data_realizacao DESC) as rn
-        FROM quiz_resultados
-    ) qr ON u.id = qr.id_usuario AND qr.rn = 1
     WHERE u.id = ?
 ";
 
