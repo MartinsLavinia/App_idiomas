@@ -25,6 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login de Administrador</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         /* Variáveis de cor para o tema */
@@ -111,26 +112,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             font-weight: 800;
             padding-top: 50px;
             color: var(--white-text);
-            right: 300px;
         }
 
         .form-container {
-    position: relative;
-    z-index: 3;
-    padding: 2rem;
-    max-width: 400px;
-    width: 90%;
-    text-align: center;
-    margin: auto;
-    /* Sobe o container sem afetar o cabeçalho */
-    transform: translateY(-40px);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
-}
+            position: relative;
+            z-index: 3;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            margin: auto;
+            transform: translateY(-40px);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+        }
 
         .form-container h2 {
             color: var(--white-text);
@@ -144,19 +143,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             margin-bottom: 1.5rem;
         }
 
+        /* Estilo para o grupo de input */
         .input-group {
             margin-bottom: 1rem;
+            position: relative;
         }
 
         .input-group input {
             width: 100%;
-            padding: 12px;
+            padding: 12px 45px 12px 12px;
             border: 1px solid rgba(255, 255, 255, 0.4);
             border-radius: 8px;
             font-size: 1rem;
             background-color: rgba(255, 255, 255, 0.1);
             color: var(--white-text);
+            box-sizing: border-box;
         }
+
         .input-group input::placeholder {
             color: rgba(255, 255, 255, 0.6);
         }
@@ -165,6 +168,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             outline: none;
             border-color: var(--yellow-accent);
             box-shadow: 0 0 0 2px rgba(252, 211, 77, 0.4);
+        }
+
+        /* Estilo para o botão de mostrar/ocultar senha */
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            padding: 4px;
+            z-index: 10;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .password-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--yellow-accent);
+        }
+
+        .password-toggle i {
+            font-size: 1.1rem;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .btn-login {
@@ -232,9 +270,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="background-container"></div>
 
     <!-- Título no topo da página -->
-    <h1 style="color: #fff; font-size: 2rem; font-weight: 800; margin-top: 50px; text-align: center; z-index: 3; position: relative;">
-        Área do Administrador
-    </h1>
+    <h1 class="admin-title">Área do Administrador</h1>
 
     <div class="form-container">
         <!-- Logo dentro do form, centralizada -->
@@ -247,10 +283,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <input type="text" id="nome_usuario" name="nome_usuario" placeholder="Nome de Usuário" required>
             </div>
             <div class="input-group">
-                <input type="password" id="senha" name="senha" placeholder="Senha" required style="border-right: none;">
-                <span class="input-group-text" onclick="togglePasswordVisibility('senha')" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.4); border-left: none; cursor: pointer;">
-                    <i class="fa fa-eye" id="toggleIcon_senha"></i>
-                </span>
+                <input type="password" id="senha" name="senha" placeholder="Senha" required>
+                <button type="button" class="password-toggle" id="toggleSenha">
+                    <i class="fas fa-eye"></i>
+                </button>
             </div>
             <div class="links-container text-end">
                 <a href="esqueci_senha_admin.php">Esqueci a senha</a>
@@ -279,27 +315,42 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             58-18 88-18 58 18 88 18v44h-352z" />
         </defs>
         <g class="parallax">
-            <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.3" />
+            <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.3)" />
             <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.2)" />
             <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.1)" />
         </g>
     </svg>
 
     <script>
-        function togglePasswordVisibility(fieldId) {
-            const passwordField = document.getElementById(fieldId);
-            const toggleIcon = document.getElementById('toggleIcon_' + fieldId);
-            if (passwordField.type === 'password') {
-                passwordField.type = 'text';
-                toggleIcon.classList.remove('fa-eye');
-                toggleIcon.classList.add('fa-eye-slash');
-            } else {
-                passwordField.type = 'password';
-                toggleIcon.classList.remove('fa-eye-slash');
-                toggleIcon.classList.add('fa-eye');
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleSenha = document.getElementById('toggleSenha');
+            const senhaInput = document.getElementById('senha');
+            const toggleIcon = toggleSenha.querySelector('i');
+
+            if (toggleSenha && senhaInput) {
+                toggleSenha.addEventListener('click', function() {
+                    const type = senhaInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    senhaInput.setAttribute('type', type);
+                    
+                    toggleIcon.classList.toggle('fa-eye');
+                    toggleIcon.classList.toggle('fa-eye-slash');
+                });
             }
-        }
+
+            // Adicionar loading state no formulário
+            const formLogin = document.getElementById('formLogin');
+            const btnLogin = document.getElementById('btnLogin');
+            const btnText = document.getElementById('btnText');
+            const btnSpinner = document.getElementById('btnSpinner');
+
+            if (formLogin) {
+                formLogin.addEventListener('submit', function() {
+                    btnText.classList.add('d-none');
+                    btnSpinner.classList.remove('d-none');
+                    btnLogin.disabled = true;
+                });
+            }
+        });
     </script>
 </body>
-
 </html>
