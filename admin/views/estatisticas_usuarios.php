@@ -976,9 +976,6 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="container-fluid mt-4">
             <div class="page-header">
                 <h2 class="mb-0"><i class="fas fa-chart-bar"></i> Estatísticas de Usuários</h2>
-                 <a href="gerenciar_caminho.php" class="btn-back">
-                    <i class="fas fa-arrow-left"></i>Voltar para Caminhos
-                </a>
             </div>
 
             <!-- Estatísticas Rápidas -->
@@ -1149,27 +1146,6 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 
-    <!-- Bottom Navigation Bar para telas pequenas -->
-    <nav class="bottom-nav d-lg-none">
-        <a href="gerenciar_caminho.php" class="bottom-nav-item">
-            <i class="fas fa-plus-circle"></i>
-        </a>
-        <a href="pagina_adicionar_idiomas.php" class="bottom-nav-item">
-            <i class="fas fa-language"></i>
-        </a>
-        <a href="gerenciar_teorias.php" class="bottom-nav-item">
-            <i class="fas fa-book-open"></i>
-        </a>
-        <a href="gerenciar_unidades.php" class="bottom-nav-item">
-            <i class="fas fa-cubes"></i>
-        </a>
-        <a href="gerenciar_usuarios.php" class="bottom-nav-item">
-            <i class="fas fa-users"></i>
-        </a>
-        <a href="estatisticas_usuarios.php" class="bottom-nav-item active">
-            <i class="fas fa-chart-bar"></i>
-        </a>
-    </nav>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

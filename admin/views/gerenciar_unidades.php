@@ -699,6 +699,144 @@ body:has(.sidebar.active) .menu-toggle:hover,
 @media (max-width: 576px) {
     .page-header { flex-direction: column; align-items: flex-start; }
 }
+
+/* Modal de Confirmação de Exclusão */
+#confirmDeleteModal .modal-content {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(106, 13, 173, 0.2);
+}
+
+#confirmDeleteModal .modal-header {
+    background: var(--roxo-principal);
+    color: var(--branco);
+    border-bottom: none;
+    padding: 1.5rem;
+}
+
+#confirmDeleteModal .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 1;
+}
+
+#confirmDeleteModal .modal-title {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#confirmDeleteModal .modal-title::before {
+    content: '⚠️';
+    font-size: 1.2rem;
+}
+
+#confirmDeleteModal .modal-body {
+    padding: 1.5rem;
+    text-align: center;
+}
+
+#confirmDeleteModal .modal-body .text-danger {
+    background: rgba(255, 215, 0, 0.1);
+    border-left: 3px solid var(--amarelo-detalhe);
+    padding: 0.75rem;
+    border-radius: 5px;
+    color: var(--roxo-escuro);
+    font-weight: 600;
+}
+
+#confirmDeleteModal .modal-footer {
+    border-top: 1px solid var(--cinza-medio);
+    padding: 1rem 1.5rem;
+}
+
+#confirmDeleteModal .btn-secondary {
+    background: var(--cinza-medio);
+    border: none;
+    color: var(--preto-texto);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+#confirmDeleteModal .btn-secondary:hover {
+    background: #6c757d;
+    color: var(--branco);
+}
+
+#confirmDeleteModal .btn-danger {
+    background: #b02a37;
+    border: none;
+    color: var(--branco);
+    font-weight: 600;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+#confirmDeleteModal .btn-danger:hover {
+    background: #a02332;
+    color: var(--branco);
+}
+
+/* Modal de Adicionar Unidade */
+#addUnidadeModal .modal-content {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(106, 13, 173, 0.2);
+}
+
+#addUnidadeModal .modal-header {
+    background: var(--roxo-principal);
+    color: var(--branco);
+    border-bottom: none;
+    padding: 1.5rem;
+}
+
+#addUnidadeModal .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 1;
+}
+
+#addUnidadeModal .modal-title {
+    font-weight: 600;
+}
+
+#addUnidadeModal .modal-body {
+    padding: 1.5rem;
+}
+
+#addUnidadeModal .modal-footer {
+    border-top: 1px solid var(--cinza-medio);
+    padding: 1rem 1.5rem;
+}
+
+#addUnidadeModal .btn-secondary {
+    background: var(--cinza-medio);
+    border: none;
+    color: var(--preto-texto);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+#addUnidadeModal .btn-secondary:hover {
+    background: #6c757d;
+    color: var(--branco);
+}
+
+#addUnidadeModal .btn-warning {
+    background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
+    border: none;
+    color: var(--preto-texto);
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+#addUnidadeModal .btn-warning:hover {
+    background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(255, 217, 0, 0.4);
+    color: var(--preto-texto);
+}
     </style>
 <body>
 
@@ -904,31 +1042,16 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="confirmDeleteModalLabel">
-                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
-                        Confirmar Exclusão
-                    </h5>
+                    <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Exclusão</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="text-center mb-3">
-                        <i class="fas fa-trash-alt text-danger" style="font-size: 3rem;"></i>
-                    </div>
-                    <p class="text-center mb-3">
-                        Tem certeza que deseja eliminar a unidade <strong id="unidadeNome"></strong>?
-                    </p>
-                    <div class="alert alert-warning">
-                        <i class="fas fa-info-circle me-2"></i>
-                        Esta ação não pode ser desfeita e pode afetar caminhos de aprendizagem associados.
-                    </div>
+                    <p>Tem certeza que deseja excluir a unidade <strong id="unidadeNome"></strong>?</p>
+                    <p class="text-danger"><strong>Atenção:</strong> Esta ação não pode ser desfeita!</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-2"></i>Cancelar
-                    </button>
-                    <a href="#" id="confirmDeleteBtn" class="btn btn-danger">
-                        <i class="fas fa-trash me-2"></i>Eliminar Unidade
-                    </a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <a href="#" id="confirmDeleteBtn" class="btn btn-danger">Excluir</a>
                 </div>
             </div>
         </div>

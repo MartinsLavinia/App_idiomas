@@ -107,193 +107,326 @@ $stmt_exercises->close();
 $database->closeConnection();
 ?>
 
-<div class="row">
-    <div class="col-md-6">
-        <h6><i class="fas fa-user"></i> Informações Pessoais</h6>
-        <table class="table table-sm">
-            <tr>
-                <td><strong>Nome:</strong></td>
-                <td><?php echo htmlspecialchars($user['nome']); ?></td>
-            </tr>
-            <tr>
-                <td><strong>Email:</strong></td>
-                <td><?php echo htmlspecialchars($user['email']); ?></td>
-            </tr>
-            <tr>
-                <td><strong>Data de Registro:</strong></td>
-                <td><?php echo date('d/m/Y H:i', strtotime($user['data_registro'])); ?></td>
-            </tr>
-            <tr>
-                <td><strong>Último Login:</strong></td>
-                <td>
-                    <?php if ($user['ultimo_login']): ?>
-                        <?php echo date('d/m/Y H:i', strtotime($user['ultimo_login'])); ?>
-                    <?php else: ?>
-                        <span class="text-muted">Nunca fez login</span>
-                    <?php endif; ?>
-                </td>
-            </tr>
-            <tr>
-                <td><strong>Status:</strong></td>
-                <td>
-                    <span class="badge bg-<?php echo $user['ativo'] ? 'success' : 'danger'; ?>">
-                        <?php echo $user['ativo'] ? 'Ativo' : 'Inativo'; ?>
-                    </span>
-                </td>
-            </tr>
-            <tr>
-                <td><strong>Nível Atual:</strong></td>
-                <td>
-                    <span class="badge bg-primary"><?php echo htmlspecialchars($user['nivel_atual']); ?></span>
-                    <?php if ($user['data_ultimo_quiz']): ?>
-                        <br><small class="text-muted">Avaliado em <?php echo date('d/m/Y', strtotime($user['data_ultimo_quiz'])); ?></small>
-                    <?php endif; ?>
-                </td>
-            </tr>
-        </table>
+<!-- Header do Usuário -->
+<div class="bg-gradient-warning text-dark p-4 mb-0">
+    <div class="row align-items-center">
+        <div class="col-auto">
+            <?php if (!empty($user['imagem_perfil']) && file_exists(__DIR__ . '/../../uploads/perfil/' . $user['imagem_perfil'])): ?>
+                <img src="../../uploads/perfil/<?php echo htmlspecialchars($user['imagem_perfil']); ?>" 
+                     alt="Foto do usuário" 
+                     class="avatar-lg rounded-circle object-fit-cover border border-2 border-dark border-opacity-25">
+            <?php else: ?>
+                <div class="avatar-lg bg-dark bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center">
+                    <i class="fa-solid fa-user" style="color: var(--amarelo-detalhe); font-size: 2rem;"></i>
+                </div>
+            <?php endif; ?>
+        </div>
+        <div class="col">
+            <h4 class="mb-1 fw-bold text-dark"><?php echo htmlspecialchars($user['nome']); ?></h4>
+            <p class="mb-2 text-dark opacity-75"><?php echo htmlspecialchars($user['email']); ?></p>
+            <div class="d-flex gap-2">
+                <span class="badge bg-<?php echo $user['ativo'] ? 'success' : 'danger'; ?> text-white">
+                    <i class="fas fa-<?php echo $user['ativo'] ? 'check-circle' : 'times-circle'; ?> me-1"></i>
+                    <?php echo $user['ativo'] ? 'Ativo' : 'Inativo'; ?>
+                </span>
+                <span class="badge bg-dark text-white">
+                    <i class="fas fa-graduation-cap me-1"></i>
+                    <?php echo htmlspecialchars($user['nivel_atual']); ?>
+                </span>
+            </div>
+        </div>
     </div>
-    
-    <div class="col-md-6">
-        <h6><i class="fas fa-chart-line"></i> Estatísticas de Aprendizado</h6>
-        <table class="table table-sm">
-            <tr>
-                <td><strong>Caminhos Iniciados:</strong></td>
-                <td><?php echo count($progress); ?></td>
-            </tr>
-            <tr>
-                <td><strong>Quizzes Realizados:</strong></td>
-                <td><?php echo count($quizzes); ?></td>
-            </tr>
-            <tr>
-                <td><strong>Exercícios Feitos:</strong></td>
-                <td><?php echo count($exercises); ?></td>
-            </tr>
-            <tr>
-                <td><strong>Progresso Médio:</strong></td>
-                <td>
+</div>
+
+<!-- Cards de Estatísticas -->
+<div class="p-4">
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 bg-warning bg-opacity-10 h-100">
+                <div class="card-body text-center">
+                    <div class="text-warning mb-2">
+                        <i class="fas fa-route fa-2x"></i>
+                    </div>
+                    <h5 class="card-title text-warning mb-1"><?php echo count($progress); ?></h5>
+                    <p class="card-text small text-muted mb-0">Caminhos Iniciados</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-success bg-opacity-10 h-100">
+                <div class="card-body text-center">
+                    <div class="text-success mb-2">
+                        <i class="fas fa-quiz fa-2x"></i>
+                    </div>
+                    <h5 class="card-title text-success mb-1"><?php echo count($quizzes); ?></h5>
+                    <p class="card-text small text-muted mb-0">Quizzes Realizados</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-info bg-opacity-10 h-100">
+                <div class="card-body text-center">
+                    <div class="text-info mb-2">
+                        <i class="fas fa-dumbbell fa-2x"></i>
+                    </div>
+                    <h5 class="card-title text-info mb-1"><?php echo count($exercises); ?></h5>
+                    <p class="card-text small text-muted mb-0">Exercícios Feitos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-secondary bg-opacity-10 h-100">
+                <div class="card-body text-center">
+                    <div class="text-secondary mb-2">
+                        <i class="fas fa-chart-line fa-2x"></i>
+                    </div>
                     <?php if (!empty($progress)): ?>
                         <?php $avg_progress = array_sum(array_column($progress, 'progresso')) / count($progress); ?>
-                        <div class="progress" style="height: 20px;">
-                            <div class="progress-bar" style="width: <?php echo round($avg_progress); ?>%">
-                                <?php echo round($avg_progress); ?>%
+                        <h5 class="card-title text-secondary mb-1"><?php echo round($avg_progress); ?>%</h5>
+                    <?php else: ?>
+                        <h5 class="card-title text-muted mb-1">0%</h5>
+                    <?php endif; ?>
+                    <p class="card-text small text-muted mb-0">Progresso Médio</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informações Detalhadas -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 info-card h-100">
+                <div class="card-header bg-transparent border-0 pb-0">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-info-circle text-warning me-2"></i>
+                        Informações Pessoais
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                <span class="text-muted"><i class="fas fa-calendar-plus me-2"></i>Data de Registro</span>
+                                <span class="fw-medium"><?php echo date('d/m/Y H:i', strtotime($user['data_registro'])); ?></span>
                             </div>
                         </div>
-                    <?php else: ?>
-                        <span class="text-muted">Nenhum progresso</span>
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                <span class="text-muted"><i class="fas fa-clock me-2"></i>Último Login</span>
+                                <span class="fw-medium">
+                                    <?php if ($user['ultimo_login']): ?>
+                                        <?php echo date('d/m/Y H:i', strtotime($user['ultimo_login'])); ?>
+                                    <?php else: ?>
+                                        <span class="text-muted">Nunca fez login</span>
+                                    <?php endif; ?>
+                                </span>
+                            </div>
+                        </div>
+                        <?php if ($user['data_ultimo_quiz']): ?>
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center py-2">
+                                <span class="text-muted"><i class="fas fa-graduation-cap me-2"></i>Última Avaliação</span>
+                                <span class="fw-medium"><?php echo date('d/m/Y', strtotime($user['data_ultimo_quiz'])); ?></span>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card border-0 info-card h-100">
+                <div class="card-header bg-transparent border-0 pb-0">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-chart-bar text-warning me-2"></i>
+                        Resumo de Atividades
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <?php if (!empty($progress)): ?>
+                        <?php $avg_progress = array_sum(array_column($progress, 'progresso')) / count($progress); ?>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Progresso Geral</span>
+                                <span class="fw-bold text-warning"><?php echo round($avg_progress); ?>%</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-gradient-warning" style="width: <?php echo round($avg_progress); ?>%"></div>
+                            </div>
+                        </div>
                     <?php endif; ?>
-                </td>
-            </tr>
-        </table>
+                    
+                    <div class="row g-2 text-center">
+                        <div class="col-4">
+                            <div class="p-2 bg-light rounded">
+                                <div class="fw-bold text-warning"><?php echo count($progress); ?></div>
+                                <small class="text-muted">Caminhos</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-2 bg-light rounded">
+                                <div class="fw-bold text-success"><?php echo count($quizzes); ?></div>
+                                <small class="text-muted">Quizzes</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-2 bg-light rounded">
+                                <div class="fw-bold text-warning"><?php echo count($exercises); ?></div>
+                                <small class="text-muted">Exercícios</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
 
-<hr>
+    <!-- Seções de Detalhes -->
+    <div class="row g-4">
+        <!-- Progresso nos Caminhos -->
+        <div class="col-lg-6">
+            <div class="card border-0 info-card h-100">
+                <div class="card-header bg-transparent border-0">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-route text-warning me-2"></i>
+                        Progresso nos Caminhos
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <?php if (!empty($progress)): ?>
+                        <div class="progress-list">
+                            <?php foreach (array_slice($progress, 0, 5) as $p): ?>
+                            <div class="progress-item mb-3 p-3 bg-light rounded">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1 text-truncate" title="<?php echo htmlspecialchars($p['nome_caminho']); ?>">
+                                            <?php echo htmlspecialchars(substr($p['nome_caminho'], 0, 25)) . (strlen($p['nome_caminho']) > 25 ? '...' : ''); ?>
+                                        </h6>
+                                        <div class="d-flex gap-2 mb-2">
+                                            <span class="badge bg-primary bg-opacity-10 text-primary"><?php echo htmlspecialchars($p['idioma']); ?></span>
+                                            <span class="badge bg-secondary bg-opacity-10 text-secondary"><?php echo htmlspecialchars($p['nivel']); ?></span>
+                                        </div>
+                                    </div>
+                                    <span class="fw-bold text-primary"><?php echo round($p['progresso']); ?>%</span>
+                                </div>
+                                <div class="progress mb-2" style="height: 6px;">
+                                    <div class="progress-bar bg-gradient-warning" style="width: <?php echo $p['progresso']; ?>%"></div>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>
+                                    Última atividade: <?php echo date('d/m/Y', strtotime($p['ultima_atividade'])); ?>
+                                </small>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <?php if (count($progress) > 5): ?>
+                            <div class="text-center">
+                                <small class="text-muted">E mais <?php echo count($progress) - 5; ?> caminhos...</small>
+                            </div>
+                        <?php endif; ?>
+                    <?php else: ?>
+                        <div class="text-center py-4">
+                            <i class="fas fa-route fa-3x text-muted mb-3"></i>
+                            <p class="text-muted mb-0">Nenhum caminho iniciado ainda</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Histórico de Quizzes -->
+        <div class="col-lg-6">
+            <div class="card border-0 info-card h-100">
+                <div class="card-header bg-transparent border-0">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-history text-warning me-2"></i>
+                        Histórico de Quizzes
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <?php if (!empty($quizzes)): ?>
+                        <div class="quiz-list">
+                            <?php foreach (array_slice($quizzes, 0, 5) as $q): ?>
+                            <div class="quiz-item d-flex justify-content-between align-items-center p-3 mb-2 bg-light rounded">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <span class="badge bg-primary bg-opacity-10 text-primary"><?php echo htmlspecialchars($q['idioma']); ?></span>
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary"><?php echo htmlspecialchars($q['nivel_resultado']); ?></span>
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        <?php echo date('d/m/Y', strtotime($q['data_realizacao'])); ?>
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-<?php echo $q['pontuacao'] >= 80 ? 'success' : ($q['pontuacao'] >= 60 ? 'warning' : 'danger'); ?> fs-6">
+                                        <?php echo $q['pontuacao']; ?>%
+                                    </span>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <?php if (count($quizzes) > 5): ?>
+                            <div class="text-center">
+                                <small class="text-muted">E mais <?php echo count($quizzes) - 5; ?> quizzes...</small>
+                            </div>
+                        <?php endif; ?>
+                    <?php else: ?>
+                        <div class="text-center py-4">
+                            <i class="fas fa-quiz fa-3x text-muted mb-3"></i>
+                            <p class="text-muted mb-0">Nenhum quiz realizado ainda</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<div class="row">
-    <div class="col-md-6">
-        <h6><i class="fas fa-route"></i> Progresso nos Caminhos</h6>
-        <?php if (!empty($progress)): ?>
-            <div class="table-responsive">
-                <table class="table table-sm table-striped">
-                    <thead>
-                        <tr>
-                            <th>Caminho</th>
-                            <th>Idioma/Nível</th>
-                            <th>Progresso</th>
-                            <th>Última Atividade</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($progress as $p): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars(substr($p['nome_caminho'], 0, 20)) . (strlen($p['nome_caminho']) > 20 ? '...' : ''); ?></td>
-                            <td>
-                                <small><?php echo htmlspecialchars($p['idioma']); ?></small><br>
-                                <span class="badge bg-secondary"><?php echo htmlspecialchars($p['nivel']); ?></span>
-                            </td>
-                            <td>
-                                <div class="progress" style="height: 15px;">
-                                    <div class="progress-bar" style="width: <?php echo $p['progresso']; ?>%">
-                                        <?php echo round($p['progresso']); ?>%
+    <?php if (!empty($exercises)): ?>
+    <!-- Exercícios Recentes -->
+    <div class="mt-4">
+        <div class="card border-0 info-card">
+            <div class="card-header bg-transparent border-0">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-dumbbell text-warning me-2"></i>
+                    Exercícios Recentes
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <?php foreach (array_slice($exercises, 0, 6) as $e): ?>
+                    <div class="col-md-6">
+                        <div class="exercise-item p-3 bg-light rounded">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1 text-truncate" title="<?php echo htmlspecialchars($e['pergunta']); ?>">
+                                        <?php echo htmlspecialchars(substr($e['pergunta'], 0, 30)) . (strlen($e['pergunta']) > 30 ? '...' : ''); ?>
+                                    </h6>
+                                    <div class="d-flex gap-2 mb-2">
+                                        <span class="badge bg-warning bg-opacity-10 text-warning"><?php echo htmlspecialchars($e['idioma']); ?></span>
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary"><?php echo htmlspecialchars($e['nivel']); ?></span>
                                     </div>
                                 </div>
-                            </td>
-                            <td><small><?php echo date('d/m/Y', strtotime($p['ultima_atividade'])); ?></small></td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        <?php else: ?>
-            <p class="text-muted">Nenhum caminho iniciado.</p>
-        <?php endif; ?>
-    </div>
-    
-    <div class="col-md-6">
-        <h6><i class="fas fa-history"></i> Histórico de Quizzes</h6>
-        <?php if (!empty($quizzes)): ?>
-            <div class="table-responsive">
-                <table class="table table-sm table-striped">
-                    <thead>
-                        <tr>
-                            <th>Idioma</th>
-                            <th>Nível</th>
-                            <th>Pontuação</th>
-                            <th>Data</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($quizzes as $q): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($q['idioma']); ?></td>
-                            <td><span class="badge bg-primary"><?php echo htmlspecialchars($q['nivel_resultado']); ?></span></td>
-                            <td>
-                                <span class="badge bg-<?php echo $q['pontuacao'] >= 80 ? 'success' : ($q['pontuacao'] >= 60 ? 'warning' : 'danger'); ?>">
-                                    <?php echo $q['pontuacao']; ?>%
+                                <span class="badge bg-<?php echo $e['pontuacao'] >= 80 ? 'success' : ($e['pontuacao'] >= 60 ? 'warning' : 'danger'); ?> fs-6">
+                                    <?php echo $e['pontuacao']; ?>%
                                 </span>
-                            </td>
-                            <td><small><?php echo date('d/m/Y', strtotime($q['data_realizacao'])); ?></small></td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                            </div>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>
+                                <?php echo date('d/m/Y', strtotime($e['data_resposta'])); ?>
+                            </small>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+                <?php if (count($exercises) > 6): ?>
+                    <div class="text-center mt-3">
+                        <small class="text-muted">E mais <?php echo count($exercises) - 6; ?> exercícios...</small>
+                    </div>
+                <?php endif; ?>
             </div>
-        <?php else: ?>
-            <p class="text-muted">Nenhum quiz realizado.</p>
-        <?php endif; ?>
+        </div>
     </div>
+    <?php endif; ?>
 </div>
-
-<?php if (!empty($exercises)): ?>
-<hr>
-<h6><i class="fas fa-dumbbell"></i> Exercícios Recentes</h6>
-<div class="table-responsive">
-    <table class="table table-sm table-striped">
-        <thead>
-            <tr>
-                <th>Exercício</th>
-                <th>Idioma/Nível</th>
-                <th>Pontuação</th>
-                <th>Data</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($exercises as $e): ?>
-            <tr>
-                <td><?php echo htmlspecialchars(substr($e['titulo'], 0, 30)) . (strlen($e['titulo']) > 30 ? '...' : ''); ?></td>
-                <td>
-                    <small><?php echo htmlspecialchars($e['idioma']); ?></small><br>
-                    <span class="badge bg-secondary"><?php echo htmlspecialchars($e['nivel']); ?></span>
-                </td>
-                <td>
-                    <span class="badge bg-<?php echo $e['pontuacao'] >= 80 ? 'success' : ($e['pontuacao'] >= 60 ? 'warning' : 'danger'); ?>">
-                        <?php echo $e['pontuacao']; ?>%
-                    </span>
-                </td>
-                <td><small><?php echo date('d/m/Y', strtotime($e['data_resposta'])); ?></small></td>
-            </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-</div>
-<?php endif; ?>
