@@ -614,7 +614,200 @@ body:has(.sidebar.active) .menu-toggle:hover,
         .logout-icon:hover {
             color: var(--roxo-escuro) !important;
             transform: translateY(-2px);
+        }
 
+        /* Estilos para o botão Limpar Dados */
+        .btn-outline-danger {
+            background: rgba(220, 53, 69, 0.06);
+            color: #dc3545;
+            border: 2px solid #dc3545;
+            font-weight: 600;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.15);
+        }
+
+        .btn-outline-danger:hover {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+            border-color: #dc3545;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.25);
+        }
+
+        .btn-outline-danger:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2);
+        }
+
+            /* Modal de Confirmação de Limpeza */
+        #confirmClearModal .modal-content {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(106, 13, 173, 0.2);
+        }
+
+        #confirmClearModal .modal-header {
+            background: var(--roxo-principal);
+            color: var(--branco);
+            border-bottom: none;
+            padding: 1.5rem;
+        }
+
+        #confirmClearModal .btn-close {
+            filter: brightness(0) invert(1);
+            opacity: 1;
+        }
+
+        #confirmClearModal .modal-title {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        #confirmClearModal .modal-title::before {
+            content: '⚠️';
+            font-size: 1.2rem;
+        }
+
+        #confirmClearModal .modal-body {
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        #confirmClearModal .modal-body .text-danger {
+            background: rgba(255, 215, 0, 0.1);
+            border-left: 3px solid var(--amarelo-detalhe);
+            padding: 0.75rem;
+            border-radius: 5px;
+            color: var(--roxo-escuro);
+            font-weight: 600;
+        }
+
+        #confirmClearModal .modal-footer {
+            border-top: 1px solid var(--cinza-medio);
+            padding: 1rem 1.5rem;
+        }
+
+        #confirmClearModal .btn-secondary {
+            background: var(--cinza-medio);
+            border: none;
+            color: var(--preto-texto);
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        #confirmClearModal .btn-secondary:hover {
+            background: #6c757d;
+            color: var(--branco);
+        }
+
+        #confirmClearModal .btn-danger {
+            background: #b02a37;
+            border: none;
+            color: var(--branco);
+            font-weight: 600;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        #confirmClearModal .btn-danger:hover {
+            background: #a02332;
+            color: var(--branco);
+        }
+
+        /* Estilos para o toast de confirmação personalizado */
+        .toast {
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            border: none;
+            overflow: hidden;
+        }
+
+        .toast-header {
+            border-bottom: none;
+            padding: 1rem 1.25rem 0.75rem;
+            font-weight: 600;
+        }
+
+        .toast-body {
+            padding: 1rem 1.25rem 1.25rem;
+        }
+
+        .toast .btn {
+            font-size: 0.85rem;
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .toast .btn-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border: none;
+            color: white;
+        }
+
+        .toast .btn-success:hover {
+            background: linear-gradient(135deg, #218838, #1e7e34);
+            transform: translateY(-1px);
+        }
+
+        .toast .btn-secondary {
+            background: #6c757d;
+            border: none;
+            color: white;
+        }
+
+        .toast .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        /* Animação para o toast */
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.show {
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        /* Estilos para ícones nos toasts */
+        .toast .fas {
+            font-size: 1.1rem;
+        }
+
+        /* Container de toasts */
+        .toast-container {
+            z-index: 1060;
+        }
+
+        /* Botão Gerenciar Quiz */
+        .btn-quiz-manage {
+            background: rgba(173, 216, 230, 0.2);
+            color: #4682b4;
+            border: 2px solid #87ceeb;
+            font-weight: 600;
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-quiz-manage:hover {
+            background: rgba(173, 216, 230, 0.4);
+            color: #2f4f4f;
+            border-color: #4682b4;
+            transform: translateY(-1px);
         }
     </style>
 </head>
@@ -933,43 +1126,22 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="gerenciarIdiomasModalLabel">Gerenciar Idiomas</h5>
+                        <h5 class="modal-title" id="gerenciarIdiomasModalLabel">Idiomas Existentes</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <!-- Formulário para adicionar idioma simples -->
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <h6 class="mb-0">➕ Adicionar Novo Idioma (Simples)</h6>
-                            </div>
-                            <div class="card-body">
-                                <form action="adicionar_idioma_simples.php" method="POST">
-                                    <div class="row g-3">
-                                        <div class="col-md-8">
-                                            <input type="text" class="form-control" name="nome_idioma" placeholder="Nome do idioma (ex: Alemão)" required>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <button type="submit" class="btn btn-success w-100">Adicionar</button>
-                                        </div>
-                                    </div>
-                                    <small class="text-muted">Adiciona apenas o idioma. Você pode criar o quiz depois.</small>
-                                </form>
-                            </div>
-                        </div>
-
-                        <p class="text-muted">Use o botão "Adicionar Novo Idioma com Quiz" para criar um novo idioma completo com quiz de nivelamento.</p>
-
-                        <h5>Idiomas Existentes</h5>
                         <ul class="list-group">
                             <?php if (!empty($idiomas_db)): ?>
                             <?php foreach ($idiomas_db as $idioma): ?>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <span><?php echo htmlspecialchars($idioma['nome_idioma']); ?></span>
                                 <div>
-                                    <a href="gerenciador_quiz_nivelamento.php?idioma=<?php echo urlencode($idioma['nome_idioma']); ?>" class="btn btn-info btn-sm me-2">Gerenciar Quiz</a>
+                                    <a href="gerenciador_quiz_nivelamento.php?idioma=<?php echo urlencode($idioma['nome_idioma']); ?>" class="btn btn-quiz-manage btn-sm me-2">
+                                        <i class="fas fa-cog me-1"></i>Gerenciar Quiz
+                                    </a>
                                     <button type="button" class="btn btn-danger btn-sm delete-btn" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal"
                                         data-id="<?php echo urlencode($idioma['nome_idioma']); ?>" data-nome="<?php echo htmlspecialchars($idioma['nome_idioma']); ?>" data-tipo="idioma" data-action="excluir_idioma.php">
-                                        Excluir
+                                        <i class="fas fa-trash me-1"></i>Excluir
                                     </button>
                                 </div>
                             </li>
@@ -1021,6 +1193,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>
         </div>
+
+        <!-- Modal de Confirmação de Limpeza -->
+        <div class="modal fade" id="confirmClearModal" tabindex="-1" aria-labelledby="confirmClearModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="confirmClearModalLabel">Confirmar Limpeza</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Tem certeza que deseja limpar todos os dados salvos?</p>
+                        <p class="text-danger"><strong>Atenção:</strong> Esta ação não pode ser desfeita!</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-danger" onclick="confirmarLimpezaFinal()">Limpar Dados</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     </div>
@@ -1068,50 +1260,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Função para confirmar limpeza dos dados
         function confirmarLimpeza() {
-            
-            // Criar toast personalizado com botões
-            const toastContainer = document.getElementById('toastContainer');
-            const toastId = 'toast-confirm-' + Date.now();
-            
-            const toastHtml = `
-                <div id="${toastId}" class="toast border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false" style="background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); border-left: 5px solid #f39c12 !important;">
-                    <div class="toast-header" style="background: linear-gradient(135deg, #f39c12, #e67e22); color: white; border: none;">
-                        <i class="fas fa-exclamation-triangle me-2" style="color: #fff;"></i>
-                        <strong class="me-auto">Confirmação Necessária</strong>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
-                    </div>
-                    <div class="toast-body" style="padding: 1.5rem; color: #856404;">
-                        <div class="mb-3">
-                            <i class="fas fa-trash-alt me-2" style="color: #e74c3c;"></i>
-                            <strong>Tem certeza que deseja limpar todos os dados salvos?</strong>
-                        </div>
-                        <div class="text-muted mb-3" style="font-size: 0.9rem;">
-                            Esta ação não pode ser desfeita e todos os dados do formulário serão perdidos.
-                        </div>
-                        <div class="d-flex gap-2 justify-content-end">
-                            <button type="button" class="btn btn-success btn-sm px-3" onclick="confirmarLimpezaFinal('${toastId}')" style="box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);">
-                                <i class="fas fa-check me-1"></i>Sim, Limpar
-                            </button>
-                            <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="toast" style="box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);">
-                                <i class="fas fa-times me-1"></i>Cancelar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-            const toastElement = document.getElementById(toastId);
-            const toast = new bootstrap.Toast(toastElement);
-            toast.show();
+            const confirmModal = new bootstrap.Modal(document.getElementById('confirmClearModal'));
+            confirmModal.show();
         }
         
         // Função para confirmar limpeza final
-        function confirmarLimpezaFinal(toastId) {
-            const toastElement = document.getElementById(toastId);
-            const toast = bootstrap.Toast.getInstance(toastElement);
-            toast.hide();
-            
+        function confirmarLimpezaFinal() {
             mostrarToast('Limpando dados...', 'info');
             window.location.href = 'limpar_dados_temporarios.php';
         }

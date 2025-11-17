@@ -744,6 +744,83 @@ $database->closeConnection();
     transform: rotate(90deg);
     background: rgba(255, 255, 255, 0.2);
 }
+
+/* Modal de Confirmação de Exclusão */
+#confirmDeleteModal .modal-content {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(106, 13, 173, 0.2);
+}
+
+#confirmDeleteModal .modal-header {
+    background: var(--roxo-principal);
+    color: var(--branco);
+    border-bottom: none;
+    padding: 1.5rem;
+}
+
+#confirmDeleteModal .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 1;
+}
+
+#confirmDeleteModal .modal-title {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#confirmDeleteModal .modal-title::before {
+    content: '⚠️';
+    font-size: 1.2rem;
+}
+
+#confirmDeleteModal .modal-body {
+    padding: 1.5rem;
+    text-align: center;
+}
+
+#confirmDeleteModal .modal-body .text-danger {
+    background: rgba(255, 215, 0, 0.1);
+    border-left: 3px solid var(--amarelo-detalhe);
+    padding: 0.75rem;
+    border-radius: 5px;
+    color: var(--roxo-escuro);
+    font-weight: 600;
+}
+
+#confirmDeleteModal .modal-footer {
+    border-top: 1px solid var(--cinza-medio);
+    padding: 1rem 1.5rem;
+}
+
+#confirmDeleteModal .btn-secondary {
+    background: var(--cinza-medio);
+    border: none;
+    color: var(--preto-texto);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+#confirmDeleteModal .btn-secondary:hover {
+    background: #6c757d;
+    color: var(--branco);
+}
+
+#confirmDeleteModal .btn-danger {
+    background: #b02a37;
+    border: none;
+    color: var(--branco);
+    font-weight: 600;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+#confirmDeleteModal .btn-danger:hover {
+    background: #a02332;
+    color: var(--branco);
+}
     </style>
 </head>
 <body>

@@ -219,11 +219,27 @@ $database_foto->closeConnection();
             transition: all 0.3s ease;
             text-decoration: none;
             font-size: 1.2rem;
+            padding: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
         }
 
         .settings-icon:hover {
             color: var(--roxo-escuro) !important;
             transform: rotate(90deg);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .logout-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .logout-icon:hover {
+            color: var(--roxo-escuro) !important;
+            transform: translateY(-2px);
         }
 
         /* SIDEBAR */
@@ -241,6 +257,50 @@ $database_foto->closeConnection();
             padding-top: 20px;
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
             z-index: 1000;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        /* Menu Hamburguer */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--roxo-principal) !important;
+            font-size: 1.5rem;
+            cursor: pointer;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1100;
+            transition: all 0.3s ease;
+        }
+
+        .menu-toggle:hover {
+            color: var(--roxo-escuro) !important;
+            transform: scale(1.1);
+        }
+
+        /* Quando a sidebar está ativa */
+        body:has(.sidebar.active) .menu-toggle,
+        .sidebar.active ~ .menu-toggle {
+            color: var(--amarelo-detalhe) !important;
+        }
+
+        body:has(.sidebar.active) .menu-toggle:hover,
+        .sidebar.active ~ .menu-toggle:hover {
+            color: var(--amarelo-hover) !important;
+        }
+
+        /* Overlay para mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
         }
 
         .sidebar .profile {
@@ -335,16 +395,44 @@ $database_foto->closeConnection();
         .main-content {
             margin-left: 250px;
             padding: 20px;
+            transition: margin-left 0.3s ease-in-out;
         }
 
         @media (max-width: 992px) {
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
+            .menu-toggle {
+                display: block;
             }
+            
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
             .main-content {
                 margin-left: 0;
+            }
+            
+            .sidebar-overlay.active {
+                display: block;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 280px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 15px 10px;
+            }
+            
+            .main-container {
+                padding: 1rem;
             }
         }
 
@@ -663,6 +751,52 @@ $database_foto->closeConnection();
 </head>
 <body>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Menu Hamburguer Functionality
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+            if (sidebarOverlay) {
+                sidebarOverlay.classList.toggle('active');
+            }
+        });
+        
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+        }
+        
+        // Fechar menu ao clicar em um link (mobile)
+        const sidebarLinks = sidebar.querySelectorAll('.list-group-item');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 992) {
+                    sidebar.classList.remove('active');
+                    if (sidebarOverlay) {
+                        sidebarOverlay.classList.remove('active');
+                    }
+                }
+            });
+        });
+    }
+});
+</script>
+
+    <!-- Menu Hamburguer -->
+    <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Overlay para mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container d-flex justify-content-between align-items-center">
             <div></div>
@@ -673,12 +807,15 @@ $database_foto->closeConnection();
                 <a href="editar_perfil.php" class="settings-icon">
                     <i class="fas fa-cog fa-lg"></i>
                 </a>
+                <a href="logout.php" class="logout-icon" title="Sair">
+                    <i class="fas fa-sign-out-alt fa-lg"></i>
+                </a>
             </div>
         </div>
     </nav>
 
     <!-- SIDEBAR -->
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
         <div class="profile">
             <?php if ($foto_admin): ?>
                 <div class="profile-avatar-sidebar">
@@ -686,7 +823,7 @@ $database_foto->closeConnection();
                 </div>
             <?php else: ?>
                 <div class="profile-avatar-sidebar">
-                    <i class="fas fa-user-circle"></i>
+                    <i class="fa-solid fa-user" style="color: var(--amarelo-detalhe); font-size: 3.5rem;"></i>
                 </div>
             <?php endif; ?>
             <h5><?php echo htmlspecialchars($_SESSION['nome_admin']); ?></h5>
@@ -698,7 +835,7 @@ $database_foto->closeConnection();
                 <i class="fas fa-plus-circle"></i> Adicionar Caminho
             </a>
             <a href="pagina_adicionar_idiomas.php" class="list-group-item">
-                <i class="fas fa-globe"></i> Gerenciar Idiomas
+                <i class="fas fa-language"></i> Gerenciar Idiomas
             </a>
             <a href="gerenciar_teorias.php" class="list-group-item active">
                 <i class="fas fa-book-open"></i> Gerenciar Teorias
@@ -711,9 +848,6 @@ $database_foto->closeConnection();
             </a>
             <a href="estatisticas_usuarios.php" class="list-group-item">
                 <i class="fas fa-chart-bar"></i> Estatísticas
-            </a>
-            <a href="logout.php" class="list-group-item mt-auto">
-                <i class="fas fa-sign-out-alt"></i> Sair
             </a>
         </div>
     </div>

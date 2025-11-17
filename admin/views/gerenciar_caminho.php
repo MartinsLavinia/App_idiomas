@@ -77,14 +77,823 @@ $database->closeConnection();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciar Caminhos - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="gerenciamento.css" rel="stylesheet">
-   <link rel="icon" type="image/png" href="../../imagens/mini-esquilo.png">
+    <link rel="icon" type="image/png" href="../../imagens/mini-esquilo.png">
+    <style>
+    :root {
+        --roxo-principal: #6a0dad;
+        --roxo-escuro: #4c087c;
+        --amarelo-detalhe: #ffd700;
+        --amarelo-botao: #ffd700;
+        --amarelo-hover: #e7c500;
+        --branco: #ffffff;
+        --preto-texto: #212529;
+        --cinza-claro: #f8f9fa;
+        --cinza-medio: #dee2e6;
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: var(--cinza-claro);
+        color: var(--preto-texto);
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; } to { opacity: 1; }
+    }
+
+    .table-container {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        border: 2px solid rgba(106, 13, 173, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .card-header h5 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: white;
+    }
+
+    .card-header h5 i {
+        color: var(--amarelo-detalhe);
+    }
+
+    /* Cartões de Estatísticas */
+    .stats-card {
+        background: rgba(255, 255, 255, 0.95) !important;
+        color: var(--preto-texto);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        border: 2px solid rgba(106, 13, 173, 0.1);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        animation: statsCardAnimation 0.8s ease-out;
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+    }
+
+    @keyframes statsCardAnimation {
+        from {
+            opacity: 0;
+            transform: translateY(30px) rotateX(-10deg);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) rotateX(0);
+        }
+    }
+
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(106, 13, 173, 0.1), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .stats-card:hover::before {
+        left: 100%;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-8px) scale(1.03);
+        box-shadow: 0 15px 30px rgba(106, 13, 173, 0.25);
+        border-color: rgba(106, 13, 173, 0.3);
+    }
+
+    .stats-card h3 {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: var(--roxo-principal);
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .stats-card p {
+        margin-bottom: 0;
+        opacity: 0.9;
+        font-size: 1.1rem;
+        color: var(--preto-texto);
+    }
+
+    .stats-card i {
+        font-size: 2rem;
+        color: var(--amarelo-detalhe);
+        margin-bottom: 1rem;
+    }
+
+    /* Animações adicionais para stats-card */
+    .stats-card:nth-child(1) { animation-delay: 0.1s; }
+    .stats-card:nth-child(2) { animation-delay: 0.2s; }
+    .stats-card:nth-child(3) { animation-delay: 0.3s; }
+    .stats-card:nth-child(4) { animation-delay: 0.4s; }
+
+    /* Barra de Navegação */
+    .navbar {
+        background-color: transparent !important;
+        border-bottom: 3px solid var(--amarelo-detalhe);
+        box-shadow: 0 4px 15px rgba(255, 238, 0, 0.38);
+    }
+
+    .navbar-brand {
+        margin-left: auto;
+        margin-right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        width: 100%;
+    }
+
+    .navbar-brand .logo-header {
+        height: 70px;
+        width: auto;
+        display: block;
+    }
+
+    .btn-outline-light {
+        color: var(--amarelo-detalhe);
+        border-color: var(--amarelo-detalhe);
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-warning:hover {
+        background-color: var(--amarelo-detalhe);
+        border: 0 4px 8px rgba(235, 183, 14, 0.77);
+    }
+
+    /* Menu Lateral */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 250px;
+        height: 100%;
+        background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+        color: var(--branco);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding-top: 20px;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .sidebar .profile {
+        text-align: center;
+        margin-bottom: 30px;
+        padding: 0 15px;
+    }
+
+    .profile-avatar-sidebar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        border: 3px solid var(--amarelo-detalhe);
+        background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .profile-avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .profile-avatar-sidebar:has(.profile-avatar-img) i {
+        display: none;
+    }
+
+    .profile-avatar-sidebar i {
+        font-size: 3.5rem;
+        color: var(--amarelo-detalhe);
+    }
+
+    .sidebar .profile h5 {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: var(--branco);
+        font-size: 1.1rem;
+        word-wrap: break-word;
+        max-width: 200px;
+        text-align: center;
+        line-height: 1.3;
+    }
+
+    .sidebar .profile small {
+        color: var(--cinza-claro);
+        font-size: 0.9rem;
+        word-wrap: break-word;
+        max-width: 200px;
+        text-align: center;
+        line-height: 1.2;
+        margin-top: 5px;
+    }
+
+    .sidebar .list-group {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .sidebar .list-group-item.sair {
+        background-color: transparent;
+        color: var(--branco);
+        border: none;
+        padding: 15px 25px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 40px !important;
+    }
+
+    .sidebar .list-group-item {
+        background-color: transparent;
+        color: var(--branco);
+        border: none;
+        padding: 15px 25px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .sidebar .list-group-item:hover {
+        background-color: var(--roxo-escuro);
+        cursor: pointer;
+    }
+
+    .sidebar .list-group-item.active {
+        background-color: var(--roxo-escuro) !important;
+        color: var(--branco) !important;
+        font-weight: 600;
+        border-left: 4px solid var(--amarelo-detalhe);
+    }
+
+    .sidebar .list-group-item i {
+        color: var(--amarelo-detalhe);
+    }
+
+    .main-content {
+        margin-left: 250px;
+        padding: 20px;
+        transition: margin-left 0.3s ease-in-out;
+    }
+
+    /* Menu Hamburguer */
+    .menu-toggle {
+        display: none;
+        background: none;
+        border: none;
+        color: var(--roxo-principal) !important;
+        font-size: 1.5rem;
+        cursor: pointer;
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 1100;
+        transition: all 0.3s ease;
+    }
+
+    .menu-toggle:hover {
+        color: var(--roxo-escuro) !important;
+        transform: scale(1.1);
+    }
+
+    /* CORREÇÃO: Quando a sidebar está ativa */
+    body:has(.sidebar.active) .menu-toggle,
+    .sidebar.active ~ .menu-toggle {
+        color: var(--amarelo-detalhe) !important;
+    }
+
+    body:has(.sidebar.active) .menu-toggle:hover,
+    .sidebar.active ~ .menu-toggle:hover {
+        color: var(--amarelo-hover) !important;
+    }
+
+    /* Overlay para mobile */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+
+    @media (max-width: 992px) {
+        .menu-toggle {
+            display: block;
+        }
+        
+        .sidebar {
+            transform: translateX(-100%);
+        }
+        
+        .sidebar.active {
+            transform: translateX(0);
+        }
+        
+        .main-content {
+            margin-left: 0;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 280px;
+        }
+        
+        .stats-card h3 {
+            font-size: 2rem;
+        }
+        
+        .table-responsive {
+            font-size: 0.9rem;
+        }
+        
+        .btn-sm {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .main-content {
+            padding: 15px 10px;
+        }
+        
+        .stats-card {
+            padding: 15px;
+        }
+        
+        .stats-card h3 {
+            font-size: 1.8rem;
+        }
+        
+        .card-body {
+            padding: 1rem;
+        }
+        
+        .table-container {
+            padding: 15px;
+        }
+    }
+
+    .btn-warning {
+        background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
+        color: var(--preto-texto);
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        min-width: 180px;
+        border: none;
+    }
+
+    .btn-warning:hover {
+        background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(255, 217, 0, 0.66);
+        color: var(--preto-texto);
+    }
+
+    .card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3) !important;
+        color: var(--branco);
+        border-radius: 1rem 1rem 0 0 !important;
+        padding: 1.5rem;
+    }
+
+    .card-header h2 {
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+
+    /* Botão Editar */
+    .btn-primary {
+        background: transparent;
+        color: var(--roxo-principal);
+        border: 2px solid #6a0dad;
+        font-weight: 600;
+        padding: 8px 12px;
+        border-radius: 6px;
+        position: relative;
+        transition: background 0.12s ease, color 0.12s ease, transform 0.12s ease;
+    }
+
+    .btn-primary:hover {
+        background: rgba(106, 13, 173, 0.06);
+        color: var(--roxo-principal);
+        border: 2px solid #6a0dad;
+        transform: translateY(-1px);
+    }
+
+    /* Botão Eliminar */
+    .btn-danger {
+        background: rgba(220, 53, 69, 0.06);
+        color: #8a1820;
+        border: 2px solid #c82333;
+        box-sizing: border-box;
+        font-weight: 700;
+        padding: 6px 12px;
+        border-radius: 999px;
+        transition: transform 0.14s ease, box-shadow 0.14s ease, background 0.12s ease;
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.04);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-danger:hover {
+        background: rgba(220, 53, 69, 0.12);
+        color: #7a151b;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(220, 53, 69, 0.08);
+    }
+
+    /* Botão Info */
+    .btn-info {
+        background: transparent;
+        color: #0dcaf0;
+        border: 2px solid #0dcaf0;
+        font-weight: 600;
+        padding: 8px 12px;
+        border-radius: 6px;
+        transition: background 0.12s ease, color 0.12s ease, transform 0.12s ease;
+    }
+
+    .btn-info:hover {
+        background: rgba(13, 202, 240, 0.06);
+        color: #0dcaf0;
+        border: 2px solid #0dcaf0;
+        transform: translateY(-1px);
+    }
+
+    .table {
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+        background-color: var(--branco);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        margin-bottom: 0;
+    }
+
+    .table thead th {
+        background-color: var(--roxo-principal);
+        color: var(--branco);
+        border: none;
+        font-weight: 600;
+        padding: 15px;
+        text-align: center;
+    }
+
+    .table tbody td {
+        padding: 12px 15px;
+        border-bottom: 1px solid var(--cinza-medio);
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(106, 13, 173, 0.1);
+    }
+
+    .alert {
+        border-radius: 10px;
+        border: none;
+        padding: 15px 20px;
+        font-weight: 500;
+    }
+
+    .alert-success {
+        background-color: rgba(40, 167, 69, 0.15);
+        color: #155724;
+        border-left: 4px solid #28a745;
+    }
+
+    .badge {
+        font-weight: 600;
+        padding: 0.5em 1em;
+        border-radius: 50px;
+    }
+
+    .badge.bg-primary {
+        background-color: var(--roxo-principal) !important;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid rgba(106, 13, 173, 0.2);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .teorias-table {
+        background: var(--branco);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 5px 20px #ab4aef63;
+        border: none;
+    }
+
+    .empty-state {
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .empty-state i {
+        font-size: 2.5rem;
+        color: var(--cinza-medio);
+    }
+
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        border-radius: 0.3rem;
+    }
+
+    /* Overlay para menu mobile */
+    .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        display: none;
+    }
+
+    .sidebar-overlay.show {
+        display: block;
+    }
+
+    @media (max-width: 576px) {
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .action-buttons {
+            width: 100%;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .table-responsive {
+            font-size: 0.9rem;
+        }
+
+        .btn-group-sm .btn {
+            padding: 0.2rem 0.4rem;
+            font-size: 0.8rem;
+        }
+
+        .teorias-table {
+            padding: 1rem;
+        }
+    }
+
+    @media (max-width: 360px) {
+        .table-responsive {
+            font-size: 0.8rem;
+        }
+        
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        .sidebar .list-group-item {
+            padding: 12px 15px;
+            font-size: 0.9rem;
+        }
+    }
+
+    /* ESTILO PARA O BOTÃO LOGOUT */
+    .logout-icon {
+        color: var(--roxo-principal) !important;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        font-size: 1.2rem;
+    }
+
+    .logout-icon:hover {
+        color: var(--roxo-escuro) !important;
+        transform: translateY(-2px);
+    }
+
+    /* Estilo para a foto do perfil no header */
+    .profile-icon-header {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 2px solid var(--amarelo-detalhe);
+        object-fit: cover;
+        transition: all 0.3s ease;
+    }
+
+    .profile-icon-header:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+
+    .profile-icon-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+        border: 2px solid var(--amarelo-detalhe);
+        overflow: hidden;
+    }
+
+    .profile-icon-container i {
+        color: var(--amarelo-detalhe);
+        font-size: 1.2rem;
+    }
+
+    .settings-icon {
+        color: var(--roxo-principal) !important;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        font-size: 1.2rem;
+        padding: 8px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .settings-icon:hover {
+        color: var(--roxo-escuro) !important;
+        transform: rotate(90deg);
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Modal de Confirmação Simples */
+    #confirmDeleteModal .modal-content {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 5px 20px rgba(106, 13, 173, 0.2);
+    }
+
+    #confirmDeleteModal .modal-header {
+        background: var(--roxo-principal);
+        color: var(--branco);
+        border-bottom: none;
+        padding: 1.5rem;
+    }
+
+    #confirmDeleteModal .btn-close {
+        filter: brightness(0) invert(1);
+        opacity: 1;
+    }
+
+    #confirmDeleteModal .modal-title {
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    #confirmDeleteModal .modal-title::before {
+        content: '⚠️';
+        font-size: 1.2rem;
+    }
+
+    #confirmDeleteModal .modal-body {
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    #confirmDeleteModal .modal-body .text-danger {
+        background: rgba(255, 215, 0, 0.1);
+        border-left: 3px solid var(--amarelo-detalhe);
+        padding: 0.75rem;
+        border-radius: 5px;
+        color: var(--roxo-escuro);
+        font-weight: 600;
+    }
+
+    #confirmDeleteModal .modal-footer {
+        border-top: 1px solid var(--cinza-medio);
+        padding: 1rem 1.5rem;
+    }
+
+    #confirmDeleteModal .btn-secondary {
+        background: var(--cinza-medio);
+        border: none;
+        color: var(--preto-texto);
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    #confirmDeleteModal .btn-secondary:hover {
+        background: #6c757d;
+        color: var(--branco);
+    }
+
+    #confirmDeleteModal .btn-danger {
+        background: #b02a37;
+        border: none;
+        color: var(--branco);
+        font-weight: 600;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+    }
+
+    #confirmDeleteModal .btn-danger:hover {
+        background: #a02332;
+        color: var(--branco);
+    }
+
+    /* Botão Pesquisar */
+    .btn-outline-warning {
+        background: transparent;
+        color: var(--preto-texto);
+        border: 2px solid var(--amarelo-detalhe);
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-warning:hover {
+        background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
+        color: var(--preto-texto);
+        border-color: var(--amarelo-botao);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(255, 217, 0, 0.4);
+    }
+
+    /* Botão Ver Blocos */
+    .btn-info {
+        background: transparent;
+        color: #1e3a8a;
+        border: 2px solid #1e3a8a;
+        font-weight: 600;
+        padding: 8px 12px;
+        border-radius: 6px;
+        transition: background 0.12s ease, color 0.12s ease, transform 0.12s ease;
+    }
+
+    .btn-info:hover {
+        background: rgba(30, 58, 138, 0.06);
+        color: #1e3a8a;
+        border: 2px solid #1e3a8a;
+        transform: translateY(-1px);
+    }
+    </style>
 
 </head>
 
@@ -92,45 +901,6 @@ $database->closeConnection();
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const pesquisarCard = document.querySelector('.card-header h5');
-    
-    if (pesquisarCard) {
-        // Criar elemento para o efeito de brilho
-        const brilho = document.createElement('div');
-        brilho.style.position = 'absolute';
-        brilho.style.top = '0';
-        brilho.style.left = '-100%';
-        brilho.style.width = '50%';
-        brilho.style.height = '100%';
-        brilho.style.background = 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)';
-        brilho.style.transform = 'skewX(-20deg)';
-        brilho.style.transition = 'none';
-        brilho.style.pointerEvents = 'none';
-        
-        // Adicionar brilho ao card header
-        pesquisarCard.parentElement.style.position = 'relative';
-        pesquisarCard.parentElement.style.overflow = 'hidden';
-        pesquisarCard.parentElement.appendChild(brilho);
-        
-        // Função para ativar o brilho
-        function ativarBrilho() {
-            brilho.style.transition = 'left 0.8s ease-in-out';
-            brilho.style.left = '150%';
-            
-            // Reset após animação
-            setTimeout(() => {
-                brilho.style.transition = 'none';
-                brilho.style.left = '-100%';
-            }, 800);
-        }
-        
-        // Ativar brilho a cada 3 segundos
-        setInterval(ativarBrilho, 3000);
-        
-        // Ativar também ao passar o mouse
-        pesquisarCard.parentElement.addEventListener('mouseenter', ativarBrilho);
-    }
-    
     // Menu Hamburguer Functionality
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.getElementById('sidebar');
@@ -176,20 +946,20 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container-fluid d-flex justify-content-end align-items-center">
-        <div class="d-flex align-items-center" style="gap: 24px;">
-            <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
-                <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
-            </a>
-            <a href="editar_perfil.php" class="settings-icon">
-                <i class="fas fa-cog fa-lg"></i>
-            </a>
-            <a href="logout.php" class="logout-icon" title="Sair">
-                <i class="fas fa-sign-out-alt fa-lg"></i>
-            </a>
+        <div class="container-fluid d-flex justify-content-end align-items-center">
+            <div class="d-flex align-items-center" style="gap: 24px;">
+                <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
+                    <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
+                </a>
+                <a href="editar_perfil.php" class="settings-icon">
+                    <i class="fas fa-cog fa-lg"></i>
+                </a>
+                <a href="logout.php" class="logout-icon" title="Sair">
+                    <i class="fas fa-sign-out-alt fa-lg"></i>
+                </a>
+            </div>
         </div>
-    </div>
-</nav>
+    </nav>
 
 <div class="sidebar" id="sidebar">
     <div class="profile">
@@ -228,45 +998,14 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 </div>
 
-    <div class="main-content" id="mainContent">
+    <div class="main-content">
         <div class="container-fluid mt-4">
-
-            <div class="row mb-4" style="display: inline-flex;flex-flow: row nowrap;align-items: flex-start;justify-content: flex-start; width:80%">
-                        <h2 class="mb-4">Gerenciar Caminhos de Aprendizagem</h2>
-                        <a href="#" class="btn btn-warning mb-4" data-bs-toggle="modal" data-bs-target="#addCaminhoModal" style="width: 220px; padding:15px">
-                            <i class="fas fa-plus-circle me-2"></i>Adicionar Caminho
-                        </a>
-            </div>
-
-            <!-- Estatísticas - MANTIDAS COMO ESTAVAM ANTES (EMBAIXO) -->
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="stats-card">
-                        <i class="fas fa-road"></i>
-                        <h3><?= count($caminhos) ?></h3>
-                        <p>Total de Caminhos</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stats-card">
-                        <i class="fas fa-cubes"></i>
-                        <h3><?= count($unidades_db) ?></h3>
-                        <p>Total de Unidades</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stats-card">
-                        <i class="fas fa-globe"></i>
-                        <h3><?= count($idiomas_db) ?></h3>
-                        <p>Total de Idiomas</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stats-card">
-                        <i class="fas fa-tasks"></i>
-                        <h3><?= isset($quizzes_concluidos) ? $quizzes_concluidos : 0 ?></h3>
-                        <p>Quizzes Concluídos</p>
-                    </div>
+            <div class="page-header flex-column flex-sm-row">
+                <h2 class="mb-2 mb-sm-0"><i class="fas fa-road"></i> Gerenciar Caminhos de Aprendizagem</h2>
+                <div class="action-buttons">
+                    <a href="#" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#addCaminhoModal">
+                        <i class="fas fa-plus-circle me-2"></i>Adicionar Caminho
+                    </a>
                 </div>
             </div>
 
@@ -287,18 +1026,51 @@ document.addEventListener('DOMContentLoaded', function() {
             <?php unset($_SESSION['error']); ?>
             <?php endif; ?>
 
+            <!-- Estatísticas Responsivas -->
+            <div class="row mb-4">
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="stats-card">
+                        <i class="fas fa-road"></i>
+                        <h3><?= count($caminhos) ?></h3>
+                        <p>Total de Caminhos</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="stats-card">
+                        <i class="fas fa-cubes"></i>
+                        <h3><?= count($unidades_db) ?></h3>
+                        <p>Total de Unidades</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="stats-card">
+                        <i class="fas fa-globe"></i>
+                        <h3><?= count($idiomas_db) ?></h3>
+                        <p>Total de Idiomas</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="stats-card">
+                        <i class="fas fa-tasks"></i>
+                        <h3><?= isset($quizzes_concluidos) ? $quizzes_concluidos : 0 ?></h3>
+                        <p>Quizzes Concluídos</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card de Pesquisa Responsivo -->
             <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="mb-0">
                         <i class="fas fa-search me-2"></i>Pesquisar Caminhos
                     </h5>
                 </div>
-                <div class="card-body" style="display: inline-flex; align-items: flex-start; justify-content: flex-start; align-content: center; gap: 15px;">
-                    <form action="" method="GET" style="display: inline-flex;width: fit-content; flex-flow: row nowrap;align-items: flex-start;justify-content: flex-start; gap:15px">
-                        <div class="row-cols-md-auto g-3 align-items-center" style="display: inline-flex;width: fit-content; flex-flow: row nowrap;align-items: flex-start;justify-content: flex-start; gap:5px">
-                            <div class="row-cols-md-auto" style="display: inline-flex;width: fit-content; flex-flow: row nowrap;align-items: flex-start;justify-content: flex-start; gap:5px">
-                                <label for="idioma_busca" class="col-form-label">Idioma:</label>
-                                <select id="idioma_busca" name="idioma" class="form-select" style="width:fit-content;padding: 10px 35px;">
+                <div class="card-body">
+                    <form action="" method="GET">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-4 col-sm-6">
+                                <label for="idioma_busca" class="form-label">Idioma:</label>
+                                <select id="idioma_busca" name="idioma" class="form-select">
                                     <option value="">Todos os Idiomas</option>
                                     <?php foreach ($idiomas_db as $idioma): ?>
                                     <option value="<?php echo htmlspecialchars($idioma['idioma']); ?>"
@@ -308,9 +1080,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <?php endforeach; ?>
                                 </select>
                             </div>
-                            <div class="row-cols-md-auto" style="display: inline-flex;width: fit-content; flex-flow: row nowrap;align-items: flex-start;justify-content: flex-start; gap:5px">
-                                <label for="nivel_busca" class="col-form-label">Nível:</label>
-                                <select id="nivel_busca" name="nivel" class="form-select" style="width:fit-content;padding: 10px 35px;">
+                            <div class="col-md-4 col-sm-6">
+                                <label for="nivel_busca" class="form-label">Nível:</label>
+                                <select id="nivel_busca" name="nivel" class="form-select">
                                     <option value="">Todos os Níveis</option>
                                     <?php foreach ($niveis_db as $nivel): ?>
                                     <option value="<?php echo htmlspecialchars($nivel); ?>"
@@ -320,63 +1092,70 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <?php endforeach; ?>
                                 </select>
                             </div>
-                           <div class="col-md-auto d-flex align-items-end">
-    <button type="submit" class="btn btn-outline-warning" style="margin: auto; color: black !important;">
-        <i class="fas fa-search me-2" style="color: black;"></i>Pesquisar
-    </button>
-</div>
+                            <div class="col-md-4 col-sm-12">
+                                <button type="submit" class="btn btn-outline-warning w-100">
+                                    <i class="fas fa-search me-2"></i>Pesquisar
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
             </div>
 
-            <div class="table-responsive">
-                <table class="table table-container table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Idioma</th>
-                            <th>Caminho</th>
-                            <th>Nível</th>
-                            <th style="width:30%">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (!empty($caminhos)): ?>
-                        <?php foreach ($caminhos as $caminho): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($caminho['id']); ?></td>
-                            <td><?php echo htmlspecialchars($caminho['idioma']); ?></td>
-                            <td><?php echo htmlspecialchars($caminho['nome_caminho']); ?></td>
-                            <td><?php echo htmlspecialchars($caminho['nivel']); ?></td>
-                            <td class="btn-acoes">
-                                <a href="gerenciar_blocos.php?caminho_id=<?php echo htmlspecialchars($caminho['id']); ?>"
-                                    class="btn btn-sm btn-info btn-blocos">
-                                    <i class="fas fa-eye"></i> Ver Blocos
-                                </a>
-                                
-                                <a href="editar_caminho.php?id=<?php echo htmlspecialchars($caminho['id']); ?>"
-                                    class="btn btn-sm btn-primary btn-editar">
-                                    <i class="fas fa-pen"></i> Editar
-                                </a>
-                                
-                                <button type="button" class="btn btn-sm btn-danger delete-btn btn-eliminar" data-bs-toggle="modal"
-                                    data-bs-target="#confirmDeleteModal"
-                                    data-id="<?php echo htmlspecialchars($caminho['id']); ?>"
-                                    data-nome="<?php echo htmlspecialchars($caminho['nome_caminho']); ?>"
-                                    data-tipo="caminho" data-action="eliminar_caminho.php">
-                                    <i class="fas fa-trash"></i> Eliminar
-                                </button>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                        <?php else: ?>
-                        <tr>
-                            <td colspan="5" class="text-center">Nenhum caminho de aprendizado encontrado.</td>
-                        </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+            <!-- Tabela Responsiva -->
+            <div class="teorias-table">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Idioma</th>
+                                <th>Caminho</th>
+                                <th>Nível</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($caminhos)): ?>
+                            <?php foreach ($caminhos as $caminho): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($caminho['id']); ?></td>
+                                <td><?php echo htmlspecialchars($caminho['idioma']); ?></td>
+                                <td><?php echo htmlspecialchars($caminho['nome_caminho']); ?></td>
+                                <td>
+                                    <span class="badge bg-primary"><?php echo htmlspecialchars($caminho['nivel']); ?></span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="gerenciar_blocos.php?caminho_id=<?php echo htmlspecialchars($caminho['id']); ?>" class="btn btn-info">
+                                            <i class="fas fa-eye"></i> Ver Blocos
+                                        </a>
+                                        <a href="editar_caminho.php?id=<?php echo htmlspecialchars($caminho['id']); ?>" class="btn btn-primary">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </a>
+                                        <button type="button" class="btn btn-danger delete-btn" 
+                                                data-bs-toggle="modal" data-bs-target="#confirmDeleteModal"
+                                                data-id="<?php echo htmlspecialchars($caminho['id']); ?>"
+                                                data-nome="<?php echo htmlspecialchars($caminho['nome_caminho']); ?>">
+                                            <i class="fas fa-trash"></i> Excluir
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                            <?php else: ?>
+                            <tr>
+                                <td colspan="5" class="text-center py-4">
+                                    <div class="empty-state">
+                                        <i class="fas fa-road text-muted mb-3"></i>
+                                        <p class="text-muted mb-0">Nenhum caminho de aprendizado encontrado.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Modal para Adicionar Caminho -->
@@ -507,102 +1286,60 @@ document.addEventListener('DOMContentLoaded', function() {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
-        // Auto-dismiss alerts após 5 segundos
         document.addEventListener('DOMContentLoaded', function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(alert => {
-                setTimeout(() => {
-                    const bsAlert = new bootstrap.Alert(alert);
-                    bsAlert.close();
-                }, 5000);
+            // Auto-dismiss alerts
+            document.querySelectorAll('.alert').forEach(alert => {
+                setTimeout(() => new bootstrap.Alert(alert).close(), 5000);
             });
-        });
-    </script>
-    <script>
-        // Script para o modal de confirmação de exclusão
-        document.addEventListener('DOMContentLoaded', function() {
-            const deleteButtons = document.querySelectorAll('.delete-btn');
+
+            // Modal de confirmação
             const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
             const itemNome = document.getElementById('itemNome');
-
-            deleteButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const id = this.getAttribute('data-id');
-                    const nome = this.getAttribute('data-nome');
-                    const tipo = this.getAttribute('data-tipo');
-                    const action = this.getAttribute('data-action');
-
-                    itemNome.textContent = nome;
-                    confirmDeleteBtn.href = `${action}?id=${id}`;
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    itemNome.textContent = `"${this.dataset.nome}"`;
+                    confirmDeleteBtn.href = `eliminar_caminho.php?id=${this.dataset.id}`;
                 });
             });
 
-            // Script para adicionar caminho via AJAX
-            const formAddCaminho = document.getElementById('formAddCaminho');
-            const btnAddCaminho = document.getElementById('btnAddCaminho');
-            const alertCaminho = document.getElementById('alertCaminho');
-
-            formAddCaminho.addEventListener('submit', function(e) {
-                e.preventDefault();
+            // AJAX form
+            const form = document.getElementById('formAddCaminho');
+            if (form) {
+                const btn = document.getElementById('btnAddCaminho');
+                const alert = document.getElementById('alertCaminho');
                 
-                const formData = new FormData(this);
-                const spinner = btnAddCaminho.querySelector('.spinner-border');
-                const btnText = btnAddCaminho.querySelector('span:not(.spinner-border)');
-                
-                // Mostrar loading
-                spinner.classList.remove('d-none');
-                btnAddCaminho.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Adicionando...';
-                btnAddCaminho.disabled = true;
-                alertCaminho.innerHTML = '';
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Adicionando...';
+                    btn.disabled = true;
+                    alert.innerHTML = '';
 
-                fetch('adicionar_caminho.php', {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: formData
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Erro na resposta do servidor');
+                    try {
+                        const response = await fetch('adicionar_caminho.php', {
+                            method: 'POST',
+                            headers: {'X-Requested-With': 'XMLHttpRequest'},
+                            body: new FormData(this)
+                        });
+                        
+                        const data = await response.json();
+                        const alertClass = data.success ? 'success' : 'danger';
+                        const icon = data.success ? 'check-circle' : 'exclamation-circle';
+                        
+                        alert.innerHTML = `<div class="alert alert-${alertClass} alert-dismissible fade show"><i class="fas fa-${icon}"></i> ${data.message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+                        
+                        if (data.success) {
+                            form.reset();
+                            setTimeout(() => location.reload(), 1500);
+                        }
+                    } catch (error) {
+                        alert.innerHTML = '<div class="alert alert-danger alert-dismissible fade show"><i class="fas fa-exclamation-circle"></i> Erro ao adicionar caminho.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+                    } finally {
+                        btn.innerHTML = 'Adicionar';
+                        btn.disabled = false;
                     }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        alertCaminho.innerHTML = `
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                <i class="fas fa-check-circle"></i> ${data.message}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        `;
-                        formAddCaminho.reset();
-                        setTimeout(() => {
-                            location.reload();
-                        }, 1500);
-                    } else {
-                        alertCaminho.innerHTML = `
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                <i class="fas fa-exclamation-circle"></i> ${data.message}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        `;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alertCaminho.innerHTML = `
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="fas fa-exclamation-circle"></i> Erro ao adicionar caminho. Tente novamente.
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    `;
-                })
-                .finally(() => {
-                    btnAddCaminho.innerHTML = 'Adicionar';
-                    btnAddCaminho.disabled = false;
                 });
-            });
+            }
         });
     </script>
 </body>
