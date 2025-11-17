@@ -823,6 +823,85 @@ $database->closeConnection();
     box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4);
 }
         
+    /* Modal de Confirmação */
+    #confirmModal .modal-content {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 5px 20px rgba(106, 13, 173, 0.2);
+    }
+
+    #confirmModal .modal-header {
+        background: var(--roxo-principal);
+        color: var(--branco);
+        border-bottom: none;
+        padding: 1.5rem;
+    }
+
+    #confirmModal .btn-close {
+        filter: brightness(0) invert(1);
+        opacity: 1;
+    }
+
+    #confirmModal .modal-title {
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    #confirmModal .modal-title::before {
+        content: '⚠️';
+        font-size: 1.2rem;
+    }
+
+    #confirmModal .modal-body {
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    #confirmModal .modal-body .text-danger {
+        background: rgba(255, 215, 0, 0.1);
+        border-left: 3px solid var(--amarelo-detalhe);
+        padding: 0.75rem;
+        border-radius: 5px;
+        color: var(--roxo-escuro);
+        font-weight: 600;
+    }
+
+    #confirmModal .modal-footer {
+        border-top: 1px solid var(--cinza-medio);
+        padding: 1rem 1.5rem;
+    }
+
+    #confirmModal .btn-secondary {
+        background: var(--cinza-medio);
+        border: none;
+        color: var(--preto-texto);
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    #confirmModal .btn-secondary:hover {
+        background: #6c757d;
+        color: var(--branco);
+    }
+
+    #confirmModal .btn-warning {
+        background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
+        border: none;
+        color: var(--preto-texto);
+        font-weight: 600;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+    }
+
+    #confirmModal .btn-warning:hover {
+        background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(255, 217, 0, 0.4);
+        color: var(--preto-texto);
+    }
     </style>
 </head>
 <body>
@@ -1084,8 +1163,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                                         onclick="loadUserDetails(<?php echo $usuario['id']; ?>)">
                                                     <i class="fas fa-eye"></i>
                                                 </button>
-                                                <button type="button" class="btn btn-outline-<?php echo $usuario['ativo'] ? 'warning' : 'success'; ?>"
-                                                        onclick="toggleUserStatus(<?php echo $usuario['id']; ?>, <?php echo $usuario['ativo'] ? 0 : 1; ?>)">
+                                                <button type="button" class="btn btn-outline-<?php echo $usuario['ativo'] ? 'warning' : 'success'; ?>" 
+                                                        onclick="toggleUserStatus(<?php echo $usuario['id']; ?>, <?php echo $usuario['ativo'] ? 0 : 1; ?>)"
+                                                        title="<?php echo $usuario['ativo'] ? 'Desativar' : 'Ativar'; ?> usuário">
                                                     <i class="fas fa-<?php echo $usuario['ativo'] ? 'ban' : 'check'; ?>"></i>
                                                 </button>
                                             </div>
@@ -1110,34 +1190,138 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <!-- Modal de Detalhes do Usuário -->
     <div class="modal fade" id="userDetailsModal" tabindex="-1" aria-labelledby="userDetailsModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="userDetailsModalLabel">Detalhes do Usuário</h5>
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-gradient-warning text-dark fw-bold">
+                    <h5 class="modal-title d-flex align-items-center" id="userDetailsModalLabel">
+                        <i class="fas fa-user-circle me-2"></i>
+                        Detalhes do Usuário
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body" id="userDetailsContent">
-                    <div class="text-center">
-                        <div class="spinner-border" role="status">
+                <div class="modal-body p-0" id="userDetailsContent">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
                             <span class="visually-hidden">Carregando...</span>
                         </div>
+                        <p class="mt-3 text-muted">Carregando informações do usuário...</p>
                     </div>
                 </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmModalLabel">Confirmar Ação</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="confirmMessage">Tem certeza que deseja realizar esta ação?</p>
+                    <p class="text-danger"><strong>Atenção:</strong> Esta ação alterará o status do usuário!</p>
+                </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-warning" id="confirmBtn">Confirmar</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <style>
+        :root {
+            --amarelo-detalhe: #ffd700;
+        }
+        
+        .bg-gradient-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
+        }
+        
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
+        }
+        
+        .avatar-lg {
+            width: 60px;
+            height: 60px;
+        }
+        
+        .object-fit-cover {
+            object-fit: cover;
+        }
+        
+        .progress-item:hover {
+            transform: translateY(-2px);
+            transition: transform 0.2s ease;
+        }
+        
+        .quiz-item:hover, .exercise-item:hover {
+            transform: translateY(-2px);
+            transition: transform 0.2s ease;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .card {
+            transition: all 0.2s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .progress-item, .quiz-item, .exercise-item {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .progress-item:hover, .quiz-item:hover, .exercise-item:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .info-card {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .info-card:hover {
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        }
+        
+        .progress-bar {
+            transition: width 0.6s ease;
+        }
+        
+        .badge {
+            font-weight: 500;
+        }
+        
+        .modal-xl {
+            max-width: 1200px;
+        }
+        
+        @media (max-width: 768px) {
+            .modal-xl {
+                max-width: 95%;
+                margin: 1rem;
+            }
+        }
+    </style>
     <script>
         function loadUserDetails(userId) {
             document.getElementById('userDetailsContent').innerHTML = `
-                <div class="text-center">
-                    <div class="spinner-border" role="status">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-warning" role="status" style="width: 3rem; height: 3rem;">
                         <span class="visually-hidden">Carregando...</span>
                     </div>
+                    <p class="mt-3 text-muted">Carregando informações do usuário...</p>
                 </div>
             `;
             
@@ -1145,10 +1329,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.text())
                 .then(data => {
                     document.getElementById('userDetailsContent').innerHTML = data;
+                    // Animar as barras de progresso
+                    setTimeout(() => {
+                        const progressBars = document.querySelectorAll('.progress-bar');
+                        progressBars.forEach(bar => {
+                            const width = bar.style.width;
+                            bar.style.width = '0%';
+                            setTimeout(() => {
+                                bar.style.width = width;
+                            }, 100);
+                        });
+                    }, 100);
                 })
                 .catch(error => {
                     document.getElementById('userDetailsContent').innerHTML = `
-                        <div class="alert alert-danger">
+                        <div class="alert alert-danger m-4">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
                             Erro ao carregar detalhes do usuário.
                         </div>
                     `;
@@ -1157,7 +1353,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
         function toggleUserStatus(userId, newStatus) {
             const action = newStatus ? 'ativar' : 'desativar';
-            if (confirm(`Tem certeza que deseja ${action} este usuário?`)) {
+            const message = `Tem certeza que deseja ${action} este usuário?`;
+            
+            document.getElementById('confirmMessage').textContent = message;
+            const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+            
+            document.getElementById('confirmBtn').onclick = function() {
+                confirmModal.hide();
+                
+                // Mostrar loading
+                const btn = this;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Processando...';
+                btn.disabled = true;
+                
                 fetch('toggle_user_status.php', {
                     method: 'POST',
                     headers: {
@@ -1171,13 +1380,37 @@ document.addEventListener('DOMContentLoaded', function() {
                         location.reload();
                     } else {
                         alert('Erro ao alterar status do usuário: ' + data.message);
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
                     }
                 })
                 .catch(error => {
                     alert('Erro ao processar solicitação.');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
                 });
-            }
+            };
+            
+            confirmModal.show();
         }
+        
+        // Melhorar a experiência do modal
+        document.getElementById('userDetailsModal').addEventListener('shown.bs.modal', function () {
+            // Focar no modal quando abrir
+            this.focus();
+        });
+        
+        document.getElementById('userDetailsModal').addEventListener('hidden.bs.modal', function () {
+            // Limpar conteúdo quando fechar
+            document.getElementById('userDetailsContent').innerHTML = `
+                <div class="text-center py-5">
+                    <div class="spinner-border text-warning" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Carregando...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Carregando informações do usuário...</p>
+                </div>
+            `;
+        });
     </script>
 </body>
 </html>

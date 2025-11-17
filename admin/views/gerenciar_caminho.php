@@ -893,6 +893,67 @@ $database->closeConnection();
         border: 2px solid #1e3a8a;
         transform: translateY(-1px);
     }
+    
+    /* Modal de Adicionar Caminho */
+    #addCaminhoModal .modal-content {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 5px 20px rgba(106, 13, 173, 0.2);
+    }
+    
+    #addCaminhoModal .modal-header {
+        background: var(--roxo-principal);
+        color: var(--branco);
+        border-bottom: none;
+        padding: 1.5rem;
+    }
+    
+    #addCaminhoModal .btn-close {
+        filter: brightness(0) invert(1);
+        opacity: 1;
+    }
+    
+    #addCaminhoModal .modal-title {
+        font-weight: 600;
+    }
+    
+    #addCaminhoModal .modal-body {
+        padding: 1.5rem;
+    }
+    
+    #addCaminhoModal .modal-footer {
+        border-top: 1px solid var(--cinza-medio);
+        padding: 1rem 1.5rem;
+    }
+    
+    #addCaminhoModal .btn-secondary {
+        background: var(--cinza-medio);
+        border: none;
+        color: var(--preto-texto);
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    #addCaminhoModal .btn-secondary:hover {
+        background: #6c757d;
+        color: var(--branco);
+    }
+    
+    #addCaminhoModal .btn-warning {
+        background: linear-gradient(135deg, var(--amarelo-botao) 0%, #f39c12 100%);
+        border: none;
+        color: var(--preto-texto);
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+    }
+    
+    #addCaminhoModal .btn-warning:hover {
+        background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao) 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(255, 217, 0, 0.4);
+        color: var(--preto-texto);
+    }
     </style>
 
 </head>
@@ -1209,7 +1270,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                                <button type="submit" class="btn btn-success" id="btnAddCaminho">
+                                <button type="submit" class="btn btn-warning" id="btnAddCaminho">
                                     <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                                     Adicionar
                                 </button>
