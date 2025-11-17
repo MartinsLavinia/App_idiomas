@@ -26,6 +26,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $database = new Database();
         $conn = $database->conn;
         
+        // Garantir charset UTF-8
+        $conn->set_charset("utf8mb4");
+        
         // Insere a nova teoria na tabela
         $sql_insert = "INSERT INTO teorias (titulo, nivel, ordem, conteudo, resumo, palavras_chave, data_criacao) VALUES (?, ?, ?, ?, ?, ?, NOW())";
         $stmt_insert = $conn->prepare($sql_insert);
@@ -720,6 +723,69 @@ $database_foto->closeConnection();
             color: var(--preto-texto);
         }
 
+        /* Estilos para Tópicos */
+        .topico-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .topico-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .topico-numero {
+            background: var(--roxo-principal);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .btn-remover-topico {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .topicos-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .topico-tag {
+            background: var(--roxo-principal);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
         /* Responsividade */
         @media (max-width: 768px) {
             .main-container {
@@ -946,11 +1012,42 @@ document.addEventListener('DOMContentLoaded', function() {
                                 Conteúdo da Teoria
                             </div>
 
-                            <!-- Campo Conteúdo -->
+                            <!-- Tipo de Conteúdo -->
                             <div class="mb-3">
+                                <label class="form-label">Tipo de Conteúdo</label>
+                                <div class="d-flex gap-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="tipo_conteudo" id="textoLivre" value="texto" checked onchange="alterarTipoConteudo()">
+                                        <label class="form-check-label" for="textoLivre">
+                                            <i class="fas fa-align-left me-2"></i>Texto Livre
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="tipo_conteudo" id="topicos" value="topicos" onchange="alterarTipoConteudo()">
+                                        <label class="form-check-label" for="topicos">
+                                            <i class="fas fa-list me-2"></i>Tópicos
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Conteúdo Texto Livre -->
+                            <div id="conteudoTexto" class="mb-3">
                                 <label for="conteudo" class="form-label required-field">Conteúdo Completo</label>
-                                <textarea class="form-control" id="conteudo" name="conteudo" rows="15" required><?php echo htmlspecialchars($conteudo ?? ''); ?></textarea>
-                                <div class="form-text">Conteúdo completo da teoria. Você pode usar HTML para formatação.</div>
+                                <textarea class="form-control" id="conteudo" name="conteudo" rows="15"><?php echo htmlspecialchars($conteudo ?? ''); ?></textarea>
+                                <div class="form-text">Conteúdo completo da teoria.</div>
+                            </div>
+
+                            <!-- Conteúdo Tópicos -->
+                            <div id="conteudoTopicos" class="mb-3" style="display: none;">
+                                <label class="form-label required-field">Tópicos da Teoria</label>
+                                <div id="listaTopicos">
+                                    <!-- Tópicos serão adicionados aqui -->
+                                </div>
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="adicionarTopico()">
+                                    <i class="fas fa-plus me-2"></i>Adicionar Tópico
+                                </button>
+                                <input type="hidden" id="topicosData" name="topicos_data">
                             </div>
                         </div>
 
@@ -972,6 +1069,88 @@ document.addEventListener('DOMContentLoaded', function() {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
+        let contadorTopicos = 0;
+        let topicos = [];
+
+        // Alterar tipo de conteúdo
+        function alterarTipoConteudo() {
+            const tipoTexto = document.getElementById('textoLivre').checked;
+            const conteudoTexto = document.getElementById('conteudoTexto');
+            const conteudoTopicos = document.getElementById('conteudoTopicos');
+            const campoConteudo = document.getElementById('conteudo');
+            
+            if (tipoTexto) {
+                conteudoTexto.style.display = 'block';
+                conteudoTopicos.style.display = 'none';
+                campoConteudo.required = true;
+            } else {
+                conteudoTexto.style.display = 'none';
+                conteudoTopicos.style.display = 'block';
+                campoConteudo.required = false;
+                if (topicos.length === 0) {
+                    adicionarTopico();
+                }
+            }
+        }
+
+        // Adicionar novo tópico
+        function adicionarTopico() {
+            contadorTopicos++;
+            const novoTopico = {
+                id: contadorTopicos,
+                titulo: '',
+                conteudo: ''
+            };
+            topicos.push(novoTopico);
+            renderizarTopicos();
+        }
+
+        // Remover tópico
+        function removerTopico(id) {
+            topicos = topicos.filter(t => t.id !== id);
+            renderizarTopicos();
+        }
+
+        // Renderizar lista de tópicos
+        function renderizarTopicos() {
+            const container = document.getElementById('listaTopicos');
+            container.innerHTML = '';
+            
+            topicos.forEach((topico, index) => {
+                const topicoHTML = `
+                    <div class="topico-item">
+                        <button type="button" class="btn-remover-topico" onclick="removerTopico(${topico.id})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <div class="topico-header">
+                            <div class="topico-numero">${index + 1}</div>
+                            <input type="text" class="form-control" placeholder="Título do tópico" 
+                                   value="${topico.titulo}" onchange="atualizarTopico(${topico.id}, 'titulo', this.value)">
+                        </div>
+                        <textarea class="form-control" rows="4" placeholder="Conteúdo do tópico" 
+                                  onchange="atualizarTopico(${topico.id}, 'conteudo', this.value)">${topico.conteudo}</textarea>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', topicoHTML);
+            });
+            
+            atualizarDadosTopicos();
+        }
+
+        // Atualizar dados do tópico
+        function atualizarTopico(id, campo, valor) {
+            const topico = topicos.find(t => t.id === id);
+            if (topico) {
+                topico[campo] = valor;
+                atualizarDadosTopicos();
+            }
+        }
+
+        // Atualizar campo hidden com dados dos tópicos
+        function atualizarDadosTopicos() {
+            document.getElementById('topicosData').value = JSON.stringify(topicos);
+        }
+
         // Preview do conteúdo
         function adicionarBotaoPreview() {
             const grupoBotoes = document.querySelector('.btn-group-actions');
@@ -986,7 +1165,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
         function mostrarPreview() {
             const titulo = document.getElementById('titulo').value || 'Sem título';
-            const conteudo = document.getElementById('conteudo').value;
+            let conteudo = '';
+            
+            if (document.getElementById('textoLivre').checked) {
+                conteudo = document.getElementById('conteudo').value;
+            } else {
+                // Gerar preview dos tópicos
+                conteudo = '<div class="topicos-preview">';
+                topicos.forEach((topico, index) => {
+                    if (topico.titulo || topico.conteudo) {
+                        conteudo += `
+                            <div class="mb-4">
+                                <h5><span class="topico-tag">${index + 1}</span> ${topico.titulo || 'Tópico sem título'}</h5>
+                                <p>${topico.conteudo || 'Sem conteúdo'}</p>
+                            </div>
+                        `;
+                    }
+                });
+                conteudo += '</div>';
+            }
             
             const previewHTML = `
                 <div class="modal fade" id="previewModal" tabindex="-1">
@@ -996,7 +1193,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <h5 class="modal-title">Preview: ${titulo}</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
-                            <div class="modal-body">
+                            <div class="modal-body" style="white-space: pre-wrap; line-height: 1.6;">
                                 ${conteudo || '<p class="text-muted">Nenhum conteúdo para visualizar.</p>'}
                             </div>
                             <div class="modal-footer">
@@ -1019,7 +1216,29 @@ document.addEventListener('DOMContentLoaded', function() {
             previewModal.show();
         }
 
-        document.addEventListener('DOMContentLoaded', adicionarBotaoPreview);
+        // Validar formulário antes do envio
+        function validarFormulario(event) {
+            if (document.getElementById('topicos').checked) {
+                if (topicos.length === 0 || !topicos.some(t => t.titulo.trim() || t.conteudo.trim())) {
+                    event.preventDefault();
+                    alert('Adicione pelo menos um tópico com conteúdo.');
+                    return false;
+                }
+                // Gerar conteúdo final dos tópicos
+                let conteudoFinal = '';
+                topicos.forEach((topico, index) => {
+                    if (topico.titulo.trim() || topico.conteudo.trim()) {
+                        conteudoFinal += `${index + 1}. ${topico.titulo}\n${topico.conteudo}\n\n`;
+                    }
+                });
+                document.getElementById('conteudo').value = conteudoFinal;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            adicionarBotaoPreview();
+            document.querySelector('form').addEventListener('submit', validarFormulario);
+        });
     </script>
 </body>
 </html>
