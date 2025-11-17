@@ -193,6 +193,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $token_valido) {
         .requirement.met {
             color: #28a745;
         }
+
+        /* Estilo para o botão de mostrar/ocultar senha */
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            padding: 4px;
+            z-index: 10;
+        }
         
         @media (max-width: 768px) {
             .container {
@@ -231,12 +245,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $token_valido) {
                             <label for="nova_senha" class="form-label">
                                 <strong>🔒 Nova Senha</strong>
                             </label>
-                            <div class="input-group">
+                            <div class="input-group" style="position: relative;">
                                 <input type="password" class="form-control" id="nova_senha" name="nova_senha" 
-                                    placeholder="Digite sua nova senha" required minlength="6" style="border-right: none;">
-                                <span class="input-group-text" onclick="togglePasswordVisibility('nova_senha')" style="cursor: pointer; border-left: none; background: transparent;">
-                                    <i class="fa fa-eye" id="toggleIcon_nova_senha"></i>
-                                </span>
+                                    placeholder="Digite sua nova senha" required minlength="6">
+                                <button type="button" class="password-toggle" onclick="togglePasswordVisibility('nova_senha', 'toggleIcon_nova_senha')">
+                                    <i class="fas fa-eye" id="toggleIcon_nova_senha"></i>
+                                </button>
                             </div>
                             
                             <div class="password-strength">
@@ -259,12 +273,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $token_valido) {
                             <label for="confirmar_senha" class="form-label">
                                 <strong>🔒 Confirmar Nova Senha</strong>
                             </label>
-                            <div class="input-group">
+                            <div class="input-group" style="position: relative;">
                                 <input type="password" class="form-control" id="confirmar_senha" name="confirmar_senha" 
-                                    placeholder="Digite novamente sua nova senha" required style="border-right: none;">
-                                <span class="input-group-text" onclick="togglePasswordVisibility('confirmar_senha')" style="cursor: pointer; border-left: none; background: transparent;">
-                                    <i class="fa fa-eye" id="toggleIcon_confirmar_senha"></i>
-                                </span>
+                                    placeholder="Digite novamente sua nova senha" required>
+                                <button type="button" class="password-toggle" onclick="togglePasswordVisibility('confirmar_senha', 'toggleIcon_confirmar_senha')">
+                                    <i class="fas fa-eye" id="toggleIcon_confirmar_senha"></i>
+                                </button>
                             </div>
                             <div class="form-text" id="passwordMatch"></div>
                         </div>
@@ -324,21 +338,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $token_valido) {
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-            window.togglePasswordVisibility = function(fieldId) {
-                const passwordField = document.getElementById(fieldId);
-                const toggleIcon = document.getElementById('toggleIcon_' + fieldId);
-                if (passwordField.type === 'password') {
-                    passwordField.type = 'text';
-                    toggleIcon.classList.remove('fa-eye');
-                    toggleIcon.classList.add('fa-eye-slash');
-                } else {
-                    passwordField.type = 'password';
-                    toggleIcon.classList.remove('fa-eye-slash');
-                    toggleIcon.classList.add('fa-eye');
-                }
-            }
+    function togglePasswordVisibility(fieldId, iconId) {
+        const passwordField = document.getElementById(fieldId);
+        const toggleIcon = document.getElementById(iconId);
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordField.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
 
+    document.addEventListener('DOMContentLoaded', function() {
         const novaSenha = document.getElementById('nova_senha');
             const confirmarSenha = document.getElementById('confirmar_senha');
             const btnRedefinir = document.getElementById('btnRedefinir');

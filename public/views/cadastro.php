@@ -113,12 +113,241 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro - Site de Idiomas</title>
-    <link href="cadastro-login.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* Variáveis de cor para o tema */
+        :root {
+            --purple-main: #581c87;
+            --purple-light: #7e22ce;
+            --pink-wave: #db2777;
+            --yellow-accent: #fcd34d;
+            --white-text: #fff;
+            --dark-text: #333;
+            --light-background: #8a4eb8;
+        }
+
+        body {
+            background: var(--purple-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+            color: var(--white-text);
+            position: relative;
+            overflow: hidden;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .background-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--purple-main) 0%, var(--purple-light) 100%);
+            z-index: 0;
+        }
+
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .waves {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 15vh;
+            min-height: 100px;
+            z-index: 2;
+        }
+
+        .parallax > use {
+            animation: move-wave 25s cubic-bezier(.55, .5, .45, .5) infinite;
+        }
+        .parallax > use:nth-child(1) {
+            animation-delay: -2s;
+            animation-duration: 7s;
+        }
+        .parallax > use:nth-child(2) {
+            animation-delay: -3s;
+            animation-duration: 10s;
+        }
+        .parallax > use:nth-child(3) {
+            animation-delay: -4s;
+            animation-duration: 13s;
+        }
+
+        @keyframes move-wave {
+            0% { transform: translate3d(-90px, 0, 0); }
+            100% { transform: translate3d(85px, 0, 0); }
+        }
+
+        .form-container {
+            position: relative;
+            z-index: 3;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            margin: auto;
+            transform: translateY(-40px);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-container h2 {
+            color: var(--white-text);
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .form-container p {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Estilo para o grupo de input */
+        .input-group {
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 12px 45px 12px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--white-text);
+            box-sizing: border-box;
+        }
+
+        .input-group input::placeholder,
+        .input-group select option:first-child {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: var(--yellow-accent);
+            box-shadow: 0 0 0 2px rgba(252, 211, 77, 0.4);
+        }
+
+        /* Estilo para o botão de mostrar/ocultar senha */
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            padding: 4px;
+            z-index: 10;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .password-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--yellow-accent);
+        }
+
+        .password-toggle i {
+            font-size: 1.1rem;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-login {
+            background: var(--yellow-accent);
+            color: var(--dark-text);
+            border: none;
+            border-radius: 12px;
+            padding: 12px;
+            width: 100%;
+            font-weight: bold;
+            transition: background 0.2s, transform 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-login:hover {
+            background: #fde047;
+            transform: translateY(-2px);
+        }
+
+        .links-container {
+            margin-top: 1rem;
+        }
+
+        .links-container a {
+            color: var(--yellow-accent);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .links-container a:hover {
+            color: #fde047;
+        }
+
+        .social-login {
+            margin-top: 1.5rem;
+        }
+
+        .social-login button {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--white-text);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 12px;
+            padding: 12px;
+            width: 100%;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: background 0.3s, transform 0.2s;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            cursor: pointer;
+        }
+
+        .social-login button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
         /* Estilos para o medidor de força da senha */
         .password-strength-meter {
-            margin-top: -0.5rem; /* Reduz o espaço após o campo de senha */
+            margin-top: -0.5rem;
             margin-bottom: 1rem;
         }
         .strength-bar {
@@ -140,9 +369,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             font-weight: 500;
         }
         /* Cores da barra */
-        .strength-weak { background-color: #dc3545; } /* Vermelho */
-        .strength-medium { background-color: #ffc107; } /* Amarelo */
-        .strength-strong { background-color: #198754; } /* Verde */
+        .strength-weak { background-color: #dc3545; }
+        .strength-medium { background-color: #ffc107; }
+        .strength-strong { background-color: #198754; }
         /* Cores do texto */
         .text-weak { color: #dc3545; }
         .text-medium { color: #ffc107; }
@@ -163,6 +392,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             text-align: center;
             font-weight: 500;
             display: none;
+        }
+
+        /* Estilo para o select */
+        .form-select {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            color: var(--white-text) !important;
+            border: 1px solid rgba(255, 255, 255, 0.4) !important;
+        }
+
+        .form-select:focus {
+            border-color: var(--yellow-accent) !important;
+            box-shadow: 0 0 0 2px rgba(252, 211, 77, 0.4) !important;
+        }
+
+        .form-select option {
+            background-color: var(--purple-main);
+            color: var(--white-text);
         }
     </style>
 </head>
@@ -185,13 +431,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 
     <div class="form-container">
-          <img src="../../imagens/logo-idiomas.png" alt="Logo" style="width: 150px; display: block; margin: 0 auto 20px auto;">
+        <img src="../../imagens/logo-idiomas.png" alt="Logo" style="width: 150px; display: block; margin: 0 auto 20px auto;">
         <h2>Crie sua conta</h2>
         <p>Preencha os dados para começar</p>
 
         <?php if (!empty($erro_cadastro)): ?>
-        <div
-            style="background-color: rgba(255, 0, 0, 0.2); border: 1px solid rgba(255, 0, 0, 0.4); color: white; padding: 10px; border-radius: 8px; margin-bottom: 1rem;">
+        <div style="background-color: rgba(255, 0, 0, 0.2); border: 1px solid rgba(255, 0, 0, 0.4); color: white; padding: 10px; border-radius: 8px; margin-bottom: 1rem;">
             <?php echo $erro_cadastro; ?>
         </div>
         <?php endif; ?>
@@ -204,10 +449,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <input type="email" id="email" name="email" placeholder="E-mail" required>
             </div>
             <div class="input-group">
-                <input type="password" id="senha" name="senha" placeholder="Senha" required style="border-right: none;">
-                 <span class="input-group-text" onclick="togglePasswordVisibility('senha')" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.4); border-left: none; cursor: pointer;">
-                    <i class="fa fa-eye" id="toggleIcon_senha"></i>
-                </span>
+                <input type="password" id="senha" name="senha" placeholder="Senha" required>
+                <button type="button" class="password-toggle" id="toggleSenha">
+                    <i class="fas fa-eye"></i>
+                </button>
             </div>
             <!-- Medidor de Força da Senha -->
             <div class="password-strength-meter">
@@ -223,7 +468,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
             
             <div class="input-group">
-                <label for="idioma" style="display:none;">Escolha seu primeiro idioma</label>
                 <select class="form-select" id="idioma" name="idioma" required>
                     <option value="" disabled selected>Selecione seu primeiro idioma</option>
                     <?php foreach ($idiomas as $idioma_item): ?>
@@ -238,9 +482,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </form>
 
         <div class="social-login">
-            <button onclick="window.location.href='google_oauth.php?action=register'">
-                <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google logo"> Cadastrar com
-                Google
+            <button type="button" onclick="window.location.href='google_oauth.php?action=register'">
+                <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google logo"> Cadastrar com Google
             </button>
         </div>
 
@@ -250,22 +493,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </p>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-    function togglePasswordVisibility(fieldId) {
-        const passwordField = document.getElementById(fieldId);
-        const toggleIcon = document.getElementById('toggleIcon_' + fieldId);
-        if (passwordField.type === 'password') {
-            passwordField.type = 'text';
-            toggleIcon.classList.remove('fa-eye');
-            toggleIcon.classList.add('fa-eye-slash');
-        } else {
-            passwordField.type = 'password';
-            toggleIcon.classList.remove('fa-eye-slash');
-            toggleIcon.classList.add('fa-eye');
-        }
-    }
-
     // --- LÓGICA DO MEDIDOR DE FORÇA DA SENHA ---
     document.addEventListener('DOMContentLoaded', function() {
         const senhaInput = document.getElementById('senha');
@@ -274,6 +504,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         const btnCadastrar = document.getElementById('btn-cadastrar');
         const formCadastro = document.getElementById('form-cadastro');
         const weakPasswordMessage = document.getElementById('weak-password-message');
+        const toggleSenha = document.getElementById('toggleSenha');
+        const toggleIcon = toggleSenha.querySelector('i');
+
+        // Função para mostrar/ocultar senha
+        function togglePasswordVisibility() {
+            if (senhaInput.type === 'password') {
+                senhaInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                senhaInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+        toggleSenha.addEventListener('click', togglePasswordVisibility);
 
         let forcaSenhaAtual = 0;
 
@@ -415,5 +661,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     </script>
 </body>
-
 </html>
