@@ -740,23 +740,21 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container d-flex justify-content-between align-items-center">
-            <div></div>
-            <div class="d-flex align-items-center" style="gap: 24px;">
-                <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
-                    <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
-                </a>
-                <a href="editar_perfil.php" class="settings-icon">
-                    <i class="fas fa-cog fa-lg"></i>
-                </a>
-                <a href="logout.php" class="logout-icon" title="Sair">
-                    <i class="fas fa-sign-out-alt fa-lg"></i>
-                </a>
-            </div>
+     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid d-flex justify-content-end align-items-center">
+        <div class="d-flex align-items-center" style="gap: 24px;">
+            <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
+                <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
+            </a>
+            <a href="editar_perfil.php" class="settings-icon">
+                <i class="fas fa-cog fa-lg"></i>
+            </a>
+            <a href="logout.php" class="logout-icon" title="Sair">
+                <i class="fas fa-sign-out-alt fa-lg"></i>
+            </a>
         </div>
-    </nav>
-
+    </div>
+</nav>
         <!-- Menu Hamburguer -->
         <button class="menu-toggle" id="menuToggle">
             <i class="fas fa-bars"></i>
