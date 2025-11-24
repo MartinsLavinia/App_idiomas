@@ -845,7 +845,28 @@ $database->closeConnection();
             }
         }
 
+        /* Estilos para feedback de progresso */
+        .progresso-atualizado {
+            animation: pulse-success 2s ease-in-out;
+        }
 
+        @keyframes pulse-success {
+            0% { background-color: transparent; }
+            50% { background-color: rgba(40, 167, 69, 0.1); }
+            100% { background-color: transparent; }
+        }
+
+        .bloco-card-concluido {
+            border-left: 4px solid #28a745 !important;
+        }
+
+        .bloco-card-disponivel {
+            border-left: 4px solid #007bff !important;
+        }
+
+        .bloco-card-bloqueado {
+            border-left: 4px solid #6c757d !important;
+        }
 
         /* Estilos para preview de flashcards */
         .flashcard-preview {
@@ -1033,8 +1054,6 @@ $database->closeConnection();
 
     <div class="main-content">
         <div class="container-fluid mt-4">
-        
-
         
         <div class="row justify-content-center">
             <div class="col-md-11">
@@ -1561,7 +1580,7 @@ $database->closeConnection();
             });
     }
     
-    // Exibir blocos de uma unidade com sistema de desbloqueio
+    // Exibir blocos de uma unidade com sistema de desbloqueio - VERSÃO CORRIGIDA
     function exibirBlocosUnidade(blocos, container, unidadeId) {
         if (!blocos || blocos.length === 0) {
             container.innerHTML = `
@@ -1579,15 +1598,21 @@ $database->closeConnection();
         
         // Determinar qual bloco está disponível (primeiro não concluído)
         let blocoDisponivel = 0;
+        let todosConcluidos = true;
+        
         for (let i = 0; i < blocos.length; i++) {
             const concluido = blocos[i].progresso?.concluido || false;
+            
             if (!concluido) {
                 blocoDisponivel = i;
+                todosConcluidos = false;
                 break;
             }
-            if (i === blocos.length - 1 && concluido) {
-                blocoDisponivel = blocos.length; // Todos concluídos
-            }
+        }
+        
+        // Se todos estão concluídos, o próximo disponível seria um novo (se existir)
+        if (todosConcluidos) {
+            blocoDisponivel = blocos.length;
         }
         
         blocos.forEach((bloco, index) => {
@@ -1604,7 +1629,7 @@ $database->closeConnection();
             col.className = 'col-md-4 mb-3';
             
             const cardClass = bloqueado ? 'bloco-card-bloqueado' : (concluido ? 'bloco-card-concluido' : 'bloco-card-disponivel');
-            const clickHandler = bloqueado ? '' : `onclick="abrirExercicios(${bloco.id}, '${bloco.nome_bloco.replace(/'/g, "\\\'")}')" style="cursor: pointer;"`;
+            const clickHandler = bloqueado ? '' : `onclick="abrirExercicios(${bloco.id}, '${bloco.nome_bloco.replace(/'/g, "\\'")}')" style="cursor: pointer;"`;
             
             col.innerHTML = `
                 <div class="card bloco-card h-100 ${cardClass}" ${clickHandler}>
@@ -2409,42 +2434,56 @@ $database->closeConnection();
         });
     };
 
-    // Função para avançar para o próximo exercício
+    // ==================== FUNÇÃO PARA ATUALIZAR PROGRESSO ====================
+    
+    // Função para atualizar progresso quando exercício é concluído
+    function atualizarProgressoBloco(blocoId, concluido = false) {
+        const formData = new FormData();
+        formData.append('action', 'atualizar_progresso_bloco');
+        formData.append('bloco_id', blocoId);
+        formData.append('concluido', concluido ? '1' : '0');
+        
+        fetch('../../admin/controller/progresso_controller.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Progresso atualizado:', data);
+                // Recarregar os blocos para mostrar o novo estado
+                carregarBlocosTodasUnidades();
+            } else {
+                console.error('Erro ao atualizar progresso:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Erro na requisição de progresso:', error);
+        });
+    }
+
+    // Função para avançar para o próximo exercício - VERSÃO CORRIGIDA
     window.proximoExercicio = function() {
         exercicioIndex++;
+        
         if (exercicioIndex < exerciciosLista.length) {
             carregarExercicio(exercicioIndex);
         } else {
-            // Verificar se há exercícios especiais para mostrar
-            if (window.exerciciosEspeciais && window.exerciciosEspeciais.length > 0 && !exerciciosEspeciaisAdicionados) {
-                // Adicionar exercícios especiais à lista
-                exerciciosLista = [...exerciciosLista, ...window.exerciciosEspeciais];
-                exerciciosEspeciaisAdicionados = true;
-                
-                // Mostrar mensagem especial
-                const conteudoExercicioDiv = document.getElementById("conteudoExercicio");
-                conteudoExercicioDiv.innerHTML = `
-                    <div class="text-center">
-                        <div class="alert alert-success">
-                            <h5><i class="fas fa-star me-2"></i>Parabéns!</h5>
-                            <p>Você completou todas as atividades normais do bloco!</p>
-                            <p>Agora você tem acesso a atividades especiais de aprofundamento.</p>
-                        </div>
-                        <button class="btn btn-warning btn-lg" onclick="carregarExercicio(${exercicioIndex})">
-                            <i class="fas fa-play me-2"></i>Iniciar Atividades Especiais
-                        </button>
-                    </div>
-                `;
-                
-                document.getElementById("btnEnviarResposta").style.display = "none";
-                document.getElementById("btnProximoExercicio").style.display = "none";
-            } else {
-                mostrarMensagemSucessoBloco();
-                modalExercicios.hide();
-                setTimeout(() => {
-                    recarregarBlocosAposCompletar();
-                }, 2000);
+            // TODOS OS EXERCÍCIOS FORAM CONCLUÍDOS
+            console.log('Todos os exercícios do bloco concluídos, atualizando progresso...');
+            
+            // Atualizar progresso do bloco
+            if (blocoAtual) {
+                atualizarProgressoBloco(blocoAtual, true);
             }
+            
+            mostrarMensagemSucessoBloco();
+            
+            // Esconder modal após delay
+            setTimeout(() => {
+                modalExercicios.hide();
+                recarregarBlocosAposCompletar();
+            }, 3000);
         }
     };
 
@@ -3009,10 +3048,6 @@ $database->closeConnection();
                 `;
             });
     };
-
-
-
-
 
     // Função para mostrar toast
     window.mostrarToast = function(mensagem, tipo = 'info') {
