@@ -173,7 +173,7 @@ ob_end_flush();
             width: 100%;
             padding: 12px 45px 12px 12px;
             border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 8px;
+            border-radius: 20px;
             font-size: 1rem;
             background-color: rgba(255, 255, 255, 0.1);
             color: var(--white-text);
@@ -469,7 +469,8 @@ ob_end_flush();
     </script>
 
     
-  <div vw class="enabled">
+ 
+ <div vw class="enabled">
     <div vw-access-button class="active"></div>
     <div vw-plugin-wrapper>
       <div class="vw-plugin-top-wrapper"></div>
@@ -486,8 +487,8 @@ ob_end_flush();
         /* Botão de Acessibilidade */
         .accessibility-widget {
             position: fixed;
-            bottom: 70px;
-            right: 20px;
+            bottom: 50px;
+            right: 5px;
             z-index: 10000;
             font-family: 'arial';
         }
