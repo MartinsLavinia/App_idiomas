@@ -101,6 +101,32 @@ try {
     }
     
     $stmt->close();
+    
+    // Apenas adicionar exercícios especiais se for solicitado especificamente
+    if (isset($_GET['incluir_especiais']) && $_GET['incluir_especiais'] === 'true') {
+        $sql_especiais = "SELECT id, titulo as pergunta, conteudo FROM exercicios_especiais ORDER BY id";
+        $stmt_especiais = $conn->prepare($sql_especiais);
+        $stmt_especiais->execute();
+        $result_especiais = $stmt_especiais->get_result();
+        
+        while ($row_especial = $result_especiais->fetch_assoc()) {
+            $exercicio_especial = [
+                'id' => 'especial_' . $row_especial['id'],
+                'ordem' => 999 + $row_especial['id'],
+                'tipo' => 'especial',
+                'pergunta' => $row_especial['pergunta'],
+                'conteudo' => json_decode($row_especial['conteudo'], true),
+                'categoria' => 'especial',
+                'dificuldade' => 'medio',
+                'caminho_id' => null,
+                'bloco_id' => null
+            ];
+            
+            $exercicios[] = $exercicio_especial;
+        }
+        
+        $stmt_especiais->close();
+    }
     $database->closeConnection();
 
     echo json_encode([
@@ -108,6 +134,7 @@ try {
         'tipo_busca' => $tipo_busca,
         'id_busca' => $id_busca,
         'total_exercicios' => count($exercicios),
+        'total_especiais' => count(array_filter($exercicios, function($e) { return isset($e['tipo']) && $e['tipo'] === 'especial'; })),
         'idioma' => $idioma_exercicio,
         'exercicios' => $exercicios
     ]);

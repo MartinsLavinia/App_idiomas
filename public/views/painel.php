@@ -1155,6 +1155,8 @@ $database->closeConnection();
                         </div>
                     </div>
 
+
+
                     <!-- Seção Flash Cards -->
                     <div class="card mb-4">
                         <div class="card-body">
@@ -1568,9 +1570,24 @@ $database->closeConnection();
     function carregarBlocosUnidade(unidadeId) {
         const container = document.getElementById(`blocos-unidade-${unidadeId}`);
         
+        console.log('=== CARREGAR BLOCOS UNIDADE ===');
+        console.log('Unidade ID:', unidadeId);
+        console.log('Container:', container);
+        
         fetch(`../../admin/controller/get_blocos.php?unidade_id=${unidadeId}`)
-            .then(response => response.json())
+            .then(response => {
+                console.log('Status da resposta HTTP:', response.status);
+                console.log('Resposta OK:', response.ok);
+                return response.json();
+            })
             .then(data => {
+                console.log('=== DADOS RECEBIDOS DO SERVIDOR ===');
+                console.log('Success:', data.success);
+                console.log('Total de blocos:', data.blocos ? data.blocos.length : 0);
+                console.log('Exercícios especiais:', data.total_especiais);
+                console.log('Debug info:', data.debug_info);
+                console.log('Blocos completos:', data.blocos);
+                
                 if (data.success) {
                     exibirBlocosUnidade(data.blocos, container, unidadeId);
                 } else {
@@ -1613,12 +1630,26 @@ $database->closeConnection();
         
         container.innerHTML = '';
         
+        console.log('Blocos recebidos:', blocos);
+        
+        console.log('=== EXIBIR BLOCOS UNIDADE ===');
+        console.log('Total de blocos recebidos:', blocos.length);
+        console.log('Blocos completos:', blocos);
+        
+        // Separar blocos normais e especiais
+        const blocosNormais = blocos.filter(b => b.tipo !== 'especial');
+        const blocosEspeciais = blocos.filter(b => b.tipo === 'especial');
+        
+        console.log('Blocos normais encontrados:', blocosNormais.length);
+        console.log('Blocos especiais encontrados:', blocosEspeciais.length);
+        console.log('Detalhes dos blocos especiais:', blocosEspeciais);
+        
         // Determinar qual bloco está disponível (primeiro não concluído)
         let blocoDisponivel = 0;
         let todosConcluidos = true;
         
-        for (let i = 0; i < blocos.length; i++) {
-            const concluido = blocos[i].progresso?.concluido || false;
+        for (let i = 0; i < blocosNormais.length; i++) {
+            const concluido = blocosNormais[i].progresso?.concluido || false;
             
             if (!concluido) {
                 blocoDisponivel = i;
@@ -1627,18 +1658,17 @@ $database->closeConnection();
             }
         }
         
-        // Se todos estão concluídos, o próximo disponível seria um novo (se existir)
         if (todosConcluidos) {
-            blocoDisponivel = blocos.length;
+            blocoDisponivel = blocosNormais.length;
         }
         
-        blocos.forEach((bloco, index) => {
+        // Exibir blocos normais primeiro
+        blocosNormais.forEach((bloco, index) => {
             const progresso = bloco.progresso?.progresso_percentual || 0;
             const concluido = bloco.progresso?.concluido || false;
             const atividadesConcluidas = bloco.progresso?.atividades_concluidas || 0;
             const totalAtividades = bloco.progresso?.total_atividades || bloco.total_atividades || 0;
             
-            // Determinar se o bloco está disponível
             const disponivel = index <= blocoDisponivel;
             const bloqueado = !disponivel;
             
@@ -1677,6 +1707,61 @@ $database->closeConnection();
             `;
             container.appendChild(col);
         });
+        
+        // Exibir blocos especiais (sempre disponíveis)
+        console.log('=== PROCESSANDO BLOCOS ESPECIAIS ===');
+        console.log('Número de blocos especiais para processar:', blocosEspeciais.length);
+        
+        blocosEspeciais.forEach((bloco, index) => {
+            console.log(`=== BLOCO ESPECIAL ${index + 1} ===`);
+            console.log('Dados do bloco:', bloco);
+            console.log('ID:', bloco.id);
+            console.log('Nome:', bloco.nome_bloco);
+            console.log('Tipo:', bloco.tipo);
+            
+            const col = document.createElement('div');
+            col.className = 'col-md-4 mb-3';
+            
+            const tipoIcon = {
+                'observar': 'fa-eye',
+                'completar': 'fa-edit',
+                'alternativa': 'fa-list-ul'
+            };
+            
+            const exercicio = bloco.exercicio_especial;
+            const icon = tipoIcon[exercicio?.tipo_exercicio] || 'fa-star';
+            
+            col.innerHTML = `
+                <div class="card bloco-card h-100 bloco-card-disponivel border-warning" 
+                     onclick="abrirExercicioEspecial('${bloco.id}', '${bloco.nome_bloco.replace(/'/g, "\\'")}')" 
+                     style="cursor: pointer; border-left: 4px solid #ffc107 !important;">
+                    <div class="card-body text-center">
+                        <i class="fas ${icon} bloco-icon mb-2" style="font-size: 1.5rem; color: #ffc107;"></i>
+                        <h5 class="card-title">${bloco.nome_bloco}</h5>
+                        <p class="card-text text-muted">${bloco.descricao}</p>
+                        
+                        <div class="progress progress-bar-custom mb-1">
+                            <div class="progress-bar bg-warning" role="progressbar" 
+                                 style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <small class="text-muted">Exercício especial</small>
+                        
+                        <div class="mt-2">
+                            <span class="badge bg-warning text-dark">
+                                <i class="fas fa-star me-1"></i>Especial
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(col);
+            console.log(`Bloco especial ${index + 1} adicionado ao DOM com sucesso`);
+            console.log('HTML gerado:', col.outerHTML.substring(0, 200) + '...');
+        });
+        
+        console.log('=== RESULTADO FINAL ===');
+        console.log('Total de elementos no container:', container.children.length);
+        console.log('Container HTML:', container.innerHTML.length > 0 ? 'Contém elementos' : 'Vazio');
     }
 
     // ==================== CONFIGURAÇÃO DOS EVENT LISTENERS ====================
@@ -2149,13 +2234,18 @@ $database->closeConnection();
         }
 
         // RENDERIZAR CONTEÚDO BASEADO NO TIPO CORRETO
-        if (tipoExercicio === "multipla_escolha") {
+        if (tipoExercicio === "especial") {
+            htmlConteudo += renderizarExercicioEspecial(conteudo);
+        } else if (tipoExercicio === "multipla_escolha") {
             htmlConteudo += renderizarMultiplaEscolha(conteudo);
         } else if (tipoExercicio === "texto_livre") {
             htmlConteudo += renderizarTextoLivre(conteudo);
         } else if (tipoExercicio === "completar") {
             htmlConteudo += renderizarCompletar(conteudo);
-
+        } else if (tipoExercicio === "observar") {
+            htmlConteudo += renderizarObservar(conteudo);
+        } else if (tipoExercicio === "alternativa") {
+            htmlConteudo += renderizarAlternativaEspecial(conteudo);
         } else if (tipoExercicio === "listening" || tipoExercicio === "audicao") {
             // Para listening, sempre usar renderizarListeningOpcoes se tiver opcoes
             if (conteudo.opcoes && Array.isArray(conteudo.opcoes) && conteudo.opcoes.length > 0) {
@@ -2194,10 +2284,15 @@ $database->closeConnection();
     }
 
     function determinarTipoExercicioCorrigido(exercicio, conteudo) {
+        // Verificar se é exercício especial
+        if (exercicio.tipo === 'especial' || exercicio.categoria === 'especial') {
+            return 'especial';
+        }
+        
         // Verificar tipo_exercicio no conteúdo
         if (conteudo?.tipo_exercicio) {
             const tipo = conteudo.tipo_exercicio.toLowerCase();
-            if (['listening', 'multipla_escolha', 'texto_livre', 'completar'].includes(tipo)) {
+            if (['listening', 'multipla_escolha', 'texto_livre', 'completar', 'observar', 'alternativa'].includes(tipo)) {
                 return tipo;
             }
         }
@@ -2320,6 +2415,136 @@ $database->closeConnection();
             </div>
         `;
     }
+    
+    function renderizarExercicioEspecial(conteudo) {
+        const tipoEspecial = conteudo.tipo_exercicio || 'observar';
+        
+        if (tipoEspecial === 'observar') {
+            return renderizarObservar(conteudo);
+        } else if (tipoEspecial === 'completar') {
+            return renderizarCompletarEspecial(conteudo);
+        } else if (tipoEspecial === 'alternativa') {
+            return renderizarAlternativaEspecial(conteudo);
+        }
+        
+        return renderizarObservar(conteudo);
+    }
+    
+    function renderizarObservar(conteudo) {
+        const linkVideo = conteudo.link_video || '';
+        const letraMusica = conteudo.letra_musica || '';
+        
+        return `
+            <div class="exercicio-especial-container">
+                <div class="mb-4">
+                    <h6 class="text-center mb-3">🎥 Vídeo/Áudio</h6>
+                    <div class="text-center mb-4">
+                        <div class="video-container">
+                            <iframe width="100%" height="315" src="${convertYouTubeUrl(linkVideo)}" 
+                                    frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <h6>Letra da Música:</h6>
+                    <div class="letra-container p-3 bg-light rounded">
+                        <pre style="white-space: pre-wrap; font-family: inherit;">${letraMusica}</pre>
+                    </div>
+                </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Assista ao vídeo e acompanhe a letra. Clique em "Enviar Resposta" quando terminar.
+                </div>
+            </div>
+        `;
+    }
+    
+    function renderizarCompletarEspecial(conteudo) {
+        const linkVideo = conteudo.link_video || '';
+        const letraMusica = conteudo.letra_musica || '';
+        const palavrasCompletar = conteudo.palavras_completar || '';
+        
+        // Processar letra removendo palavras
+        let letraProcessada = letraMusica;
+        if (palavrasCompletar) {
+            const palavras = palavrasCompletar.split(',').map(p => p.trim());
+            palavras.forEach(palavra => {
+                const regex = new RegExp(`\\b${palavra}\\b`, 'gi');
+                letraProcessada = letraProcessada.replace(regex, '______');
+            });
+        }
+        
+        return `
+            <div class="exercicio-especial-container">
+                <div class="mb-4">
+                    <h6 class="text-center mb-3">🎥 Vídeo/Áudio</h6>
+                    <div class="text-center mb-4">
+                        <div class="video-container">
+                            <iframe width="100%" height="315" src="${convertYouTubeUrl(linkVideo)}" 
+                                    frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <h6>Complete a letra:</h6>
+                    <div class="letra-container p-3 bg-light rounded">
+                        <pre style="white-space: pre-wrap; font-family: inherit;">${letraProcessada}</pre>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="respostaEspecial" class="form-label">Palavras que faltam (separadas por vírgula):</label>
+                    <textarea class="form-control" id="respostaEspecial" rows="3" 
+                              placeholder="Digite as palavras que faltam, separadas por vírgula"></textarea>
+                </div>
+            </div>
+        `;
+    }
+    
+    function renderizarAlternativaEspecial(conteudo) {
+        const linkVideo = conteudo.link_video || '';
+        const letraMusica = conteudo.letra_musica || '';
+        const alternativas = conteudo.alternativas || {};
+        
+        let htmlAlternativas = '';
+        if (alternativas.a) {
+            ['a', 'b', 'c', 'd'].forEach(letra => {
+                if (alternativas[letra]) {
+                    htmlAlternativas += `
+                        <button type="button" class="btn btn-outline-primary btn-resposta text-start mb-2" 
+                                data-id="${letra}" onclick="selecionarResposta(this)">
+                            ${letra.toUpperCase()}) ${alternativas[letra]}
+                        </button>
+                    `;
+                }
+            });
+        }
+        
+        return `
+            <div class="exercicio-especial-container">
+                <div class="mb-4">
+                    <h6 class="text-center mb-3">🎥 Vídeo/Áudio</h6>
+                    <div class="text-center mb-4">
+                        <div class="video-container">
+                            <iframe width="100%" height="315" src="${convertYouTubeUrl(linkVideo)}" 
+                                    frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <h6>Letra da Música:</h6>
+                    <div class="letra-container p-3 bg-light rounded">
+                        <pre style="white-space: pre-wrap; font-family: inherit;">${letraMusica}</pre>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <h6>Escolha a alternativa correta:</h6>
+                    <div class="d-grid gap-2">
+                        ${htmlAlternativas}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
 
     // ==================== FUNÇÕES DE RESPOSTA ====================
 
@@ -2384,6 +2609,20 @@ $database->closeConnection();
             }
         }
         
+        // Para exercícios especiais, pegar valor do textarea especial
+        if (!respostaSelecionada && respostaSelecionada !== 0) {
+            const textareaEspecial = document.getElementById('respostaEspecial');
+            if (textareaEspecial) {
+                respostaSelecionada = textareaEspecial.value.trim();
+            }
+        }
+        
+        // Para exercícios especiais de observar, sempre permitir avançar
+        if (exercicioAtual.tipoExercicioDeterminado === 'especial' && 
+            exercicioAtual.conteudo?.tipo_exercicio === 'observar') {
+            respostaSelecionada = 'observado';
+        }
+        
         // Verificar se há botão selecionado
         if (!respostaSelecionada && respostaSelecionada !== 0) {
             const botaoSelecionado = document.querySelector('.btn-resposta.selected, .btn-resposta[data-selected="true"]');
@@ -2408,6 +2647,15 @@ $database->closeConnection();
         // Usar API específica para listening
         if (tipoExercicio === 'listening' || tipoExercicio === 'audicao') {
             apiUrl = '/App_idiomas/api/exercicios/listening.php';
+        }
+        
+        // Para exercícios especiais, simular resposta correta
+        if (tipoExercicio === 'especial') {
+            const data = { success: true, correto: true, explicacao: 'Exercício especial concluído!' };
+            exibirFeedback(data);
+            document.getElementById("btnEnviarResposta").style.display = "none";
+            document.getElementById("btnProximoExercicio").style.display = "block";
+            return;
         }
         
         console.log('Enviando resposta:', {
@@ -2481,18 +2729,21 @@ $database->closeConnection();
                 btn.className = "btn btn-secondary";
             }
         });
+        
+        // Atualizar progresso do bloco após cada exercício
+        if (blocoAtual) {
+            atualizarProgressoBloco(blocoAtual);
+        }
     };
 
     // ==================== FUNÇÃO PARA ATUALIZAR PROGRESSO ====================
     
     // Função para atualizar progresso quando exercício é concluído
-    function atualizarProgressoBloco(blocoId, concluido = false) {
+    function atualizarProgressoBloco(blocoId) {
         const formData = new FormData();
-        formData.append('action', 'atualizar_progresso_bloco');
         formData.append('bloco_id', blocoId);
-        formData.append('concluido', concluido ? '1' : '0');
         
-        fetch('../../admin/controller/progresso_controller.php', {
+        fetch('../controller/update_progress.php', {
             method: 'POST',
             body: formData
         })
@@ -2502,6 +2753,11 @@ $database->closeConnection();
                 console.log('Progresso atualizado:', data);
                 // Recarregar os blocos para mostrar o novo estado
                 carregarBlocosTodasUnidades();
+                
+                // Mostrar feedback visual se concluído
+                if (data.concluido) {
+                    mostrarToast('🎉 Bloco concluído! Parabéns!', 'success');
+                }
             } else {
                 console.error('Erro ao atualizar progresso:', data.message);
             }
@@ -2519,12 +2775,7 @@ $database->closeConnection();
             carregarExercicio(exercicioIndex);
         } else {
             // TODOS OS EXERCÍCIOS FORAM CONCLUÍDOS
-            console.log('Todos os exercícios do bloco concluídos, atualizando progresso...');
-            
-            // Atualizar progresso do bloco
-            if (blocoAtual) {
-                atualizarProgressoBloco(blocoAtual, true);
-            }
+            console.log('Todos os exercícios do bloco concluídos');
             
             mostrarMensagemSucessoBloco();
             
@@ -3098,6 +3349,70 @@ $database->closeConnection();
             });
     };
 
+
+    
+    // Função para abrir exercício especial
+    window.abrirExercicioEspecial = function(exercicioId, titulo) {
+        console.log('Abrindo exercício especial:', exercicioId, titulo);
+        
+        // Extrair o ID numérico
+        const idNumerico = exercicioId.replace('especial_', '');
+        
+        document.getElementById("tituloExercicios").textContent = `Exercício Especial: ${titulo}`;
+        
+        fetch(`../../admin/controller/get_exercicios_especiais.php`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const exercicio = data.exercicios.find(e => e.id == idNumerico);
+                    if (exercicio) {
+                        const exercicioFormatado = {
+                            id: exercicioId,
+                            tipo: 'especial',
+                            pergunta: exercicio.titulo,
+                            conteudo: exercicio.conteudo_completo,
+                            categoria: 'especial'
+                        };
+                        
+                        exerciciosLista = [exercicioFormatado];
+                        exercicioIndex = 0;
+                        carregarExercicio(0);
+                        modalExercicios.show();
+                    }
+                } else {
+                    alert('Erro ao carregar exercício especial');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao carregar exercício especial');
+            });
+    };
+
+    // Função para converter URLs do YouTube
+    function convertYouTubeUrl(url) {
+        if (!url) return '';
+        
+        // Diferentes formatos de URL do YouTube
+        const patterns = [
+            /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)/,
+            /(?:https?:\/\/)?(?:www\.)?youtu\.be\/([a-zA-Z0-9_-]+)/,
+            /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([a-zA-Z0-9_-]+)/
+        ];
+        
+        for (const pattern of patterns) {
+            const match = url.match(pattern);
+            if (match) {
+                return `https://www.youtube.com/embed/${match[1]}?rel=0&modestbranding=1`;
+            }
+        }
+        
+        return url; // Retorna a URL original se não for YouTube
+    }
+    
+    // Função global para converter URLs do YouTube (para uso nos templates)
+    window.convertYouTubeUrl = convertYouTubeUrl;
+    
     // Função para mostrar toast
     window.mostrarToast = function(mensagem, tipo = 'info') {
         const toastContainer = document.getElementById('toastContainer');

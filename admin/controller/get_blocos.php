@@ -1,132 +1,164 @@
 <?php
-// get_blocos.php - Coloque na pasta controller
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    exit(0);
-}
-
 session_start();
 include_once __DIR__ . '/../../conexao.php';
 
-if (!isset($_SESSION['id_usuario'])) {
-    echo json_encode(['success' => false, 'message' => 'Usuário não autenticado']);
+header('Content-Type: application/json');
+
+if (!isset($_GET['unidade_id']) && !isset($_GET['caminho_id'])) {
+    echo json_encode(['success' => false, 'message' => 'ID da unidade ou caminho não fornecido']);
     exit();
 }
 
-if (!isset($_GET['unidade_id']) || !is_numeric($_GET['unidade_id'])) {
-    echo json_encode(['success' => false, 'message' => 'ID da unidade inválido']);
-    exit();
-}
-
-$unidade_id = (int)$_GET['unidade_id'];
-$id_usuario = $_SESSION['id_usuario'];
+$database = new Database();
+$conn = $database->conn;
 
 try {
-    $database = new Database();
-    $conn = $database->conn;
-
-    // Buscar informações da unidade
-    $sql_unidade = "SELECT id, nome_unidade, idioma, nivel FROM unidades WHERE id = ?";
-    $stmt_unidade = $conn->prepare($sql_unidade);
-    $stmt_unidade->bind_param("i", $unidade_id);
-    $stmt_unidade->execute();
-    $unidade_info = $stmt_unidade->get_result()->fetch_assoc();
-    $stmt_unidade->close();
-
-    if (!$unidade_info) {
-        echo json_encode(['success' => false, 'message' => 'Unidade não encontrada']);
-        exit();
+    $id_usuario = $_SESSION['id_usuario'] ?? null;
+    
+    if (isset($_GET['unidade_id'])) {
+        // Buscar blocos por unidade
+        $unidade_id = $_GET['unidade_id'];
+        
+        $sql = "SELECT b.*, c.nome_caminho 
+                FROM blocos b 
+                LEFT JOIN caminhos_aprendizagem c ON b.caminho_id = c.id 
+                WHERE c.id_unidade = ? 
+                ORDER BY b.ordem ASC";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $unidade_id);
+    } else {
+        // Buscar blocos por caminho
+        $caminho_id = $_GET['caminho_id'];
+        
+        $sql = "SELECT b.*, c.nome_caminho 
+                FROM blocos b 
+                LEFT JOIN caminhos_aprendizagem c ON b.caminho_id = c.id 
+                WHERE b.caminho_id = ? 
+                ORDER BY b.ordem ASC";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $caminho_id);
     }
-
-    // Buscar caminhos relacionados a esta unidade
-    $sql_caminhos = "SELECT id, nome_caminho FROM caminhos_aprendizagem WHERE id_unidade = ?";
-    $stmt_caminhos = $conn->prepare($sql_caminhos);
-    $stmt_caminhos->bind_param("i", $unidade_id);
-    $stmt_caminhos->execute();
-    $caminhos = $stmt_caminhos->get_result()->fetch_all(MYSQLI_ASSOC);
-    $stmt_caminhos->close();
-
-    $blocos_com_progresso = [];
-
-    // Para cada caminho, buscar os blocos
-    foreach ($caminhos as $caminho) {
-        // Buscar blocos do caminho
-        $sql_blocos = "SELECT id, nome_bloco, ordem FROM blocos WHERE caminho_id = ? ORDER BY ordem ASC";
-        $stmt_blocos = $conn->prepare($sql_blocos);
-        $stmt_blocos->bind_param("i", $caminho['id']);
-        $stmt_blocos->execute();
-        $blocos = $stmt_blocos->get_result()->fetch_all(MYSQLI_ASSOC);
-        $stmt_blocos->close();
-
-        // Processar cada bloco
-        foreach ($blocos as $bloco) {
-            // Buscar exercícios do bloco
-            $sql_exercicios = "SELECT COUNT(*) as total FROM exercicios WHERE bloco_id = ?";
-            $stmt_exercicios = $conn->prepare($sql_exercicios);
-            $stmt_exercicios->bind_param("i", $bloco['id']);
-            $stmt_exercicios->execute();
-            $result_exercicios = $stmt_exercicios->get_result()->fetch_assoc();
-            $stmt_exercicios->close();
-
-            $total_exercicios = $result_exercicios['total'] ?? 0;
-
-            // Buscar progresso do usuário na tabela progresso_bloco
-            $sql_progresso = "SELECT * FROM progresso_bloco WHERE id_usuario = ? AND id_bloco = ?";
+    
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $blocos = [];
+    
+    while ($row = $result->fetch_assoc()) {
+        $bloco = $row;
+        
+        // Buscar progresso do usuário se logado
+        if ($id_usuario) {
+            $sql_progresso = "SELECT progresso_percentual, atividades_concluidas, total_atividades, concluido 
+                             FROM progresso_bloco 
+                             WHERE id_usuario = ? AND id_bloco = ?";
             $stmt_progresso = $conn->prepare($sql_progresso);
-            $stmt_progresso->bind_param("ii", $id_usuario, $bloco['id']);
+            $stmt_progresso->bind_param("ii", $id_usuario, $row['id']);
             $stmt_progresso->execute();
-            $progresso = $stmt_progresso->get_result()->fetch_assoc();
-            $stmt_progresso->close();
-
-            // Se não existe registro de progresso, criar um padrão
-            if (!$progresso) {
-                $progresso = [
+            $progresso_result = $stmt_progresso->get_result();
+            
+            if ($progresso_data = $progresso_result->fetch_assoc()) {
+                $bloco['progresso'] = $progresso_data;
+            } else {
+                // Se não há progresso, calcular baseado nos exercícios
+                $sql_total = "SELECT COUNT(*) as total FROM exercicios WHERE bloco_id = ?";
+                $stmt_total = $conn->prepare($sql_total);
+                if ($stmt_total) {
+                    $stmt_total->bind_param("i", $row['id']);
+                    $stmt_total->execute();
+                    $total_exercicios = $stmt_total->get_result()->fetch_assoc()['total'];
+                    $stmt_total->close();
+                } else {
+                    $total_exercicios = 0;
+                }
+                
+                $bloco['progresso'] = [
+                    'progresso_percentual' => 0,
                     'atividades_concluidas' => 0,
                     'total_atividades' => $total_exercicios,
-                    'progresso_percentual' => 0,
-                    'concluido' => false,
-                    'pontos_obtidos' => 0,
-                    'total_pontos' => $total_exercicios * 10
+                    'concluido' => false
                 ];
-            } else {
-                // Usar dados existentes da tabela progresso_bloco
-                $progresso_percentual = $progresso['total_atividades'] > 0 ? 
-                    round(($progresso['atividades_concluidas'] / $progresso['total_atividades']) * 100) : 0;
-                
-                $progresso['progresso_percentual'] = $progresso_percentual;
-                $progresso['concluido'] = ($progresso['atividades_concluidas'] >= $progresso['total_atividades']) && ($progresso['total_atividades'] > 0);
             }
-
-            // Adicionar informações adicionais ao bloco
-            $bloco_completo = [
-                'id' => $bloco['id'],
-                'nome_bloco' => $bloco['nome_bloco'],
-                'ordem' => $bloco['ordem'],
-                'caminho_nome' => $caminho['nome_caminho'],
-                'descricao' => "Bloco " . $bloco['ordem'] . " - " . $caminho['nome_caminho'],
-                'progresso' => $progresso
+            $stmt_progresso->close();
+        } else {
+            $bloco['progresso'] = [
+                'progresso_percentual' => 0,
+                'atividades_concluidas' => 0,
+                'total_atividades' => 0,
+                'concluido' => false
             ];
-
-            $blocos_com_progresso[] = $bloco_completo;
         }
+        
+        $blocos[] = $bloco;
     }
-
+    
+    $stmt->close();
+    
+    // Adicionar exercícios especiais como blocos - SEMPRE
+    $sql_especiais = "SELECT id, titulo, descricao, url_media, transcricao, pergunta, tipo_exercicio, opcoes_resposta, resposta_correta, conteudo FROM exercicios_especiais ORDER BY id";
+    $stmt_especiais = $conn->prepare($sql_especiais);
+    $stmt_especiais->execute();
+    $result_especiais = $stmt_especiais->get_result();
+    
+    $count_especiais = 0;
+    while ($row_especial = $result_especiais->fetch_assoc()) {
+        // Tentar decodificar o campo conteudo se existir, senão criar estrutura
+        $conteudo_json = null;
+        if (!empty($row_especial['conteudo'])) {
+            $conteudo_json = json_decode($row_especial['conteudo'], true);
+        }
+        
+        // Criar estrutura de conteúdo baseada nos campos da tabela
+        $conteudo_estruturado = [
+            'tipo_exercicio' => $conteudo_json['tipo_exercicio'] ?? 'observar',
+            'link_video' => $conteudo_json['link_video'] ?? $row_especial['url_media'] ?? '',
+            'letra_musica' => $conteudo_json['letra_musica'] ?? $row_especial['transcricao'] ?? '',
+            'pergunta' => $row_especial['pergunta'],
+            'opcoes_resposta' => $row_especial['opcoes_resposta'] ? json_decode($row_especial['opcoes_resposta'], true) : null,
+            'resposta_correta' => $row_especial['resposta_correta'] ? json_decode($row_especial['resposta_correta'], true) : null
+        ];
+        
+        $bloco_especial = [
+            'id' => 'especial_' . $row_especial['id'],
+            'nome_bloco' => $row_especial['titulo'],
+            'descricao' => $row_especial['descricao'] ?? 'Exercício especial com vídeo/música',
+            'ordem' => 999 + $row_especial['id'],
+            'caminho_id' => null,
+            'nome_caminho' => 'Especial',
+            'tipo' => 'especial',
+            'exercicio_especial' => [
+                'id' => $row_especial['id'],
+                'titulo' => $row_especial['titulo'],
+                'tipo_exercicio' => $conteudo_estruturado['tipo_exercicio'],
+                'conteudo_completo' => $conteudo_estruturado
+            ],
+            'progresso' => [
+                'progresso_percentual' => 100,
+                'atividades_concluidas' => 1,
+                'total_atividades' => 1,
+                'concluido' => false
+            ]
+        ];
+        
+        $blocos[] = $bloco_especial;
+        $count_especiais++;
+    }
+    
+    $stmt_especiais->close();
     $database->closeConnection();
-
+    
     echo json_encode([
-        'success' => true,
-        'unidade' => $unidade_info,
-        'blocos' => $blocos_com_progresso
+        'success' => true, 
+        'blocos' => $blocos, 
+        'total_especiais' => $count_especiais, 
+        'debug_info' => [
+            'total_blocos' => count($blocos), 
+            'especiais_adicionados' => $count_especiais,
+            'blocos_normais' => count($blocos) - $count_especiais
+        ]
     ]);
-
+    
 } catch (Exception $e) {
-    echo json_encode([
-        'success' => false,
-        'message' => 'Erro: ' . $e->getMessage()
-    ]);
+    $database->closeConnection();
+    echo json_encode(['success' => false, 'message' => 'Erro: ' . $e->getMessage()]);
 }
 ?>
