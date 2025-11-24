@@ -173,7 +173,7 @@ ob_end_flush();
             width: 100%;
             padding: 12px 45px 12px 12px;
             border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 20px;
+            border-radius: 8px;
             font-size: 1rem;
             background-color: rgba(255, 255, 255, 0.1);
             color: var(--white-text);
