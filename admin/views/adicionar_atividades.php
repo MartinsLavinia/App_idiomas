@@ -101,11 +101,7 @@ function adicionarExercicio($conn, $caminhoId, $blocoId, $ordem, $tipo_exercicio
     
     // Mapear tipo_exercicio para o ENUM da coluna 'tipo'
     $tipoEnum = 'normal'; // padrão
-    if ($tipo_exercicio === 'especial') {
-        $tipoEnum = 'especial';
-        // Atividades especiais sempre ficam por último (ordem 999)
-        $ordem = 999;
-    } elseif ($tipo_exercicio === 'quiz') {
+    if ($tipo_exercicio === 'quiz') {
         $tipoEnum = 'quiz';
     } else {
         // Para atividades normais, verificar se já tem 12
@@ -194,8 +190,7 @@ $post_placeholder_completar = $_POST["placeholder_completar"] ?? 'Digite sua res
 $post_audio_url = $_POST["audio_url"] ?? '';
 $post_transcricao = $_POST["transcricao"] ?? '';
 $post_resposta_audio_correta = $_POST["resposta_audio_correta"] ?? '';
-$post_link_video = $_POST["link_video"] ?? '';
-$post_pergunta_extra = $_POST["pergunta_extra"] ?? '';
+
 $post_quiz_id = $_POST["quiz_id"] ?? '';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -300,17 +295,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 
 
-            case 'especial':
-                if (empty($_POST['link_video']) || empty($_POST['pergunta_extra'])) {
-                    $mensagem = '<div class="alert alert-danger">O Link do Vídeo/Áudio e a Pergunta Extra são obrigatórios para este tipo de exercício.</div>';
-                } else {
-                    $conteudo = json_encode([
-                        'link_video' => $_POST['link_video'],
-                        'pergunta_extra' => $_POST['pergunta_extra']
-                    ], JSON_UNESCAPED_UNICODE);
-                    $sucesso_insercao = true;
-                }
-                break;
+
                 
             case 'quiz':
                 if (empty($_POST['quiz_id'])) {
@@ -329,11 +314,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $exercicio_id = adicionarExercicio($conn, $caminho_id, $bloco_id, $ordem, $tipo_exercicio, $pergunta, $conteudo);
             if ($exercicio_id) {
                 $tipo_exercicio_display = str_replace('_', ' ', ucfirst($tipo_exercicio));
-                if ($tipo_exercicio === 'especial') {
-                    $_SESSION['mensagem_sucesso'] = 'Atividade especial adicionada com sucesso! Ela aparecerá após o usuário completar as 12 atividades normais do bloco.';
-                } else {
-                    $_SESSION['mensagem_sucesso'] = 'Exercício de ' . $tipo_exercicio_display . ' adicionado com sucesso!';
-                }
+                $_SESSION['mensagem_sucesso'] = 'Exercício de ' . $tipo_exercicio_display . ' adicionado com sucesso!';
                 header("Location: adicionar_atividades.php?unidade_id=" . $unidade_id);
                 exit();
             } else {
@@ -345,8 +326,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $result_check = $stmt_check->get_result()->fetch_assoc();
                 $stmt_check->close();
                 
-                if ($result_check['total'] >= 12 && $tipo_exercicio !== 'especial') {
-                    $mensagem = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>Este bloco já possui o máximo de 12 atividades normais. Você pode adicionar atividades especiais ou escolher outro bloco.</div>';
+                if ($result_check['total'] >= 12) {
+                    $mensagem = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>Este bloco já possui o máximo de 12 atividades normais. Escolha outro bloco.</div>';
                 } else {
                     $mensagem = '<div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i>Erro ao adicionar exercício no banco de dados. Verifique os logs para mais detalhes.</div>';
                 }
@@ -1099,10 +1080,8 @@ $database->closeConnection();
                             <label for="tipo" class="form-label">Tipo de Exercício</label>
                             <select class="form-select" id="tipo" name="tipo" required onchange="toggleOrdemField()">
                                 <option value="normal" <?php echo ($post_tipo == "normal") ? "selected" : ""; ?>>Normal</option>
-                                <option value="especial" <?php echo ($post_tipo == "especial") ? "selected" : ""; ?>>Especial (Vídeo/Áudio) - Aparece após completar o bloco</option>
                                 <option value="quiz" <?php echo ($post_tipo == "quiz") ? "selected" : ""; ?>>Quiz</option>
                             </select>
-                            <div class="form-text">Atividades especiais só aparecem quando o usuário completa todas as atividades normais do bloco.</div>
                         </div>
                         
                         <!-- Campo Subtipo -->
@@ -1275,18 +1254,7 @@ $database->closeConnection();
                                 </div>
                             </div>
 
-                            <!-- Campos para Tipo Especial -->
-                            <div id="campos-especial" class="subtipo-campos" style="display: none;">
-                                <h5>Configuração - Exercício Especial (Vídeo/Áudio)</h5>
-                                <div class="mb-3">
-                                    <label for="link_video" class="form-label">Link do Vídeo/Áudio (YouTube, Vimeo, etc.) *</label>
-                                    <input type="url" class="form-control" id="link_video" name="link_video" value="<?php echo htmlspecialchars($post_link_video); ?>">
-                                </div>
-                                <div class="mb-3">
-                                    <label for="pergunta_extra" class="form-label">Pergunta Extra *</label>
-                                    <textarea class="form-control" id="pergunta_extra" name="pergunta_extra" rows="3"><?php echo htmlspecialchars($post_pergunta_extra); ?></textarea>
-                                </div>
-                            </div>
+
 
                             <!-- Campos para Tipo Quiz -->
                             <div id="campos-quiz" class="subtipo-campos" style="display: none;">
@@ -1375,7 +1343,6 @@ $database->closeConnection();
         const tipoSelect = document.getElementById("tipo");
         const tipoExercicioSelect = document.getElementById("tipo_exercicio");
         const camposNormal = document.getElementById("campos-normal");
-        const camposEspecial = document.getElementById("campos-especial");
         const camposQuiz = document.getElementById("campos-quiz");
         
         const camposMultipla = document.getElementById("campos-multipla");
@@ -1404,7 +1371,6 @@ $database->closeConnection();
             
             // Esconder todos os campos (com verificação de null)
             if (camposNormal) camposNormal.style.display = "none";
-            if (camposEspecial) camposEspecial.style.display = "none";
             if (camposQuiz) camposQuiz.style.display = "none";
             if (camposMultipla) camposMultipla.style.display = "none";
             if (camposTexto) camposTexto.style.display = "none";
@@ -1421,8 +1387,7 @@ $database->closeConnection();
             setRequired(document.querySelector('input[name="listening_opcao2"]'), false);
             setRequired(document.getElementById('audio_url'), false);
             setRequired(document.getElementById('resposta_audio_correta'), false);
-            setRequired(document.getElementById('link_video'), false);
-            setRequired(document.getElementById('pergunta_extra'), false);
+
 
             // Mostrar container principal sempre
             if (conteudoCampos) conteudoCampos.style.display = "block";
@@ -1452,10 +1417,6 @@ $database->closeConnection();
                         setRequired(document.getElementById('resposta_audio_correta'), true);
                         break;
                 }
-            } else if (tipoSelect.value === "especial") {
-                if (camposEspecial) camposEspecial.style.display = "block";
-                setRequired(document.getElementById('link_video'), true);
-                setRequired(document.getElementById('pergunta_extra'), true);
             } else if (tipoSelect.value === "quiz") {
                 if (camposQuiz) camposQuiz.style.display = "block";
             }
@@ -1671,17 +1632,8 @@ $database->closeConnection();
         const inputOrdem = document.getElementById('ordem');
         
         if (tipoSelect && campoOrdem && inputOrdem) {
-            if (tipoSelect.value === 'especial') {
-                campoOrdem.style.display = 'none';
-                inputOrdem.required = false;
-                inputOrdem.value = '999'; // Valor padrão para especiais
-            } else {
-                campoOrdem.style.display = 'block';
-                inputOrdem.required = true;
-                if (inputOrdem.value === '999') {
-                    inputOrdem.value = ''; // Limpar se era especial
-                }
-            }
+            campoOrdem.style.display = 'block';
+            inputOrdem.required = true;
         }
     }
 

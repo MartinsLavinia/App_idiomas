@@ -207,15 +207,28 @@ if (!isset($_SESSION['id_usuario'])) {
         function selecionarOpcao(index, elemento) {
             // Remover seleção anterior
             document.querySelectorAll('#exercicio-1 .option-audio').forEach(opt => {
-                opt.classList.remove('selecionada', 'selected');
+                opt.classList.remove('selecionada', 'selected', 'active');
+                opt.removeAttribute('data-clicked');
             });
             
             // Selecionar atual
-            elemento.classList.add('selecionada', 'selected');
+            elemento.classList.add('selecionada', 'selected', 'active');
+            elemento.setAttribute('data-clicked', 'true');
             respostaSelecionada = index;
             
             // Habilitar botão
-            document.getElementById('btn-responder').disabled = false;
+            const btnResponder = document.getElementById('btn-responder');
+            if (btnResponder) {
+                btnResponder.disabled = false;
+                btnResponder.classList.remove('disabled');
+            }
+            
+            // Remover mensagens de erro
+            document.querySelectorAll('.alert-warning').forEach(alert => {
+                if (alert.textContent.includes('Selecione') || alert.textContent.includes('resposta')) {
+                    alert.remove();
+                }
+            });
         }
         
         function simularAudio() {
@@ -275,12 +288,26 @@ if (!isset($_SESSION['id_usuario'])) {
         // Múltipla Escolha
         function selecionarOpcaoMultipla(index, elemento) {
             document.querySelectorAll('#exercicio-2 .opcao-exercicio').forEach(opt => {
-                opt.classList.remove('selecionada', 'selected');
+                opt.classList.remove('selecionada', 'selected', 'active');
+                opt.removeAttribute('data-clicked');
             });
             
-            elemento.classList.add('selecionada', 'selected');
+            elemento.classList.add('selecionada', 'selected', 'active');
+            elemento.setAttribute('data-clicked', 'true');
             respostaMultipla = index;
-            document.getElementById('btn-responder-multipla').disabled = false;
+            
+            const btnResponder = document.getElementById('btn-responder-multipla');
+            if (btnResponder) {
+                btnResponder.disabled = false;
+                btnResponder.classList.remove('disabled');
+            }
+            
+            // Remover mensagens de erro
+            document.querySelectorAll('.alert-warning').forEach(alert => {
+                if (alert.textContent.includes('Selecione') || alert.textContent.includes('resposta')) {
+                    alert.remove();
+                }
+            });
         }
         
         async function responderMultipla() {
@@ -319,6 +346,26 @@ if (!isset($_SESSION['id_usuario'])) {
             if (feedback) feedback.remove();
         }
         
+        // Função para remover validações problemáticas
+        function removerValidacoesBloqueantes() {
+            // Remover mensagens de erro que impedem seleção
+            document.querySelectorAll('.alert-warning, .error-message').forEach(msg => {
+                if (msg.textContent.includes('Selecione uma resposta') || 
+                    msg.textContent.includes('digite sua resposta')) {
+                    msg.remove();
+                }
+            });
+            
+            // Garantir que opções sejam clicáveis
+            document.querySelectorAll('.option-audio, .alternativa, .opcao-exercicio').forEach(opt => {
+                opt.style.pointerEvents = 'auto';
+                opt.removeAttribute('disabled');
+                opt.addEventListener('click', function() {
+                    console.log('Opção clicada:', this.textContent.trim());
+                });
+            });
+        }
+        
         // Inicializar
         document.addEventListener('DOMContentLoaded', function() {
             verificarHTTPS();
@@ -327,6 +374,12 @@ if (!isset($_SESSION['id_usuario'])) {
                 window.exercicioFala = new ExercicioFala();
                 window.exercicioFala.inicializar('en-US');
             }
+            
+            // Remover validações problemáticas
+            setTimeout(removerValidacoesBloqueantes, 500);
+            
+            // Verificar periodicamente e remover validações
+            setInterval(removerValidacoesBloqueantes, 2000);
         });
     </script>
 </body>

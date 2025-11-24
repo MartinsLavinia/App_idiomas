@@ -52,12 +52,18 @@ class CorrecaoVisualExercicios {
     }
 
     interceptarSubmissao(event) {
-        event.preventDefault();
         const form = event.target;
         const container = form.closest('.exercicio-container, [id^="exercicio-"]');
         const exercicioId = this.extrairExercicioId(container);
         const respostaSelecionada = this.obterRespostaSelecionada(container);
 
+        if (respostaSelecionada === null) {
+            // Não impedir o envio, apenas mostrar aviso
+            console.warn('Nenhuma resposta selecionada detectada');
+            return; // Deixar o formulário processar normalmente
+        }
+        
+        event.preventDefault();
         if (exercicioId && respostaSelecionada !== null) {
             this.processarRespostaExercicio(exercicioId, respostaSelecionada, container);
         }
@@ -94,16 +100,33 @@ class CorrecaoVisualExercicios {
     marcarAlternativaSelecionada(alternativa, container) {
         // Remover seleção anterior
         container.querySelectorAll('.option-audio, .alternativa, .opcao-exercicio').forEach(opt => {
-            opt.classList.remove('selecionada', 'selected');
+            opt.classList.remove('selecionada', 'selected', 'active');
+            opt.removeAttribute('data-clicked');
         });
 
         // Marcar como selecionada
-        alternativa.classList.add('selecionada', 'selected');
+        alternativa.classList.add('selecionada', 'selected', 'active');
+        alternativa.setAttribute('data-clicked', 'true');
+        
+        // Habilitar botão de responder se existir
+        const btnResponder = container.querySelector('.btn-responder, button[type="submit"]');
+        if (btnResponder) {
+            btnResponder.disabled = false;
+        }
     }
 
     obterRespostaSelecionada(container) {
         const selecionada = container.querySelector('.selecionada, .selected, input[type="radio"]:checked');
-        if (!selecionada) return null;
+        if (!selecionada) {
+            // Se não encontrou seleção, verificar se há alguma opção clicada recentemente
+            const opcoes = container.querySelectorAll('.option-audio, .alternativa, .opcao-exercicio');
+            for (let i = 0; i < opcoes.length; i++) {
+                if (opcoes[i].classList.contains('active') || opcoes[i].getAttribute('data-clicked') === 'true') {
+                    return i;
+                }
+            }
+            return null;
+        }
 
         if (selecionada.type === 'radio') {
             return parseInt(selecionada.value);
@@ -310,11 +333,39 @@ function aplicarFeedbackVisualExercicio(respostaSelecionada, respostaCorreta, co
     }
 }
 
+// Função para remover validações problemáticas
+function removerValidacoesProblematicas() {
+    // Remover mensagens de erro que impedem seleção
+    document.querySelectorAll('.alert-warning, .error-message').forEach(msg => {
+        if (msg.textContent.includes('Selecione uma resposta') || 
+            msg.textContent.includes('digite sua resposta')) {
+            msg.remove();
+        }
+    });
+    
+    // Habilitar todas as opções
+    document.querySelectorAll('.option-audio, .alternativa, .opcao-exercicio').forEach(opt => {
+        opt.style.pointerEvents = 'auto';
+        opt.removeAttribute('disabled');
+    });
+    
+    // Habilitar botões de responder
+    document.querySelectorAll('.btn-responder, button[type="submit"]').forEach(btn => {
+        if (btn.textContent.includes('Responder') || btn.type === 'submit') {
+            btn.disabled = false;
+        }
+    });
+}
+
 // Inicializar quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', () => {
     window.correcaoVisualExercicios = new CorrecaoVisualExercicios();
+    
+    // Remover validações problemáticas após um breve delay
+    setTimeout(removerValidacoesProblematicas, 500);
 });
 
 // Expor para uso global
 window.CorrecaoVisualExercicios = CorrecaoVisualExercicios;
 window.aplicarFeedbackVisualExercicio = aplicarFeedbackVisualExercicio;
+window.removerValidacoesProblematicas = removerValidacoesProblematicas;

@@ -477,6 +477,23 @@ $database->closeConnection();
             color: white;
         }
         
+        /* Garantir que botões de resposta sejam clicáveis */
+        .btn-resposta {
+            pointer-events: auto !important;
+            cursor: pointer !important;
+            user-select: none;
+        }
+        
+        .btn-resposta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .btn-resposta.selected {
+            pointer-events: auto !important;
+            cursor: pointer !important;
+        }
+        
         audio {
             pointer-events: auto;
             cursor: pointer;
@@ -2309,12 +2326,31 @@ $database->closeConnection();
     // Função para selecionar resposta (botão de múltipla escolha)
     window.selecionarResposta = function(button) {
         console.log('Resposta selecionada:', button.dataset.id, button.textContent);
-        document.querySelectorAll(".btn-resposta").forEach(btn => {
-            btn.classList.remove("selected", "btn-primary");
-            btn.classList.add("btn-outline-primary");
+        
+        // Remover mensagens de erro existentes
+        document.querySelectorAll('.alert-warning').forEach(alert => {
+            if (alert.textContent.includes('Selecione') || alert.textContent.includes('resposta')) {
+                alert.remove();
+            }
         });
+        
+        // Remover seleção de todos os botões
+        document.querySelectorAll(".btn-resposta").forEach(btn => {
+            btn.classList.remove("selected", "btn-primary", "btn-success", "selecionada", "active");
+            btn.classList.add("btn-outline-primary");
+            btn.style.pointerEvents = 'auto';
+            btn.style.cursor = 'pointer';
+            btn.removeAttribute('data-selected');
+        });
+        
+        // Selecionar o botão clicado
         button.classList.remove("btn-outline-primary");
-        button.classList.add("selected", "btn-primary");
+        button.classList.add("selected", "btn-primary", "selecionada", "active");
+        button.setAttribute('data-selected', 'true');
+        
+        // Garantir que o botão seja clicável
+        button.style.pointerEvents = 'auto';
+        button.style.cursor = 'pointer';
         
         // Para múltipla escolha, usar o índice numérico
         if (button.dataset.id && !isNaN(button.dataset.id)) {
@@ -2333,7 +2369,7 @@ $database->closeConnection();
         }
         
         // Para exercícios de texto livre, pegar valor do textarea
-        if (!respostaSelecionada) {
+        if (!respostaSelecionada && respostaSelecionada !== 0) {
             const textareaResposta = document.getElementById('respostaTextoLivre');
             if (textareaResposta) {
                 respostaSelecionada = textareaResposta.value.trim();
@@ -2341,15 +2377,28 @@ $database->closeConnection();
         }
         
         // Para exercícios de completar, pegar valor do input
-        if (!respostaSelecionada) {
+        if (!respostaSelecionada && respostaSelecionada !== 0) {
             const inputCompletar = document.getElementById('respostaCompletar');
             if (inputCompletar) {
                 respostaSelecionada = inputCompletar.value.trim();
             }
         }
         
-        if (!respostaSelecionada) {
-            alert("Selecione uma resposta ou digite sua resposta");
+        // Verificar se há botão selecionado
+        if (!respostaSelecionada && respostaSelecionada !== 0) {
+            const botaoSelecionado = document.querySelector('.btn-resposta.selected, .btn-resposta[data-selected="true"]');
+            if (botaoSelecionado && botaoSelecionado.dataset.id !== undefined) {
+                respostaSelecionada = !isNaN(botaoSelecionado.dataset.id) ? parseInt(botaoSelecionado.dataset.id) : botaoSelecionado.dataset.id;
+            }
+        }
+        
+        if (!respostaSelecionada && respostaSelecionada !== 0) {
+            // Remover mensagens de erro existentes
+            document.querySelectorAll('.alert-warning').forEach(alert => {
+                if (alert.textContent.includes('Selecione') || alert.textContent.includes('resposta')) {
+                    alert.remove();
+                }
+            });
             return;
         }
 
