@@ -1031,7 +1031,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     </script>
-    
 
     <div vw class="enabled">
     <div vw-access-button class="active"></div>
@@ -1050,8 +1049,8 @@ document.addEventListener('DOMContentLoaded', function() {
         /* Botão de Acessibilidade */
         .accessibility-widget {
             position: fixed;
-            bottom: 70px;
-            right: 10px;
+            bottom: 50px;
+            right: 5px;
             z-index: 10000;
             font-family: 'arial';
         }

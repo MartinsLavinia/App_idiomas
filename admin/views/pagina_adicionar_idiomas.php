@@ -1429,8 +1429,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     </script>
 
-       
-  <div vw class="enabled">
+   <div vw class="enabled">
     <div vw-access-button class="active"></div>
     <div vw-plugin-wrapper>
       <div class="vw-plugin-top-wrapper"></div>
@@ -1447,8 +1446,8 @@ document.addEventListener('DOMContentLoaded', function() {
         /* Botão de Acessibilidade */
         .accessibility-widget {
             position: fixed;
-            bottom: 10px;
-            right: 20px;
+            bottom: 50px;
+            right: 5px;
             z-index: 10000;
             font-family: 'arial';
         }
