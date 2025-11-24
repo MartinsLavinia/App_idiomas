@@ -45,21 +45,35 @@ if (!isset($_COOKIE['cookie_consent'])) :
     transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 .cookie-banner .btn-aceitar {
-    background-color: #7c3aed; /* Roxo do tema */
+    background-color: #7c3aed;
     color: #ffffff;
+    border: none;
+    padding: 10px 30px;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: all 0.3s ease;
 }
+
 .cookie-banner .btn-aceitar:hover {
-    background-color: #581c87; /* Roxo mais escuro */
+    background-color: #6d28d9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(124, 58, 237, 0.4);
 }
+
 .cookie-banner .btn-recusar {
     background-color: transparent;
-    color: #a78bfa; /* Um roxo mais claro para diferenciar */
-    border: 2px solid #581c87;
-    padding: 8px 25px; /* Padding ajustado por causa da borda */
+    color: #ffffffff;
+    border: 2px solid #edb43aff;
+    padding: 8px 25px;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s ease;
 }
+
 .cookie-banner .btn-recusar:hover {
-    background-color: #581c87;
-    color: #ffffff;
+    background-color: #edb43aff;
+    color: #000000ff;
+    transform: translateY(-2px);
 }
 </style>
 

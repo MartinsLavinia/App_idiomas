@@ -217,6 +217,7 @@
     .mobile-buttons .btn-outline {
         flex: 1;
         text-align: center;
+        text-decoration: none;
     }
 
     /* Seção Welcome */
@@ -2152,13 +2153,13 @@
 
         <!-- Menu mobile expandido -->
         <div class="mobile-menu" id="mobileMenu">
-            <div class="mobile-menu-content">
-                <div class="mobile-buttons">
-                    <button class="btn-primary">Entrar</button>
-                    <button class="btn-outline">Cadastre-se</button>
-                </div>
-            </div>
+    <div class="mobile-menu-content">
+        <div class="mobile-buttons">
+            <a href="public/views/login.php" class="btn-primary">Entrar</a>
+            <a href="public/views/cadastro.php" class="btn-outline">Cadastre-se</a>
         </div>
+    </div>   
+</div>
     </header>
 
     <!-- Seção 1: Boas-vindas -->
@@ -2545,10 +2546,10 @@
         /* Botão de Acessibilidade */
         .accessibility-widget {
             position: fixed;
-            bottom: 20px;
+            bottom: 70px;
             right: 20px;
             z-index: 10000;
-            font-family: 'Inter', sans-serif;
+            font-family: 'arial';
         }
 
         .accessibility-toggle {
