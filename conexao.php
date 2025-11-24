@@ -1,10 +1,10 @@
 <?php
 // Classe para gerenciar a conexão com o banco de dados
 class Database {
-    private $host = "sh-pro66.hostgator.com.br";
-    private $user = "devgom44_aims-sub1";
-    private $password = "aims-sub1@1234!";
-    private $database = "devgom44_aims-sub1";
+    private $host = "localhost";
+    private $user = "root";
+    private $password = "Home@spSENAI2025!";
+    private $database = "site_idiomas";
     public $conn;
 
     // Construtor da classe que estabelece a conexão automaticamente

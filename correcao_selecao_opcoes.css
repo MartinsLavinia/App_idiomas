@@ -1,0 +1,276 @@
+/**
+ * Estilos para correção de seleção de opções
+ * Melhora a visualização e feedback das opções selecionadas
+ */
+
+/* Estilos base para opções */
+.alternativa, 
+.opcao-exercicio, 
+.option-audio {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    background: #f8f9fa;
+    position: relative;
+    user-select: none;
+}
+
+.alternativa:hover, 
+.opcao-exercicio:hover, 
+.option-audio:hover {
+    background: #e9ecef;
+    border-color: #007bff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.15);
+}
+
+/* Estados de seleção */
+.alternativa.selecionada, 
+.alternativa.selected,
+.opcao-exercicio.selecionada, 
+.opcao-exercicio.selected,
+.option-audio.selecionada, 
+.option-audio.selected {
+    background: #e3f2fd !important;
+    border-color: #2196f3 !important;
+    color: #1976d2;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+}
+
+.alternativa.selecionada::before, 
+.alternativa.selected::before,
+.opcao-exercicio.selecionada::before, 
+.opcao-exercicio.selected::before,
+.option-audio.selecionada::before, 
+.option-audio.selected::before {
+    content: "✓";
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #2196f3;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+/* Estados de resposta correta/incorreta */
+.alternativa.resposta-correta, 
+.opcao-exercicio.resposta-correta, 
+.option-audio.resposta-correta,
+.alternativa.option-correct, 
+.opcao-exercicio.option-correct, 
+.option-audio.option-correct {
+    background: #d4edda !important;
+    border-color: #28a745 !important;
+    color: #155724;
+}
+
+.alternativa.resposta-correta::before, 
+.opcao-exercicio.resposta-correta::before, 
+.option-audio.resposta-correta::before,
+.alternativa.option-correct::before, 
+.opcao-exercicio.option-correct::before, 
+.option-audio.option-correct::before {
+    content: "✅";
+    color: #28a745;
+}
+
+.alternativa.resposta-incorreta, 
+.opcao-exercicio.resposta-incorreta, 
+.option-audio.resposta-incorreta,
+.alternativa.option-incorrect, 
+.opcao-exercicio.option-incorrect, 
+.option-audio.option-incorrect {
+    background: #f8d7da !important;
+    border-color: #dc3545 !important;
+    color: #721c24;
+}
+
+.alternativa.resposta-incorreta::before, 
+.opcao-exercicio.resposta-incorreta::before, 
+.option-audio.resposta-incorreta::before,
+.alternativa.option-incorrect::before, 
+.opcao-exercicio.option-incorrect::before, 
+.option-audio.option-incorrect::before {
+    content: "❌";
+    color: #dc3545;
+}
+
+/* Desabilitar opções após resposta */
+.alternativa[disabled], 
+.opcao-exercicio[disabled], 
+.option-audio[disabled] {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+/* Botões de responder */
+.btn-responder, 
+.btn-submit-exercicio {
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+.btn-responder:disabled, 
+.btn-submit-exercicio:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-responder:not(:disabled):hover, 
+.btn-submit-exercicio:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Mensagens de erro/aviso */
+.mensagem-selecao-erro {
+    animation: slideIn 0.3s ease-out;
+    border-left: 4px solid #ffc107;
+    margin: 16px 0;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Container de opções */
+.opcoes-container, 
+.alternativas-container {
+    margin: 20px 0;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .alternativa, 
+    .opcao-exercicio, 
+    .option-audio {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+    
+    .alternativa.selecionada::before, 
+    .alternativa.selected::before,
+    .opcao-exercicio.selecionada::before, 
+    .opcao-exercicio.selected::before,
+    .option-audio.selecionada::before, 
+    .option-audio.selected::before {
+        font-size: 16px;
+        right: 8px;
+    }
+}
+
+/* Estados de loading */
+.btn-responder.loading, 
+.btn-submit-exercicio.loading {
+    position: relative;
+    color: transparent;
+}
+
+.btn-responder.loading::after, 
+.btn-submit-exercicio.loading::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Melhorias para acessibilidade */
+.alternativa:focus, 
+.opcao-exercicio:focus, 
+.option-audio:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+/* Indicador visual para opções obrigatórias */
+.exercicio-container.obrigatorio .opcoes-container::before {
+    content: "* Selecione uma opção";
+    display: block;
+    color: #6c757d;
+    font-size: 12px;
+    margin-bottom: 8px;
+    font-style: italic;
+}
+
+/* Animação de pulse para chamar atenção */
+.alternativa.pulse, 
+.opcao-exercicio.pulse, 
+.option-audio.pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(33, 150, 243, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(33, 150, 243, 0);
+    }
+}
+
+/* Estilos para exercícios específicos */
+.exercicio-listening .option-audio {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.exercicio-fala .opcao-exercicio {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+}
+
+/* Correções para temas escuros */
+@media (prefers-color-scheme: dark) {
+    .alternativa, 
+    .opcao-exercicio, 
+    .option-audio {
+        background: #343a40;
+        color: #ffffff;
+        border-color: #495057;
+    }
+    
+    .alternativa:hover, 
+    .opcao-exercicio:hover, 
+    .option-audio:hover {
+        background: #495057;
+        border-color: #007bff;
+    }
+    
+    .alternativa.selecionada, 
+    .alternativa.selected,
+    .opcao-exercicio.selecionada, 
+    .opcao-exercicio.selected,
+    .option-audio.selecionada, 
+    .option-audio.selected {
+        background: #1e3a5f !important;
+        border-color: #2196f3 !important;
+        color: #64b5f6;
+    }
+}
