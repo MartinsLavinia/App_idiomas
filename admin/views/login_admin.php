@@ -103,23 +103,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             100% { transform: translate3d(85px, 0, 0); }
         }
 
-        /* Título da área do administrador */
-        .admin-title {
-            z-index: 2;
-            position: relative;
-            text-align: center;
-            font-size: 2.5rem;
-            font-weight: 800;
-            padding-top: 50px;
-            color: var(--white-text);
-        }
-
         .form-container {
             position: relative;
             z-index: 3;
             padding: 2rem;
-            max-width: 400px;
-            width: 90%;
+            max-width: 600px;
+            width: 95%;
             text-align: center;
             margin: auto;
             transform: translateY(-40px);
@@ -129,6 +118,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: start;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-left {
+            text-align: left;
+        }
+
+        .form-right {
+            text-align: left;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .form-left, .form-right {
+                text-align: center;
+            }
+            
+            .form-container {
+                max-width: 400px;
+                padding: 1.5rem;
+            }
         }
 
         .form-container h2 {
@@ -222,8 +243,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             transform: translateY(-2px);
         }
 
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .links-container {
             margin-top: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         .links-container a {
@@ -231,68 +263,157 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             text-decoration: none;
             font-weight: 600;
             transition: color 0.3s;
+            font-size: 0.9rem;
         }
 
         .links-container a:hover {
             color: #fde047;
         }
 
-        .social-login {
-            margin-top: 1.5rem;
-        }
 
-        .social-login button {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--white-text);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 12px;
-            padding: 12px;
-            width: 100%;
-            margin-bottom: 10px;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: background 0.3s, transform 0.2s;
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            cursor: pointer;
-        }
-
-        .social-login button:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
     </style>
 </head>
 <body>
-    <div class="background-container"></div>
-
-    <!-- Título no topo da página -->
-    <h1 class="admin-title">Área do Administrador</h1>
+    <div class="background-container">
+        <canvas id="particles-js"></canvas>
+        <!-- Ondas SVG -->
+        <svg class="waves" xmlns="http://www.w3.org/2000/svg" viewBox="0 24 150 28" preserveAspectRatio="none">
+            <defs>
+                <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+            </defs>
+            <g class="parallax">
+                <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7)" />
+                <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
+                <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
+            </g>
+        </svg>
+    </div>
 
     <div class="form-container">
-        <!-- Logo dentro do form, centralizada -->
         <img src="../../imagens/logo-idiomas.png" alt="Logo" style="width: 150px; display: block; margin: 0 auto 20px auto;">
-
-        <h2>Bem-vindo(a) Administrador(a)</h2>
+        <h2>Área do Administrador</h2>
+        <p>Faça login na sua conta administrativa</p>
 
         <form action="login_admin.php" method="POST" id="formLogin">
-            <div class="input-group">
-                <input type="text" id="nome_usuario" name="nome_usuario" placeholder="Nome de Usuário" required>
-            </div>
-            <div class="input-group">
-                <input type="password" id="senha" name="senha" placeholder="Senha" required>
-                <button type="button" class="password-toggle" id="toggleSenha">
-                    <i class="fas fa-eye"></i>
-                </button>
-            </div>
-            <div class="links-container text-end">
-                <a href="esqueci_senha_admin.php">Esqueci a senha</a>
+            <div class="form-grid">
+                <div class="form-left">
+                    <div class="input-group">
+                        <input type="text" id="nome_usuario" name="nome_usuario" placeholder="Nome de Usuário" required>
+                    </div>
+                </div>
+                <div class="form-right">
+                    <div class="input-group">
+                        <input type="password" id="senha" name="senha" placeholder="Senha" required>
+                        <button type="button" class="password-toggle" id="toggleSenha">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
             <button type="submit" class="btn-login" id="btnLogin">
                 <span id="btnText">Entrar</span>
+                <span class="spinner-border spinner-border-sm d-none" id="btnSpinner" role="status" aria-hidden="true"></span>
+            </button>
+        </form>
+
+        <div class="links-container">
+            <a href="esqueci_senha_admin.php">Esqueci a senha</a>
+            <span style="color: rgba(255, 255, 255, 0.6);"> | </span>
+            <a href="registrar_admin.php">Criar conta admin</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleSenha = document.getElementById('toggleSenha');
+            const senhaInput = document.getElementById('senha');
+            const toggleIcon = toggleSenha.querySelector('i');
+            const formLogin = document.getElementById('formLogin');
+            const btnLogin = document.getElementById('btnLogin');
+            const btnText = document.getElementById('btnText');
+            const btnSpinner = document.getElementById('btnSpinner');
+
+            // Função para mostrar/ocultar senha
+            function togglePasswordVisibility() {
+                if (senhaInput.type === 'password') {
+                    senhaInput.type = 'text';
+                    toggleIcon.classList.remove('fa-eye');
+                    toggleIcon.classList.add('fa-eye-slash');
+                } else {
+                    senhaInput.type = 'password';
+                    toggleIcon.classList.remove('fa-eye-slash');
+                    toggleIcon.classList.add('fa-eye');
+                }
+            }
+            toggleSenha.addEventListener('click', togglePasswordVisibility);
+
+            // Loading state no formulário
+            formLogin.addEventListener('submit', function() {
+                btnText.textContent = "Entrando...";
+                btnSpinner.classList.remove('d-none');
+                btnLogin.disabled = true;
+            });
+
+            // Particle animation
+            const canvas = document.getElementById('particles-js');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            let w, h;
+
+            function resizeCanvas() {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+            }
+
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            function createParticle() {
+                return {
+                    x: Math.random() * w,
+                    y: Math.random() * h,
+                    radius: Math.random() * 2,
+                    color: `rgba(255, 255, 255, ${Math.random() * 0.5 + 0.5})`,
+                    velocity: {
+                        x: (Math.random() - 0.5) * 0.5,
+                        y: (Math.random() - 0.5) * 0.5,
+                    }
+                };
+            }
+
+            function init() {
+                particles = [];
+                for (let i = 0; i < 100; i++) {
+                    particles.push(createParticle());
+                }
+            }
+
+            function drawParticles() {
+                ctx.clearRect(0, 0, w, h);
+                for (let i = 0; i < particles.length; i++) {
+                    const p = particles[i];
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.fill();
+
+                    p.x += p.velocity.x;
+                    p.y += p.velocity.y;
+
+                    if (p.x < 0 || p.x > w || p.y < 0 || p.y > h) {
+                        particles[i] = createParticle();
+                    }
+                }
+                requestAnimationFrame(drawParticles);
+            }
+
+            init();
+            drawParticles();
+        });
+    </script>
+</body>
+</html>r</span>
                 <span class="spinner-border spinner-border-sm d-none" id="btnSpinner" role="status" aria-hidden="true"></span>
             </button>
         </form>

@@ -2528,8 +2528,7 @@
     include 'cookie_banner.php';
     ?>
 
-
-  <div vw class="enabled">
+ <div vw class="enabled">
     <div vw-access-button class="active"></div>
     <div vw-plugin-wrapper>
       <div class="vw-plugin-top-wrapper"></div>
@@ -2546,8 +2545,8 @@
         /* Botão de Acessibilidade */
         .accessibility-widget {
             position: fixed;
-            bottom: 70px;
-            right: 20px;
+            bottom: 50px;
+            right: 5px;
             z-index: 10000;
             font-family: 'arial';
         }

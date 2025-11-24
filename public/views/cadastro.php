@@ -197,8 +197,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             position: relative;
             z-index: 3;
             padding: 2rem;
-            max-width: 400px;
-            width: 90%;
+            max-width: 900px;
+            width: 95%;
             text-align: center;
             margin: auto;
             transform: translateY(-40px);
@@ -208,6 +208,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .form-left {
+            text-align: left;
+        }
+
+        .form-right {
+            text-align: left;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .form-left {
+                text-align: center;
+            }
+            
+            .form-container {
+                max-width: 500px;
+                padding: 1.5rem;
+            }
         }
 
         .form-container h2 {
@@ -319,33 +350,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             color: #fde047;
         }
 
-        .social-login {
-            margin-top: 1.5rem;
-        }
 
-        .social-login button {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--white-text);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 12px;
-            padding: 12px;
-            width: 100%;
-            margin-bottom: 10px;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: background 0.3s, transform 0.2s;
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            cursor: pointer;
-        }
-
-        .social-login button:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
 
         /* Estilos para o medidor de força da senha */
         .password-strength-meter {
@@ -444,56 +449,58 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <?php endif; ?>
 
         <form action="cadastro.php" method="POST" id="form-cadastro">
-            <div class="input-group">
-                <input type="text" id="nome" name="nome" placeholder="Nome Completo" required>
-            </div>
-            <div class="input-group">
-                <input type="email" id="email" name="email" placeholder="E-mail" required>
-            </div>
-            <div class="input-group">
-                <input type="password" id="senha" name="senha" placeholder="Senha" required>
-                <button type="button" class="password-toggle" id="toggleSenha">
-                    <i class="fas fa-eye"></i>
-                </button>
-            </div>
-            <!-- Medidor de Força da Senha -->
-            <div class="password-strength-meter">
-                <div class="strength-bar">
-                    <div id="strength-fill" class="strength-fill"></div>
+            <div class="form-grid">
+                <div class="form-left">
+                    <div class="input-group">
+                        <input type="text" id="nome" name="nome" placeholder="Nome Completo" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="email" id="email" name="email" placeholder="E-mail" required>
+                    </div>
                 </div>
-                <div id="strength-text" class="strength-text"></div>
-            </div>
-            
-            <!-- Mensagem de senha fraca -->
-            <div id="weak-password-message" class="weak-password-message">
-                Senha fraca. Crie uma senha mais forte.
-            </div>
-            
-            <div class="input-group">
-                <select class="form-select" id="idioma" name="idioma" required>
-                    <option value="" disabled selected>Selecione seu primeiro idioma</option>
-                    <?php foreach ($idiomas as $idioma_item): ?>
-                        <option value="<?php echo htmlspecialchars($idioma_item['nome_idioma']); ?>">
-                            <?php echo htmlspecialchars($idioma_item['nome_idioma']); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+
+                <div class="form-right">
+                    <div class="input-group">
+                        <select class="form-select" id="idioma" name="idioma" required>
+                            <option value="" disabled selected>Selecione seu primeiro idioma</option>
+                            <?php foreach ($idiomas as $idioma_item): ?>
+                                <option value="<?php echo htmlspecialchars($idioma_item['nome_idioma']); ?>">
+                                    <?php echo htmlspecialchars($idioma_item['nome_idioma']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="senha" name="senha" placeholder="Senha" required>
+                        <button type="button" class="password-toggle" id="toggleSenha">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <!-- Medidor de Força da Senha -->
+                    <div class="password-strength-meter">
+                        <div class="strength-bar">
+                            <div id="strength-fill" class="strength-fill"></div>
+                        </div>
+                        <div id="strength-text" class="strength-text"></div>
+                    </div>
+                    
+                    <!-- Mensagem de senha fraca -->
+                    <div id="weak-password-message" class="weak-password-message">
+                        Senha fraca. Crie uma senha mais forte.
+                    </div>
+                </div>
             </div>
 
-            <button type="submit" class="btn-login" id="btn-cadastrar">Cadastrar e Começar Quiz</button>
+            <div style="text-align: center; margin-top: 2rem;">
+                <button type="submit" class="btn-login" id="btn-cadastrar">Cadastrar e Começar Quiz</button>
+                
+                <div class="links-container">
+                    <p style="font-size: 0.9rem; margin-top: 1rem; color: rgba(255, 255, 255, 0.6);">
+                        Já tem uma conta? <a href="login.php" style="color: var(--yellow-accent);">Faça login aqui</a>
+                    </p>
+                </div>
+            </div>
         </form>
-
-        <div class="social-login">
-            <button type="button" onclick="window.location.href='google_oauth.php?action=register'">
-                <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google logo"> Cadastrar com Google
-            </button>
-        </div>
-
-        <div class="links-container">
-            <p style="font-size: 0.9rem; margin-top: 1rem; color: rgba(255, 255, 255, 0.6);">
-                Já tem uma conta? <a href="login.php" style="color: var(--yellow-accent);">Faça login aqui</a>
-            </p>
-        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

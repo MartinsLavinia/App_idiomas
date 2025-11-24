@@ -138,8 +138,8 @@ ob_end_flush();
             position: relative;
             z-index: 3;
             padding: 2rem;
-            max-width: 400px;
-            width: 90%;
+            max-width: 600px;
+            width: 95%;
             text-align: center;
             margin: auto;
             transform: translateY(-40px);
@@ -149,6 +149,38 @@ ob_end_flush();
             border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: start;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-left {
+            text-align: left;
+        }
+
+        .form-right {
+            text-align: left;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .form-left, .form-right {
+                text-align: center;
+            }
+            
+            .form-container {
+                max-width: 400px;
+                padding: 1.5rem;
+            }
         }
 
         .form-container h2 {
@@ -331,14 +363,20 @@ ob_end_flush();
         <?php endif; ?>
 
         <form action="login.php" method="POST" id="formLogin">
-            <div class="input-group">
-                <input type="email" id="email" name="email" placeholder="E-mail" required>
-            </div>
-            <div class="input-group">
-                <input type="password" id="senha" name="senha" placeholder="Senha" required>
-                <button type="button" class="password-toggle" id="toggleSenha">
-                    <i class="fas fa-eye"></i>
-                </button>
+            <div class="form-grid">
+                <div class="form-left">
+                    <div class="input-group">
+                        <input type="email" id="email" name="email" placeholder="E-mail" required>
+                    </div>
+                </div>
+                <div class="form-right">
+                    <div class="input-group">
+                        <input type="password" id="senha" name="senha" placeholder="Senha" required>
+                        <button type="button" class="password-toggle" id="toggleSenha">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
             <button type="submit" class="btn-login" id="btnLogin">
                 <span id="btnText">Entrar</span>
@@ -352,12 +390,7 @@ ob_end_flush();
             <a href="cadastro.php">Crie uma conta</a>
         </div>
         
-        <div class="social-login">
-            <p>Ou entre com:</p>
-            <button type="button" onclick="window.location.href='google_oauth.php?action=login'">
-                <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google logo"> Google
-            </button>
-        </div>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -469,7 +502,8 @@ ob_end_flush();
     </script>
 
     
-  <div vw class="enabled">
+ 
+ <div vw class="enabled">
     <div vw-access-button class="active"></div>
     <div vw-plugin-wrapper>
       <div class="vw-plugin-top-wrapper"></div>
@@ -486,8 +520,8 @@ ob_end_flush();
         /* Botão de Acessibilidade */
         .accessibility-widget {
             position: fixed;
-            bottom: 70px;
-            right: 20px;
+            bottom: 50px;
+            right: 5px;
             z-index: 10000;
             font-family: 'arial';
         }
