@@ -83,6 +83,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         z-index: 0;
     }
 
+    #particles-js {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: 1;
+    }
+
     .waves {
         position: absolute;
         bottom: 0;
@@ -126,8 +135,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         position: relative;
         z-index: 3;
         padding: 2rem;
-        max-width: 400px;
-        width: 90%;
+        max-width: 600px;
+        width: 95%;
         text-align: center;
         margin: 20px auto;
         transform: translateY(-40px);
@@ -137,6 +146,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         border-radius: 20px;
         border: 1px solid rgba(255, 255, 255, 0.2);
         box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        align-items: start;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-left {
+        text-align: left;
+    }
+
+    .form-right {
+        text-align: left;
+    }
+
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .form-left, .form-right {
+            text-align: center;
+        }
+        
+        .form-container {
+            max-width: 400px;
+            padding: 1.5rem;
+        }
     }
 
     .form-container h2 {
@@ -301,17 +342,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 
 <body>
-    <div class="background-container"></div>
-
-    <h1
-        style="color: #fff; font-size: 2rem; font-weight: 800; margin-bottom: 100px; text-align: center; z-index: 3; position: relative;">
-        Área do Administrador
-    </h1>
+    <div class="background-container">
+        <canvas id="particles-js"></canvas>
+        <!-- Ondas SVG -->
+        <svg class="waves" xmlns="http://www.w3.org/2000/svg" viewBox="0 24 150 28" preserveAspectRatio="none">
+            <defs>
+                <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+            </defs>
+            <g class="parallax">
+                <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7)" />
+                <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
+                <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
+            </g>
+        </svg>
+    </div>
 
     <div class="form-container">
-        <img src="../../imagens/logo-idiomas.png" alt="Logo"
-            style="width: 150px; display: block; margin: 0 auto 20px auto;">
-        <h2>Cadastro de Novo Administrador(a)</h2>
+        <img src="../../imagens/logo-idiomas.png" alt="Logo" style="width: 150px; display: block; margin: 0 auto 20px auto;">
+        <h2>Cadastro de Administrador</h2>
+        <p style="color: rgba(255, 255, 255, 0.8); margin-bottom: 1.5rem;">Preencha os dados para criar uma conta administrativa</p>
 
         <?php if (!empty($erro_cadastro)): ?>
         <div class="alert-danger">
@@ -320,11 +369,197 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <?php endif; ?>
 
         <form action="registrar_admin.php" method="POST" id="form-cadastro">
-            <div class="mb-3">
-                <input type="text" class="form-control" id="nome_usuario" name="nome_usuario"
-                    placeholder="Nome de Usuário" required>
+            <div class="form-grid">
+                <div class="form-left">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="nome_usuario" name="nome_usuario" placeholder="Nome de Usuário" required>
+                    </div>
+                </div>
+                <div class="form-right">
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="senha" name="senha" placeholder="Senha" required>
+                        <button type="button" class="password-toggle" id="toggleSenha">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <!-- Medidor de Força da Senha -->
+                    <div class="password-strength-meter">
+                        <div class="strength-bar">
+                            <div id="strength-fill" class="strength-fill"></div>
+                        </div>
+                        <div id="strength-text" class="strength-text"></div>
+                    </div>
+                    
+                    <!-- Mensagem de senha fraca -->
+                    <div id="weak-password-message" class="weak-password-message">
+                        Senha fraca. Crie uma senha mais forte.
+                    </div>
+                </div>
             </div>
-            <div class="mb-3" style="position: relative;">
+
+            <button type="submit" class="btn-login" id="btn-cadastrar">Cadastrar Administrador</button>
+        </form>
+
+        <div style="margin-top: 1rem; text-align: center;">
+            <a href="login_admin.php">Já tem uma conta? Faça login aqui</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const senhaInput = document.getElementById('senha');
+            const strengthFill = document.getElementById('strength-fill');
+            const strengthText = document.getElementById('strength-text');
+            const btnCadastrar = document.getElementById('btn-cadastrar');
+            const formCadastro = document.getElementById('form-cadastro');
+            const weakPasswordMessage = document.getElementById('weak-password-message');
+            const toggleSenha = document.getElementById('toggleSenha');
+            const toggleIcon = toggleSenha.querySelector('i');
+
+            // Função para mostrar/ocultar senha
+            function togglePasswordVisibility() {
+                if (senhaInput.type === 'password') {
+                    senhaInput.type = 'text';
+                    toggleIcon.classList.remove('fa-eye');
+                    toggleIcon.classList.add('fa-eye-slash');
+                } else {
+                    senhaInput.type = 'password';
+                    toggleIcon.classList.remove('fa-eye-slash');
+                    toggleIcon.classList.add('fa-eye');
+                }
+            }
+            toggleSenha.addEventListener('click', togglePasswordVisibility);
+
+            let forcaSenhaAtual = 0;
+
+            function atualizarForcaSenha(senha) {
+                let score = 0;
+                let feedback = '';
+
+                if (senha.length === 0) {
+                    score = 0;
+                    feedback = '';
+                } else {
+                    if (senha.length >= 8) score++;
+                    if (/[a-z]/.test(senha)) score++;
+                    if (/[A-Z]/.test(senha)) score++;
+                    if (/[0-9]/.test(senha)) score++;
+                    if (/[^a-zA-Z0-9]/.test(senha)) score++;
+                }
+
+                let width = (score / 5) * 100;
+                strengthFill.style.width = width + '%';
+                strengthFill.className = 'strength-fill';
+
+                if (senha.length === 0) {
+                    strengthText.textContent = '';
+                    weakPasswordMessage.style.display = 'none';
+                } else if (score <= 2) {
+                    feedback = 'Senha fraca';
+                    strengthFill.classList.add('strength-weak');
+                    strengthText.className = 'strength-text text-weak';
+                    weakPasswordMessage.style.display = 'block';
+                } else if (score <= 4) {
+                    feedback = 'Senha média';
+                    strengthFill.classList.add('strength-medium');
+                    strengthText.className = 'strength-text text-medium';
+                    weakPasswordMessage.style.display = 'none';
+                } else {
+                    feedback = 'Senha forte';
+                    strengthFill.classList.add('strength-strong');
+                    strengthText.className = 'strength-text text-strong';
+                    weakPasswordMessage.style.display = 'none';
+                }
+
+                strengthText.textContent = feedback;
+                forcaSenhaAtual = score;
+                atualizarEstadoBotao();
+            }
+
+            function atualizarEstadoBotao() {
+                if (forcaSenhaAtual <= 2 && senhaInput.value.length > 0) {
+                    btnCadastrar.disabled = true;
+                    btnCadastrar.title = 'A senha é muito fraca. Melhore sua senha para continuar.';
+                } else {
+                    btnCadastrar.disabled = false;
+                    btnCadastrar.title = '';
+                }
+            }
+
+            senhaInput.addEventListener('input', function() {
+                atualizarForcaSenha(this.value);
+            });
+
+            formCadastro.addEventListener('submit', function(e) {
+                const senha = senhaInput.value;
+                if (forcaSenhaAtual <= 2) {
+                    e.preventDefault();
+                    alert('Por favor, escolha uma senha mais forte.');
+                    senhaInput.focus();
+                }
+            });
+
+            // Particle animation
+            const canvas = document.getElementById('particles-js');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            let w, h;
+
+            function resizeCanvas() {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+            }
+
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            function createParticle() {
+                return {
+                    x: Math.random() * w,
+                    y: Math.random() * h,
+                    radius: Math.random() * 2,
+                    color: `rgba(255, 255, 255, ${Math.random() * 0.5 + 0.5})`,
+                    velocity: {
+                        x: (Math.random() - 0.5) * 0.5,
+                        y: (Math.random() - 0.5) * 0.5,
+                    }
+                };
+            }
+
+            function init() {
+                particles = [];
+                for (let i = 0; i < 100; i++) {
+                    particles.push(createParticle());
+                }
+            }
+
+            function drawParticles() {
+                ctx.clearRect(0, 0, w, h);
+                for (let i = 0; i < particles.length; i++) {
+                    const p = particles[i];
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.fill();
+
+                    p.x += p.velocity.x;
+                    p.y += p.velocity.y;
+
+                    if (p.x < 0 || p.x > w || p.y < 0 || p.y > h) {
+                        particles[i] = createParticle();
+                    }
+                }
+                requestAnimationFrame(drawParticles);
+            }
+
+            init();
+            drawParticles();
+            atualizarEstadoBotao();
+        });
+    </script>
+</body>
+</html>v class="mb-3" style="position: relative;">
                 <input type="password" class="form-control" id="senha" name="senha" placeholder="Senha" required>
                 <button type="button" class="password-toggle" id="toggleSenha">
                     <i class="fas fa-eye"></i>

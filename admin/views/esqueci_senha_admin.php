@@ -112,6 +112,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             z-index: 0;
         }
 
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
         .waves {
             position: absolute;
             bottom: 0;
@@ -147,8 +156,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             position: relative;
             z-index: 3;
             padding: 2rem;
-            max-width: 450px;
-            width: 90%;
+            max-width: 600px;
+            width: 95%;
             text-align: center;
             margin: auto;
             backdrop-filter: blur(10px);
@@ -157,6 +166,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: start;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-left {
+            text-align: left;
+        }
+
+        .form-right {
+            text-align: left;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .form-left, .form-right {
+                text-align: center;
+            }
+            
+            .form-container {
+                max-width: 450px;
+                padding: 1.5rem;
+            }
         }
 
         .form-container h2 {
@@ -287,48 +328,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </style>
 </head>
 <body>
-    <div class="background-container"></div>
-
-    <!-- Onda animada -->
-    <svg class="waves" xmlns="http://www.w3.org/2000/svg" viewBox="0 24 150 28" preserveAspectRatio="none">
-        <defs>
-            <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s58 18 88 18 
-            58-18 88-18 58 18 88 18v44h-352z" />
-        </defs>
-        <g class="parallax">
-            <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.3)" />
-            <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.2)" />
-            <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.1)" />
-        </g>
-    </svg>
+    <div class="background-container">
+        <canvas id="particles-js"></canvas>
+        <!-- Onda animada -->
+        <svg class="waves" xmlns="http://www.w3.org/2000/svg" viewBox="0 24 150 28" preserveAspectRatio="none">
+            <defs>
+                <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+            </defs>
+            <g class="parallax">
+                <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7)" />
+                <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
+                <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
+            </g>
+        </svg>
+    </div>
 
     <div class="form-container">
-        <!-- Logo -->
         <img src="../../imagens/logo-idiomas.png" alt="Logo" style="width: 150px; display: block; margin: 0 auto 20px auto;">
-
-        <h2>Recuperar Senha</h2>
-        <p class="mb-4">Área do Administrador</p>
-
-        <!-- Aviso importante -->
-        <div class="admin-warning">
-            <i class="fas fa-exclamation-triangle"></i>
-            <strong>Atenção:</strong> Esta área é restrita para administradores.
-        </div>
+        <h2>Recuperar Senha - Admin</h2>
+        <p>Digite seu nome de usuário para receber o link de redefinição</p>
 
         <!-- Mensagens de alerta -->
         <?php if (isset($sucesso)): ?>
             <div class="alert alert-success">
                 <i class="fas fa-check-circle"></i> <?php echo $sucesso; ?>
             </div>
-            <div class="info-text">
-                <i class="fas fa-info-circle"></i>
-                <strong>Para testes:</strong> Copie o token acima e use na página de redefinição de senha.
-            </div>
-            <script>
-                setTimeout(function() {
-                    window.location.href = 'login_admin.php';
-                }, 5000);
-            </script>
         <?php endif; ?>
 
         <?php if (isset($erro)): ?>
@@ -337,19 +361,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         <?php endif; ?>
 
-        <!-- Informações -->
-        <div class="info-text">
-            <i class="fas fa-info-circle"></i>
-            Digite seu nome de usuário de administrador para receber o link de redefinição.
+        <!-- Aviso administrativo -->
+        <div class="admin-warning">
+            <i class="fas fa-shield-alt"></i>
+            Esta é uma área restrita para administradores. O token será exibido na tela para fins de desenvolvimento.
         </div>
 
         <form method="POST" id="formRecuperacao">
-            <div class="input-group">
-                <input type="text" id="nome_usuario" name="nome_usuario" placeholder="Nome de usuário" required>
+            <div class="form-grid">
+                <div class="form-left">
+                    <div class="input-group">
+                        <input type="text" id="nome_usuario" name="nome_usuario" placeholder="Nome de Usuário" required>
+                    </div>
+                </div>
+                <div class="form-right">
+                    <div class="info-text">
+                        <i class="fas fa-info-circle"></i>
+                        O token de redefinição será gerado e exibido na tela.
+                    </div>
+                </div>
             </div>
             
             <button type="submit" class="btn-submit" id="btnSubmit">
-                <span id="btnText">Enviar Link de Recuperação</span>
+                <span id="btnText">Gerar Token de Recuperação</span>
                 <span class="spinner-border spinner-border-sm d-none" id="btnSpinner" role="status" aria-hidden="true"></span>
             </button>
         </form>
@@ -371,20 +405,66 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             // Loading state no formulário
             formRecuperacao.addEventListener('submit', function() {
-                btnText.textContent = "Enviando...";
+                btnText.textContent = "Gerando...";
                 btnSpinner.classList.remove('d-none');
                 btnSubmit.disabled = true;
             });
 
-            // Validação básica
-            const usuarioInput = document.getElementById('nome_usuario');
-            usuarioInput.addEventListener('input', function() {
-                if (this.value.length < 3) {
-                    this.style.borderColor = 'rgba(220, 53, 69, 0.6)';
-                } else {
-                    this.style.borderColor = 'rgba(255, 255, 255, 0.4)';
+            // Particle animation
+            const canvas = document.getElementById('particles-js');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            let w, h;
+
+            function resizeCanvas() {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+            }
+
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            function createParticle() {
+                return {
+                    x: Math.random() * w,
+                    y: Math.random() * h,
+                    radius: Math.random() * 2,
+                    color: `rgba(255, 255, 255, ${Math.random() * 0.5 + 0.5})`,
+                    velocity: {
+                        x: (Math.random() - 0.5) * 0.5,
+                        y: (Math.random() - 0.5) * 0.5,
+                    }
+                };
+            }
+
+            function init() {
+                particles = [];
+                for (let i = 0; i < 100; i++) {
+                    particles.push(createParticle());
                 }
-            });
+            }
+
+            function drawParticles() {
+                ctx.clearRect(0, 0, w, h);
+                for (let i = 0; i < particles.length; i++) {
+                    const p = particles[i];
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.fill();
+
+                    p.x += p.velocity.x;
+                    p.y += p.velocity.y;
+
+                    if (p.x < 0 || p.x > w || p.y < 0 || p.y > h) {
+                        particles[i] = createParticle();
+                    }
+                }
+                requestAnimationFrame(drawParticles);
+            }
+
+            init();
+            drawParticles();
         });
     </script>
 </body>
