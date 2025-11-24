@@ -1425,8 +1425,8 @@ document.addEventListener('DOMContentLoaded', function() {
         /* Botão de Acessibilidade */
         .accessibility-widget {
             position: fixed;
-            bottom: 10px;
-            right: 20px;
+            bottom: 50px;
+            right: 5px;
             z-index: 10000;
             font-family: 'arial';
         }
