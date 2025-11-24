@@ -98,7 +98,7 @@ if ($percentual >= 80) {
     <style>
         /* Variáveis de Cores */
     :root {
-        --roxo-principal: #5e3b8b;
+        --roxo-principal: #6a0dad;
         --roxo-claro: #8a6aae;
         --amarelo-destaque: #f5c531;
         --amarelo-botao: #ffd700;
@@ -116,16 +116,28 @@ if ($percentual >= 80) {
         color: var(--cinza-texto);
         line-height: 1.6;
         min-height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start; /* Alinha o card no topo em telas maiores */
-        padding: 3rem 1rem;
+        padding-top: 0;
     }
 
-    /* Container e Card */
+    /* Logo Centralizada */
+    .logo-container {
+        text-align: center;
+        padding: 2rem 1rem 1rem;
+        background-color: var(--fundo-pagina);
+    }
+    
+    .logo-img {
+        height: 120px;
+        max-width: 100%;
+        object-fit: contain;
+    }
+
+    /* CONTAINER MAIS LARGO - mantendo proporções originais */
     .resultado-container {
         width: 100%;
-        max-width: 1000px;
+        max-width: 1400px; /* MAIS LARGO que os 1000px originais */
+        margin: 0 auto 2rem;
+        padding: 0 1rem;
     }
     
     .resultado-card {
@@ -143,20 +155,20 @@ if ($percentual >= 80) {
         to { opacity: 1; transform: translateY(0); }
     }
     
-    /* Header (Cabeçalho do card) */
+    /* Header (Cabeçalho do card) - MAIS LARGO */
     .resultado-header {
-        background: var(--gradiente-roxo);
+        background-color: #6a0dad;
         background-image: linear-gradient(135deg, var(--roxo-principal) 0%, var(--roxo-claro) 100%);
         color: white;
-        padding: 3rem;
+        padding: 3rem 4rem; /* Mais padding horizontal */
         text-align: center;
     }
     
     .pontuacao-display {
         background: rgba(255,255,255,0.2);
         border-radius: 50%;
-        width: 150px;
-        height: 150px;
+        width: 150px; /* Mantém tamanho original */
+        height: 150px; /* Mantém tamanho original */
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -166,19 +178,19 @@ if ($percentual >= 80) {
     }
     
     .pontuacao-numero {
-        font-size: 3.5em;
+        font-size: 3.5em; /* Mantém tamanho original */
         font-weight: 800;
         line-height: 1;
     }
     
     .pontuacao-texto {
-        font-size: 1em;
+        font-size: 1em; /* Mantém tamanho original */
         opacity: 0.9;
     }
     
     .performance-badge {
         display: inline-block;
-        padding: 8px 20px;
+        padding: 8px 20px; /* Mantém tamanho original */
         border-radius: 25px;
         font-weight: bold;
         margin: 10px 0;
@@ -187,16 +199,16 @@ if ($percentual >= 80) {
         position: relative;
     }
     
-    /* Corpo do card com layout em duas colunas para desktop */
+    /* Corpo do card MAIS LARGO - mantendo proporções */
     .resultado-body {
-        padding: 2.5rem;
+        padding: 2.5rem 4rem; /* Mais padding horizontal */
         display: grid;
         grid-template-columns: 1fr 2fr;
-        gap: 3rem;
+        gap: 4rem; /* Gap maior para aproveitar a largura */
         align-items: start;
     }
     
-    /* Estilos para as estatísticas e seções */
+    /* Estilos para as estatísticas e seções - MAIS LARGOS */
     .estatisticas-container {
         grid-column: 1; /* Coluna das estatísticas */
         display: flex;
@@ -210,7 +222,7 @@ if ($percentual >= 80) {
 
     .detalhes-resultado, .secao {
         background: var(--fundo-pagina);
-        padding: 2rem;
+        padding: 2rem 2.5rem; /* Mais padding horizontal */
         border-radius: 15px;
         margin-bottom: 2rem;
         box-shadow: 0 4px 15px rgba(0,0,0,0.05);
@@ -259,7 +271,7 @@ if ($percentual >= 80) {
         box-shadow: 0 4px 10px rgba(245, 197, 49, 0.2);
     }
     
-    /* Botões */
+    /* Botões - mantém tamanho original */
     .btn-custom {
         border-radius: 25px;
         padding: 12px 25px;
@@ -336,7 +348,10 @@ if ($percentual >= 80) {
     @media (max-width: 768px) {
         body {
             padding: 1rem;
-            align-items: center;
+        }
+        .resultado-container {
+            margin: 1rem auto;
+            max-width: 100%; /* Em mobile volta a 100% */
         }
         .resultado-card {
             border-radius: 15px;
@@ -344,6 +359,10 @@ if ($percentual >= 80) {
         .resultado-body {
             grid-template-columns: 1fr; /* Volta a ser uma única coluna */
             gap: 1.5rem;
+            padding: 2.5rem 2rem; /* Padding reduzido em mobile */
+        }
+        .resultado-header {
+            padding: 3rem 2rem; /* Padding reduzido em mobile */
         }
         .detalhes-resultado, .secao {
             padding: 1.5rem;
@@ -358,6 +377,9 @@ if ($percentual >= 80) {
         .btn-custom.w-100 { /* Classe para os botões que devem ocupar 100% em mobile */
             width: 100%;
         }
+        .logo-img {
+            height: 100px;
+        }
     }
 
     @media (max-width: 576px) {
@@ -370,6 +392,9 @@ if ($percentual >= 80) {
         .btn-custom {
             width: 100%; /* Botões ocupam 100% da largura */
             margin: 5px 0;
+        }
+        .logo-img {
+            height: 80px;
         }
     }
 
@@ -405,6 +430,11 @@ if ($percentual >= 80) {
     </style>
 </head>
 <body>
+    <!-- Logo Centralizada -->
+    <div class="logo-container">
+        <img src="../../imagens/logo-idiomas.png" alt="Logo" class="logo-img">
+    </div>
+
     <div class="loading-overlay position-fixed top-0 start-0 w-100 h-100 d-none justify-content-center align-items-center" id="loadingOverlay">
         <div class="loading-content text-center p-4 bg-white rounded-4 shadow-sm">
             <div class="spinner-roxo"></div>
@@ -413,6 +443,7 @@ if ($percentual >= 80) {
         </div>
     </div>
 
+    <!-- CONTAINER MAIS LARGO -->
     <div class="resultado-container">
         <div class="resultado-card">
             <div class="resultado-header">
