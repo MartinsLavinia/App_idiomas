@@ -2587,7 +2587,7 @@
             color: #222;
         }
 
-        .accessibility-header {
+         .accessibility-header {
             background: linear-gradient(135deg, #7c3aed, #a855f7);
             color: white;
             padding: 12px 16px;
