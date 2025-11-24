@@ -371,7 +371,7 @@ ob_end_flush();
                 </div>
                 <div class="form-right">
                     <div class="input-group">
-                        <input type="password" id="senha" name="senha" placeholder="Senha" required>
+                        <input type="password" id="senha" name="senha" placeholder="Senha" required  style="border-radius: 8px;">
                         <button type="button" class="password-toggle" id="toggleSenha">
                             <i class="fas fa-eye"></i>
                         </button>

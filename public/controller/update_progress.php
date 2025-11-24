@@ -5,21 +5,20 @@ include_once __DIR__ . '/../../conexao.php';
 header('Content-Type: application/json');
 
 if (!isset($_SESSION['id_usuario'])) {
-    echo json_encode(['success' => false, 'message' => 'Usuário não logado']);
+    echo json_encode(['success' => false, 'message' => 'Usuário não autenticado']);
     exit();
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Método inválido']);
+    echo json_encode(['success' => false, 'message' => 'Método não permitido']);
     exit();
 }
 
-$user_id = $_SESSION['id_usuario'];
-$caminho_id = $_POST['caminho_id'] ?? null;
-$tipo = $_POST['tipo'] ?? null; // 'bloco' ou 'especial'
+$bloco_id = $_POST['bloco_id'] ?? null;
+$id_usuario = $_SESSION['id_usuario'];
 
-if (!$caminho_id || !$tipo) {
-    echo json_encode(['success' => false, 'message' => 'Dados incompletos']);
+if (!$bloco_id) {
+    echo json_encode(['success' => false, 'message' => 'ID do bloco não fornecido']);
     exit();
 }
 
@@ -27,60 +26,55 @@ $database = new Database();
 $conn = $database->conn;
 
 try {
-    // Verificar progresso atual
-    $sql_check = "SELECT progresso, exercicio_atual FROM progresso_usuario WHERE id_usuario = ? AND caminho_id = ?";
-    $stmt_check = $conn->prepare($sql_check);
-    $stmt_check->bind_param("ii", $user_id, $caminho_id);
-    $stmt_check->execute();
-    $result = $stmt_check->get_result();
+    // Contar total de exercícios no bloco
+    $sql_total = "SELECT COUNT(*) as total FROM exercicios WHERE bloco_id = ?";
+    $stmt_total = $conn->prepare($sql_total);
+    $stmt_total->bind_param("i", $bloco_id);
+    $stmt_total->execute();
+    $total_exercicios = $stmt_total->get_result()->fetch_assoc()['total'];
+    $stmt_total->close();
+
+    // Contar exercícios respondidos pelo usuário
+    $sql_respondidos = "SELECT COUNT(DISTINCT exercicio_id) as respondidos 
+                       FROM respostas_exercicios 
+                       WHERE usuario_id = ? AND exercicio_id IN (SELECT id FROM exercicios WHERE bloco_id = ?)";
+    $stmt_respondidos = $conn->prepare($sql_respondidos);
+    $stmt_respondidos->bind_param("ii", $id_usuario, $bloco_id);
+    $stmt_respondidos->execute();
+    $exercicios_respondidos = $stmt_respondidos->get_result()->fetch_assoc()['respondidos'];
+    $stmt_respondidos->close();
+
+    // Calcular progresso
+    $progresso = $total_exercicios > 0 ? round(($exercicios_respondidos / $total_exercicios) * 100) : 0;
+    $concluido = ($exercicios_respondidos >= $total_exercicios && $total_exercicios > 0);
+
+    // Atualizar ou inserir progresso do bloco
+    $sql_upsert = "INSERT INTO progresso_bloco (usuario_id, bloco_id, progresso_percentual, atividades_concluidas, total_atividades, concluido, data_atualizacao) 
+                   VALUES (?, ?, ?, ?, ?, ?, NOW()) 
+                   ON DUPLICATE KEY UPDATE 
+                   progresso_percentual = VALUES(progresso_percentual),
+                   atividades_concluidas = VALUES(atividades_concluidas),
+                   total_atividades = VALUES(total_atividades),
+                   concluido = VALUES(concluido),
+                   data_atualizacao = NOW()";
     
-    if ($result->num_rows === 0) {
-        // Criar novo progresso
-        $sql_insert = "INSERT INTO progresso_usuario (id_usuario, caminho_id, progresso, exercicio_atual) VALUES (?, ?, 0, 1)";
-        $stmt_insert = $conn->prepare($sql_insert);
-        $stmt_insert->bind_param("ii", $user_id, $caminho_id);
-        $stmt_insert->execute();
-        $stmt_insert->close();
-        $progresso_atual = 0;
-    } else {
-        $row = $result->fetch_assoc();
-        $progresso_atual = $row['progresso'];
-    }
-    $stmt_check->close();
-    
-    // Calcular novo progresso
-    // Cada caminho tem 5 blocos + 5 exercícios especiais = 10 itens total
-    // Cada item vale 10% do progresso
-    $incremento = 10.0;
-    $novo_progresso = min(100, $progresso_atual + $incremento);
-    
-    // Atualizar progresso
-    $sql_update = "UPDATE progresso_usuario SET progresso = ?, ultima_atividade = NOW() WHERE id_usuario = ? AND caminho_id = ?";
-    $stmt_update = $conn->prepare($sql_update);
-    $stmt_update->bind_param("dii", $novo_progresso, $user_id, $caminho_id);
-    $stmt_update->execute();
-    $stmt_update->close();
-    
-    // Verificar se completou o caminho
-    $concluido = $novo_progresso >= 100;
-    if ($concluido) {
-        $sql_complete = "UPDATE progresso_usuario SET concluido = 1 WHERE id_usuario = ? AND caminho_id = ?";
-        $stmt_complete = $conn->prepare($sql_complete);
-        $stmt_complete->bind_param("ii", $user_id, $caminho_id);
-        $stmt_complete->execute();
-        $stmt_complete->close();
-    }
-    
+    $stmt_upsert = $conn->prepare($sql_upsert);
+    $stmt_upsert->bind_param("iiiiis", $id_usuario, $bloco_id, $progresso, $exercicios_respondidos, $total_exercicios, $concluido);
+    $stmt_upsert->execute();
+    $stmt_upsert->close();
+
+    $database->closeConnection();
+
     echo json_encode([
         'success' => true,
-        'progresso' => $novo_progresso,
+        'progresso' => $progresso,
         'concluido' => $concluido,
-        'message' => $concluido ? 'Caminho concluído!' : 'Progresso atualizado!'
+        'atividades_concluidas' => $exercicios_respondidos,
+        'total_atividades' => $total_exercicios
     ]);
-    
+
 } catch (Exception $e) {
+    $database->closeConnection();
     echo json_encode(['success' => false, 'message' => 'Erro: ' . $e->getMessage()]);
 }
-
-$database->closeConnection();
 ?>

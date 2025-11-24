@@ -2481,18 +2481,21 @@ $database->closeConnection();
                 btn.className = "btn btn-secondary";
             }
         });
+        
+        // Atualizar progresso do bloco após cada exercício
+        if (blocoAtual) {
+            atualizarProgressoBloco(blocoAtual);
+        }
     };
 
     // ==================== FUNÇÃO PARA ATUALIZAR PROGRESSO ====================
     
     // Função para atualizar progresso quando exercício é concluído
-    function atualizarProgressoBloco(blocoId, concluido = false) {
+    function atualizarProgressoBloco(blocoId) {
         const formData = new FormData();
-        formData.append('action', 'atualizar_progresso_bloco');
         formData.append('bloco_id', blocoId);
-        formData.append('concluido', concluido ? '1' : '0');
         
-        fetch('../../admin/controller/progresso_controller.php', {
+        fetch('../controller/update_progress.php', {
             method: 'POST',
             body: formData
         })
@@ -2502,6 +2505,11 @@ $database->closeConnection();
                 console.log('Progresso atualizado:', data);
                 // Recarregar os blocos para mostrar o novo estado
                 carregarBlocosTodasUnidades();
+                
+                // Mostrar feedback visual se concluído
+                if (data.concluido) {
+                    mostrarToast('🎉 Bloco concluído! Parabéns!', 'success');
+                }
             } else {
                 console.error('Erro ao atualizar progresso:', data.message);
             }
@@ -2519,12 +2527,7 @@ $database->closeConnection();
             carregarExercicio(exercicioIndex);
         } else {
             // TODOS OS EXERCÍCIOS FORAM CONCLUÍDOS
-            console.log('Todos os exercícios do bloco concluídos, atualizando progresso...');
-            
-            // Atualizar progresso do bloco
-            if (blocoAtual) {
-                atualizarProgressoBloco(blocoAtual, true);
-            }
+            console.log('Todos os exercícios do bloco concluídos');
             
             mostrarMensagemSucessoBloco();
             
