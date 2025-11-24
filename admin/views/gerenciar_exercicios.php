@@ -636,19 +636,269 @@ $database->closeConnection();
     .sidebar .list-group-item i {
         color: var(--amarelo-detalhe);
     }
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-        }
+
+    .main-content {
+        margin-left: 250px;
+        padding: 20px;
+        transition: margin-left 0.3s ease-in-out;
+    }
+
+    /* Menu Hamburguer */
+    .menu-toggle {
+        display: none;
+        background: none;
+        border: none;
+        color: var(--roxo-principal) !important;
+        font-size: 1.5rem;
+        cursor: pointer;
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 1100;
+        transition: all 0.3s ease;
+    }
+
+    .menu-toggle:hover {
+        color: var(--roxo-escuro) !important;
+        transform: scale(1.1);
+    }
+
+    body:has(.sidebar.active) .menu-toggle,
+    .sidebar.active ~ .menu-toggle {
+        color: var(--amarelo-detalhe) !important;
+    }
+
+    body:has(.sidebar.active) .menu-toggle:hover,
+    .sidebar.active ~ .menu-toggle:hover {
+        color: #e6c200 !important;
+    }
+
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+
+    .logout-icon {
+        color: var(--roxo-principal) !important;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
 
         @media (max-width: 992px) {
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
+            .menu-toggle {
+                display: block;
             }
+            
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
             .main-content {
                 margin-left: 0;
+            }
+            
+            .sidebar-overlay.active {
+                display: block;
+            }
+            
+            .navbar .container-fluid {
+                padding: 0 15px;
+            }
+            
+            .logo-header {
+                height: 60px !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 280px;
+            }
+            
+            .main-content {
+                padding: 15px;
+            }
+            
+            .modern-table-container {
+                overflow-x: auto;
+            }
+            
+            .modern-table {
+                min-width: 600px;
+            }
+            
+            .btn-action {
+                width: 32px;
+                height: 32px;
+            }
+
+            .buttons-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .left-buttons {
+                justify-content: center;
+                width: 100%;
+            }
+            
+            .logo-header {
+                height: 50px !important;
+            }
+            
+            .navbar .d-flex {
+                gap: 15px !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 0 10px;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+            
+            .btn-voltar-blocos {
+                font-size: 0.85rem;
+                padding: 10px 15px;
+            }
+            
+            .modern-table th {
+                padding: 12px 8px;
+                font-size: 0.8rem;
+            }
+            
+            .modern-table td {
+                padding: 12px 8px;
+                font-size: 0.85rem;
+            }
+            
+            .btn-action {
+                width: 28px;
+                height: 28px;
+            }
+            
+            .modal-dialog {
+                margin: 10px;
+            }
+            
+            .logo-header {
+                height: 40px !important;
+            }
+            
+            .settings-icon, .logout-icon {
+                font-size: 1rem !important;
+            }
+            
+            .sidebar {
+                width: 100%;
+            }
+            
+            .profile-avatar-sidebar {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .profile-avatar-sidebar i {
+                font-size: 2.5rem;
+            }
+            
+            .sidebar .profile h5 {
+                font-size: 1rem;
+            }
+            
+            .sidebar .list-group-item {
+                padding: 12px 20px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 8px;
+            }
+            
+            .container {
+                padding: 0 8px;
+            }
+            
+            h2 {
+                font-size: 1.3rem;
+            }
+            
+            .modern-table th {
+                padding: 10px 6px;
+                font-size: 0.75rem;
+            }
+            
+            .modern-table td {
+                padding: 10px 6px;
+                font-size: 0.8rem;
+            }
+            
+            .btn-voltar-blocos {
+                font-size: 0.8rem;
+                padding: 8px 12px;
+            }
+            
+            .btn-action {
+                width: 26px;
+                height: 26px;
+            }
+            
+            .badge {
+                font-size: 0.65rem;
+                padding: 2px 6px;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .main-content {
+                padding: 5px;
+            }
+            
+            .container {
+                padding: 0 5px;
+            }
+            
+            h2 {
+                font-size: 1.2rem;
+            }
+            
+            .modern-table th {
+                padding: 8px 4px;
+                font-size: 0.7rem;
+            }
+            
+            .modern-table td {
+                padding: 8px 4px;
+                font-size: 0.75rem;
+            }
+            
+            .btn-voltar-blocos {
+                font-size: 0.75rem;
+                padding: 6px 10px;
+            }
+            
+            .btn-action {
+                width: 24px;
+                height: 24px;
             }
         }
 
@@ -681,6 +931,14 @@ $database->closeConnection();
 </head>
 
 <body>
+    <!-- Menu Hamburguer -->
+    <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Overlay para mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <!-- Barra de Navegação Superior -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid d-flex justify-content-end align-items-center">
@@ -691,9 +949,11 @@ $database->closeConnection();
                 <a href="editar_perfil.php" class="settings-icon">
                     <i class="fas fa-cog fa-lg"></i>
                 </a>
+                <a href="logout.php" class="logout-icon" title="Sair">
+                    <i class="fas fa-sign-out-alt fa-lg"></i>
+                </a>
             </div>
         </div>
-        
     </nav>
 
     <!-- Sidebar Corrigido -->
@@ -859,6 +1119,40 @@ $database->closeConnection();
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Menu Hamburguer Functionality
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            
+            if (menuToggle && sidebar) {
+                menuToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                    if (sidebarOverlay) {
+                        sidebarOverlay.classList.toggle('active');
+                    }
+                });
+                
+                if (sidebarOverlay) {
+                    sidebarOverlay.addEventListener('click', function() {
+                        sidebar.classList.remove('active');
+                        sidebarOverlay.classList.remove('active');
+                    });
+                }
+                
+                // Fechar menu ao clicar em um link (mobile)
+                const sidebarLinks = sidebar.querySelectorAll('.list-group-item');
+                sidebarLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        if (window.innerWidth <= 992) {
+                            sidebar.classList.remove('active');
+                            if (sidebarOverlay) {
+                                sidebarOverlay.classList.remove('active');
+                            }
+                        }
+                    });
+                });
+            }
+
             const rows = document.querySelectorAll('.modern-table tbody tr');
             rows.forEach((row, index) => {
                 row.style.animationDelay = `${index * 0.1}s`;

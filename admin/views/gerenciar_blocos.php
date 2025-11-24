@@ -623,67 +623,364 @@ body {
 
 
 /* ========== FIM DO SIDEBAR ========== */
-/* Bottom Navigation Bar para mobile */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
-    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.15);
-    z-index: 1020;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 5px 0;
-}
-
-.bottom-nav-item {
-    flex: 1;
-    text-align: center;
-    color: var(--branco);
-    text-decoration: none;
-    padding: 8px 0;
-    transition: all 0.3s ease;
-    border-radius: 8px;
-}
-
-.bottom-nav-item i {
-    font-size: 1.5rem;
-    display: block;
-    margin: 0 auto;
-    color: var(--amarelo-detalhe);
-}
-
-.bottom-nav-item.active {
-    background-color: rgba(255, 255, 255, 0.15);
-}
-
-.bottom-nav-item.active i {
-    transform: scale(1.1);
-}
-
-.bottom-nav-item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Ajustes de layout para diferentes tamanhos de tela */
-@media (min-width: 992px) {
-    .main-content {
-        margin-left: 250px;
-        padding: 20px;
+    /* Menu Hamburguer */
+    .menu-toggle {
+        display: none;
+        background: none;
+        border: none;
+        color: var(--roxo-principal) !important;
+        font-size: 1.5rem;
+        cursor: pointer;
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 1100;
+        transition: all 0.3s ease;
     }
-}
 
-@media (max-width: 991.98px) {
-    .main-content {
-        margin-left: 0;
-        padding: 20px 20px 80px 20px;
+    .menu-toggle:hover {
+        color: var(--roxo-escuro) !important;
+        transform: scale(1.1);
     }
-    .sidebar {
-        display: none !important;
+
+    /* Quando a sidebar está ativa */
+    body:has(.sidebar.active) .menu-toggle,
+    .sidebar.active ~ .menu-toggle {
+        color: var(--amarelo-detalhe) !important;
     }
-}
+
+    body:has(.sidebar.active) .menu-toggle:hover,
+    .sidebar.active ~ .menu-toggle:hover {
+        color: var(--amarelo-hover) !important;
+    }
+
+    /* Overlay para mobile */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+
+    @media (max-width: 992px) {
+        .menu-toggle {
+            display: block;
+        }
+        
+        .sidebar {
+            transform: translateX(-100%);
+        }
+        
+        .sidebar.active {
+            transform: translateX(0);
+        }
+        
+        .main-content {
+            margin-left: 0;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+        
+        .navbar .container {
+            padding: 0 15px;
+        }
+        
+        .logo-header {
+            height: 60px !important;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 280px;
+        }
+        
+        .stats-card h3 {
+            font-size: 2rem;
+        }
+        
+        .table-responsive {
+            font-size: 0.9rem;
+        }
+        
+        .btn-sm {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+        }
+        
+        .main-content {
+            padding: 15px;
+        }
+        
+        .card {
+            margin-bottom: 20px;
+        }
+        
+        .card-header h5 {
+            font-size: 1.1rem;
+        }
+        
+        .bloco-card .card-body {
+            padding: 15px;
+        }
+        
+        .btn-group-sm .btn {
+            padding: 4px 8px;
+            font-size: 0.75rem;
+        }
+        
+        .acoes-rapidas-btn {
+            font-size: 0.85rem;
+            padding: 10px 15px;
+        }
+        
+        .form-control, .form-select {
+            font-size: 0.9rem;
+            padding: 10px 15px;
+        }
+        
+        .navbar .d-flex {
+            gap: 15px !important;
+        }
+        
+        .logo-header {
+            height: 50px !important;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .main-content {
+            padding: 10px;
+        }
+        
+        .stats-card {
+            padding: 15px;
+        }
+        
+        .stats-card h3 {
+            font-size: 1.8rem;
+        }
+        
+        .card-body {
+            padding: 1rem;
+        }
+        
+        .table-container {
+            padding: 15px;
+        }
+        
+        .container-fluid {
+            padding: 0 10px;
+        }
+        
+        .d-flex.justify-content-between {
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .btn-back {
+            align-self: flex-start;
+            font-size: 0.85rem;
+            padding: 8px 15px;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+        }
+        
+        .card-header {
+            padding: 15px 20px;
+        }
+        
+        .card-body {
+            padding: 15px;
+        }
+        
+        .bloco-card .card-body {
+            padding: 12px;
+        }
+        
+        .btn-group {
+            flex-wrap: wrap;
+        }
+        
+        .btn-group .btn {
+            margin: 2px;
+        }
+        
+        .acoes-rapidas-btn {
+            font-size: 0.8rem;
+            padding: 8px 12px;
+        }
+        
+        .form-control, .form-select {
+            font-size: 0.85rem;
+            padding: 8px 12px;
+        }
+        
+        .modal-dialog {
+            margin: 10px;
+        }
+        
+        .navbar .d-flex {
+            gap: 10px !important;
+        }
+        
+        .logo-header {
+            height: 40px !important;
+        }
+        
+        .settings-icon, .logout-icon {
+            font-size: 1rem !important;
+        }
+        
+        .sidebar {
+            width: 100%;
+        }
+        
+        .profile-avatar-sidebar {
+            width: 80px;
+            height: 80px;
+        }
+        
+        .profile-avatar-sidebar i {
+            font-size: 2.5rem;
+        }
+        
+        .sidebar .profile h5 {
+            font-size: 1rem;
+        }
+        
+        .sidebar .list-group-item {
+            padding: 12px 20px;
+            font-size: 0.9rem;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .main-content {
+            padding: 8px;
+        }
+        
+        .container-fluid {
+            padding: 0 8px;
+        }
+        
+        .card {
+            border-radius: 15px;
+        }
+        
+        .card-header {
+            padding: 12px 15px;
+        }
+        
+        .card-body {
+            padding: 12px;
+        }
+        
+        .bloco-card .card-body {
+            padding: 10px;
+        }
+        
+        .btn {
+            font-size: 0.75rem;
+            padding: 6px 10px;
+        }
+        
+        .form-control, .form-select {
+            font-size: 0.8rem;
+            padding: 6px 10px;
+        }
+        
+        .acoes-rapidas-btn {
+            font-size: 0.75rem;
+            padding: 6px 10px;
+        }
+        
+        .stats-card h3 {
+            font-size: 1.5rem;
+        }
+        
+        .stats-card i {
+            font-size: 2rem;
+        }
+        
+        h2 {
+            font-size: 1.3rem;
+        }
+        
+        .badge {
+            font-size: 0.7rem;
+            padding: 4px 8px;
+        }
+        
+        .dropdown-menu {
+            font-size: 0.8rem;
+        }
+        
+        .dropdown-item {
+            padding: 8px 12px;
+        }
+    }
+    
+    @media (max-width: 360px) {
+        .main-content {
+            padding: 5px;
+        }
+        
+        .container-fluid {
+            padding: 0 5px;
+        }
+        
+        .card-header {
+            padding: 10px 12px;
+        }
+        
+        .card-body {
+            padding: 10px;
+        }
+        
+        .btn {
+            font-size: 0.7rem;
+            padding: 5px 8px;
+        }
+        
+        .form-control, .form-select {
+            font-size: 0.75rem;
+            padding: 5px 8px;
+        }
+        
+        .acoes-rapidas-btn {
+            font-size: 0.7rem;
+            padding: 5px 8px;
+        }
+        
+        h2 {
+            font-size: 1.2rem;
+        }
+        
+        .stats-card {
+            padding: 10px;
+        }
+        
+        .stats-card h3 {
+            font-size: 1.3rem;
+        }
+        
+        .bloco-card .card-title {
+            font-size: 0.9rem;
+        }
+        
+        .card-text {
+            font-size: 0.75rem;
+        }
+    }
 /* ========== FIM DO SIDEBAR ========== */
 
 /* Conteúdo principal */
@@ -691,6 +988,7 @@ body {
     margin-left: 250px;
     padding: 25px;
     background: transparent;
+    transition: margin-left 0.3s ease-in-out;
 }
 
 /* Botões Melhorados */
@@ -957,7 +1255,7 @@ background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao
     text-align: center;
 }
 
-/* Responsividade */
+/* Responsividade específica para elementos da página */
 @media (max-width: 768px) {
     .acoes-rapidas-btn {
         min-width: 100%;
@@ -977,11 +1275,120 @@ background: linear-gradient(135deg, var(--amarelo-hover) 0%, var(--amarelo-botao
     .acoes-rapidas-btn i {
         font-size: 0.9rem;
     }
+    
+    /* Layout responsivo para colunas */
+    .col-md-4, .col-md-8 {
+        margin-bottom: 20px;
+    }
+    
+    /* Ajustes para cards de blocos */
+    .col-md-6 {
+        margin-bottom: 15px;
+    }
+    
+    /* Botões de ação em dispositivos móveis */
+    .bloco-actions .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .bloco-actions .btn {
+        margin: 2px 0;
+        width: 100%;
+    }
 }
 
 @media (max-width: 576px) {
     .acoes-rapidas-btn {
         padding: 8px 14px;
+    }
+    
+    /* Layout em coluna única para mobile */
+    .row > [class*="col-"] {
+        margin-bottom: 15px;
+    }
+    
+    /* Ajustes para estatísticas */
+    .border-end {
+        border-right: none !important;
+        border-bottom: 1px solid #dee2e6 !important;
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+    }
+    
+    /* Formulário responsivo */
+    .form-label {
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+    
+    .form-text {
+        font-size: 0.75rem;
+    }
+    
+    /* Modal responsivo */
+    .modal-body {
+        padding: 15px;
+    }
+    
+    .modal-footer {
+        padding: 10px 15px;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .modal-footer .btn {
+        width: 100%;
+        margin: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Ajustes específicos para telas muito pequenas */
+    .d-flex.justify-content-between.align-items-center {
+        align-items: flex-start !important;
+    }
+    
+    .badge {
+        display: block;
+        margin-top: 5px;
+        text-align: center;
+    }
+    
+    /* Dropdown responsivo */
+    .dropdown-menu {
+        width: 100% !important;
+        left: 0 !important;
+        right: 0 !important;
+    }
+    
+    /* Cards de estatísticas em linha */
+    .row.text-center .col-6 {
+        margin-bottom: 10px;
+    }
+}
+
+@media (max-width: 360px) {
+    /* Ajustes para telas extra pequenas */
+    .card-title {
+        font-size: 0.9rem;
+        line-height: 1.2;
+    }
+    
+    .btn-group-sm .btn {
+        padding: 2px 6px;
+        font-size: 0.7rem;
+    }
+    
+    /* Texto responsivo */
+    .text-muted {
+        font-size: 0.75rem;
+    }
+    
+    /* Ajustes para elementos pequenos */
+    .stats-badge {
+        font-size: 0.65rem;
+        padding: 2px 6px;
     }
 }
 /* Efeitos de brilho adicionais */
@@ -1209,39 +1616,7 @@ h2 {
 .stats-card:nth-child(3) { animation-delay: 0.3s; }
 .stats-card:nth-child(4) { animation-delay: 0.4s; }
 
-@media (max-width: 768px) {
-    .sidebar {
-        position: relative;
-        width: 100%;
-        height: auto;
-    }
-    .main-content {
-        margin-left: 0;
-        padding: 15px;
-    }
-    .stats-card h3 {
-        font-size: 2.2rem;
-    }
-    .navbar-brand .logo-header {
-        height: 60px;
-    }
-    .btn {
-        padding: 10px 20px;
-        font-size: 0.85rem;
-    }
-    .acoes-rapidas-btn {
-        min-width: 160px;
-        padding: 12px 16px;
-    }
-    .bloco-actions {
-        flex-direction: column;
-        gap: 8px;
-    }
-    .btn-acao {
-        width: 100%;
-        justify-content: center;
-    }
-}
+
 
 /* Container para ações rápidas */
 .acoes-rapidas-container {
@@ -1334,6 +1709,53 @@ h2 {
 </head>
 
 <body>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Menu Hamburguer Functionality
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+            if (sidebarOverlay) {
+                sidebarOverlay.classList.toggle('active');
+            }
+        });
+        
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+        }
+        
+        // Fechar menu ao clicar em um link (mobile)
+        const sidebarLinks = sidebar.querySelectorAll('.list-group-item');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 992) {
+                    sidebar.classList.remove('active');
+                    if (sidebarOverlay) {
+                        sidebarOverlay.classList.remove('active');
+                    }
+                }
+            });
+        });
+    }
+});
+</script>
+
+    <!-- Menu Hamburguer -->
+    <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Overlay para mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container d-flex justify-content-between align-items-center">
             <div></div>
@@ -1392,8 +1814,8 @@ h2 {
 
     <div class="main-content">
         <div class="container-fluid mt-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+                <div class="mb-2 mb-md-0">
                     <h2 class="mb-1">
                         <i class="fas fa-cubes me-2" style="color: black;"></i>Gerenciar Blocos
                     </h2>
@@ -1426,7 +1848,7 @@ FOREIGN KEY (bloco_id) REFERENCES blocos(id) ON DELETE SET NULL;</pre>
 
             <div class="row">
                 <!-- Formulário para Adicionar/Editar Bloco -->
-                <div class="col-md-4">
+                <div class="col-lg-4 col-md-12 order-2 order-lg-1">
                     <div class="card">
                         <div class="card-header">
                             <h5 class="card-title mb-0">
@@ -1510,7 +1932,7 @@ FOREIGN KEY (bloco_id) REFERENCES blocos(id) ON DELETE SET NULL;</pre>
                 </div>
 
                 <!-- Lista de Blocos Existentes -->
-                <div class="col-md-8">
+                <div class="col-lg-8 col-md-12 order-1 order-lg-2">
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h5 class="card-title mb-0">
@@ -1528,7 +1950,7 @@ FOREIGN KEY (bloco_id) REFERENCES blocos(id) ON DELETE SET NULL;</pre>
                             <?php else: ?>
                                 <div class="row">
                                     <?php foreach ($blocos as $bloco): ?>
-                                        <div class="col-md-6 mb-3">
+                                        <div class="col-xl-6 col-lg-12 col-md-6 col-sm-12 mb-3">
                                             <div class="card bloco-card h-100">
                                                 <div class="card-body">
                                                     <div class="d-flex justify-content-between align-items-start mb-2">
@@ -1601,7 +2023,7 @@ FOREIGN KEY (bloco_id) REFERENCES blocos(id) ON DELETE SET NULL;</pre>
                         </div>
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-md-6 mb-2">
+                                <div class="col-lg-6 col-md-12 mb-2">
                                     <?php if ($coluna_bloco_id_existe && !empty($blocos)): ?>
                                         <!-- Dropdown para escolher em qual bloco adicionar a atividade -->
                                         <div class="dropdown">
@@ -1625,7 +2047,7 @@ FOREIGN KEY (bloco_id) REFERENCES blocos(id) ON DELETE SET NULL;</pre>
                                         </button>
                                     <?php endif; ?>
                                 </div>
-                                <div class="col-md-6 mb-2">
+                                <div class="col-lg-6 col-md-12 mb-2">
                                     <a href="gerenciar_exercicios.php?caminho_id=<?php echo $caminho_id; ?>" 
                                        class="acoes-rapidas-btn ver w-100">
                                         <i class="fas fa-list me-1"></i>Ver Todas as Atividades
@@ -1639,30 +2061,7 @@ FOREIGN KEY (bloco_id) REFERENCES blocos(id) ON DELETE SET NULL;</pre>
         </div>
     </div>
 
-    <!-- Bottom Navigation Bar para telas pequenas -->
-    <nav class="bottom-nav d-lg-none">
-        <a href="gerenciar_caminho.php" class="bottom-nav-item">
-            <i class="fas fa-plus-circle"></i>
-        </a>
-        <a href="pagina_adicionar_idiomas.php" class="bottom-nav-item">
-            <i class="fas fa-language"></i>
-        </a>
-        <a href="gerenciar_teorias.php" class="bottom-nav-item">
-            <i class="fas fa-book-open"></i>
-        </a>
-        <a href="gerenciar_unidades.php" class="bottom-nav-item">
-            <i class="fas fa-cubes"></i>
-        </a>
-        <a href="gerenciar_usuarios.php" class="bottom-nav-item">
-            <i class="fas fa-users"></i>
-        </a>
-        <a href="estatisticas_usuarios.php" class="bottom-nav-item">
-            <i class="fas fa-chart-bar"></i>
-        </a>
-        <a href="logout.php" class="bottom-nav-item">
-            <i class="fas fa-sign-out-alt"></i>
-        </a>
-    </nav>
+
 
     <!-- Modal de Confirmação -->
     <div class="modal fade" id="confirmModal" tabindex="-1">
