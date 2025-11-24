@@ -38,10 +38,10 @@ $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_
 
 // Função para adicionar exercício especial na tabela exercicios_especiais
 function adicionarExercicioEspecial($conn, $caminhoId, $pergunta, $conteudo) {
-    $sql = "INSERT INTO exercicios_especiais (titulo, conteudo) VALUES (?, ?)";
+    $sql = "INSERT INTO exercicios_especiais (titulo, conteudo, url_media, pergunta) VALUES (?, ?, '', ?)";
     $stmt = $conn->prepare($sql);
     if ($stmt) {
-        $stmt->bind_param("ss", $pergunta, $conteudo);
+        $stmt->bind_param("sss", $pergunta, $conteudo, $pergunta);
         if ($stmt->execute()) {
             $exercicio_id = $conn->insert_id;
             $stmt->close();

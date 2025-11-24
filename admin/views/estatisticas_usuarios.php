@@ -49,33 +49,6 @@ $usuarios_ativos = $result_ativos ? $result_ativos->fetch_assoc()['ativos'] : 0;
 
 // Usuários por nível (baseado no último quiz realizado)
 $sql_usuarios_por_nivel = "
-    SELECT
-        COALESCE(qr.nivel_resultado, 'Sem nível') as nivel,
-        COUNT(DISTINCT u.id) as quantidade
-    FROM usuarios u
-    LEFT JOIN (
-        SELECT
-            id_usuario,
-            nivel_resultado,
-            ROW_NUMBER() OVER (PARTITION BY id_usuario ORDER BY data_realizacao DESC) as rn
-        FROM quiz_resultados
-    ) qr ON u.id = qr.id_usuario AND qr.rn = 1
-    GROUP BY nivel
-    ORDER BY
-        CASE
-            WHEN nivel = 'A1' THEN 1
-            WHEN nivel = 'A2' THEN 2
-            WHEN nivel = 'B1' THEN 3
-            WHEN nivel = 'B2' THEN 4
-            WHEN nivel = 'C1' THEN 5
-            WHEN nivel = 'C2' THEN 6
-            ELSE 7
-        END
-";
-
-/*Para funcionar no site do felipe tem que substituir por esse codigo
- Usuários por nível (baseado no último quiz realizado)
-$sql_usuarios_por_nivel = "
     SELECT 
         COALESCE(nivel_final, 'Sem nível') as nivel,
         COUNT(*) as quantidade
@@ -89,9 +62,9 @@ $sql_usuarios_por_nivel = "
              LIMIT 1) as nivel_final
         FROM usuarios u
     ) as usuarios_com_nivel
-    GROUP BY COALESCE(nivel_final, 'Sem nível')
+    GROUP BY nivel_final
     ORDER BY
-        CASE COALESCE(nivel_final, 'Sem nível')
+        CASE nivel_final
             WHEN 'A1' THEN 1
             WHEN 'A2' THEN 2
             WHEN 'B1' THEN 3
@@ -101,7 +74,8 @@ $sql_usuarios_por_nivel = "
             ELSE 7
         END
 ";
-*/
+
+
 $result_niveis = $conn->query($sql_usuarios_por_nivel);
 $usuarios_por_nivel = [];
 if ($result_niveis) {
@@ -133,12 +107,13 @@ if ($result_idiomas) {
 // Progresso dos usuários nos caminhos
 $sql_progresso_caminhos = "
     SELECT
-        ca.idioma,
-        ca.nivel,
+        COALESCE(ca.idioma, 'Desconhecido') as idioma,
+        COALESCE(ca.nivel, 'N/A') as nivel,
         COUNT(DISTINCT pu.id_usuario) as usuarios_iniciaram,
         AVG(pu.progresso) as progresso_medio
     FROM progresso_usuario pu
-    JOIN caminhos_aprendizagem ca ON pu.caminho_id = ca.id
+    LEFT JOIN caminhos_aprendizagem ca ON pu.caminho_id = ca.id
+    WHERE pu.progresso > 0
     GROUP BY ca.idioma, ca.nivel
     ORDER BY ca.idioma, ca.nivel
 ";
@@ -172,14 +147,15 @@ if ($result_mensais) {
 $sql_exercicios_populares = "
     SELECT
         e.pergunta,
-        ca.idioma,
-        ca.nivel,
+        COALESCE(ca.idioma, 'Desconhecido') as idioma,
+        COALESCE(ca.nivel, 'N/A') as nivel,
         COUNT(re.id) as total_realizacoes,
-        AVG(re.pontuacao) as pontuacao_media
+        AVG(CASE WHEN re.pontuacao IS NOT NULL THEN re.pontuacao ELSE 0 END) as pontuacao_media
     FROM respostas_exercicios re
     JOIN exercicios e ON re.id_exercicio = e.id
-    JOIN caminhos_aprendizagem ca ON e.caminho_id = ca.id
+    LEFT JOIN caminhos_aprendizagem ca ON e.caminho_id = ca.id
     GROUP BY e.id, e.pergunta, ca.idioma, ca.nivel
+    HAVING total_realizacoes > 0
     ORDER BY total_realizacoes DESC
     LIMIT 15
 ";
@@ -898,16 +874,87 @@ document.addEventListener('DOMContentLoaded', function() {
             datasets: [{
                 label: 'Usuários Únicos',
                 data: [<?php echo !empty($idiomas_populares) ? implode(',', array_map(function($i) { return $i['usuarios_unicos']; }, $idiomas_populares)) : ''; ?>],
-                backgroundColor: '#6a0dad'
+                backgroundColor: [
+                    '#6a0dad', '#8e44ad', '#9b59b6', '#af7ac5', '#c39bd3',
+                    '#d7bde2', '#e8daef', '#f4ecf7', '#fdeaa7', '#f7dc6f'
+                ],
+                borderColor: '#4c087c',
+                borderWidth: 2,
+                borderRadius: 8,
+                borderSkipped: false
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        color: '#2d3e8f',
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        padding: 20
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(45, 62, 143, 0.9)',
+                    titleColor: '#ffd700',
+                    bodyColor: '#ffffff',
+                    borderColor: '#ffd700',
+                    borderWidth: 2,
+                    cornerRadius: 8,
+                    displayColors: false,
+                    callbacks: {
+                        title: function(context) {
+                            return 'Idioma: ' + context[0].label;
+                        },
+                        label: function(context) {
+                            return 'Usuários: ' + context.parsed.y;
+                        }
+                    }
                 }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#2d3e8f',
+                        font: {
+                            size: 12,
+                            weight: 'bold'
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(45, 62, 143, 0.1)',
+                        lineWidth: 1
+                    },
+                    ticks: {
+                        color: '#2d3e8f',
+                        font: {
+                            size: 12
+                        },
+                        callback: function(value) {
+                            return value + ' usuários';
+                        }
+                    }
+                }
+            },
+            animation: {
+                duration: 1500,
+                easing: 'easeInOutQuart'
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index'
             }
         }
     });

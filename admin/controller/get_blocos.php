@@ -50,7 +50,7 @@ try {
         if ($id_usuario) {
             $sql_progresso = "SELECT progresso_percentual, atividades_concluidas, total_atividades, concluido 
                              FROM progresso_bloco 
-                             WHERE usuario_id = ? AND bloco_id = ?";
+                             WHERE id_usuario = ? AND id_bloco = ?";
             $stmt_progresso = $conn->prepare($sql_progresso);
             $stmt_progresso->bind_param("ii", $id_usuario, $row['id']);
             $stmt_progresso->execute();
@@ -62,10 +62,14 @@ try {
                 // Se não há progresso, calcular baseado nos exercícios
                 $sql_total = "SELECT COUNT(*) as total FROM exercicios WHERE bloco_id = ?";
                 $stmt_total = $conn->prepare($sql_total);
-                $stmt_total->bind_param("i", $row['id']);
-                $stmt_total->execute();
-                $total_exercicios = $stmt_total->get_result()->fetch_assoc()['total'];
-                $stmt_total->close();
+                if ($stmt_total) {
+                    $stmt_total->bind_param("i", $row['id']);
+                    $stmt_total->execute();
+                    $total_exercicios = $stmt_total->get_result()->fetch_assoc()['total'];
+                    $stmt_total->close();
+                } else {
+                    $total_exercicios = 0;
+                }
                 
                 $bloco['progresso'] = [
                     'progresso_percentual' => 0,
@@ -88,9 +92,70 @@ try {
     }
     
     $stmt->close();
+    
+    // Adicionar exercícios especiais como blocos - SEMPRE
+    $sql_especiais = "SELECT id, titulo, descricao, url_media, transcricao, pergunta, tipo_exercicio, opcoes_resposta, resposta_correta, conteudo FROM exercicios_especiais ORDER BY id";
+    $stmt_especiais = $conn->prepare($sql_especiais);
+    $stmt_especiais->execute();
+    $result_especiais = $stmt_especiais->get_result();
+    
+    $count_especiais = 0;
+    while ($row_especial = $result_especiais->fetch_assoc()) {
+        // Tentar decodificar o campo conteudo se existir, senão criar estrutura
+        $conteudo_json = null;
+        if (!empty($row_especial['conteudo'])) {
+            $conteudo_json = json_decode($row_especial['conteudo'], true);
+        }
+        
+        // Criar estrutura de conteúdo baseada nos campos da tabela
+        $conteudo_estruturado = [
+            'tipo_exercicio' => $conteudo_json['tipo_exercicio'] ?? 'observar',
+            'link_video' => $conteudo_json['link_video'] ?? $row_especial['url_media'] ?? '',
+            'letra_musica' => $conteudo_json['letra_musica'] ?? $row_especial['transcricao'] ?? '',
+            'pergunta' => $row_especial['pergunta'],
+            'opcoes_resposta' => $row_especial['opcoes_resposta'] ? json_decode($row_especial['opcoes_resposta'], true) : null,
+            'resposta_correta' => $row_especial['resposta_correta'] ? json_decode($row_especial['resposta_correta'], true) : null
+        ];
+        
+        $bloco_especial = [
+            'id' => 'especial_' . $row_especial['id'],
+            'nome_bloco' => $row_especial['titulo'],
+            'descricao' => $row_especial['descricao'] ?? 'Exercício especial com vídeo/música',
+            'ordem' => 999 + $row_especial['id'],
+            'caminho_id' => null,
+            'nome_caminho' => 'Especial',
+            'tipo' => 'especial',
+            'exercicio_especial' => [
+                'id' => $row_especial['id'],
+                'titulo' => $row_especial['titulo'],
+                'tipo_exercicio' => $conteudo_estruturado['tipo_exercicio'],
+                'conteudo_completo' => $conteudo_estruturado
+            ],
+            'progresso' => [
+                'progresso_percentual' => 100,
+                'atividades_concluidas' => 1,
+                'total_atividades' => 1,
+                'concluido' => false
+            ]
+        ];
+        
+        $blocos[] = $bloco_especial;
+        $count_especiais++;
+    }
+    
+    $stmt_especiais->close();
     $database->closeConnection();
     
-    echo json_encode(['success' => true, 'blocos' => $blocos]);
+    echo json_encode([
+        'success' => true, 
+        'blocos' => $blocos, 
+        'total_especiais' => $count_especiais, 
+        'debug_info' => [
+            'total_blocos' => count($blocos), 
+            'especiais_adicionados' => $count_especiais,
+            'blocos_normais' => count($blocos) - $count_especiais
+        ]
+    ]);
     
 } catch (Exception $e) {
     $database->closeConnection();
