@@ -181,9 +181,12 @@ $database->closeConnection();
             --roxo-principal: #6a0dad;
             --roxo-escuro: #4c087c;
             --amarelo-detalhe: #ffd700;
+            --amarelo-botao: #ffd700;
+            --amarelo-hover: #e7c500;
             --branco: #ffffff;
             --preto-texto: #212529;
             --cinza-claro: #f8f9fa;
+            --cinza-medio: #dee2e6;
         }
 
         /* Estilos Gerais do Corpo */
@@ -216,6 +219,180 @@ $database->closeConnection();
             text-align: center;
             margin-bottom: 30px;
             padding: 0 15px;
+        }
+
+        .profile-avatar-sidebar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid var(--amarelo-detalhe);
+            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .profile-avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .profile-avatar-sidebar:has(.profile-avatar-img) i {
+            display: none;
+        }
+
+        .profile-avatar-sidebar i {
+            font-size: 3.5rem;
+            color: var(--amarelo-detalhe);
+        }
+
+        .sidebar .profile h5 {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--branco);
+            font-size: 1.1rem;
+            word-wrap: break-word;
+            max-width: 200px;
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        .sidebar .profile small {
+            color: var(--cinza-claro);
+            font-size: 0.9rem;
+            word-wrap: break-word;
+            max-width: 200px;
+            text-align: center;
+            line-height: 1.2;
+            margin-top: 5px;
+        }
+
+        .sidebar .list-group {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .sidebar .list-group-item {
+            background-color: transparent;
+            color: var(--branco);
+            border: none;
+            padding: 15px 25px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .sidebar .list-group-item:hover {
+            background-color: var(--roxo-escuro);
+            cursor: pointer;
+            color: var(--branco);
+        }
+
+        .sidebar .list-group-item.active {
+            background-color: var(--roxo-escuro) !important;
+            color: var(--branco) !important;
+            font-weight: 600;
+            border-left: 4px solid var(--amarelo-detalhe);
+        }
+
+        .sidebar .list-group-item i {
+            color: var(--amarelo-detalhe);
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+        /* Menu Hamburguer */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--roxo-principal) !important;
+            font-size: 1.5rem;
+            cursor: pointer;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1100;
+            transition: all 0.3s ease;
+        }
+
+        .menu-toggle:hover {
+            color: var(--roxo-escuro) !important;
+            transform: scale(1.1);
+        }
+
+        /* Quando a sidebar está ativa */
+        body:has(.sidebar.active) .menu-toggle,
+        .sidebar.active ~ .menu-toggle {
+            color: var(--amarelo-detalhe) !important;
+        }
+
+        body:has(.sidebar.active) .menu-toggle:hover,
+        .sidebar.active ~ .menu-toggle:hover {
+            color: var(--amarelo-hover) !important;
+        }
+
+        /* Overlay para mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        @media (max-width: 992px) {
+            .menu-toggle {
+                display: block;
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .sidebar-overlay.active {
+                display: block;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 280px;
+            }
+            
+            .main-content {
+                padding: 15px 10px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 15px 10px;
+            }
         }
 
         .sidebar .profile i {
@@ -962,12 +1139,24 @@ $database->closeConnection();
 </head>
 
 <body>
-    <div class="sidebar">
+    <!-- Menu Hamburguer -->
+    <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Overlay para mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="sidebar" id="sidebar">
         <div class="profile">
             <?php if ($foto_usuario): ?>
-                <img src="../../<?php echo htmlspecialchars($foto_usuario); ?>" alt="Foto de perfil" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; border: 3px solid var(--amarelo-detalhe);">
+                <div class="profile-avatar-sidebar">
+                    <img src="../../<?php echo htmlspecialchars($foto_usuario); ?>" alt="Foto de perfil" class="profile-avatar-img">
+                </div>
             <?php else: ?>
-                <i class="fas fa-user-circle"></i>
+                <div class="profile-avatar-sidebar">
+                    <i class="fa-solid fa-user" style="color: var(--amarelo-detalhe); font-size: 3.5rem;"></i>
+                </div>
             <?php endif; ?>
             <h5><?php echo htmlspecialchars($nome_usuario); ?></h5>
             <small>Usuário</small>
@@ -3455,5 +3644,43 @@ $database->closeConnection();
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Menu Hamburguer Functionality
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        
+        if (menuToggle && sidebar) {
+            menuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+                if (sidebarOverlay) {
+                    sidebarOverlay.classList.toggle('active');
+                }
+            });
+            
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                });
+            }
+            
+            // Fechar menu ao clicar em um link (mobile)
+            const sidebarLinks = sidebar.querySelectorAll('.list-group-item');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 992) {
+                        sidebar.classList.remove('active');
+                        if (sidebarOverlay) {
+                            sidebarOverlay.classList.remove('active');
+                        }
+                    }
+                });
+            });
+        }
+    });
+    </script>
 </body>
 </html>
