@@ -39,7 +39,7 @@ try {
     $idioma_exercicio = null;
 
     if ($tipo_busca === 'bloco') {
-        // Buscar exercícios por bloco_id - QUERY CORRIGIDA
+        // Buscar exercícios por bloco_id - QUERY CORRIGIDA COM LIMITE DE 12
         $sql = "
             SELECT 
                 e.id,
@@ -57,11 +57,12 @@ try {
             JOIN unidades u ON c.id_unidade = u.id
             WHERE e.bloco_id = ?
             ORDER BY e.ordem ASC
+            LIMIT 12
         ";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $id_busca);
     } else {
-        // Buscar exercícios por caminho_id (atividade)
+        // Buscar exercícios por caminho_id (atividade) - COM LIMITE DE 12
         $sql = "
             SELECT 
                 e.id,
@@ -79,6 +80,7 @@ try {
             JOIN unidades u ON c.id_unidade = u.id
             WHERE e.caminho_id = ?
             ORDER BY e.ordem ASC
+            LIMIT 12
         ";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $id_busca);

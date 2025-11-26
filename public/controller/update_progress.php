@@ -26,18 +26,20 @@ $database = new Database();
 $conn = $database->conn;
 
 try {
-    // Contar total de exercícios no bloco
+    // Contar total de exercícios no bloco (máximo 12)
     $sql_total = "SELECT COUNT(*) as total FROM exercicios WHERE bloco_id = ?";
     $stmt_total = $conn->prepare($sql_total);
     $stmt_total->bind_param("i", $bloco_id);
     $stmt_total->execute();
-    $total_exercicios = $stmt_total->get_result()->fetch_assoc()['total'];
+    $total_exercicios = min(12, $stmt_total->get_result()->fetch_assoc()['total']);
     $stmt_total->close();
 
-    // Contar exercícios respondidos pelo usuário
+    // Contar exercícios respondidos pelo usuário (limitado aos primeiros 12)
     $sql_respondidos = "SELECT COUNT(DISTINCT exercicio_id) as respondidos 
                        FROM respostas_exercicios 
-                       WHERE usuario_id = ? AND exercicio_id IN (SELECT id FROM exercicios WHERE bloco_id = ?)";
+                       WHERE usuario_id = ? AND exercicio_id IN (
+                           SELECT id FROM exercicios WHERE bloco_id = ? ORDER BY ordem ASC LIMIT 12
+                       )";
     $stmt_respondidos = $conn->prepare($sql_respondidos);
     $stmt_respondidos->bind_param("ii", $id_usuario, $bloco_id);
     $stmt_respondidos->execute();

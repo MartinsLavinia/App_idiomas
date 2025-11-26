@@ -59,13 +59,13 @@ try {
             if ($progresso_data = $progresso_result->fetch_assoc()) {
                 $bloco['progresso'] = $progresso_data;
             } else {
-                // Se não há progresso, calcular baseado nos exercícios
-                $sql_total = "SELECT COUNT(*) as total FROM exercicios WHERE bloco_id = ?";
+                // Se não há progresso, calcular baseado nos exercícios (máximo 12)
+                $sql_total = "SELECT COUNT(*) as total FROM exercicios WHERE bloco_id = ? LIMIT 12";
                 $stmt_total = $conn->prepare($sql_total);
                 if ($stmt_total) {
                     $stmt_total->bind_param("i", $row['id']);
                     $stmt_total->execute();
-                    $total_exercicios = $stmt_total->get_result()->fetch_assoc()['total'];
+                    $total_exercicios = min(12, $stmt_total->get_result()->fetch_assoc()['total']);
                     $stmt_total->close();
                 } else {
                     $total_exercicios = 0;

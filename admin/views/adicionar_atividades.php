@@ -1035,6 +1035,11 @@ $database->closeConnection();
                 • <strong>Nível:</strong> <?php echo htmlspecialchars($unidade_info['nivel'] ?? 'N/A'); ?><br>
                 <small class="text-muted">Este exercício ficará disponível APENAS nesta unidade específica.</small>
             </div>
+            
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Limite de Atividades:</strong> Cada bloco pode ter no máximo 12 atividades normais. Apenas as primeiras 12 atividades de cada bloco serão exibidas aos usuários.
+            </div>
 
             <div class="card">
                 <div class="card-header">

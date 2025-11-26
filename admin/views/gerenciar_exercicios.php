@@ -1004,6 +1004,10 @@ $database->closeConnection();
                     <i class="fas fa-tasks me-2"></i>
                     Exercícios do Caminho: <?php echo htmlspecialchars($caminho_info['nome_caminho']) . ' (' . htmlspecialchars($caminho_info['nivel']) . ')'; ?>
                 </h2>
+                <div class="alert alert-info mb-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Limite de Atividades:</strong> Cada bloco pode ter no máximo 12 atividades. Apenas as primeiras 12 atividades de cada bloco serão exibidas aos usuários.
+                </div>
             </div>
             
             <!-- Container dos botões com layout organizado -->
