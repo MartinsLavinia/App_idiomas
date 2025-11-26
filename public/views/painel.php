@@ -1491,11 +1491,7 @@ $database->closeConnection();
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label for="palavraIdioma" class="form-label">Idioma</label>
-                                            <select class="form-select" id="palavraIdioma" name="idioma">
-                                                <option value="Ingles">Inglês</option>
-                                                <option value="Japones">Japonês</option>
-                                                <option value="Coreano">Coreano</option>
-                                            </select>
+                                            <input type="text" class="form-control" id="palavraIdioma" name="idioma" value="<?php echo htmlspecialchars($idioma_valido ?? 'Idioma'); ?>" readonly>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -3174,6 +3170,7 @@ $database->closeConnection();
         
         const formData = new FormData();
         formData.append('action', 'listar_flashcards_painel');
+        formData.append('idioma', '<?php echo htmlspecialchars($idioma_escolhido ?? ''); ?>');
         if (status !== '') {
             formData.append('status', status);
         }

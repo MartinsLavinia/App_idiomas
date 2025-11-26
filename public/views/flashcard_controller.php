@@ -629,6 +629,7 @@ function adicionarFlashcardPainel($conn, $id_usuario) {
 
 function listarFlashcardsPainel($conn, $id_usuario) {
     $status = $_POST['status'] ?? '';
+    $idioma = $_POST['idioma'] ?? '';
 
     $sql = "SELECT 
             f.id,
@@ -650,6 +651,12 @@ function listarFlashcardsPainel($conn, $id_usuario) {
     
     $params = [$id_usuario, $id_usuario];
     $types = "ii";
+
+    if (!empty($idioma)) {
+        $sql .= " AND d.idioma = ?";
+        $params[] = $idioma;
+        $types .= "s";
+    }
 
     if ($status !== '') {
         $sql .= " AND (CASE WHEN COALESCE(fp.acertos, 0) >= 3 THEN 1 ELSE 0 END) = ?";
