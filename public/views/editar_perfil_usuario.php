@@ -228,9 +228,137 @@ $database->closeConnection();
             line-height: 1.6;
         }
 
+        /* SIDEBAR FIXO */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100%;
+            background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+            color: var(--branco);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .sidebar .profile {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 0 15px;
+        }
+
+        .sidebar .profile .profile-avatar-sidebar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid var(--amarelo-detalhe);
+            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar .profile .profile-avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .sidebar .profile h5 {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--branco);
+            font-size: 1.1rem;
+            word-wrap: break-word;
+            max-width: 200px;
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        .sidebar .profile small {
+            color: var(--cinza-claro);
+            font-size: 0.9rem;
+        }
+
+        .sidebar .list-group {
+            width: 100%;
+        }
+
+        .sidebar .list-group-item {
+            background-color: transparent;
+            color: var(--branco);
+            border: none;
+            padding: 15px 25px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .sidebar .list-group-item:hover {
+            background-color: var(--roxo-escuro);
+            cursor: pointer;
+        }
+
+        .sidebar .list-group-item.active {
+            background-color: var(--roxo-escuro) !important;
+            color: var(--branco) !important;
+            font-weight: 600;
+            border-left: 4px solid var(--amarelo-detalhe);
+        }
+
+        .sidebar .list-group-item i {
+            color: var(--amarelo-detalhe);
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Menu Hamburguer */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--roxo-principal) !important;
+            font-size: 1.5rem;
+            cursor: pointer;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1100;
+            transition: all 0.3s ease;
+        }
+
+        .menu-toggle:hover {
+            color: var(--roxo-escuro) !important;
+            transform: scale(1.1);
+        }
+
+        /* Overlay para mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
         /* Navbar igual ao admin */
         .navbar {
-            background: transparent !important;
+            background-color: transparent !important;
             border-bottom: 3px solid var(--amarelo-detalhe);
             box-shadow: 0 4px 15px rgba(255, 238, 0, 0.38);
         }
@@ -255,18 +383,52 @@ $database->closeConnection();
             transition: all 0.3s ease;
             text-decoration: none;
             font-size: 1.2rem;
+            padding: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
         }
 
         .settings-icon:hover {
-            color: var(--roxo-principal) !important;
+            color: var(--roxo-escuro) !important;
             transform: rotate(90deg);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .logout-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .logout-icon:hover {
+            color: var(--roxo-escuro) !important;
+            transform: translateY(-2px);
+        }
+
+        /* Dropdown Menu */
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 0.5rem;
+        }
+
+        .dropdown-item {
+            padding: 0.5rem 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f2e9f9;
+            color: var(--roxo-escuro);
+            transform: translateX(4px);
         }
 
         /* Container principal */
         .profile-container { 
-            margin: 40px auto; 
-            padding: 0 20px;
-            width: 80%;
+            margin-left: 250px;
+            padding: 40px 20px;
+            transition: margin-left 0.3s ease-in-out;
         }
 
         /* Breadcrumb */
@@ -823,6 +985,28 @@ $database->closeConnection();
         }
 
         /* Responsividade */
+        @media (max-width: 992px) {
+            .menu-toggle {
+                display: block;
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .profile-container {
+                margin-left: 0;
+            }
+            
+            .sidebar-overlay.active {
+                display: block;
+            }
+        }
+
         @media (max-width: 768px) {
             .horizontal-layout {
                 flex-direction: column;
@@ -841,14 +1025,33 @@ $database->closeConnection();
                 width: 50px;
                 height: 50px;
             }
+            .sidebar {
+                width: 280px;
+            }
+            .profile-container {
+                padding: 20px 15px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .profile-container {
+                padding: 15px 10px;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Menu Hamburguer -->
+    <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Overlay para mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <!-- Navbar igual ao admin -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container d-flex justify-content-between align-items-center">
-            <div></div>
+        <div class="container-fluid d-flex justify-content-end align-items-center">
             <div class="d-flex align-items-center" style="gap: 24px;">
                 <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
                     <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
@@ -856,9 +1059,37 @@ $database->closeConnection();
                 <a href="editar_perfil_usuario.php" class="settings-icon">
                     <i class="fas fa-cog fa-lg"></i>
                 </a>
+                <a href="../../logout.php" class="logout-icon" title="Sair">
+                    <i class="fas fa-sign-out-alt fa-lg"></i>
+                </a>
             </div>
         </div>
     </nav>
+
+    <div class="sidebar" id="sidebar">
+        <div class="profile">
+            <?php if ($foto_atual): ?>
+                <div class="profile-avatar-sidebar">
+                    <img src="<?= htmlspecialchars($foto_atual) ?>" alt="Foto de perfil" class="profile-avatar-img">
+                </div>
+            <?php else: ?>
+                <div class="profile-avatar-sidebar">
+                    <i class="fa-solid fa-user" style="color: var(--amarelo-detalhe); font-size: 3.5rem;"></i>
+                </div>
+            <?php endif; ?>
+            <h5><?= htmlspecialchars($_SESSION['nome_usuario'] ?? $usuario['nome'] ?? 'Usuário') ?></h5>
+            <small>Usuário</small>
+        </div>
+
+        <div class="list-group">
+            <a href="painel.php" class="list-group-item">
+                <i class="fas fa-home"></i> Início
+            </a>
+            <a href="flashcards.php" class="list-group-item">
+                <i class="fas fa-layer-group"></i> Flash Cards
+            </a>
+        </div>
+    </div>
 
     <div class="profile-container">
         <!-- Breadcrumb -->
@@ -1245,6 +1476,41 @@ $database->closeConnection();
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Menu Hamburguer Functionality
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            
+            if (menuToggle && sidebar) {
+                menuToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                    if (sidebarOverlay) {
+                        sidebarOverlay.classList.toggle('active');
+                    }
+                });
+                
+                if (sidebarOverlay) {
+                    sidebarOverlay.addEventListener('click', function() {
+                        sidebar.classList.remove('active');
+                        sidebarOverlay.classList.remove('active');
+                    });
+                }
+                
+                // Fechar menu ao clicar em um link (mobile)
+                const sidebarLinks = sidebar.querySelectorAll('.list-group-item');
+                sidebarLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        if (window.innerWidth <= 992) {
+                            sidebar.classList.remove('active');
+                            if (sidebarOverlay) {
+                                sidebarOverlay.classList.remove('active');
+                            }
+                        }
+                    });
+                });
+            }
+            
+            // Resto do código existente
             const confirmUpdateModal = document.getElementById('confirmUpdateModal');
             const form = document.getElementById('editForm');
             

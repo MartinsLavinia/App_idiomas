@@ -198,7 +198,7 @@ $database->closeConnection();
         /* Estilos Gerais do Corpo */
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: var(--cinza-claro);
+            background-color: #ffffff;
             color: var(--preto-texto);
             margin: 0;
             padding: 0;
@@ -210,7 +210,7 @@ $database->closeConnection();
             top: 0;
             left: 0;
             width: 250px;
-            height: 100%;
+            height: 100vh;
             background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
             color: var(--branco);
             display: flex;
@@ -219,6 +219,8 @@ $database->closeConnection();
             padding-top: 20px;
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
             z-index: 1000;
+            transition: transform 0.3s ease-in-out;
+            overflow-y: auto;
         }
 
         .sidebar .profile {
@@ -318,6 +320,8 @@ $database->closeConnection();
             margin-left: 250px;
             padding: 20px;
             transition: margin-left 0.3s ease-in-out;
+            min-height: 100vh;
+            position: relative;
         }
 
         /* Menu Hamburguer */
@@ -333,6 +337,9 @@ $database->closeConnection();
             left: 15px;
             z-index: 1100;
             transition: all 0.3s ease;
+            padding: 8px;
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.9);
         }
 
         .menu-toggle:hover {
@@ -370,6 +377,7 @@ $database->closeConnection();
             
             .sidebar {
                 transform: translateX(-100%);
+                z-index: 1050;
             }
             
             .sidebar.active {
@@ -377,7 +385,8 @@ $database->closeConnection();
             }
             
             .main-content {
-                margin-left: 0;
+                margin-left: 0 !important;
+                width: 100% !important;
             }
             
             .sidebar-overlay.active {
@@ -393,11 +402,77 @@ $database->closeConnection();
             .main-content {
                 padding: 15px 10px;
             }
+            
+            .card-header .row {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            
+            .card-header .col-md-8 {
+                flex: 1;
+                min-width: 200px;
+            }
+            
+            .card-header .col-md-4 {
+                flex: 0 0 auto;
+            }
+            
+            .card-body .row {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            
+            .card-body .col-md-8 {
+                flex: 1;
+                min-width: 200px;
+            }
+            
+            .card-body .col-md-4 {
+                flex: 0 0 auto;
+                margin-top: 0.5rem;
+            }
         }
 
         @media (max-width: 576px) {
             .main-content {
-                padding: 15px 10px;
+                padding: 10px 8px;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            .card-header .row,
+            .card-body .row {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            
+            .card-header .col-md-8,
+            .card-header .col-md-4,
+            .card-body .col-md-8,
+            .card-body .col-md-4 {
+                flex: none;
+                width: 100%;
+            }
+            
+            .d-flex.gap-2 {
+                flex-direction: column;
+                gap: 0.5rem !important;
+            }
+            
+            .d-flex.gap-2 .btn {
+                width: 100%;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .btn-group .btn {
+                width: 100%;
             }
         }
 
@@ -450,6 +525,67 @@ $database->closeConnection();
             color: var(--amarelo-detalhe);
             width: 20px; /* Alinhamento dos ícones */
             text-align: center;
+        }
+
+        /* Melhorias para mobile pequeno */
+        @media (max-width: 480px) {
+            .sidebar {
+                width: 100vw;
+            }
+            
+            .main-content {
+                padding: 8px 5px;
+            }
+            
+            .card {
+                margin-bottom: 0.75rem;
+            }
+            
+            .card-header {
+                padding: 1rem 0.75rem;
+            }
+            
+            .card-header h2 {
+                font-size: 1.3rem;
+                line-height: 1.2;
+            }
+            
+            .card-header p {
+                font-size: 0.85rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .card-body {
+                padding: 0.75rem;
+            }
+            
+            .bloco-card {
+                margin-bottom: 0.75rem;
+            }
+            
+            .bloco-card .card-body {
+                padding: 0.75rem;
+            }
+            
+            .bloco-card h5 {
+                font-size: 1rem;
+                line-height: 1.2;
+            }
+            
+            .bloco-card .card-text {
+                font-size: 0.85rem;
+                line-height: 1.3;
+            }
+            
+            .btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.9rem;
+            }
+            
+            .btn-sm {
+                padding: 0.375rem 0.5rem;
+                font-size: 0.8rem;
+            }
         }
 
         /* Conteúdo principal */
@@ -701,10 +837,39 @@ $database->closeConnection();
             padding: 12px 24px;
         }
 
-        /* Cards de blocos com estados */
+        /* Cards de blocos com estados - Layout quadrado organizado */
         .bloco-card {
             transition: all 0.3s ease;
             border: 2px solid transparent;
+            min-height: 220px;
+            max-height: 220px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        /* Container dos blocos em grid organizado */
+        .blocos-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 10px;
+        }
+        
+        /* Ajustes para diferentes tamanhos de tela */
+        @media (min-width: 768px) {
+            .blocos-container {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 25px;
+            }
+        }
+        
+        @media (min-width: 1200px) {
+            .blocos-container {
+                grid-template-columns: repeat(3, 1fr);
+                max-width: 1000px;
+                margin: 0 auto;
+            }
         }
         
         .bloco-card-disponivel {
@@ -740,6 +905,140 @@ $database->closeConnection();
         .bloco-card-bloqueado .card-title,
         .bloco-card-bloqueado .card-text {
             color: #6c757d !important;
+        }
+        
+        /* Melhorias visuais para os cards */
+        .bloco-card .card-body {
+            padding: 1.25rem;
+            height: 100%;
+        }
+        
+        .bloco-card .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            line-height: 1.2;
+            margin-bottom: 0.5rem;
+        }
+        
+        .bloco-card .card-text {
+            font-size: 0.85rem;
+            line-height: 1.3;
+        }
+        
+        /* Área de descrição com scroll */
+        .bloco-descricao {
+            max-height: 60px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 5px;
+            margin-bottom: 1rem;
+            scrollbar-width: thin;
+            scrollbar-color: #ccc transparent;
+        }
+        
+        .bloco-descricao::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .bloco-descricao::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .bloco-descricao::-webkit-scrollbar-thumb {
+            background-color: #ccc;
+            border-radius: 2px;
+        }
+        
+        .bloco-descricao::-webkit-scrollbar-thumb:hover {
+            background-color: #999;
+        }
+        
+        /* Indicador de scroll */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 5px;
+            right: 8px;
+            font-size: 0.7rem;
+            color: #999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .bloco-descricao:hover + .scroll-indicator,
+        .bloco-descricao.has-scroll + .scroll-indicator {
+            opacity: 1;
+        }
+        
+        .bloco-card .bloco-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        .bloco-card:hover .bloco-icon {
+            transform: scale(1.1);
+        }
+        
+        /* Espaçamento uniforme */
+        .bloco-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .bloco-item .card {
+            flex: 1;
+        }
+        
+        /* Responsividade para cards de blocos */
+        @media (max-width: 768px) {
+            .bloco-card {
+                min-height: 200px;
+                max-height: 200px;
+            }
+            
+            .blocos-container {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 15px;
+                padding: 5px;
+            }
+            
+            .bloco-card .bloco-icon {
+                font-size: 1.5rem !important;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .bloco-card {
+                min-height: 180px;
+                max-height: 180px;
+            }
+            
+            .blocos-container {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+            
+            .bloco-card .card-body {
+                text-align: center;
+                padding: 1rem;
+            }
+            
+            .bloco-card .card-title {
+                font-size: 0.9rem;
+            }
+            
+            .bloco-card .card-text {
+                font-size: 0.8rem;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .blocos-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .bloco-card {
+                min-height: 160px;
+                max-height: 160px;
+            }
         }
         
         /* Container de unidades */
@@ -1068,6 +1367,284 @@ $database->closeConnection();
             border-left: 4px solid #6c757d !important;
         }
 
+        /* Navbar igual ao admin */
+        .navbar {
+            background-color: transparent !important;
+            border-bottom: 3px solid var(--amarelo-detalhe);
+            box-shadow: 0 4px 15px rgba(255, 238, 0, 0.38);
+        }
+
+        .navbar-brand {
+            margin-left: auto;
+            margin-right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            width: 100%;
+        }
+        
+        .navbar-brand .logo-header {
+            height: 70px;
+            width: auto;
+            display: block;
+        }
+
+        .settings-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+            padding: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .settings-icon:hover {
+            color: var(--roxo-escuro) !important;
+            transform: rotate(90deg);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .logout-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .logout-icon:hover {
+            color: var(--roxo-escuro) !important;
+            transform: translateY(-2px);
+        }
+
+        /* SIDEBAR FIXO */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100%;
+            background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
+            color: var(--branco);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .sidebar .profile {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 0 15px;
+        }
+
+        .sidebar .profile .profile-avatar-sidebar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid var(--amarelo-detalhe);
+            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar .profile .profile-avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .sidebar .profile .profile-avatar-sidebar i {
+            font-size: 3.5rem;
+            color: var(--amarelo-detalhe);
+        }
+
+        .sidebar .profile h5 {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--branco);
+            font-size: 1.1rem;
+            word-wrap: break-word;
+            max-width: 200px;
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        .sidebar .profile small {
+            color: var(--cinza-claro);
+            font-size: 0.9rem;
+            word-wrap: break-word;
+            max-width: 200px;
+            text-align: center;
+            line-height: 1.2;
+            margin-top: 5px;
+        }
+
+        .sidebar .list-group {
+            width: 100%;
+        }
+
+        .sidebar .list-group-item {
+            background-color: transparent;
+            color: var(--branco);
+            border: none;
+            padding: 15px 25px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .sidebar .list-group-item:hover {
+            background-color: var(--roxo-escuro);
+            cursor: pointer;
+        }
+
+        .sidebar .list-group-item.active {
+            background-color: var(--roxo-escuro) !important;
+            color: var(--branco) !important;
+            font-weight: 600;
+            border-left: 4px solid var(--amarelo-detalhe);
+        }
+
+        .sidebar .list-group-item i {
+            color: var(--amarelo-detalhe);
+            width: 20px;
+            text-align: center;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+        /* Menu Hamburguer */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--roxo-principal) !important;
+            font-size: 1.5rem;
+            cursor: pointer;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1100;
+            transition: all 0.3s ease;
+        }
+
+        .menu-toggle:hover {
+            color: var(--roxo-escuro) !important;
+            transform: scale(1.1);
+        }
+
+        /* Quando a sidebar está ativa */
+        body:has(.sidebar.active) .menu-toggle,
+        .sidebar.active ~ .menu-toggle {
+            color: var(--amarelo-detalhe) !important;
+        }
+
+        body:has(.sidebar.active) .menu-toggle:hover,
+        .sidebar.active ~ .menu-toggle:hover {
+            color: var(--amarelo-hover) !important;
+        }
+
+        /* Overlay para mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        /* Dropdown Menu */
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 0.5rem;
+        }
+
+        .dropdown-item {
+            padding: 0.5rem 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f2e9f9;
+            color: var(--roxo-escuro);
+            transform: translateX(4px);
+        }
+
+        .dropdown-item.text-danger:hover {
+            background-color: #fceaea;
+            color: #b02a37;
+            transform: translateX(4px);
+        }
+
+        @media (max-width: 992px) {
+            .menu-toggle {
+                display: block;
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .sidebar-overlay.active {
+                display: block;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 280px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 15px 10px;
+            }
+        }
+
+        /* Botão de pesquisa customizado */
+        .btn-search-custom {
+            background: transparent;
+            border: 1px solid white;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-search-custom:hover {
+            background: transparent !important;
+            border-color: white;
+            color: white;
+            transform: scale(1.05);
+        }
+
         /* Estilos para preview de flashcards */
         .flashcard-preview {
             width: 100%;
@@ -1117,6 +1694,7 @@ $database->closeConnection();
             font-weight: bold;
             font-size: 1.1rem;
         }
+
     </style>
     
     <script>
@@ -1138,9 +1716,55 @@ $database->closeConnection();
         document.addEventListener('DOMContentLoaded', function() {
             verificarHTTPS();
             
+            // Menu Hamburguer Functionality
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            
+            if (menuToggle && sidebar) {
+                menuToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                    if (sidebarOverlay) {
+                        sidebarOverlay.classList.toggle('active');
+                    }
+                });
+                
+                if (sidebarOverlay) {
+                    sidebarOverlay.addEventListener('click', function() {
+                        sidebar.classList.remove('active');
+                        sidebarOverlay.classList.remove('active');
+                    });
+                }
+                
+                // Fechar menu ao clicar em um link (mobile)
+                const sidebarLinks = sidebar.querySelectorAll('.list-group-item');
+                sidebarLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        if (window.innerWidth <= 992) {
+                            sidebar.classList.remove('active');
+                            if (sidebarOverlay) {
+                                sidebarOverlay.classList.remove('active');
+                            }
+                        }
+                    });
+                });
+            }
+            
             // O sistema integrado corrigido já inicializa automaticamente
             console.log('Painel carregado com sistema de exercícios corrigido');
+            
+            // Inicializar indicadores de scroll após carregar blocos
+            setTimeout(initScrollIndicators, 1000);
         });
+        
+        // Função para inicializar indicadores de scroll
+        function initScrollIndicators() {
+            document.querySelectorAll('.bloco-descricao').forEach(descricao => {
+                if (descricao.scrollHeight > descricao.clientHeight) {
+                    descricao.classList.add('has-scroll');
+                }
+            });
+        }
     </script>
 </head>
 
@@ -1153,6 +1777,23 @@ $database->closeConnection();
     <!-- Overlay para mobile -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
+    <!-- Navbar igual ao admin -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid d-flex justify-content-end align-items-center">
+            <div class="d-flex align-items-center" style="gap: 24px;">
+                <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
+                    <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
+                </a>
+                <a href="editar_perfil_usuario.php" class="settings-icon">
+                    <i class="fas fa-cog fa-lg"></i>
+                </a>
+                <a href="../../logout.php" class="logout-icon" title="Sair">
+                    <i class="fas fa-sign-out-alt fa-lg"></i>
+                </a>
+            </div>
+        </div>
+    </nav>
+
     <div class="sidebar" id="sidebar">
         <div class="profile">
             <?php if ($foto_usuario): ?>
@@ -1161,7 +1802,7 @@ $database->closeConnection();
                 </div>
             <?php else: ?>
                 <div class="profile-avatar-sidebar">
-                    <i class="fa-solid fa-user" style="color: var(--amarelo-detalhe); font-size: 3.5rem;"></i>
+                    <i class="fa-solid fa-user"></i>
                 </div>
             <?php endif; ?>
             <h5><?php echo htmlspecialchars($nome_usuario); ?></h5>
@@ -1255,20 +1896,13 @@ $database->closeConnection();
                     </ul>
                 </div>
             </div>
-            <a href="editar_perfil_usuario.php" class="list-group-item">
-                <i class="fas fa-cog"></i> Configurações
-            </a>
-            <a href="../../logout.php" class="list-group-item mt-auto">
-                <i class="fas fa-sign-out-alt"></i> Sair
-            </a>
         </div>
     </div>
 
     <div class="main-content">
         <div class="container-fluid mt-4">
-        
-        <div class="row justify-content-center">
-            <div class="col-md-11">
+            <div class="row justify-content-center">
+                <div class="col-md-11">
                 <?php if ($mostrar_selecao_idioma): ?>
                     <!-- Seleção de idioma para usuários sem progresso -->
                     <div class="card">
@@ -1303,7 +1937,7 @@ $database->closeConnection();
                             <?php if (count($unidades) > 0): ?>
                                 <?php $unidade = $unidades[0]; ?>
                                 <h2>Unidade <?php echo htmlspecialchars($unidade["numero_unidade"]); ?>: <?php echo htmlspecialchars($unidade["nome_unidade"]); ?></h2>
-                                <p class="text-muted mb-1"><?php echo htmlspecialchars($unidade["descricao"]); ?></p>
+                                <p style="color: #fff;" class="mb-1"><?php echo htmlspecialchars($unidade["descricao"]); ?></p>
                                 <p class="fs-5">Caminho: <?php 
                                     $idioma_valido = ($idioma_escolhido && preg_match('/^[a-zA-Z]+$/', $idioma_escolhido)) ? $idioma_escolhido : 'Idioma';
                                     echo htmlspecialchars($idiomas_display[$idioma_valido] ?? $idioma_valido); 
@@ -1323,7 +1957,7 @@ $database->closeConnection();
                                         <div class="spinner-border text-primary" role="status">
                                             <span class="visually-hidden">Carregando blocos...</span>
                                         </div>
-                                        <p class="mt-2 text-muted">Carregando blocos da unidade...</p>
+                                        <p class="mt-2" style="color: #fff;">Carregando blocos da unidade...</p>
                                     </div>
                                 </div>
                             <?php else: ?>
@@ -1343,12 +1977,12 @@ $database->closeConnection();
                                         <i class="fas fa-book-open me-2 text-primary"></i>
                                         Teorias e Conceitos
                                     </h5>
-                                    <p class="card-text text-muted mb-0">
+                                    <p class="card-text mb-0" style="color: #fff;">
                                         Acesse o conteúdo teórico do seu nível atual
                                     </p>
                                 </div>
                                 <div class="col-md-4 text-end">
-                                    <button class="btn btn-primary" onclick="abrirTeorias()">
+                                    <button class="btn btn-primary w-100 w-md-auto" onclick="abrirTeorias()">
                                         <i class="fas fa-book me-2"></i>Ver Teorias
                                     </button>
                                 </div>
@@ -1375,11 +2009,11 @@ $database->closeConnection();
 
                                 <!-- Coluna dos botões -->
                                 <div class="col-md-4 text-end">
-                                    <div class="d-flex gap-2">
-                                        <a href="flashcards.php" class="btn btn-warning">
+                                    <div class="d-flex gap-2 justify-content-end flex-wrap">
+                                        <a href="flashcards.php" class="btn btn-warning flex-fill flex-md-grow-0">
                                             <i class="fas fa-layer-group me-2"></i>Meus Decks
                                         </a>
-                                        <a href="flashcard_estudo.php" class="btn btn-outline-warning">
+                                        <a href="flashcard_estudo.php" class="btn btn-outline-warning flex-fill flex-md-grow-0">
                                             <i class="fas fa-play me-2"></i>Estudar
                                         </a>
                                     </div>
@@ -1391,31 +2025,25 @@ $database->closeConnection();
                     <!-- Seção Gerenciamento de Palavras -->
                     <div class="card mb-4">
                         <div class="card-header">
-                            <div class="row align-items-center">
-                                <div class="col-md-4">
-                                    <h5 class="mb-0"> <i class="fas fa-book me-2"></i> Minhas Palavras </h5>
-                                </div>
-                                <div class="col-md-8 text-end">
-                                    <div class="row g-2 justify-content-end align-items-center">
-                                        <div class="col-md-4">
-                                            <select class="form-select form-select-sm form-select-dark" id="filtroPalavrasStatus" onchange="carregarPalavras()">
-                                                <option value="">Todas as palavras</option>
-                                                <option value="0">Não aprendidas</option>
-                                                <option value="1">Aprendidas</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <input type="text" class="form-control form-control-sm form-control-dark" id="filtroPalavrasBusca" placeholder="Buscar palavra..." onkeyup="filtrarPalavrasLocal()">
-                                        </div>
-                                        <div class="col-auto">
-                                            <button class="btn btn-sm btn-light" type="button" onclick="carregarPalavras()"><i class="fas fa-search"></i></button>
-                                        </div>
-                                        <div class="col-md-auto">
-                                            <button class="btn btn-light btn-sm w-auto" onclick="abrirModalAdicionarPalavra()">
-                                                <i class="fas fa-plus me-2"></i>Adicionar Palavra
-                                            </button>
-                                        </div>
+                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-book me-2"></i>Minhas Palavras
+                                </h5>
+                                <div class="d-flex flex-wrap gap-2 align-items-center">
+                                    <select class="form-select form-select-sm" id="filtroPalavrasStatus" onchange="carregarPalavras()" style="width: auto; min-width: 120px;">
+                                        <option value="">Todas</option>
+                                        <option value="0">Não aprendidas</option>
+                                        <option value="1">Aprendidas</option>
+                                    </select>
+                                    <div class="input-group" style="width: 200px;">
+                                        <input type="text" class="form-control form-control-sm" id="filtroPalavrasBusca" placeholder="Buscar..." onkeyup="filtrarPalavrasLocal()">
+                                        <button class="btn btn-sm btn-search-custom" type="button" onclick="carregarPalavras()">
+                                            <i class="fas fa-search"></i>
+                                        </button>
                                     </div>
+                                    <button class="btn btn-sm" style="background: linear-gradient(135deg, #ffd700 0%, #e7c500 100%); color: #212529; font-weight: 600; border: none;" onclick="abrirModalAdicionarPalavra()">
+                                        <i class="fas fa-plus me-1"></i>Adicionar
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -1432,8 +2060,8 @@ $database->closeConnection();
                         </div>
                     </div>
                 <?php endif; ?>
+                </div>
             </div>
-        </div>
         </div>
     </div>
 
@@ -1821,7 +2449,7 @@ $database->closeConnection();
             });
     }
     
-    // Exibir blocos de uma unidade com sistema de desbloqueio - VERSÃO CORRIGIDA
+    // Exibir blocos de uma unidade com sistema de desbloqueio - VERSÃO CORRIGIDA COM LAYOUT QUADRADO
     function exibirBlocosUnidade(blocos, container, unidadeId) {
         if (!blocos || blocos.length === 0) {
             container.innerHTML = `
@@ -1835,7 +2463,9 @@ $database->closeConnection();
             return;
         }
         
+        // Criar container em grid organizado
         container.innerHTML = '';
+        container.className = 'blocos-container';
         
         console.log('Blocos recebidos:', blocos);
         
@@ -1879,40 +2509,49 @@ $database->closeConnection();
             const disponivel = index <= blocoDisponivel;
             const bloqueado = !disponivel;
             
-            const col = document.createElement('div');
-            col.className = 'col-md-4 mb-3';
+            const blocoElement = document.createElement('div');
+            blocoElement.className = 'bloco-item';
             
             const cardClass = bloqueado ? 'bloco-card-bloqueado' : (concluido ? 'bloco-card-concluido' : 'bloco-card-disponivel');
             const clickHandler = bloqueado ? '' : `onclick="abrirExercicios(${bloco.id}, '${bloco.nome_bloco.replace(/'/g, "\\'")}')" style="cursor: pointer;"`;
             
-            col.innerHTML = `
+            blocoElement.innerHTML = `
                 <div class="card bloco-card h-100 ${cardClass}" ${clickHandler}>
-                    <div class="card-body text-center">
-                        ${bloqueado ? 
-                            '<i class="fas fa-lock bloco-icon mb-2" style="font-size: 1.5rem; color: #6c757d;"></i>' :
-                            (concluido ? 
-                                '<i class="fas fa-check-circle bloco-icon mb-2" style="font-size: 1.5rem; color: #28a745;"></i>' :
-                                '<i class="fas fa-play-circle bloco-icon mb-2" style="font-size: 1.5rem; color: #007bff;"></i>'
-                            )
-                        }
-                        <h5 class="card-title">${bloco.nome_bloco}</h5>
-                        <p class="card-text text-muted">${bloco.descricao || 'Descrição não disponível'}</p>
-                        
-                        ${bloqueado ? 
-                            '<div class="alert alert-warning py-1 mb-1"><small><i class="fas fa-lock me-1"></i>Complete o anterior</small></div>' :
-                            `<div class="progress progress-bar-custom mb-1">
-                                <div class="progress-bar ${concluido ? 'bg-success' : ''}" role="progressbar" 
-                                     style="width: ${progresso}%" aria-valuenow="${progresso}" aria-valuemin="0" aria-valuemax="100"></div>
+                    <div class="card-body text-center d-flex flex-column justify-content-between">
+                        <div>
+                            ${bloqueado ? 
+                                '<i class="fas fa-lock bloco-icon mb-3" style="font-size: 2rem; color: #6c757d;"></i>' :
+                                (concluido ? 
+                                    '<i class="fas fa-check-circle bloco-icon mb-3" style="font-size: 2rem; color: #28a745;"></i>' :
+                                    '<i class="fas fa-play-circle bloco-icon mb-3" style="font-size: 2rem; color: #007bff;"></i>'
+                                )
+                            }
+                            <h6 class="card-title mb-2">${bloco.nome_bloco}</h6>
+                            <div class="bloco-descricao position-relative">
+                                <p class="card-text text-muted small mb-0">${bloco.descricao || 'Descrição não disponível'}</p>
+                                <div class="scroll-indicator">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
                             </div>
-                            <small class="text-muted">${atividadesConcluidas}/${totalAtividades} atividades (${progresso}%)</small>`
-                        }
+                        </div>
                         
-                        ${concluido ? '<div class="mt-2"><span class="badge bg-success"><i class="fas fa-check me-1"></i>Concluído</span></div>' : ''}
-                        ${!bloqueado && !concluido && index === blocoDisponivel ? '<div class="mt-2"><span class="badge bg-primary"><i class="fas fa-play me-1"></i>Disponível</span></div>' : ''}
+                        <div class="mt-auto">
+                            ${bloqueado ? 
+                                '<div class="alert alert-warning py-1 mb-2"><small><i class="fas fa-lock me-1"></i>Bloqueado</small></div>' :
+                                `<div class="progress progress-bar-custom mb-2" style="height: 6px;">
+                                    <div class="progress-bar ${concluido ? 'bg-success' : 'bg-primary'}" role="progressbar" 
+                                         style="width: ${progresso}%" aria-valuenow="${progresso}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <small class="text-muted">${atividadesConcluidas}/${totalAtividades} (${progresso}%)</small>`
+                            }
+                            
+                            ${concluido ? '<div class="mt-2"><span class="badge bg-success"><i class="fas fa-check me-1"></i>Concluído</span></div>' : ''}
+                            ${!bloqueado && !concluido && index === blocoDisponivel ? '<div class="mt-2"><span class="badge bg-primary"><i class="fas fa-play me-1"></i>Disponível</span></div>' : ''}
+                        </div>
                     </div>
                 </div>
             `;
-            container.appendChild(col);
+            container.appendChild(blocoElement);
         });
         
         // Exibir blocos especiais (sempre disponíveis)
@@ -1926,8 +2565,8 @@ $database->closeConnection();
             console.log('Nome:', bloco.nome_bloco);
             console.log('Tipo:', bloco.tipo);
             
-            const col = document.createElement('div');
-            col.className = 'col-md-4 mb-3';
+            const blocoElement = document.createElement('div');
+            blocoElement.className = 'bloco-item';
             
             const tipoIcon = {
                 'observar': 'fa-eye',
@@ -1938,37 +2577,49 @@ $database->closeConnection();
             const exercicio = bloco.exercicio_especial;
             const icon = tipoIcon[exercicio?.tipo_exercicio] || 'fa-star';
             
-            col.innerHTML = `
+            blocoElement.innerHTML = `
                 <div class="card bloco-card h-100 bloco-card-disponivel border-warning" 
                      onclick="abrirExercicioEspecial('${bloco.id}', '${bloco.nome_bloco.replace(/'/g, "\\'")}')" 
-                     style="cursor: pointer; border-left: 4px solid #ffc107 !important;">
-                    <div class="card-body text-center">
-                        <i class="fas ${icon} bloco-icon mb-2" style="font-size: 1.5rem; color: #ffc107;"></i>
-                        <h5 class="card-title">${bloco.nome_bloco}</h5>
-                        <p class="card-text text-muted">${bloco.descricao}</p>
-                        
-                        <div class="progress progress-bar-custom mb-1">
-                            <div class="progress-bar bg-warning" role="progressbar" 
-                                 style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                     style="cursor: pointer; border: 3px solid #ffc107 !important;">
+                    <div class="card-body text-center d-flex flex-column justify-content-between">
+                        <div>
+                            <i class="fas ${icon} bloco-icon mb-3" style="font-size: 2rem; color: #ffc107;"></i>
+                            <h6 class="card-title mb-2">${bloco.nome_bloco}</h6>
+                            <div class="bloco-descricao position-relative">
+                                <p class="card-text text-muted small mb-0">${bloco.descricao || 'Descrição não disponível'}</p>
+                                <div class="scroll-indicator">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                            </div>
                         </div>
-                        <small class="text-muted">Exercício especial</small>
                         
-                        <div class="mt-2">
-                            <span class="badge bg-warning text-dark">
-                                <i class="fas fa-star me-1"></i>Especial
-                            </span>
+                        <div class="mt-auto">
+                            <div class="progress progress-bar-custom mb-2" style="height: 6px;">
+                                <div class="progress-bar bg-warning" role="progressbar" 
+                                     style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small class="text-muted">Exercício especial</small>
+                            
+                            <div class="mt-2">
+                                <span class="badge bg-warning text-dark">
+                                    <i class="fas fa-star me-1"></i>Especial
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
             `;
-            container.appendChild(col);
+            container.appendChild(blocoElement);
             console.log(`Bloco especial ${index + 1} adicionado ao DOM com sucesso`);
-            console.log('HTML gerado:', col.outerHTML.substring(0, 200) + '...');
+            console.log('HTML gerado:', blocoElement.outerHTML.substring(0, 200) + '...');
         });
         
         console.log('=== RESULTADO FINAL ===');
         console.log('Total de elementos no container:', container.children.length);
         console.log('Container HTML:', container.innerHTML.length > 0 ? 'Contém elementos' : 'Vazio');
+        
+        // Inicializar indicadores de scroll após renderizar
+        setTimeout(initScrollIndicators, 100);
     }
 
     // ==================== CONFIGURAÇÃO DOS EVENT LISTENERS ====================
@@ -2015,10 +2666,11 @@ $database->closeConnection();
             });
     };
 
-    // Função para exibir blocos no modal
+    // Função para exibir blocos no modal com layout organizado
     function exibirBlocos(blocos) {
         const container = document.getElementById("listaBlocos");
         container.innerHTML = "";
+        container.className = "blocos-container";
 
         if (!blocos || blocos.length === 0) {
             container.innerHTML = `
@@ -2029,6 +2681,7 @@ $database->closeConnection();
                     </div>
                 </div>
             `;
+            container.className = "row";
             return;
         }
 
@@ -2038,24 +2691,33 @@ $database->closeConnection();
             const atividadesConcluidas = bloco.progresso?.atividades_concluidas || 0;
             const totalAtividades = bloco.progresso?.total_atividades || bloco.total_atividades || 0;
            
-            const col = document.createElement("div");
-            col.className = "col-md-6 mb-3";
-            col.innerHTML = `
-                <div class="card bloco-card h-100" onclick="abrirExercicios(${bloco.id}, '${bloco.nome_bloco.replace(/'/g, "\\'")}')" style="cursor: pointer;">
-                    <div class="card-body text-center">
-                        <i class="fas fa-cube bloco-icon mb-3" style="font-size: 2rem; color: #007bff;"></i>
-                        <h5 class="card-title">${bloco.nome_bloco}</h5>
-                        <p class="card-text text-muted">${bloco.descricao || 'Descrição não disponível'}</p>
-                        <div class="progress progress-bar-custom mb-2">
-                            <div class="progress-bar ${concluido ? 'bg-success' : ''}" role="progressbar" 
-                                 style="width: ${progresso}%" aria-valuenow="${progresso}" aria-valuemin="0" aria-valuemax="100"></div>
+            const blocoElement = document.createElement("div");
+            blocoElement.className = "bloco-item";
+            blocoElement.innerHTML = `
+                <div class="card bloco-card h-100 bloco-card-disponivel" onclick="abrirExercicios(${bloco.id}, '${bloco.nome_bloco.replace(/'/g, "\\'")}')" style="cursor: pointer;">
+                    <div class="card-body text-center d-flex flex-column justify-content-between">
+                        <div>
+                            <i class="fas fa-cube bloco-icon mb-3" style="font-size: 2rem; color: #007bff;"></i>
+                            <h6 class="card-title mb-2">${bloco.nome_bloco}</h6>
+                            <div class="bloco-descricao position-relative">
+                                <p class="card-text text-muted small mb-0">${bloco.descricao || 'Descrição não disponível'}</p>
+                                <div class="scroll-indicator">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                            </div>
                         </div>
-                        <small class="text-muted">${atividadesConcluidas}/${totalAtividades} atividades (${progresso}%)</small>
-                        ${concluido ? '<div class="mt-2"><span class="badge bg-success"><i class="fas fa-check me-1"></i>Concluído</span></div>' : ''}
+                        <div class="mt-auto">
+                            <div class="progress progress-bar-custom mb-2" style="height: 6px;">
+                                <div class="progress-bar ${concluido ? 'bg-success' : 'bg-primary'}" role="progressbar" 
+                                     style="width: ${progresso}%" aria-valuenow="${progresso}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small class="text-muted">${atividadesConcluidas}/${totalAtividades} (${progresso}%)</small>
+                            ${concluido ? '<div class="mt-2"><span class="badge bg-success"><i class="fas fa-check me-1"></i>Concluído</span></div>' : ''}
+                        </div>
                     </div>
                 </div>
             `;
-            container.appendChild(col);
+            container.appendChild(blocoElement);
         });
     }
 

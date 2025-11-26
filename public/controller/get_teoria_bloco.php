@@ -9,10 +9,28 @@ if (!isset($_SESSION['id_usuario'])) {
 }
 
 $bloco_id = $_GET['bloco_id'] ?? null;
+$idioma = $_SESSION['idioma_atual'] ?? null;
 
 if (!$bloco_id) {
     echo json_encode(['success' => false, 'message' => 'ID do bloco não fornecido']);
     exit();
+}
+
+// Se não há idioma na sessão, tentar obter do progresso do usuário
+if (!$idioma && isset($_SESSION['id_usuario'])) {
+    $database = new Database();
+    $conn = $database->conn;
+    
+    $sql_idioma = "SELECT idioma FROM progresso_usuario WHERE id_usuario = ? ORDER BY ultima_atividade DESC LIMIT 1";
+    $stmt_idioma = $conn->prepare($sql_idioma);
+    $stmt_idioma->bind_param("i", $_SESSION['id_usuario']);
+    $stmt_idioma->execute();
+    $result_idioma = $stmt_idioma->get_result();
+    if ($row_idioma = $result_idioma->fetch_assoc()) {
+        $idioma = $row_idioma['idioma'];
+    }
+    $stmt_idioma->close();
+    $database->closeConnection();
 }
 
 try {
@@ -20,7 +38,7 @@ try {
     $conn = $database->conn;
     
     // Buscar teoria relacionada ao bloco (baseado na ordem do bloco)
-    $sql = "SELECT b.ordem, b.caminho_id, c.nivel 
+    $sql = "SELECT b.ordem, b.caminho_id, c.nivel, c.idioma 
             FROM blocos b 
             JOIN caminhos_aprendizagem c ON b.caminho_id = c.id 
             WHERE b.id = ?";
@@ -30,10 +48,18 @@ try {
     $result = $stmt->get_result();
     
     if ($bloco = $result->fetch_assoc()) {
-        // Buscar teoria correspondente à ordem do bloco e nível
-        $sql_teoria = "SELECT id, titulo, conteudo FROM teorias WHERE nivel = ? AND ordem = ?";
-        $stmt_teoria = $conn->prepare($sql_teoria);
-        $stmt_teoria->bind_param("si", $bloco['nivel'], $bloco['ordem']);
+        $idioma_bloco = $bloco['idioma'] ?? $idioma;
+        
+        // Buscar teoria correspondente à ordem do bloco, nível e idioma
+        if ($idioma_bloco) {
+            $sql_teoria = "SELECT id, titulo, conteudo FROM teorias WHERE nivel = ? AND ordem = ? AND idioma = ?";
+            $stmt_teoria = $conn->prepare($sql_teoria);
+            $stmt_teoria->bind_param("sis", $bloco['nivel'], $bloco['ordem'], $idioma_bloco);
+        } else {
+            $sql_teoria = "SELECT id, titulo, conteudo FROM teorias WHERE nivel = ? AND ordem = ?";
+            $stmt_teoria = $conn->prepare($sql_teoria);
+            $stmt_teoria->bind_param("si", $bloco['nivel'], $bloco['ordem']);
+        }
         $stmt_teoria->execute();
         $result_teoria = $stmt_teoria->get_result();
         
