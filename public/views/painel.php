@@ -1025,7 +1025,7 @@ $database->closeConnection();
                             <?php foreach ($idiomas_usuario as $idioma_user): ?>
                                 <?php if ($idioma_user['idioma'] !== $idioma_escolhido): ?>
                                     <li>
-                                        <a href="#" class="dropdown-item" onclick="trocarIdiomaAjax('<?php echo htmlspecialchars($idioma_user['idioma']); ?>')">
+                                        <a href="#" class="dropdown-item" onclick="trocarIdiomaAjax(event, '<?php echo htmlspecialchars($idioma_user['idioma']); ?>')">
                                             <i class="fas fa-exchange-alt me-2"></i><?php echo htmlspecialchars($idiomas_display[$idioma_user['idioma']] ?? $idioma_user['idioma']); ?> (<?php echo htmlspecialchars($idioma_user['nivel']); ?>)
                                         </a>
                                     </li>
@@ -1045,7 +1045,7 @@ $database->closeConnection();
                                 ?>
                                 <?php if (!$ja_estudado && $nao_vazio): ?>
                                     <li>
-                                        <a href="#" class="dropdown-item" onclick="trocarIdiomaAjax('<?php echo htmlspecialchars($idioma_disponivel); ?>')">
+                                        <a href="#" class="dropdown-item" onclick="trocarIdiomaAjax(event, '<?php echo htmlspecialchars($idioma_disponivel); ?>')">
                                             <i class="fas fa-plus me-2"></i><?php echo htmlspecialchars($idiomas_display[$idioma_disponivel] ?? $idioma_disponivel); ?> (Novo)
                                         </a>
                                     </li>
