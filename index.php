@@ -96,6 +96,18 @@
         background: rgba(255, 255, 255, 0.2);
     }
 
+    .nav-btn.admin-btn {
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        color: #1f2937;
+        font-weight: 600;
+    }
+
+    .nav-btn.admin-btn:hover {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(251, 191, 36, 0.4);
+    }
+
     .btn-primary {
         background: linear-gradient(135deg, #7c3aed, #a855f7);
         color: white;
@@ -170,9 +182,10 @@
         top: 100%;
         left: 0;
         right: 0;
-        background: rgba(255, 255, 255, 0.1);
+        background: linear-gradient(135deg, rgba(126, 34, 206, 0.95), rgba(88, 28, 135, 0.95));
         backdrop-filter: blur(20px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         transform: translateY(-100%);
         opacity: 0;
         transition: all 0.3s ease;
@@ -204,7 +217,21 @@
     }
 
     .nav-btn-mobile:hover {
-        background: rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.25);
+        color: #ffffff;
+        font-weight: 500;
+    }
+
+    .nav-btn-mobile.admin-btn {
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        color: #1f2937;
+        font-weight: 600;
+        border-radius: 0.5rem;
+    }
+
+    .nav-btn-mobile.admin-btn:hover {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        transform: translateY(-2px);
     }
 
     .mobile-buttons {
@@ -2134,6 +2161,7 @@
                 <button class="nav-btn" onclick="scrollToSection('welcome')">Início</button>
                 <button class="nav-btn" onclick="scrollToSection('main')">Sobre</button>
                 <button class="nav-btn" onclick="scrollToSection('units')">Unidades</button>
+                <button class="nav-btn admin-btn" onclick="window.location.href='admin/views/login_admin.php'">Admin</button>
                 <button class="btn-primary" style="font-size: 1.0rem;" onclick="window.location.href='public/views/login.php'">
                     Entrar
                 </button>
@@ -2154,6 +2182,10 @@
         <!-- Menu mobile expandido -->
         <div class="mobile-menu" id="mobileMenu">
     <div class="mobile-menu-content">
+        <button class="nav-btn-mobile" onclick="scrollToSection('welcome'); closeMobileMenu();">Início</button>
+        <button class="nav-btn-mobile" onclick="scrollToSection('main'); closeMobileMenu();">Sobre</button>
+        <button class="nav-btn-mobile" onclick="scrollToSection('units'); closeMobileMenu();">Unidades</button>
+        <button class="nav-btn-mobile admin-btn" onclick="window.location.href='admin/views/login_admin.php'">Admin</button>
         <div class="mobile-buttons">
             <a href="public/views/login.php" class="btn-primary">Entrar</a>
             <a href="public/views/cadastro.php" class="btn-outline">Cadastre-se</a>
