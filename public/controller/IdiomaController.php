@@ -98,9 +98,20 @@ class IdiomaController {
      * Troca o idioma ativo do usuário
      */
     public function trocarIdioma($idUsuario, $idioma) {
+        // Validar idioma
+        if (empty($idioma) || $idioma === '[object PointerEvent]') {
+            return ['success' => false, 'message' => 'Idioma inválido'];
+        }
+        
         // Verifica se o usuário tem progresso no idioma
         if (!$this->temProgressoIdioma($idUsuario, $idioma)) {
-            return ['success' => false, 'message' => 'Usuário não possui progresso neste idioma', 'redirect_quiz' => true];
+            // Adiciona o idioma com nível inicial A1 e redireciona para quiz
+            $resultado = $this->adicionarNovoIdioma($idUsuario, $idioma);
+            if ($resultado['success']) {
+                return ['success' => false, 'message' => 'Novo idioma adicionado', 'redirect_quiz' => true];
+            } else {
+                return ['success' => false, 'message' => 'Erro ao adicionar novo idioma'];
+            }
         }
 
         // Atualiza a última atividade do idioma selecionado
@@ -142,8 +153,10 @@ class IdiomaController {
 
             case 'trocar_idioma':
                 $idioma = $_POST['idioma'] ?? '';
-                if (empty($idioma)) {
-                    echo json_encode(['success' => false, 'message' => 'Idioma não informado']);
+                $idioma = trim($idioma);
+                
+                if (empty($idioma) || $idioma === '[object PointerEvent]' || !is_string($idioma)) {
+                    echo json_encode(['success' => false, 'message' => 'Idioma inválido']);
                     return;
                 }
                 

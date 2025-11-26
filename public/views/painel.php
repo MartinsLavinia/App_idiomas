@@ -11,7 +11,7 @@ $conn = $database->conn;
 if (!isset($_SESSION["id_usuario"])) {
     // Feche a conexão antes de redirecionar
     $database->closeConnection();
-    header("Location: /../../index.php");
+    header("Location: ../../index.php");
     exit();
 }
 
@@ -67,7 +67,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["idioma_inicial"])) {
         $stmt_insert->close();
         // Redireciona para o quiz de nivelamento
         $database->closeConnection();
-        header("Location: quiz.php?idioma=$idioma_inicial");
+        header("Location: ../../quiz.php?idioma=$idioma_inicial");
         exit();
     } else {
         $erro_selecao = "Erro ao registrar idioma. Tente novamente.";
@@ -75,7 +75,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["idioma_inicial"])) {
     $stmt_insert->close();
 }
 
-// Processa troca de idioma
+// Processa troca de idioma (mantém para compatibilidade com formulários antigos)
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["trocar_idioma"])) {
     $novo_idioma = $_POST["novo_idioma"];
     
@@ -108,7 +108,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["trocar_idioma"])) {
         if ($stmt_insert_novo->execute()) {
             $stmt_insert_novo->close();
             $database->closeConnection();
-            header("Location: quiz.php?idioma=$novo_idioma");
+            header("Location: ../../quiz.php?idioma=$novo_idioma");
             exit();
         } else {
             $erro_troca = "Erro ao adicionar novo idioma. Tente novamente.";
@@ -130,19 +130,25 @@ if (isset($_GET["idioma"]) && isset($_GET["nivel_escolhido"])) {
     $stmt_update_nivel->close();
 
 } else {
-    // Se não veio da URL, busca o último idioma ativo (por última atividade)
-    $sql_progresso = "SELECT idioma, nivel FROM progresso_usuario WHERE id_usuario = ? ORDER BY ultima_atividade DESC LIMIT 1";
+    // Limpar TODOS os registros inválidos
+    $sql_clean = "DELETE FROM progresso_usuario WHERE id_usuario = ? AND (idioma IS NULL OR idioma = '' OR idioma LIKE '%object%' OR idioma LIKE '%PointerEvent%' OR idioma LIKE '%[%' OR LENGTH(idioma) > 50)";
+    $stmt_clean = $conn->prepare($sql_clean);
+    $stmt_clean->bind_param("i", $id_usuario);
+    $stmt_clean->execute();
+    $stmt_clean->close();
+    
+    // Busca idioma válido
+    $sql_progresso = "SELECT idioma, nivel FROM progresso_usuario WHERE id_usuario = ? AND idioma REGEXP '^[a-zA-Z]+$' ORDER BY ultima_atividade DESC LIMIT 1";
     $stmt_progresso = $conn->prepare($sql_progresso);
     $stmt_progresso->bind_param("i", $id_usuario);
     $stmt_progresso->execute();
     $resultado = $stmt_progresso->get_result()->fetch_assoc();
     $stmt_progresso->close();
 
-    if ($resultado) {
+    if ($resultado && preg_match('/^[a-zA-Z]+$/', $resultado["idioma"]) && !empty($resultado["idioma"])) {
         $idioma_escolhido = $resultado["idioma"];
         $nivel_usuario = $resultado["nivel"];
     } else {
-        // Se o usuário não tem progresso, mostra seleção de idioma
         $mostrar_selecao_idioma = true;
     }
 }
@@ -166,7 +172,7 @@ $database->closeConnection();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel do Usuário - <?php echo htmlspecialchars($idioma_escolhido); ?></title>
+    <title>Painel do Usuário - <?php echo htmlspecialchars($idioma_escolhido && preg_match('/^[a-zA-Z]+$/', $idioma_escolhido) ? $idioma_escolhido : 'Idioma'); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="painel.css" rel="stylesheet">
     <link href="exercicios.css" rel="stylesheet">
@@ -1214,9 +1220,9 @@ $database->closeConnection();
                             <?php foreach ($idiomas_usuario as $idioma_user): ?>
                                 <?php if ($idioma_user['idioma'] !== $idioma_escolhido): ?>
                                     <li>
-                                        <a href="#" class="dropdown-item" onclick="trocarIdiomaAjax(event, '<?php echo htmlspecialchars($idioma_user['idioma']); ?>')">
+                                        <button type="button" class="dropdown-item" onclick="trocarIdioma('<?php echo htmlspecialchars($idioma_user['idioma']); ?>')">
                                             <i class="fas fa-exchange-alt me-2"></i><?php echo htmlspecialchars($idiomas_display[$idioma_user['idioma']] ?? $idioma_user['idioma']); ?> (<?php echo htmlspecialchars($idioma_user['nivel']); ?>)
-                                        </a>
+                                        </button>
                                     </li>
                                 <?php endif; ?>
                             <?php endforeach; ?>
@@ -1234,9 +1240,9 @@ $database->closeConnection();
                                 ?>
                                 <?php if (!$ja_estudado && $nao_vazio): ?>
                                     <li>
-                                        <a href="#" class="dropdown-item" onclick="trocarIdiomaAjax(event, '<?php echo htmlspecialchars($idioma_disponivel); ?>')">
+                                        <button type="button" class="dropdown-item" onclick="trocarIdioma('<?php echo htmlspecialchars($idioma_disponivel); ?>')">
                                             <i class="fas fa-plus me-2"></i><?php echo htmlspecialchars($idiomas_display[$idioma_disponivel] ?? $idioma_disponivel); ?> (Novo)
-                                        </a>
+                                        </button>
                                     </li>
                                 <?php endif; ?>
                             <?php endforeach; ?>
@@ -1298,10 +1304,16 @@ $database->closeConnection();
                                 <?php $unidade = $unidades[0]; ?>
                                 <h2>Unidade <?php echo htmlspecialchars($unidade["numero_unidade"]); ?>: <?php echo htmlspecialchars($unidade["nome_unidade"]); ?></h2>
                                 <p class="text-muted mb-1"><?php echo htmlspecialchars($unidade["descricao"]); ?></p>
-                                <p class="fs-5">Caminho: <?php echo htmlspecialchars($idiomas_display[$idioma_escolhido] ?? $idioma_escolhido); ?> - <span class="badge bg-success"><?php echo htmlspecialchars($nivel_usuario); ?></span></p>
+                                <p class="fs-5">Caminho: <?php 
+                                    $idioma_valido = ($idioma_escolhido && preg_match('/^[a-zA-Z]+$/', $idioma_escolhido)) ? $idioma_escolhido : 'Idioma';
+                                    echo htmlspecialchars($idiomas_display[$idioma_valido] ?? $idioma_valido); 
+                                ?> - <span class="badge bg-success"><?php echo htmlspecialchars(($nivel_usuario && preg_match('/^[A-C][12]$/', $nivel_usuario)) ? $nivel_usuario : 'A1'); ?></span></p>
                             <?php else: ?>
-                                <h2>Seu Caminho de Aprendizado em <?php echo htmlspecialchars($idiomas_display[$idioma_escolhido] ?? $idioma_escolhido); ?></h2>
-                                <p class="fs-4">Seu nível atual é: <span class="badge bg-success"><?php echo htmlspecialchars($nivel_usuario); ?></span></p>
+                                <h2>Seu Caminho de Aprendizado em <?php 
+                                    $idioma_valido = ($idioma_escolhido && preg_match('/^[a-zA-Z]+$/', $idioma_escolhido)) ? $idioma_escolhido : 'Idioma';
+                                    echo htmlspecialchars($idiomas_display[$idioma_valido] ?? $idioma_valido); 
+                                ?></h2>
+                                <p class="fs-4">Seu nível atual é: <span class="badge bg-success"><?php echo htmlspecialchars(($nivel_usuario && preg_match('/^[A-C][12]$/', $nivel_usuario)) ? $nivel_usuario : 'A1'); ?></span></p>
                             <?php endif; ?>
                         </div>
                         <div class="card-body">
@@ -1732,6 +1744,16 @@ $database->closeConnection();
 
         // Configurar event listeners para preview de flashcards
         configurarPreviewFlashcards();
+        
+        // Configurar event listeners para troca de idioma
+        document.querySelectorAll('button[data-idioma]').forEach(button => {
+            button.addEventListener('click', function() {
+                const idioma = this.getAttribute('data-idioma');
+                if (idioma) {
+                    trocarIdiomaAjax(idioma);
+                }
+            });
+        });
 
         // Carregar blocos de todas as unidades
         carregarBlocosTodasUnidades();
@@ -2986,16 +3008,14 @@ $database->closeConnection();
     
     // Função para trocar idioma via AJAX
     window.trocarIdiomaAjax = function(novoIdioma) {
-        // Mostrar indicador de carregamento na sidebar
-        const sidebarText = document.querySelector('.sidebar .dropdown a');
-        const originalText = sidebarText ? sidebarText.innerHTML : '';
-        if (sidebarText) {
-            sidebarText.innerHTML = '<i class="fas fa-spinner fa-spin me-2" style="color: var(--amarelo-detalhe); width: 20px; text-align: center;"></i> Trocando...';
+        if (!novoIdioma || typeof novoIdioma !== 'string' || novoIdioma.trim() === '') {
+            console.error('Idioma inválido:', novoIdioma);
+            return;
         }
         
         const formData = new FormData();
         formData.append('action', 'trocar_idioma');
-        formData.append('idioma', novoIdioma);
+        formData.append('idioma', novoIdioma.trim());
         
         fetch('../controller/IdiomaController.php', {
             method: 'POST',
@@ -3004,26 +3024,15 @@ $database->closeConnection();
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Recarregar a página para mostrar o novo idioma
                 window.location.reload();
             } else if (data.redirect_quiz) {
-                // Redirecionar para o quiz de nivelamento
-                window.location.href = `quiz.php?idioma=${novoIdioma}`;
+                window.location.href = `../../quiz.php?idioma=${encodeURIComponent(novoIdioma)}`;
             } else {
-                // Restaurar texto em caso de erro
-                if (sidebarText) {
-                    sidebarText.innerHTML = originalText;
-                }
-                alert('Erro: ' + data.message);
+                console.error('Erro do servidor:', data.message);
             }
         })
         .catch(error => {
-            // Restaurar texto em caso de erro
-            if (sidebarText) {
-                sidebarText.innerHTML = originalText;
-            }
-            console.error('Erro:', error);
-            alert('Erro de conexão. Tente novamente.');
+            console.error('Erro na requisição:', error);
         });
     };
     
@@ -3646,6 +3655,33 @@ $database->closeConnection();
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
+    function trocarIdioma(idioma) {
+        if (!idioma || idioma.trim() === '') {
+            console.error('Idioma inválido');
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('trocar_idioma', '1');
+        formData.append('novo_idioma', idioma.trim());
+        
+        fetch('painel.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.redirected) {
+                window.location.href = response.url;
+            } else {
+                window.location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            window.location.reload();
+        });
+    }
+    
     document.addEventListener('DOMContentLoaded', function() {
         // Menu Hamburguer Functionality
         const menuToggle = document.getElementById('menuToggle');
