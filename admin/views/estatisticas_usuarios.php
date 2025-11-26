@@ -84,17 +84,16 @@ if ($result_niveis) {
     }
 }
 
-// Idiomas mais populares (baseado nos quizzes realizados)
+// Idiomas disponíveis e sua popularidade
 $sql_idiomas_populares = "
-    SELECT
-        qn.idioma,
-        COUNT(DISTINCT qr.id_usuario) as usuarios_unicos,
-        COUNT(qr.id) as total_quizzes
-    FROM quiz_resultados qr
-    JOIN quiz_nivelamento qn ON qr.id_quiz = qn.id
-    GROUP BY qn.idioma
-    ORDER BY usuarios_unicos DESC
-    LIMIT 10
+    SELECT 
+        i.nome_idioma as idioma,
+        COALESCE(COUNT(DISTINCT pu.id_usuario), 0) as usuarios_unicos,
+        COALESCE(COUNT(pu.id), 0) as total_progressos
+    FROM idiomas i
+    LEFT JOIN progresso_usuario pu ON i.nome_idioma = pu.idioma
+    GROUP BY i.nome_idioma
+    ORDER BY usuarios_unicos DESC, i.nome_idioma ASC
 ";
 $result_idiomas = $conn->query($sql_idiomas_populares);
 $idiomas_populares = [];
@@ -850,8 +849,12 @@ document.addEventListener('DOMContentLoaded', function() {
             datasets: [{
                 data: [<?php echo !empty($usuarios_por_nivel) ? implode(',', array_map(function($n) { return $n['quantidade']; }, $usuarios_por_nivel)) : ''; ?>],
                 backgroundColor: [
-                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF'
-                ]
+                    '#6a0dad', '#8e44ad', '#9b59b6', '#af7ac5', '#c39bd3', '#d7bde2', '#e8daef'
+                ],
+                borderColor: '#ffffff',
+                borderWidth: 3,
+                hoverBorderWidth: 5,
+                hoverOffset: 10
             }]
         },
         options: {
@@ -859,8 +862,43 @@ document.addEventListener('DOMContentLoaded', function() {
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    position: 'bottom'
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        padding: 15,
+                        font: {
+                            size: 12,
+                            weight: '600'
+                        },
+                        color: '#2d3e8f'
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(106, 13, 173, 0.95)',
+                    titleColor: '#ffd700',
+                    bodyColor: '#ffffff',
+                    borderColor: '#ffd700',
+                    borderWidth: 2,
+                    cornerRadius: 12,
+                    displayColors: true,
+                    callbacks: {
+                        title: function(context) {
+                            return 'Nível: ' + context[0].label;
+                        },
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((context.parsed / total) * 100).toFixed(1);
+                            return context.parsed + ' usuários (' + percentage + '%)';
+                        }
+                    }
                 }
+            },
+            animation: {
+                animateRotate: true,
+                animateScale: true,
+                duration: 1800,
+                easing: 'easeInOutQuart'
             }
         }
     });
@@ -868,20 +906,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // Gráfico de Idiomas Populares
     const idiomasCtx = document.getElementById('idiomasChart').getContext('2d');
     const idiomasChart = new Chart(idiomasCtx, {
-        type: 'bar',
+        type: 'doughnut',
         data: {
             labels: [<?php echo !empty($idiomas_populares) ? implode(',', array_map(function($i) { return '"' . $i['idioma'] . '"'; }, $idiomas_populares)) : ''; ?>],
             datasets: [{
-                label: 'Usuários Únicos',
-                data: [<?php echo !empty($idiomas_populares) ? implode(',', array_map(function($i) { return $i['usuarios_unicos']; }, $idiomas_populares)) : ''; ?>],
+                label: 'Usuários por Idioma',
+                data: [<?php echo !empty($idiomas_populares) ? implode(',', array_map(function($i) { return max(1, $i['usuarios_unicos']); }, $idiomas_populares)) : ''; ?>],
                 backgroundColor: [
-                    '#6a0dad', '#8e44ad', '#9b59b6', '#af7ac5', '#c39bd3',
-                    '#d7bde2', '#e8daef', '#f4ecf7', '#fdeaa7', '#f7dc6f'
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', 
+                    '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#36A2EB'
                 ],
-                borderColor: '#4c087c',
-                borderWidth: 2,
-                borderRadius: 8,
-                borderSkipped: false
+                borderColor: '#ffffff',
+                borderWidth: 3,
+                hoverBorderWidth: 5,
+                hoverOffset: 15
             }]
         },
         options: {
@@ -889,52 +927,125 @@ document.addEventListener('DOMContentLoaded', function() {
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    display: true,
-                    position: 'top',
+                    position: 'right',
                     labels: {
-                        color: '#2d3e8f',
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        padding: 20,
                         font: {
-                            size: 14,
-                            weight: 'bold'
+                            size: 12,
+                            weight: '600'
                         },
-                        padding: 20
+                        color: '#2d3e8f'
                     }
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(45, 62, 143, 0.9)',
+                    backgroundColor: 'rgba(45, 62, 143, 0.95)',
                     titleColor: '#ffd700',
                     bodyColor: '#ffffff',
                     borderColor: '#ffd700',
                     borderWidth: 2,
-                    cornerRadius: 8,
-                    displayColors: false,
+                    cornerRadius: 12,
+                    displayColors: true,
                     callbacks: {
                         title: function(context) {
                             return 'Idioma: ' + context[0].label;
                         },
                         label: function(context) {
-                            return 'Usuários: ' + context.parsed.y;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((context.parsed / total) * 100).toFixed(1);
+                            return context.parsed + ' usuários (' + percentage + '%)';
                         }
                     }
+                }
+            },
+            animation: {
+                animateRotate: true,
+                animateScale: true,
+                duration: 2000,
+                easing: 'easeInOutQuart'
+            },
+            interaction: {
+                intersect: false
+            }
+        }
+    });
+
+    // Gráfico de Registros Mensais
+    const registrosCtx = document.getElementById('registrosChart').getContext('2d');
+    
+    // Criar gradiente
+    const gradient = registrosCtx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(106, 13, 173, 0.8)');
+    gradient.addColorStop(0.5, 'rgba(106, 13, 173, 0.4)');
+    gradient.addColorStop(1, 'rgba(106, 13, 173, 0.1)');
+    
+    const registrosChart = new Chart(registrosCtx, {
+        type: 'line',
+        data: {
+            labels: [<?php echo !empty($registros_mensais) ? implode(',', array_map(function($r) { 
+                $mes = date('m/Y', strtotime($r['mes'] . '-01'));
+                return '"' . $mes . '"'; 
+            }, array_reverse($registros_mensais))) : ''; ?>],
+            datasets: [{
+                label: 'Novos Usuários',
+                data: [<?php echo !empty($registros_mensais) ? implode(',', array_map(function($r) { 
+                    return $r['novos_usuarios']; 
+                }, array_reverse($registros_mensais))) : ''; ?>],
+                borderColor: '#6a0dad',
+                backgroundColor: gradient,
+                borderWidth: 3,
+                pointBackgroundColor: '#ffd700',
+                pointBorderColor: '#6a0dad',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        font: {
+                            size: 14,
+                            weight: '600'
+                        },
+                        color: '#2d3e8f',
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(106, 13, 173, 0.95)',
+                    titleColor: '#ffd700',
+                    bodyColor: '#ffffff',
+                    borderColor: '#ffd700',
+                    borderWidth: 2,
+                    cornerRadius: 12,
+                    displayColors: true
                 }
             },
             scales: {
                 x: {
                     grid: {
-                        display: false
+                        color: 'rgba(106, 13, 173, 0.1)',
+                        lineWidth: 1
                     },
                     ticks: {
                         color: '#2d3e8f',
                         font: {
-                            size: 12,
-                            weight: 'bold'
+                            size: 11,
+                            weight: '500'
                         }
                     }
                 },
                 y: {
                     beginAtZero: true,
                     grid: {
-                        color: 'rgba(45, 62, 143, 0.1)',
+                        color: 'rgba(106, 13, 173, 0.1)',
                         lineWidth: 1
                     },
                     ticks: {
@@ -949,43 +1060,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             },
             animation: {
-                duration: 1500,
+                duration: 2000,
                 easing: 'easeInOutQuart'
             },
             interaction: {
                 intersect: false,
                 mode: 'index'
-            }
-        }
-    });
-
-    // Gráfico de Registros Mensais
-    const registrosCtx = document.getElementById('registrosChart').getContext('2d');
-    const registrosChart = new Chart(registrosCtx, {
-        type: 'line',
-        data: {
-            labels: [<?php echo !empty($registros_mensais) ? implode(',', array_map(function($r) { 
-                $mes = date('m/Y', strtotime($r['mes'] . '-01'));
-                return '"' . $mes . '"'; 
-            }, array_reverse($registros_mensais))) : ''; ?>],
-            datasets: [{
-                label: 'Novos Usuários',
-                data: [<?php echo !empty($registros_mensais) ? implode(',', array_map(function($r) { 
-                    return $r['novos_usuarios']; 
-                }, array_reverse($registros_mensais))) : ''; ?>],
-                borderColor: '#ffd700',
-                backgroundColor: 'rgba(255, 215, 0, 0.1)',
-                tension: 0.4,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
             }
         }
     });
