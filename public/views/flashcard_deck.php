@@ -27,6 +27,43 @@ $stmt_foto->close();
 
 $foto_usuario = $resultado_foto['foto_perfil'] ?? null;
 
+// Buscar idiomas disponíveis do banco de dados
+$sql_idiomas_disponiveis = "SELECT nome_idioma FROM idiomas ORDER BY nome_idioma ASC";
+$result_idiomas = $conn->query($sql_idiomas_disponiveis);
+$idiomas_disponiveis = [];
+$idiomas_display = []; // Para exibição com acentos
+if ($result_idiomas && $result_idiomas->num_rows > 0) {
+    while ($row = $result_idiomas->fetch_assoc()) {
+        $nome_original = $row['nome_idioma'];
+        $nome_normalizado = str_replace(['ê', 'ã'], ['e', 'a'], $nome_original);
+        $idiomas_disponiveis[] = $nome_normalizado;
+        $idiomas_display[$nome_normalizado] = $nome_original; // Mapear para exibição
+    }
+}
+
+// Buscar todos os idiomas que o usuário já estudou
+$sql_idiomas_usuario = "SELECT idioma, nivel, data_inicio, ultima_atividade FROM progresso_usuario WHERE id_usuario = ? ORDER BY ultima_atividade DESC";
+$stmt_idiomas_usuario = $conn->prepare($sql_idiomas_usuario);
+$stmt_idiomas_usuario->bind_param("i", $id_usuario);
+$stmt_idiomas_usuario->execute();
+$idiomas_usuario = $stmt_idiomas_usuario->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt_idiomas_usuario->close();
+
+// Buscar idioma atual do usuário
+$idioma_escolhido = null;
+$nivel_usuario = null;
+$sql_progresso = "SELECT idioma, nivel FROM progresso_usuario WHERE id_usuario = ? AND idioma REGEXP '^[a-zA-Z]+$' ORDER BY ultima_atividade DESC LIMIT 1";
+$stmt_progresso = $conn->prepare($sql_progresso);
+$stmt_progresso->bind_param("i", $id_usuario);
+$stmt_progresso->execute();
+$resultado = $stmt_progresso->get_result()->fetch_assoc();
+$stmt_progresso->close();
+
+if ($resultado && preg_match('/^[a-zA-Z]+$/', $resultado["idioma"]) && !empty($resultado["idioma"])) {
+    $idioma_escolhido = $resultado["idioma"];
+    $nivel_usuario = $resultado["nivel"];
+}
+
 // Feche a conexão
 $database->closeConnection();
 
@@ -64,7 +101,7 @@ if (!$id_deck) {
         /* Estilos Gerais do Corpo */
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: var(--cinza-claro);
+             background-color: #ffffff;
             color: var(--preto-texto);
             margin: 0;
             padding: 0;
@@ -76,7 +113,7 @@ if (!$id_deck) {
             top: 0;
             left: 0;
             width: 250px;
-            height: 100%;
+            height: 100vh;
             background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
             color: var(--branco);
             display: flex;
@@ -85,6 +122,8 @@ if (!$id_deck) {
             padding-top: 20px;
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
             z-index: 1000;
+            transition: transform 0.3s ease-in-out;
+            overflow-y: auto;
         }
 
         .sidebar .profile {
@@ -93,20 +132,61 @@ if (!$id_deck) {
             padding: 0 15px;
         }
 
-        .sidebar .profile i {
-            font-size: 4rem;
+        .profile-avatar-sidebar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid var(--amarelo-detalhe);
+            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .profile-avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .profile-avatar-sidebar:has(.profile-avatar-img) i {
+            display: none;
+        }
+
+        .profile-avatar-sidebar i {
+            font-size: 3.5rem;
             color: var(--amarelo-detalhe);
-            margin-bottom: 10px;
         }
 
         .sidebar .profile h5 {
             font-weight: 600;
-            margin-bottom: 0;
+            margin-bottom: 5px;
             color: var(--branco);
+            font-size: 1.1rem;
+            word-wrap: break-word;
+            max-width: 200px;
+            text-align: center;
+            line-height: 1.3;
         }
 
         .sidebar .profile small {
             color: var(--cinza-claro);
+            font-size: 0.9rem;
+            word-wrap: break-word;
+            max-width: 200px;
+            text-align: center;
+            line-height: 1.2;
+            margin-top: 5px;
+        }
+
+        .sidebar .list-group {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
         }
 
         .sidebar .list-group-item {
@@ -125,6 +205,7 @@ if (!$id_deck) {
         .sidebar .list-group-item:hover {
             background-color: var(--roxo-escuro);
             cursor: pointer;
+            color: var(--branco);
         }
 
         .sidebar .list-group-item.active {
@@ -136,8 +217,164 @@ if (!$id_deck) {
 
         .sidebar .list-group-item i {
             color: var(--amarelo-detalhe);
-            width: 20px; /* Alinhamento dos ícones */
-            text-align: center;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: margin-left 0.3s ease-in-out;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Menu Hamburguer - CORREÇÃO APLICADA AQUI */
+        .menu-toggle {
+            display: none; /* Escondido por padrão */
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid var(--roxo-principal);
+            color: var(--roxo-principal) !important;
+            font-size: 1.5rem;
+            cursor: pointer;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1100;
+            transition: all 0.3s ease;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 50px;
+            height: 50px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .menu-toggle:hover {
+            color: var(--roxo-escuro) !important;
+            transform: scale(1.1);
+        }
+
+        /* Quando a sidebar está ativa */
+        body:has(.sidebar.active) .menu-toggle,
+        .sidebar.active ~ .menu-toggle {
+            color: var(--amarelo-detalhe) !important;
+        }
+
+        body:has(.sidebar.active) .menu-toggle:hover,
+        .sidebar.active ~ .menu-toggle:hover {
+            color: var(--amarelo-hover) !important;
+        }
+
+        /* Overlay para mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        /* CORREÇÃO PRINCIPAL: Menu hamburger só aparece no mobile */
+        @media (max-width: 992px) {
+            .menu-toggle {
+                display: flex !important; /* Aparece apenas no mobile */
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 1050;
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+                padding-top: 80px;
+            }
+            
+            .sidebar-overlay.active {
+                display: block;
+            }
+        }
+
+        /* Navbar igual ao admin */
+        .navbar {
+            background-color: transparent !important;
+            border-bottom: 3px solid var(--amarelo-detalhe);
+            box-shadow: 0 4px 15px rgba(255, 238, 0, 0.38);
+        }
+
+        .navbar-brand {
+            margin-left: auto;
+            margin-right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            width: 100%;
+        }
+        
+        .navbar-brand .logo-header {
+            height: 70px;
+            width: auto;
+            display: block;
+        }
+
+        .settings-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+            padding: 8px;
+            border-radius: 50%;
+            
+        }
+
+        .settings-icon:hover {
+            color: var(--roxo-escuro) !important;
+            transform: rotate(90deg);
+           
+        }
+
+        .logout-icon {
+            color: var(--roxo-principal) !important;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .logout-icon:hover {
+            color: var(--roxo-escuro) !important;
+            transform: translateY(-2px);
+        }
+
+        /* Dropdown Menu */
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 0.5rem;
+        }
+
+        .dropdown-item {
+            padding: 0.5rem 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f2e9f9;
+            color: var(--roxo-escuro);
+            transform: translateX(4px);
+        }
+
+        .dropdown-item.text-danger:hover {
+            background-color: #fceaea;
+            color: #b02a37;
+            transform: translateX(4px);
         }
 
         /* Conteúdo principal */
@@ -445,12 +682,41 @@ if (!$id_deck) {
     </style>
 </head>
 <body>
-    <div class="sidebar">
+    <!-- Menu Hamburguer - AGORA SÓ APARECE NO MOBILE -->
+    <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Overlay para mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Navbar igual ao admin -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid d-flex justify-content-end align-items-center">
+            <div class="d-flex align-items-center" style="gap: 24px;">
+                <a class="navbar-brand" href="#" style="margin-left: 0; margin-right: 0;">
+                    <img src="../../imagens/logo-idiomas.png" alt="Logo do Site" class="logo-header">
+                </a>
+                <a href="editar_perfil_usuario.php" class="settings-icon">
+                    <i class="fas fa-cog fa-lg"></i>
+                </a>
+                <a href="../../logout.php" class="logout-icon" title="Sair">
+                    <i class="fas fa-sign-out-alt fa-lg"></i>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="sidebar" id="sidebar">
         <div class="profile">
             <?php if ($foto_usuario): ?>
-                <img src="../../<?php echo htmlspecialchars($foto_usuario); ?>" alt="Foto de perfil" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; border: 3px solid var(--amarelo-detalhe);">
+                <div class="profile-avatar-sidebar">
+                    <img src="../../<?php echo htmlspecialchars($foto_usuario); ?>" alt="Foto de perfil" class="profile-avatar-img">
+                </div>
             <?php else: ?>
-                <i class="fas fa-user-circle"></i>
+                <div class="profile-avatar-sidebar">
+                    <i class="fa-solid fa-user"></i>
+                </div>
             <?php endif; ?>
             <h5><?php echo htmlspecialchars($nome_usuario); ?></h5>
             <small>Usuário</small>
@@ -463,9 +729,86 @@ if (!$id_deck) {
             <a href="flashcards.php" class="list-group-item active">
                 <i class="fas fa-layer-group"></i> Flash Cards
             </a>
-            <a href="../../logout.php" class="list-group-item mt-auto">
-                <i class="fas fa-sign-out-alt"></i> Sair
-            </a>
+            <div class="list-group-item">
+                <div class="dropdown">
+                    <a href="#" class="text-decoration-none text-white d-flex align-items-center" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-language me-2" style="color: var(--amarelo-detalhe); width: 20px; text-align: center;"></i> Trocar Idioma
+                    </a>
+                    <ul class="dropdown-menu">
+                        <?php 
+                        $idiomas_ja_estudados = array_column($idiomas_usuario, 'idioma');
+                        $tem_outros_idiomas = false;
+                        $tem_novos_idiomas = false;
+                        
+                        // Verificar se há outros idiomas já estudados
+                        foreach ($idiomas_usuario as $idioma_user) {
+                            if ($idioma_user['idioma'] !== $idioma_escolhido) {
+                                $tem_outros_idiomas = true;
+                                break;
+                            }
+                        }
+                        
+                        // Verificar se há novos idiomas disponíveis (excluindo todos os já estudados)
+                        foreach ($idiomas_disponiveis as $idioma_disponivel) {
+                            if (!in_array($idioma_disponivel, $idiomas_ja_estudados) && !empty($idioma_disponivel)) {
+                                $tem_novos_idiomas = true;
+                                break;
+                            }
+                        }
+                        ?>
+                        
+                        <!-- Idioma Atual -->
+                        <li><h6 class="dropdown-header">Idioma Atual</h6></li>
+                        <li>
+                            <span class="dropdown-item-text">
+                                <i class="fas fa-check-circle me-2 text-success"></i><?php echo htmlspecialchars($idiomas_display[$idioma_escolhido] ?? $idioma_escolhido); ?> (<?php echo htmlspecialchars($nivel_usuario); ?>)
+                            </span>
+                        </li>
+                        
+                        <?php if ($tem_outros_idiomas || $tem_novos_idiomas): ?>
+                            <li><hr class="dropdown-divider"></li>
+                        <?php endif; ?>
+                        
+                        <?php if ($tem_outros_idiomas): ?>
+                            <li><h6 class="dropdown-header">Meus Outros Idiomas</h6></li>
+                            <?php foreach ($idiomas_usuario as $idioma_user): ?>
+                                <?php if ($idioma_user['idioma'] !== $idioma_escolhido): ?>
+                                    <li>
+                                        <button type="button" class="dropdown-item" onclick="trocarIdioma('<?php echo htmlspecialchars($idioma_user['idioma']); ?>')">
+                                            <i class="fas fa-exchange-alt me-2"></i><?php echo htmlspecialchars($idiomas_display[$idioma_user['idioma']] ?? $idioma_user['idioma']); ?> (<?php echo htmlspecialchars($idioma_user['nivel']); ?>)
+                                        </button>
+                                    </li>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                            <?php if ($tem_novos_idiomas): ?>
+                                <li><hr class="dropdown-divider"></li>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                        
+                        <?php if ($tem_novos_idiomas): ?>
+                            <li><h6 class="dropdown-header">Adicionar Novo Idioma</h6></li>
+                            <?php foreach ($idiomas_disponiveis as $idioma_disponivel): ?>
+                                <?php 
+                                $ja_estudado = in_array($idioma_disponivel, $idiomas_ja_estudados);
+                                $nao_vazio = !empty($idioma_disponivel);
+                                ?>
+                                <?php if (!$ja_estudado && $nao_vazio): ?>
+                                    <li>
+                                        <button type="button" class="dropdown-item" onclick="trocarIdioma('<?php echo htmlspecialchars($idioma_disponivel); ?>')">
+                                            <i class="fas fa-plus me-2"></i><?php echo htmlspecialchars($idiomas_display[$idioma_disponivel] ?? $idioma_disponivel); ?> (Novo)
+                                        </button>
+                                    </li>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                        
+                        <?php if (!$tem_outros_idiomas && !$tem_novos_idiomas): ?>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><span class="dropdown-item-text text-muted">Nenhum outro idioma disponível</span></li>
+                        <?php endif; ?>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -487,7 +830,7 @@ if (!$id_deck) {
                     <button class="btn btn-action btn-action-warning me-2" onclick="estudarDeck()">
                         <i class="fas fa-play me-2"></i>Estudar Deck
                     </button>
-                    <button class="btn btn-action btn-action-danger" onclick="excluirDeckAtual()">
+                  <button class="btn btn-action btn-action-danger" style="margin-top: 10px; margin-right: 12px"; onclick="excluirDeckAtual()">
                         <i class="fas fa-trash me-2"></i>Excluir Deck
                     </button>
                 </div>
@@ -505,7 +848,7 @@ if (!$id_deck) {
 
             <hr class="my-4">
 
-            <h3 class="mb-4"><i class="fas fa-clone me-2 text-primary"></i>Flashcards no Deck</h3>
+            <h3 class="mb-4"><i class="fas fa-clone me-2" style="color: #6a0dad;"></i>Flashcards no Deck</h3>
             <!-- Lista de Flashcards -->
             <div id="listaFlashcards" class="row">
                 <!-- O conteúdo dos flashcards será carregado aqui via JavaScript -->
@@ -653,6 +996,10 @@ if (!$id_deck) {
         document.addEventListener('DOMContentLoaded', function() {
             modalFlashcard = new bootstrap.Modal(document.getElementById('modalFlashcard'));
             modalConfirmarExclusao = new bootstrap.Modal(document.getElementById('modalConfirmarExclusao'));
+            
+            // Inicializar menu hamburguer
+            initializeHamburgerMenu();
+            
             carregarDeck();
             carregarFlashcards();
             
@@ -661,6 +1008,105 @@ if (!$id_deck) {
             document.getElementById('flashcardVerso').addEventListener('input', atualizarPreview);
             document.getElementById('flashcardDificuldade').addEventListener('change', atualizarPreview);
         });
+
+        // Função para inicializar menu hambúrguer
+        function initializeHamburgerMenu() {
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            
+            console.log('Inicializando menu hambúrguer:', {
+                menuToggle: !!menuToggle,
+                sidebar: !!sidebar,
+                sidebarOverlay: !!sidebarOverlay
+            });
+            
+            if (menuToggle && sidebar) {
+                // Remover listeners existentes
+                menuToggle.replaceWith(menuToggle.cloneNode(true));
+                const newMenuToggle = document.getElementById('menuToggle');
+                
+                newMenuToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Menu toggle clicado');
+                    
+                    sidebar.classList.toggle('active');
+                    if (sidebarOverlay) {
+                        sidebarOverlay.classList.toggle('active');
+                    }
+                    
+                    console.log('Sidebar ativo:', sidebar.classList.contains('active'));
+                });
+                
+                if (sidebarOverlay) {
+                    sidebarOverlay.addEventListener('click', function() {
+                        console.log('Overlay clicado - fechando menu');
+                        sidebar.classList.remove('active');
+                        sidebarOverlay.classList.remove('active');
+                    });
+                }
+                
+                // Fechar menu ao clicar em um link (mobile)
+                const sidebarLinks = sidebar.querySelectorAll('.list-group-item');
+                sidebarLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        if (window.innerWidth <= 992) {
+                            console.log('Link clicado - fechando menu mobile');
+                            sidebar.classList.remove('active');
+                            if (sidebarOverlay) {
+                                sidebarOverlay.classList.remove('active');
+                            }
+                        }
+                    });
+                });
+                
+                // Fechar menu com ESC
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && sidebar.classList.contains('active')) {
+                        sidebar.classList.remove('active');
+                        if (sidebarOverlay) {
+                            sidebarOverlay.classList.remove('active');
+                        }
+                    }
+                });
+                
+                console.log('Menu hambúrguer inicializado com sucesso');
+            } else {
+                console.error('Elementos do menu não encontrados:', {
+                    menuToggle: !!menuToggle,
+                    sidebar: !!sidebar
+                });
+            }
+        }
+
+        // Função para trocar idioma
+        function trocarIdioma(idioma) {
+            if (!idioma || idioma.trim() === '') {
+                console.error('Idioma inválido');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('trocar_idioma', '1');
+            formData.append('novo_idioma', idioma.trim());
+            
+            fetch('painel.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url;
+                } else {
+                    window.location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                window.location.reload();
+            });
+        }
 
         // Carrega informações do deck
         function carregarDeck() {

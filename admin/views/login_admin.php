@@ -306,7 +306,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="form-grid">
                 <div class="form-left">
                     <div class="input-group">
-                        <input type="text" id="nome_usuario" name="nome_usuario" placeholder="Nome de Usuário" required>
+                        <input type="text" style="background: transparent" id="nome_usuario" name="nome_usuario" placeholder="Nome de Usuário" required>
                     </div>
                 </div>
                 <div class="form-right">
