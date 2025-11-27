@@ -324,9 +324,9 @@ $database->closeConnection();
             position: relative;
         }
 
-        /* Menu Hamburguer */
+        /* Menu Hamburguer - CORREÇÃO APLICADA AQUI */
         .menu-toggle {
-            display: none;
+            display: none; /* Escondido por padrão */
             background: rgba(255, 255, 255, 0.9);
             border: 2px solid var(--roxo-principal);
             color: var(--roxo-principal) !important;
@@ -342,7 +342,6 @@ $database->closeConnection();
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             width: 50px;
             height: 50px;
-            display: flex;
             align-items: center;
             justify-content: center;
         }
@@ -375,9 +374,10 @@ $database->closeConnection();
             z-index: 999;
         }
 
+        /* CORREÇÃO PRINCIPAL: Menu hamburger só aparece no mobile */
         @media (max-width: 992px) {
             .menu-toggle {
-                display: flex !important;
+                display: flex !important; /* Aparece apenas no mobile */
             }
             
             .sidebar {
@@ -602,146 +602,581 @@ $database->closeConnection();
             z-index: 1; /* Garante que o conteúdo principal não se sobreponha a modais ou outros elementos */
         }
 
+        /* ===== ESTILOS PARA SEÇÃO DE UNIDADES ===== */
+
+        /* Container principal das unidades */
+        .unidades-container {
+            margin: 2rem 0;
+        }
+
+        /* Card da unidade */
+        .unidade-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+            border: 2px solid #e3e6ff;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(106, 13, 173, 0.1);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .unidade-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--roxo-principal), var(--amarelo-detalhe));
+        }
+
+        .unidade-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 48px rgba(106, 13, 173, 0.2);
+            border-color: var(--roxo-principal);
+        }
+
+        /* Header da unidade */
+        .unidade-header {
+            background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+            padding: 2rem;
+            border-bottom: 1px solid #f0f2ff;
+            position: relative;
+        }
+
+        .unidade-numero {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
+            color: white;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 12px rgba(106, 13, 173, 0.3);
+        }
+
+        .unidade-titulo {
+            color: var(--roxo-principal);
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+        }
+
+        .unidade-descricao {
+            color: #6c757d;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 0;
+        }
+
+        /* Body da unidade */
+        .unidade-body {
+            padding: 2rem;
+        }
+
+        /* Informações da unidade */
+        .unidade-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f8f9ff;
+            border-radius: 12px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .info-item i {
+            color: var(--roxo-principal);
+            font-size: 1rem;
+        }
+
+        /* Progresso da unidade */
+        .unidade-progresso {
+            margin-bottom: 1.5rem;
+        }
+
+        .progresso-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .progresso-texto {
+            font-weight: 600;
+            color: var(--roxo-principal);
+            font-size: 0.9rem;
+        }
+
+        .progresso-porcentagem {
+            font-weight: 700;
+            color: var(--roxo-escuro);
+            font-size: 0.9rem;
+        }
+
+        .progresso-bar {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progresso-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--roxo-principal), var(--amarelo-detalhe));
+            border-radius: 10px;
+            transition: width 0.8s ease;
+            position: relative;
+        }
+
+        .progresso-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* Container dos blocos */
+        .blocos-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        /* Cards dos blocos - Versão Melhorada */
+        .bloco-card {
+            background: white;
+            border: 2px solid #f0f2ff;
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .bloco-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--roxo-principal), var(--amarelo-detalhe));
+            transition: width 0.3s ease;
+        }
+
+        .bloco-card:hover::before {
+            width: 6px;
+        }
+
+        /* Estados dos blocos */
+        .bloco-card-disponivel {
+            cursor: pointer;
+            border-color: #d1e7ff;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%);
+        }
+
+        .bloco-card-disponivel:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0, 123, 255, 0.15);
+            border-color: var(--roxo-principal);
+        }
+
+        .bloco-card-concluido {
+            cursor: pointer;
+            border-color: #d4edda;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fff8 100%);
+        }
+
+        .bloco-card-concluido:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(40, 167, 69, 0.15);
+            border-color: #28a745;
+        }
+
+        .bloco-card-bloqueado {
+            cursor: not-allowed;
+            border-color: #e9ecef;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            opacity: 0.7;
+        }
+
+        /* Header do bloco */
+        .bloco-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .bloco-icon-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .bloco-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .bloco-card-disponivel .bloco-icon {
+            background: linear-gradient(135deg, var(--roxo-principal), #8b5cf6);
+            color: white;
+            box-shadow: 0 4px 12px rgba(106, 13, 173, 0.3);
+        }
+
+        .bloco-card-concluido .bloco-icon {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
+        .bloco-card-bloqueado .bloco-icon {
+            background: #6c757d;
+            color: white;
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+
+        .bloco-titulo {
+            font-weight: 600;
+            color: var(--preto-texto);
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+            line-height: 1.3;
+        }
+
+        .bloco-subtitulo {
+            color: #6c757d;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        /* Body do bloco */
+        .bloco-body {
+            flex-grow: 1;
+            margin-bottom: 1rem;
+        }
+
+        .bloco-descricao {
+            color: #6c757d;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+            max-height: 60px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bloco-descricao::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            background: linear-gradient(transparent, white);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .bloco-card:hover .bloco-descricao::after {
+            opacity: 1;
+        }
+
+        /* Footer do bloco */
+        .bloco-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bloco-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+
+        .bloco-stats {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        /* Badges de status */
+        .bloco-badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-disponivel {
+            background: linear-gradient(135deg, var(--roxo-principal), #8b5cf6);
+            color: white;
+        }
+
+        .badge-concluido {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .badge-bloqueado {
+            background: #6c757d;
+            color: white;
+        }
+
+        /* Progresso do bloco */
+        .bloco-progresso {
+            width: 100%;
+            margin-top: 0.75rem;
+        }
+
+        .bloco-progresso-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.25rem;
+            font-size: 0.8rem;
+        }
+
+        .bloco-progresso-texto {
+            color: #6c757d;
+        }
+
+        .bloco-progresso-porcentagem {
+            color: var(--roxo-escuro);
+            font-weight: 600;
+        }
+
+        .bloco-progresso-bar {
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .bloco-progresso-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.8s ease;
+        }
+
+        .bloco-card-disponivel .bloco-progresso-fill {
+            background: linear-gradient(90deg, var(--roxo-principal), #8b5cf6);
+        }
+
+        .bloco-card-concluido .bloco-progresso-fill {
+            background: linear-gradient(90deg, #28a745, #20c997);
+        }
+
+        .bloco-card-bloqueado .bloco-progresso-fill {
+            background: #6c757d;
+        }
+
+        /* Indicador de novo conteúdo */
+        .novo-indicator {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--amarelo-detalhe), #ffed4a);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--preto-texto);
+            font-size: 0.7rem;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Mensagem quando não há unidades */
+        .sem-unidades {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #6c757d;
+        }
+
+        .sem-unidades i {
+            font-size: 4rem;
+            color: #dee2e6;
+            margin-bottom: 1rem;
+        }
+
+        .sem-unidades h3 {
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .unidade-header {
+                padding: 1.5rem;
+            }
+            
+            .unidade-body {
+                padding: 1.5rem;
+            }
+            
+            .blocos-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .bloco-card {
+                padding: 1.25rem;
+                min-height: 160px;
+            }
+            
+            .unidade-info {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .info-item {
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .unidade-card {
+                margin-bottom: 1.5rem;
+            }
+            
+            .unidade-header {
+                padding: 1.25rem;
+            }
+            
+            .unidade-body {
+                padding: 1.25rem;
+            }
+            
+            .bloco-header {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            
+            .bloco-icon-container {
+                width: 100%;
+            }
+            
+            .bloco-footer {
+                flex-direction: column;
+                gap: 0.75rem;
+                align-items: flex-start;
+            }
+        }
+
+        /* Animações especiais */
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .unidade-card {
+            animation: slideInUp 0.6s ease forwards;
+        }
+
+        .unidade-card:nth-child(odd) {
+            animation-delay: 0.1s;
+        }
+
+        .unidade-card:nth-child(even) {
+            animation-delay: 0.2s;
+        }
+
+        /* Efeito de brilho hover */
+        .bloco-card-disponivel::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(106, 13, 173, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .bloco-card-disponivel:hover::after {
+            opacity: 1;
+        }
+
+        /* Header do card principal */
+        .card-header {
+            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro)) !important;
+            color: white !important;
+            border-bottom: none !important;
+            padding: 2rem !important;
+        }
+
+        .card-header h2 {
+            color: white !important;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-header p {
+            color: rgba(255, 255, 255, 0.9) !important;
+            margin-bottom: 0;
+            font-size: 1.1rem;
+        }
+
         /* Estilos para exercícios de listening */
-
-/* INÍCIO DOS NOVOS ESTILOS PARA TEORIAS */
-/* Estilos para o Modal de Teorias */
-.modal-teorias .modal-header {
-    background-color: var(--roxo-principal);
-    color: var(--branco);
-    border-bottom: none;
-}
-
-.modal-teorias {
-    z-index: 1060; /* z-index maior que o da sidebar */
-}
-
-.modal-teorias .modal-title {
-    font-weight: 600;
-}
-
-.modal-teorias .modal-body {
-    padding: 20px;
-    background-color: var(--cinza-claro);
-}
-
-/* Estilos para o Card de Teoria */
-.teoria-card {
-    border-radius: 15px;
-    padding: 20px;
-    color: var(--branco); /* Texto branco para contraste com o gradiente */
-    cursor: pointer;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    height: 100%; /* Garante que todos os cards tenham a mesma altura */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-.teoria-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-}
-
-.teoria-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.teoria-numero {
-    font-size: 1.5rem;
-    font-weight: 700;
-    background-color: rgba(255, 255, 255, 0.2);
-    padding: 5px 12px;
-    border-radius: 10px;
-    line-height: 1;
-}
-
-.teoria-nivel {
-    font-size: 1rem;
-    font-weight: 600;
-    padding: 3px 10px;
-    border-radius: 5px;
-    background-color: var(--amarelo-detalhe);
-    color: var(--preto-texto);
-}
-
-.teoria-card-body {
-    flex-grow: 1;
-}
-
-.teoria-titulo {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 5px;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.teoria-resumo {
-    font-size: 0.9rem;
-    opacity: 0.9;
-}
-
-.teoria-card-footer {
-    text-align: right;
-    font-size: 1.2rem;
-}
-
-.teoria-card-footer i {
-    color: rgba(255, 255, 255, 0.8);
-}
-
-/* Estilos para o Modal de Conteúdo da Teoria */
-.modal-teoria-conteudo .modal-header {
-    background-color: var(--roxo-escuro);
-    color: var(--branco);
-    border-bottom: none;
-}
-
-.modal-teoria-conteudo .modal-body {
-    font-size: 1.1rem;
-    line-height: 1.8;
-    color: var(--preto-texto);
-}
-
-/* Estilização do Conteúdo (para o formatarConteudoTeoria) */
-.conteudo-teoria h1, .conteudo-teoria h2, .conteudo-teoria h3 {
-    color: var(--roxo-principal);
-    border-bottom: 2px solid var(--amarelo-detalhe);
-    padding-bottom: 5px;
-    margin-top: 20px;
-    margin-bottom: 15px;
-}
-
-.conteudo-teoria p {
-    margin-bottom: 15px;
-}
-
-.conteudo-teoria ul, .conteudo-teoria ol {
-    padding-left: 25px;
-    margin-bottom: 15px;
-}
-
-.conteudo-teoria code {
-    background-color: #f0f0f0;
-    padding: 2px 5px;
-    border-radius: 5px;
-    font-family: monospace;
-}
-
-.conteudo-teoria pre {
-    background-color: #2d2d2d;
-    color: #f8f8f2;
-    padding: 15px;
-    border-radius: 8px;
-    overflow-x: auto;
-    margin-bottom: 20px;
-}
-/* FIM DOS NOVOS ESTILOS PARA TEORIAS */
-
         .audio-player-container {
             background: #f8f9fa;
             border-radius: 10px;
@@ -750,18 +1185,6 @@ $database->closeConnection();
             border: 2px solid #e9ecef;
         }
         
-        /* Garantir que inputs funcionem corretamente */
-        #respostaCompletar, #respostaTextoLivre {
-            pointer-events: auto !important;
-            cursor: text !important;
-            user-select: text !important;
-        }
-        
-        .form-control {
-            pointer-events: auto !important;
-            cursor: text !important;
-        }
-
         .audio-controls {
             display: flex;
             gap: 10px;
@@ -802,36 +1225,6 @@ $database->closeConnection();
             color: white;
         }
         
-        /* Garantir que botões de resposta sejam clicáveis */
-        .btn-resposta {
-            pointer-events: auto !important;
-            cursor: pointer !important;
-            user-select: none;
-        }
-        
-        .btn-resposta:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        
-        .btn-resposta.selected {
-            pointer-events: auto !important;
-            cursor: pointer !important;
-        }
-        
-        audio {
-            pointer-events: auto;
-            cursor: pointer;
-        }
-        
-        audio::-webkit-media-controls {
-            pointer-events: auto;
-        }
-        
-        audio::-webkit-media-controls-panel {
-            pointer-events: auto;
-        }
-        
         .tts-container {
             text-align: center;
             margin: 20px 0;
@@ -841,536 +1234,6 @@ $database->closeConnection();
             min-width: 200px;
             font-size: 1.1rem;
             padding: 12px 24px;
-        }
-
-        /* Cards de blocos com estados - Layout quadrado organizado */
-        .bloco-card {
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-            min-height: 220px;
-            max-height: 220px;
-            border-radius: 15px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        
-        /* Container dos blocos em grid organizado */
-        .blocos-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            padding: 10px;
-        }
-        
-        /* Ajustes para diferentes tamanhos de tela */
-        @media (min-width: 768px) {
-            .blocos-container {
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                gap: 25px;
-            }
-        }
-        
-        @media (min-width: 1200px) {
-            .blocos-container {
-                grid-template-columns: repeat(3, 1fr);
-                max-width: 1000px;
-                margin: 0 auto;
-            }
-        }
-        
-        .bloco-card-disponivel {
-            cursor: pointer;
-            border-color: #007bff;
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
-        }
-        
-        .bloco-card-disponivel:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
-            border-color: #0056b3;
-        }
-        
-        .bloco-card-concluido {
-            cursor: pointer;
-            border-color: #28a745;
-            background: linear-gradient(135deg, #ffffff 0%, #f8fff8 100%);
-        }
-        
-        .bloco-card-concluido:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.2);
-        }
-        
-        .bloco-card-bloqueado {
-            cursor: not-allowed;
-            border-color: #6c757d;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            opacity: 0.6;
-        }
-        
-        .bloco-card-bloqueado .card-title,
-        .bloco-card-bloqueado .card-text {
-            color: #6c757d !important;
-        }
-        
-        /* Melhorias visuais para os cards */
-        .bloco-card .card-body {
-            padding: 1.25rem;
-            height: 100%;
-        }
-        
-        .bloco-card .card-title {
-            font-size: 1rem;
-            font-weight: 600;
-            line-height: 1.2;
-            margin-bottom: 0.5rem;
-        }
-        
-        .bloco-card .card-text {
-            font-size: 0.85rem;
-            line-height: 1.3;
-        }
-        
-        /* Área de descrição com scroll */
-        .bloco-descricao {
-            max-height: 60px;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding-right: 5px;
-            margin-bottom: 1rem;
-            scrollbar-width: thin;
-            scrollbar-color: #ccc transparent;
-        }
-        
-        .bloco-descricao::-webkit-scrollbar {
-            width: 4px;
-        }
-        
-        .bloco-descricao::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        
-        .bloco-descricao::-webkit-scrollbar-thumb {
-            background-color: #ccc;
-            border-radius: 2px;
-        }
-        
-        .bloco-descricao::-webkit-scrollbar-thumb:hover {
-            background-color: #999;
-        }
-        
-        /* Indicador de scroll */
-        .scroll-indicator {
-            position: absolute;
-            bottom: 5px;
-            right: 8px;
-            font-size: 0.7rem;
-            color: #999;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .bloco-descricao:hover + .scroll-indicator,
-        .bloco-descricao.has-scroll + .scroll-indicator {
-            opacity: 1;
-        }
-        
-        .bloco-card .bloco-icon {
-            transition: transform 0.3s ease;
-        }
-        
-        .bloco-card:hover .bloco-icon {
-            transform: scale(1.1);
-        }
-        
-        /* Espaçamento uniforme */
-        .bloco-item {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .bloco-item .card {
-            flex: 1;
-        }
-        
-        /* Responsividade para cards de blocos */
-        @media (max-width: 768px) {
-            .bloco-card {
-                min-height: 200px;
-                max-height: 200px;
-            }
-            
-            .blocos-container {
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 15px;
-                padding: 5px;
-            }
-            
-            .bloco-card .bloco-icon {
-                font-size: 1.5rem !important;
-            }
-        }
-        
-        @media (max-width: 576px) {
-            .bloco-card {
-                min-height: 180px;
-                max-height: 180px;
-            }
-            
-            .blocos-container {
-                grid-template-columns: 1fr 1fr;
-                gap: 10px;
-            }
-            
-            .bloco-card .card-body {
-                text-align: center;
-                padding: 1rem;
-            }
-            
-            .bloco-card .card-title {
-                font-size: 0.9rem;
-            }
-            
-            .bloco-card .card-text {
-                font-size: 0.8rem;
-            }
-        }
-        
-        @media (max-width: 400px) {
-            .blocos-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .bloco-card {
-                min-height: 160px;
-                max-height: 160px;
-            }
-        }
-        
-        /* Container de unidades */
-        .unidade-container {
-            border-left: 4px solid var(--roxo-principal);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        .unidade-container .card-header {
-            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-            border-bottom: 2px solid var(--amarelo-detalhe);
-        }
-
-        .progress-bar-custom {
-            height: 8px;
-            border-radius: 4px;
-        }
-        
-        /* Badges de status dos blocos */
-        .badge {
-            font-size: 0.7rem;
-            padding: 0.35rem 0.6rem;
-        }
-        
-        /* Progress bar menor */
-        .bloco-card .progress {
-            height: 6px;
-        }
-        
-        /* Texto menor nos blocos */
-        .bloco-card small {
-            font-size: 0.75rem;
-        }
-
-        /* Estilos para cards de teoria */
-        .teoria-card {
-            border-radius: 15px;
-            padding: 1.5rem;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            min-height: 180px;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .teoria-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-        }
-        
-        .teoria-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-        
-        .teoria-card:hover::before {
-            left: 100%;
-        }
-        
-        .teoria-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .teoria-numero {
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-        
-        .teoria-nivel {
-            background: rgba(255, 255, 255, 0.9);
-            color: #333;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-        
-        .teoria-card-body {
-            flex: 1;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .teoria-titulo {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-            line-height: 1.3;
-        }
-        
-        .teoria-resumo {
-            font-size: 0.9rem;
-            opacity: 0.9;
-            line-height: 1.4;
-            margin: 0;
-        }
-        
-        .teoria-card-footer {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            margin-top: 1rem;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .teoria-card-footer i {
-            font-size: 1.2rem;
-            opacity: 0.8;
-            transition: transform 0.3s ease;
-        }
-        
-        .teoria-card:hover .teoria-card-footer i {
-            transform: translateX(5px);
-            opacity: 1;
-        }
-        
-        /* Estilos para conteúdo da teoria - Design limpo */
-        .teoria-conteudo {
-            max-height: 70vh;
-            overflow-y: auto;
-            padding: 2rem;
-            background: #ffffff;
-            font-family: 'Poppins', sans-serif;
-            line-height: 1.7;
-            color: #333;
-            font-size: 1rem;
-        }
-        
-        /* Estilos para tópicos numerados - 2 colunas */
-        .topicos-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-            margin: 1rem 0;
-        }
-        
-        .topico-item {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 10px;
-            padding: 1.5rem;
-            transition: all 0.3s ease;
-            min-height: fit-content;
-        }
-        
-        .topico-item:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
-        }
-        
-        /* Tópicos com tabelas ocupam largura total */
-        .topico-item.com-tabela {
-            grid-column: 1 / -1;
-            max-width: none;
-        }
-        
-        .topico-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-        
-        .topico-numero {
-            background: var(--roxo-principal);
-            color: white;
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-        
-        .topico-titulo {
-            color: var(--roxo-principal);
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin: 0;
-        }
-        
-        .topico-conteudo {
-            color: #555;
-            line-height: 1.6;
-            margin: 0;
-        }
-        
-        @media (max-width: 768px) {
-            .topicos-container {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        /* Texto simples sem tópicos */
-        .teoria-texto-simples {
-            white-space: pre-wrap;
-            line-height: 1.7;
-            color: #333;
-        }
-
-        /* Estilos para tabelas nas teorias */
-        .teoria-tabela {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 10px;
-            padding: 1rem;
-            margin: 0.5rem 0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            height: fit-content;
-        }
-
-        .teoria-tabela h5 {
-            color: var(--roxo-principal);
-            margin-bottom: 1rem;
-            font-weight: 600;
-        }
-
-        .teoria-tabela table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            font-size: 0.9rem;
-        }
-
-        .teoria-tabela th {
-            background: var(--roxo-principal);
-            color: white;
-            padding: 8px 10px;
-            text-align: left;
-            font-weight: 600;
-            border: none;
-            font-size: 0.85rem;
-        }
-
-        .teoria-tabela td {
-            padding: 8px 10px;
-            border-bottom: 1px solid #e9ecef;
-            vertical-align: top;
-            font-size: 0.85rem;
-        }
-
-        .teoria-tabela tr:last-child td {
-            border-bottom: none;
-        }
-
-        .teoria-tabela tr:nth-child(even) {
-            background-color: #f8f9fa;
-        }
-
-        .teoria-tabela tr:hover {
-            background-color: #e3f2fd;
-        }
-
-        /* Layout melhorado para tópicos com tabelas */
-        .topico-content-wrapper {
-            display: flex;
-            gap: 1rem;
-            align-items: flex-start;
-        }
-
-        .topico-texto {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .topico-tabelas {
-            flex: 1;
-            min-width: 0;
-        }
-
-        @media (max-width: 768px) {
-            .topico-content-wrapper {
-                flex-direction: column;
-            }
-        }
-
-        /* Estilos para feedback de progresso */
-        .progresso-atualizado {
-            animation: pulse-success 2s ease-in-out;
-        }
-
-        @keyframes pulse-success {
-            0% { background-color: transparent; }
-            50% { background-color: rgba(40, 167, 69, 0.1); }
-            100% { background-color: transparent; }
-        }
-
-        .bloco-card-concluido {
-            border-left: 4px solid #28a745 !important;
-        }
-
-        .bloco-card-disponivel {
-            border-left: 4px solid #007bff !important;
-        }
-
-        .bloco-card-bloqueado {
-            border-left: 4px solid #6c757d !important;
         }
 
         /* Navbar igual ao admin */
@@ -1423,161 +1286,6 @@ $database->closeConnection();
             transform: translateY(-2px);
         }
 
-        /* SIDEBAR FIXO */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 250px;
-            height: 100%;
-            background: linear-gradient(135deg, #7e22ce, #581c87, #3730a3);
-            color: var(--branco);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            padding-top: 20px;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            transition: transform 0.3s ease-in-out;
-        }
-
-        .sidebar .profile {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 0 15px;
-        }
-
-        .sidebar .profile .profile-avatar-sidebar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            border: 3px solid var(--amarelo-detalhe);
-            background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .sidebar .profile .profile-avatar-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-        }
-
-        .sidebar .profile .profile-avatar-sidebar i {
-            font-size: 3.5rem;
-            color: var(--amarelo-detalhe);
-        }
-
-        .sidebar .profile h5 {
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: var(--branco);
-            font-size: 1.1rem;
-            word-wrap: break-word;
-            max-width: 200px;
-            text-align: center;
-            line-height: 1.3;
-        }
-
-        .sidebar .profile small {
-            color: var(--cinza-claro);
-            font-size: 0.9rem;
-            word-wrap: break-word;
-            max-width: 200px;
-            text-align: center;
-            line-height: 1.2;
-            margin-top: 5px;
-        }
-
-        .sidebar .list-group {
-            width: 100%;
-        }
-
-        .sidebar .list-group-item {
-            background-color: transparent;
-            color: var(--branco);
-            border: none;
-            padding: 15px 25px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            text-decoration: none;
-        }
-
-        .sidebar .list-group-item:hover {
-            background-color: var(--roxo-escuro);
-            cursor: pointer;
-        }
-
-        .sidebar .list-group-item.active {
-            background-color: var(--roxo-escuro) !important;
-            color: var(--branco) !important;
-            font-weight: 600;
-            border-left: 4px solid var(--amarelo-detalhe);
-        }
-
-        .sidebar .list-group-item i {
-            color: var(--amarelo-detalhe);
-            width: 20px;
-            text-align: center;
-        }
-
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-            transition: margin-left 0.3s ease-in-out;
-        }
-
-        /* Menu Hamburguer */
-        .menu-toggle {
-            display: none;
-            background: none;
-            border: none;
-            color: var(--roxo-principal) !important;
-            font-size: 1.5rem;
-            cursor: pointer;
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            z-index: 1100;
-            transition: all 0.3s ease;
-        }
-
-        .menu-toggle:hover {
-            color: var(--roxo-escuro) !important;
-            transform: scale(1.1);
-        }
-
-        /* Quando a sidebar está ativa */
-        body:has(.sidebar.active) .menu-toggle,
-        .sidebar.active ~ .menu-toggle {
-            color: var(--amarelo-detalhe) !important;
-        }
-
-        body:has(.sidebar.active) .menu-toggle:hover,
-        .sidebar.active ~ .menu-toggle:hover {
-            color: var(--amarelo-hover) !important;
-        }
-
-        /* Overlay para mobile */
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-        }
-
         /* Dropdown Menu */
         .dropdown-menu {
             border: none;
@@ -1600,40 +1308,6 @@ $database->closeConnection();
             background-color: #fceaea;
             color: #b02a37;
             transform: translateX(4px);
-        }
-
-        @media (max-width: 992px) {
-            .menu-toggle {
-                display: block;
-            }
-            
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            
-            .sidebar.active {
-                transform: translateX(0);
-            }
-            
-            .main-content {
-                margin-left: 0;
-            }
-            
-            .sidebar-overlay.active {
-                display: block;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 280px;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .main-content {
-                padding: 15px 10px;
-            }
         }
 
         /* Botão de pesquisa customizado */
@@ -1815,7 +1489,7 @@ $database->closeConnection();
 </head>
 
 <body>
-    <!-- Menu Hamburguer -->
+    <!-- Menu Hamburguer - AGORA SÓ APARECE NO MOBILE -->
     <button class="menu-toggle" id="menuToggle">
         <i class="fas fa-bars"></i>
     </button>
@@ -1998,17 +1672,59 @@ $database->closeConnection();
                         </div>
                         <div class="card-body">
                             <?php if (count($unidades) > 0): ?>
-                                <div id="blocos-unidade-<?php echo $unidade['id']; ?>" class="row">
-                                    <div class="col-12 text-center">
-                                        <div class="spinner-border text-primary" role="status">
-                                            <span class="visually-hidden">Carregando blocos...</span>
+                                <!-- Seção Unidades -->
+                                <div class="unidades-container">
+                                    <?php foreach ($unidades as $unidade): ?>
+                                        <div class="unidade-card">
+                                            <div class="unidade-header">
+                                                <div class="unidade-numero"><?php echo htmlspecialchars($unidade["numero_unidade"]); ?></div>
+                                                <h3 class="unidade-titulo"><?php echo htmlspecialchars($unidade["nome_unidade"]); ?></h3>
+                                                <p class="unidade-descricao"><?php echo htmlspecialchars($unidade["descricao"]); ?></p>
+                                            </div>
+                                            
+                                            <div class="unidade-body">
+                                                <div class="unidade-info">
+                                                    <div class="info-item">
+                                                        <i class="fas fa-language"></i>
+                                                        <span><?php echo htmlspecialchars($idiomas_display[$idioma_escolhido] ?? $idioma_escolhido); ?></span>
+                                                    </div>
+                                                    <div class="info-item">
+                                                        <i class="fas fa-chart-line"></i>
+                                                        <span>Nível <?php echo htmlspecialchars($nivel_usuario); ?></span>
+                                                    </div>
+                                                    <div class="info-item">
+                                                        <i class="fas fa-cubes"></i>
+                                                        <span>Blocos de aprendizado</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="unidade-progresso">
+                                                    <div class="progresso-info">
+                                                        <span class="progresso-texto">Progresso da Unidade</span>
+                                                        <span class="progresso-porcentagem">0%</span>
+                                                    </div>
+                                                    <div class="progresso-bar">
+                                                        <div class="progresso-fill" style="width: 0%"></div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="blocos-container" id="blocos-unidade-<?php echo $unidade['id']; ?>">
+                                                    <div class="text-center py-4">
+                                                        <div class="spinner-border text-primary" role="status">
+                                                            <span class="visually-hidden">Carregando blocos...</span>
+                                                        </div>
+                                                        <p class="mt-2 text-muted">Carregando blocos...</p>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <p class="mt-2" style="color: #fff;">Carregando blocos da unidade...</p>
-                                    </div>
+                                    <?php endforeach; ?>
                                 </div>
                             <?php else: ?>
-                                <div class="alert alert-info" role="alert">
-                                    Nenhuma unidade encontrada para este nível e idioma.
+                                <div class="sem-unidades">
+                                    <i class="fas fa-inbox"></i>
+                                    <h3>Nenhuma unidade disponível</h3>
+                                    <p>Comece sua jornada de aprendizado selecionando um idioma acima.</p>
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -2020,7 +1736,7 @@ $database->closeConnection();
                             <div class="row align-items-center">
                                 <div class="col-md-8">
                                     <h5 class="card-title mb-2">
-                                        <i class="fas fa-book-open me-2 text-primary"></i>
+                                        <i class="fas fa-book-open me-2" style="color:#ffd700;"></i>
                                         Teorias e Conceitos
                                     </h5>
                                     <p class="card-text mb-0" style="color: #fff;">
@@ -2036,37 +1752,36 @@ $database->closeConnection();
                         </div>
                     </div>
 
+             
+<!-- Seção Flash Cards -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <!-- Coluna de texto -->
+            <div class="col-md-7">
+                <h5 class="card-title mb-2">
+                    <i class="fas fa-layer-group me-2 text-warning"></i>
+                    Flash Cards
+                </h5>
+                <p class="card-text text-muted mb-0">
+                    Estude com flashcards personalizados e melhore sua memorização
+                </p>
+            </div>
 
-
-                    <!-- Seção Flash Cards -->
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <!-- Coluna de texto -->
-                                <div class="col-md-8">
-                                    <h5 class="card-title mb-2">
-                                        <i class="fas fa-layer-group me-2 text-warning"></i>
-                                        Flash Cards
-                                    </h5>
-                                    <p class="card-text text-muted mb-0">
-                                        Estude com flashcards personalizados e melhore sua memorização
-                                    </p>
-                                </div>
-
-                                <!-- Coluna dos botões -->
-                                <div class="col-md-4 text-end">
-                                    <div class="d-flex gap-2 justify-content-end flex-wrap">
-                                        <a href="flashcards.php" class="btn btn-warning flex-fill flex-md-grow-0">
-                                            <i class="fas fa-layer-group me-2"></i>Meus Decks
-                                        </a>
-                                        <a href="flashcard_estudo.php" class="btn btn-outline-warning flex-fill flex-md-grow-0">
-                                            <i class="fas fa-play me-2"></i>Estudar
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <!-- Coluna dos botões -->
+            <div class="col-md-5 text-end">
+                <div class="d-flex gap-2 justify-content-end flex-nowrap">
+                    <a href="flashcards.php" class="btn btn-warning px-3">
+                        <i class="fas fa-layer-group me-2"></i>Meus Decks
+                    </a>
+                    <a href="flashcard_estudo.php" class="btn btn-outline-warning px-3">
+                        <i class="fas fa-play me-2"></i>Estudar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
                     <!-- Seção Gerenciamento de Palavras -->
                     <div class="card mb-4">
@@ -2495,12 +2210,12 @@ $database->closeConnection();
             });
     }
     
-    // Exibir blocos de uma unidade com sistema de desbloqueio - VERSÃO CORRIGIDA COM LAYOUT QUADRADO
+    // Exibir blocos de uma unidade com sistema de desbloqueio - VERSÃO ATUALIZADA
     function exibirBlocosUnidade(blocos, container, unidadeId) {
         if (!blocos || blocos.length === 0) {
             container.innerHTML = `
                 <div class="col-12">
-                    <div class="alert alert-info" role="alert">
+                    <div class="alert alert-info text-center" role="alert">
                         <i class="fas fa-info-circle me-2"></i>
                         Nenhum bloco encontrado para esta unidade.
                     </div>
@@ -2509,31 +2224,18 @@ $database->closeConnection();
             return;
         }
         
-        // Criar container em grid organizado
         container.innerHTML = '';
-        container.className = 'blocos-container';
-        
-        console.log('Blocos recebidos:', blocos);
-        
-        console.log('=== EXIBIR BLOCOS UNIDADE ===');
-        console.log('Total de blocos recebidos:', blocos.length);
-        console.log('Blocos completos:', blocos);
         
         // Separar blocos normais e especiais
         const blocosNormais = blocos.filter(b => b.tipo !== 'especial');
         const blocosEspeciais = blocos.filter(b => b.tipo === 'especial');
         
-        console.log('Blocos normais encontrados:', blocosNormais.length);
-        console.log('Blocos especiais encontrados:', blocosEspeciais.length);
-        console.log('Detalhes dos blocos especiais:', blocosEspeciais);
-        
-        // Determinar qual bloco está disponível (primeiro não concluído)
+        // Determinar estado dos blocos
         let blocoDisponivel = 0;
         let todosConcluidos = true;
         
         for (let i = 0; i < blocosNormais.length; i++) {
             const concluido = blocosNormais[i].progresso?.concluido || false;
-            
             if (!concluido) {
                 blocoDisponivel = i;
                 todosConcluidos = false;
@@ -2545,7 +2247,7 @@ $database->closeConnection();
             blocoDisponivel = blocosNormais.length;
         }
         
-        // Exibir blocos normais primeiro
+        // Exibir blocos normais
         blocosNormais.forEach((bloco, index) => {
             const progresso = bloco.progresso?.progresso_percentual || 0;
             const concluido = bloco.progresso?.concluido || false;
@@ -2554,118 +2256,112 @@ $database->closeConnection();
             
             const disponivel = index <= blocoDisponivel;
             const bloqueado = !disponivel;
+            const isNovo = index === blocoDisponivel && !concluido;
             
-            const blocoElement = document.createElement('div');
-            blocoElement.className = 'bloco-item';
+            const cardClass = bloqueado ? 'bloco-card-bloqueado' : 
+                              concluido ? 'bloco-card-concluido' : 'bloco-card-disponivel';
             
-            const cardClass = bloqueado ? 'bloco-card-bloqueado' : (concluido ? 'bloco-card-concluido' : 'bloco-card-disponivel');
-            const clickHandler = bloqueado ? '' : `onclick="abrirExercicios(${bloco.id}, '${bloco.nome_bloco.replace(/'/g, "\\'")}')" style="cursor: pointer;"`;
+            const clickHandler = bloqueado ? '' : `onclick="abrirExercicios(${bloco.id}, '${bloco.nome_bloco.replace(/'/g, "\\'")}')"`;
             
-            blocoElement.innerHTML = `
-                <div class="card bloco-card h-100 ${cardClass}" ${clickHandler}>
-                    <div class="card-body text-center d-flex flex-column justify-content-between">
-                        <div>
-                            ${bloqueado ? 
-                                '<i class="fas fa-lock bloco-icon mb-3" style="font-size: 2rem; color: #6c757d;"></i>' :
-                                (concluido ? 
-                                    '<i class="fas fa-check-circle bloco-icon mb-3" style="font-size: 2rem; color: #28a745;"></i>' :
-                                    '<i class="fas fa-play-circle bloco-icon mb-3" style="font-size: 2rem; color: #007bff;"></i>'
-                                )
-                            }
-                            <h6 class="card-title mb-2">${bloco.nome_bloco}</h6>
-                            <div class="bloco-descricao position-relative">
-                                <p class="card-text text-muted small mb-0">${bloco.descricao || 'Descrição não disponível'}</p>
-                                <div class="scroll-indicator">
-                                    <i class="fas fa-chevron-down"></i>
-                                </div>
+            const badgeClass = bloqueado ? 'badge-bloqueado' : 
+                              concluido ? 'badge-concluido' : 'badge-disponivel';
+            
+            const badgeText = bloqueado ? 'Bloqueado' : 
+                             concluido ? 'Concluído' : 'Disponível';
+            
+            const blocoHTML = `
+                <div class="bloco-card ${cardClass}" ${clickHandler}>
+                    ${isNovo ? '<div class="novo-indicator" title="Novo conteúdo!"><i class="fas fa-star"></i></div>' : ''}
+                    
+                    <div class="bloco-header">
+                        <div class="bloco-icon-container">
+                            <div class="bloco-icon">
+                                <i class="fas fa-${concluido ? 'check-circle' : (bloqueado ? 'lock' : 'play-circle')}"></i>
+                            </div>
+                            <div>
+                                <h4 class="bloco-titulo">${bloco.nome_bloco}</h4>
+                                <p class="bloco-subtitulo">${bloco.tipo || 'Exercícios práticos'}</p>
                             </div>
                         </div>
-                        
-                        <div class="mt-auto">
-                            ${bloqueado ? 
-                                '<div class="alert alert-warning py-1 mb-2"><small><i class="fas fa-lock me-1"></i>Bloqueado</small></div>' :
-                                `<div class="progress progress-bar-custom mb-2" style="height: 6px;">
-                                    <div class="progress-bar ${concluido ? 'bg-success' : 'bg-primary'}" role="progressbar" 
-                                         style="width: ${progresso}%" aria-valuenow="${progresso}" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                                <small class="text-muted">${atividadesConcluidas}/${totalAtividades} (${progresso}%)</small>`
-                            }
-                            
-                            ${concluido ? '<div class="mt-2"><span class="badge bg-success"><i class="fas fa-check me-1"></i>Concluído</span></div>' : ''}
-                            ${!bloqueado && !concluido && index === blocoDisponivel ? '<div class="mt-2"><span class="badge bg-primary"><i class="fas fa-play me-1"></i>Disponível</span></div>' : ''}
+                        <span class="bloco-badge ${badgeClass}">${badgeText}</span>
+                    </div>
+                    
+                    <div class="bloco-body">
+                        <p class="bloco-descricao">${bloco.descricao || 'Pratique suas habilidades com exercícios interativos.'}</p>
+                    </div>
+                    
+                    <div class="bloco-footer">
+                        <div class="bloco-meta">
+                            <span class="bloco-stats">
+                                <i class="fas fa-tasks"></i>
+                                ${atividadesConcluidas}/${totalAtividades} atividades
+                            </span>
                         </div>
+                        ${!bloqueado ? `
+                            <div class="bloco-progresso">
+                                <div class="bloco-progresso-info">
+                                    <span class="bloco-progresso-texto">Progresso</span>
+                                    <span class="bloco-progresso-porcentagem">${progresso}%</span>
+                                </div>
+                                <div class="bloco-progresso-bar">
+                                    <div class="bloco-progresso-fill" style="width: ${progresso}%"></div>
+                                </div>
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
             `;
-            container.appendChild(blocoElement);
+            
+            container.insertAdjacentHTML('beforeend', blocoHTML);
         });
         
-        // Exibir blocos especiais (sempre disponíveis)
-        console.log('=== PROCESSANDO BLOCOS ESPECIAIS ===');
-        console.log('Número de blocos especiais para processar:', blocosEspeciais.length);
-        
-        blocosEspeciais.forEach((bloco, index) => {
-            console.log(`=== BLOCO ESPECIAL ${index + 1} ===`);
-            console.log('Dados do bloco:', bloco);
-            console.log('ID:', bloco.id);
-            console.log('Nome:', bloco.nome_bloco);
-            console.log('Tipo:', bloco.tipo);
+        // Exibir blocos especiais
+        if (blocosEspeciais.length > 0) {
+            const especiaisHeader = document.createElement('div');
+            especiaisHeader.className = 'blocos-especiais-header';
+            especiaisHeader.innerHTML = `
+                <h4 class="especiais-titulo">
+                    <i class="fas fa-star me-2" style="color: var(--amarelo-detalhe);"></i>
+                    Conteúdos Especiais
+                </h4>
+                <p class="especiais-descricao">Atividades extras para reforçar seu aprendizado</p>
+            `;
+            container.appendChild(especiaisHeader);
             
-            const blocoElement = document.createElement('div');
-            blocoElement.className = 'bloco-item';
-            
-            const tipoIcon = {
-                'observar': 'fa-eye',
-                'completar': 'fa-edit',
-                'alternativa': 'fa-list-ul'
-            };
-            
-            const exercicio = bloco.exercicio_especial;
-            const icon = tipoIcon[exercicio?.tipo_exercicio] || 'fa-star';
-            
-            blocoElement.innerHTML = `
-                <div class="card bloco-card h-100 bloco-card-disponivel border-warning" 
-                     onclick="abrirExercicioEspecial('${bloco.id}', '${bloco.nome_bloco.replace(/'/g, "\\'")}')" 
-                     style="cursor: pointer; border: 3px solid #ffc107 !important;">
-                    <div class="card-body text-center d-flex flex-column justify-content-between">
-                        <div>
-                            <i class="fas ${icon} bloco-icon mb-3" style="font-size: 2rem; color: #ffc107;"></i>
-                            <h6 class="card-title mb-2">${bloco.nome_bloco}</h6>
-                            <div class="bloco-descricao position-relative">
-                                <p class="card-text text-muted small mb-0">${bloco.descricao || 'Descrição não disponível'}</p>
-                                <div class="scroll-indicator">
-                                    <i class="fas fa-chevron-down"></i>
+            blocosEspeciais.forEach(bloco => {
+                const blocoHTML = `
+                    <div class="bloco-card bloco-card-disponivel border-warning" 
+                         onclick="abrirExercicioEspecial('${bloco.id}', '${bloco.nome_bloco.replace(/'/g, "\\'")}')">
+                        <div class="bloco-header">
+                            <div class="bloco-icon-container">
+                                <div class="bloco-icon" style="background: linear-gradient(135deg, var(--amarelo-detalhe), #f59e0b);">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <div>
+                                    <h4 class="bloco-titulo">${bloco.nome_bloco}</h4>
+                                    <p class="bloco-subtitulo">Conteúdo especial</p>
                                 </div>
                             </div>
+                            <span class="bloco-badge" style="background: linear-gradient(135deg, var(--amarelo-detalhe), #f59e0b);">Especial</span>
                         </div>
                         
-                        <div class="mt-auto">
-                            <div class="progress progress-bar-custom mb-2" style="height: 6px;">
-                                <div class="progress-bar bg-warning" role="progressbar" 
-                                     style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                            <small class="text-muted">Exercício especial</small>
-                            
-                            <div class="mt-2">
-                                <span class="badge bg-warning text-dark">
-                                    <i class="fas fa-star me-1"></i>Especial
+                        <div class="bloco-body">
+                            <p class="bloco-descricao">${bloco.descricao || 'Atividade especial para praticar de forma divertida.'}</p>
+                        </div>
+                        
+                        <div class="bloco-footer">
+                            <div class="bloco-meta">
+                                <span class="bloco-stats">
+                                    <i class="fas fa-gamepad"></i>
+                                    Exercício interativo
                                 </span>
                             </div>
                         </div>
                     </div>
-                </div>
-            `;
-            container.appendChild(blocoElement);
-            console.log(`Bloco especial ${index + 1} adicionado ao DOM com sucesso`);
-            console.log('HTML gerado:', blocoElement.outerHTML.substring(0, 200) + '...');
-        });
-        
-        console.log('=== RESULTADO FINAL ===');
-        console.log('Total de elementos no container:', container.children.length);
-        console.log('Container HTML:', container.innerHTML.length > 0 ? 'Contém elementos' : 'Vazio');
-        
-        // Inicializar indicadores de scroll após renderizar
-        setTimeout(initScrollIndicators, 100);
+                `;
+                container.insertAdjacentHTML('beforeend', blocoHTML);
+            });
+        }
     }
 
     // ==================== CONFIGURAÇÃO DOS EVENT LISTENERS ====================
@@ -2712,7 +2408,7 @@ $database->closeConnection();
             });
     };
 
-    // Função para exibir blocos no modal com layout organizado
+    // Função para exibir blocos no modal
     function exibirBlocos(blocos) {
         const container = document.getElementById("listaBlocos");
         container.innerHTML = "";
@@ -2805,6 +2501,16 @@ $database->closeConnection();
             });
     }
     
+    // Função para mostrar teoria do bloco
+    function mostrarTeoriaDoBloco(teoria, tituloBloco) {
+        document.getElementById('tituloTeoriaConteudo').innerHTML = `
+            <i class="fas fa-book me-2"></i>${teoria.titulo} - ${tituloBloco}
+        `;
+        document.getElementById('conteudoTeoria').innerHTML = formatarConteudoTeoria(teoria.conteudo);
+        document.getElementById('btnIniciarExercicios').style.display = 'block';
+        modalTeoriaConteudo.show();
+    }
+    
     // Função para formatar conteúdo da teoria
     function formatarConteudoTeoria(conteudo) {
         if (!conteudo) return '<p class="text-muted">Nenhum conteúdo disponível.</p>';
@@ -2812,8 +2518,6 @@ $database->closeConnection();
         // Detectar se é formato de tópicos (numerado)
         const linhas = conteudo.split('\n');
         let temTopicos = false;
-        let conteudoFormatado = '';
-        let topicoAtual = null;
         
         // Verificar se tem tópicos numerados
         for (let linha of linhas) {
@@ -2826,6 +2530,7 @@ $database->closeConnection();
         if (temTopicos) {
             // Processar como tópicos em grid
             let topicos = [];
+            let topicoAtual = null;
             
             linhas.forEach(linha => {
                 linha = linha.trim();
@@ -2840,33 +2545,12 @@ $database->closeConnection();
                     // Novo tópico
                     const numero = linha.match(/^(\d+)\./)[1];
                     const titulo = linha.replace(/^\d+\.\s*/, '');
-                    topicoAtual = { numero, titulo, conteudo: '', tabelas: [] };
-                } else if (linha.includes('|') && topicoAtual) {
-                    // Detectar tabela (formato: col1 | col2 | col3)
-                    if (!topicoAtual.tabelaAtual) {
-                        topicoAtual.tabelaAtual = [];
-                    }
-                    const colunas = linha.split('|').map(col => col.trim());
-                    topicoAtual.tabelaAtual.push(colunas);
-                } else {
-                    // Finalizar tabela se existir
-                    if (topicoAtual && topicoAtual.tabelaAtual) {
-                        topicoAtual.tabelas.push(topicoAtual.tabelaAtual);
-                        delete topicoAtual.tabelaAtual;
-                    }
-                    
+                    topicoAtual = { numero, titulo, conteudo: '' };
+                } else if (topicoAtual) {
                     // Conteúdo do tópico
-                    if (topicoAtual) {
-                        topicoAtual.conteudo += (topicoAtual.conteudo ? '\n' : '') + linha;
-                    }
+                    topicoAtual.conteudo += (topicoAtual.conteudo ? '\n' : '') + linha;
                 }
             });
-            
-            // Finalizar última tabela se existir
-            if (topicoAtual && topicoAtual.tabelaAtual) {
-                topicoAtual.tabelas.push(topicoAtual.tabelaAtual);
-                delete topicoAtual.tabelaAtual;
-            }
             
             // Adicionar último tópico
             if (topicoAtual) {
@@ -2874,171 +2558,24 @@ $database->closeConnection();
             }
             
             // Gerar HTML em grid
-            conteudoFormatado = '<div class="topicos-container">';
+            let conteudoFormatado = '<div class="topicos-container">';
             topicos.forEach((topico, index) => {
-                const temTabelas = topico.tabelas && topico.tabelas.length > 0;
                 conteudoFormatado += `
-                    <div class="topico-item ${temTabelas ? 'com-tabela' : ''}">
+                    <div class="topico-item">
                         <div class="topico-header">
                             <div class="topico-numero">${topico.numero}</div>
                             <h4 class="topico-titulo">${topico.titulo}</h4>
                         </div>
+                        <p class="topico-conteudo">${topico.conteudo.replace(/\n/g, '<br>')}</p>
+                    </div>
                 `;
-                
-                if (temTabelas) {
-                    // Tabelas antes do texto
-                    const tabelasAntes = topico.tabelas.filter(t => t.posicao === 'antes');
-                    if (tabelasAntes.length > 0) {
-                        conteudoFormatado += '<div class="topico-tabelas mb-3">';
-                        tabelasAntes.forEach((tabela, tabelaIndex) => {
-                            conteudoFormatado += gerarHTMLTabela(tabela, `${index}-antes-${tabelaIndex}`);
-                        });
-                        conteudoFormatado += '</div>';
-                    }
-                    
-                    // Conteúdo com tabelas ao lado
-                    const tabelasLado = topico.tabelas.filter(t => !t.posicao || t.posicao === 'lado');
-                    if (tabelasLado.length > 0) {
-                        conteudoFormatado += '<div class="topico-content-wrapper">';
-                        conteudoFormatado += '<div class="topico-texto">';
-                        conteudoFormatado += `<p class="topico-conteudo">${topico.conteudo.replace(/\n/g, '<br>')}</p>`;
-                        conteudoFormatado += '</div>';
-                        conteudoFormatado += '<div class="topico-tabelas">';
-                        tabelasLado.forEach((tabela, tabelaIndex) => {
-                            conteudoFormatado += gerarHTMLTabela(tabela, `${index}-lado-${tabelaIndex}`);
-                        });
-                        conteudoFormatado += '</div></div>';
-                    } else {
-                        conteudoFormatado += `<p class="topico-conteudo">${topico.conteudo.replace(/\n/g, '<br>')}</p>`;
-                    }
-                    
-                    // Tabelas depois do texto
-                    const tabelasDepois = topico.tabelas.filter(t => t.posicao === 'depois');
-                    if (tabelasDepois.length > 0) {
-                        conteudoFormatado += '<div class="topico-tabelas mt-3">';
-                        tabelasDepois.forEach((tabela, tabelaIndex) => {
-                            conteudoFormatado += gerarHTMLTabela(tabela, `${index}-depois-${tabelaIndex}`);
-                        });
-                        conteudoFormatado += '</div>';
-                    }
-                } else {
-                    conteudoFormatado += `<p class="topico-conteudo">${topico.conteudo.replace(/\n/g, '<br>')}</p>`;
-                }
-                
-                conteudoFormatado += '</div>';
             });
             conteudoFormatado += '</div>';
+            return conteudoFormatado;
         } else {
-            // Texto simples - verificar se tem tabelas independentes
-            if (conteudo.includes('|')) {
-                conteudoFormatado = processarTabelasIndependentes(conteudo);
-            } else {
-                conteudoFormatado = `<div class="teoria-texto-simples">${conteudo}</div>`;
-            }
+            // Texto simples
+            return `<div class="teoria-texto-simples">${conteudo.replace(/\n/g, '<br>')}</div>`;
         }
-        
-        return conteudoFormatado;
-    }
-    
-    // Função para gerar HTML da tabela
-    function gerarHTMLTabela(tabela, tabelaId) {
-        let html = `<div class="teoria-tabela"><table id="tabela-${tabelaId}">`;
-        
-        tabela.forEach((linha, linhaIndex) => {
-            const tag = linhaIndex === 0 ? 'th' : 'td';
-            html += '<tr>';
-            linha.forEach(celula => {
-                html += `<${tag}>${celula}</${tag}>`;
-            });
-            html += '</tr>';
-        });
-        
-        html += '</table></div>';
-        return html;
-    }
-    
-    // Função para processar tabelas independentes
-    function processarTabelasIndependentes(conteudo) {
-        const linhas = conteudo.split('\n');
-        let html = '';
-        let tabelaAtual = [];
-        let tabelaIndex = 0;
-        
-        linhas.forEach(linha => {
-            linha = linha.trim();
-            if (linha.includes('|')) {
-                const colunas = linha.split('|').map(col => col.trim());
-                tabelaAtual.push(colunas);
-            } else {
-                // Finalizar tabela se existir
-                if (tabelaAtual.length > 0) {
-                    const tabelaId = `tabela-independente-${tabelaIndex++}`;
-                    html += `
-                        <div class="teoria-tabela">
-                            <table id="${tabelaId}">
-                    `;
-                    
-                    tabelaAtual.forEach((linhaTabela, linhaIndex) => {
-                        const tag = linhaIndex === 0 ? 'th' : 'td';
-                        html += '<tr>';
-                        linhaTabela.forEach(celula => {
-                            html += `<${tag}>${celula}</${tag}>`;
-                        });
-                        html += '</tr>';
-                    });
-                    
-                    html += `
-                            </table>
-                            <button class="btn-tabela-expand" onclick="expandirTabela('${tabelaId}')">
-                                <i class="fas fa-expand me-1"></i>Expandir
-                            </button>
-                        </div>
-                    `;
-                    
-                    tabelaAtual = [];
-                }
-                
-                // Adicionar texto normal
-                if (linha) {
-                    html += `<p>${linha}</p>`;
-                }
-            }
-        });
-        
-        // Finalizar última tabela se existir
-        if (tabelaAtual.length > 0) {
-            const tabelaId = `tabela-independente-${tabelaIndex}`;
-            html += `
-                <div class="teoria-tabela">
-                    <table id="${tabelaId}">
-            `;
-            
-            tabelaAtual.forEach((linhaTabela, linhaIndex) => {
-                const tag = linhaIndex === 0 ? 'th' : 'td';
-                html += '<tr>';
-                linhaTabela.forEach(celula => {
-                    html += `<${tag}>${celula}</${tag}>`;
-                });
-                html += '</tr>';
-            });
-            
-            html += `
-                    </table>
-                </div>
-            `;
-        }
-        
-        return html || `<div class="teoria-texto-simples">${conteudo}</div>`;
-    }
-    
-    // Função para mostrar teoria do bloco
-    function mostrarTeoriaDoBloco(teoria, tituloBloco) {
-        document.getElementById('tituloTeoriaConteudo').innerHTML = `
-            <i class="fas fa-book me-2"></i>${teoria.titulo} - ${tituloBloco}
-        `;
-        document.getElementById('conteudoTeoria').innerHTML = formatarConteudoTeoria(teoria.conteudo);
-        document.getElementById('btnIniciarExercicios').style.display = 'block';
-        modalTeoriaConteudo.show();
     }
     
     // Função para iniciar exercícios após teoria
@@ -4122,7 +3659,47 @@ $database->closeConnection();
         .catch(error => console.error('Erro ao atualizar progresso:', error));
     };
 
-    // CORREÇÃO: Função exibirTeorias completa
+    // Função para abrir modal de teorias
+    window.abrirTeorias = function() {
+        const container = document.getElementById('listaTeorias');
+        container.innerHTML = `
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Carregando...</span>
+                </div>
+                <p class="mt-2 text-muted">Carregando teorias...</p>
+            </div>
+        `;
+        
+        modalTeorias.show();
+        
+        // Carregar teorias do nível atual
+        fetch(`../controller/get_teorias.php?nivel=<?php echo htmlspecialchars($nivel_usuario ?? 'A1'); ?>`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    exibirTeorias(data.teorias);
+                } else {
+                    container.innerHTML = `
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Nenhuma teoria encontrada para seu nível atual.
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar teorias:', error);
+                container.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Erro ao carregar teorias. Tente novamente.
+                    </div>
+                `;
+            });
+    };
+    
+    // Função para exibir teorias
     function exibirTeorias(teorias) {
         const container = document.getElementById('listaTeorias');
         
@@ -4167,46 +3744,6 @@ $database->closeConnection();
         html += '</div>';
         container.innerHTML = html;
     }
-
-    // Função para abrir modal de teorias
-    window.abrirTeorias = function() {
-        const container = document.getElementById('listaTeorias');
-        container.innerHTML = `
-            <div class="text-center">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Carregando...</span>
-                </div>
-                <p class="mt-2 text-muted">Carregando teorias...</p>
-            </div>
-        `;
-        
-        modalTeorias.show();
-        
-        // Carregar teorias do nível atual
-        fetch(`../controller/get_teorias.php?nivel=<?php echo htmlspecialchars($nivel_usuario ?? 'A1'); ?>`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    exibirTeorias(data.teorias);
-                } else {
-                    container.innerHTML = `
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>
-                            Nenhuma teoria encontrada para seu nível atual.
-                        </div>
-                    `;
-                }
-            })
-            .catch(error => {
-                console.error('Erro ao carregar teorias:', error);
-                container.innerHTML = `
-                    <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        Erro ao carregar teorias. Tente novamente.
-                    </div>
-                `;
-            });
-    };
     
     // Função para abrir conteúdo de uma teoria
     window.abrirTeoriaConteudo = function(teoriaId, titulo) {
@@ -4252,8 +3789,6 @@ $database->closeConnection();
             });
     };
 
-
-    
     // Função para abrir exercício especial
     window.abrirExercicioEspecial = function(exercicioId, titulo) {
         console.log('Abrindo exercício especial:', exercicioId, titulo);
@@ -4386,8 +3921,18 @@ $database->closeConnection();
             window.location.reload();
         });
     }
-    
-    // Função duplicada removida - já está sendo tratada acima
     </script>
+
+    
+ <div vw class="enabled">
+    <div vw-access-button class="active"></div>
+    <div vw-plugin-wrapper>
+      <div class="vw-plugin-top-wrapper"></div>
+    </div>
+  </div>
+  <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+  <script>
+    new window.VLibras.Widget('https://vlibras.gov.br/app');
+  </script>
 </body>
 </html>
