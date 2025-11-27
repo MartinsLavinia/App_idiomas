@@ -1477,8 +1477,8 @@
             image: "Online document-bro.png"
         },
         {
-            title: "Gamificação",
-            description: "Torne o aprendizado divertido!",
+            title: "Trilhas de aprendizagem",
+            description: "Passo a passo claro, desde o básico ao avançado!",
             image: "Game analytics-pana.png"
         }
     ];
@@ -1548,10 +1548,10 @@
 
         updateCarouselSlide();
 
-        // Reiniciar autoplay após 5 segundos
+        // Reiniciar autoplay após 6 segundos
         setTimeout(() => {
             startCarouselAutoplay();
-        }, 5000);
+        }, 6000);
     }
 
     // Ir para slide específico
@@ -1560,10 +1560,10 @@
         currentSlide = slideIndex;
         updateCarouselSlide();
 
-        // Reiniciar autoplay após 5 segundos
+        // Reiniciar autoplay após 6 segundos
         setTimeout(() => {
             startCarouselAutoplay();
-        }, 5000);
+        }, 6000);
     }
 
     // Atualizar slide do carrossel - AGORA COM IMAGENS
@@ -1606,7 +1606,7 @@
         carouselInterval = setInterval(() => {
             currentSlide = (currentSlide + 1) % carouselSlides.length;
             updateCarouselSlide();
-        }, 5000);
+        }, 4000); // Tempo fixo de 4 segundos
     }
 
     // Parar autoplay do carrossel
@@ -1622,10 +1622,10 @@
         currentContentSlide = slideIndex;
         updateContentSlide();
 
-        // Reiniciar autoplay após 8 segundos
+        // Reiniciar autoplay após 7 segundos
         setTimeout(() => {
             startContentAutoplay();
-        }, 8000);
+        }, 7000);
     }
 
     // Atualizar slide de conteúdo
@@ -1685,7 +1685,7 @@
         contentInterval = setInterval(() => {
             currentContentSlide = (currentContentSlide + 1) % contentSlides.length;
             updateContentSlide();
-        }, 4000);
+        }, 5000); // Tempo fixo de 5 segundos
     }
 
     // Parar autoplay do conteúdo
@@ -2533,6 +2533,14 @@
                     0 0 6px #00ffff,
                     0 0 12px #00ffff,
                     0 0 18px rgba(0, 255, 255, 0.4);
+            }
+            
+            @media (max-width: 768px) {
+                a[href="politica_de_privacidade.php"] {
+                    display: block;
+                    width: 100%;
+                    pointer-events: auto;
+                }
             }
         </style>
     </a>

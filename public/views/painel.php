@@ -327,8 +327,8 @@ $database->closeConnection();
         /* Menu Hamburguer */
         .menu-toggle {
             display: none;
-            background: none;
-            border: none;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid var(--roxo-principal);
             color: var(--roxo-principal) !important;
             font-size: 1.5rem;
             cursor: pointer;
@@ -337,9 +337,14 @@ $database->closeConnection();
             left: 15px;
             z-index: 1100;
             transition: all 0.3s ease;
-            padding: 8px;
-            border-radius: 4px;
-            background-color: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .menu-toggle:hover {
@@ -372,7 +377,7 @@ $database->closeConnection();
 
         @media (max-width: 992px) {
             .menu-toggle {
-                display: block;
+                display: flex !important;
             }
             
             .sidebar {
@@ -387,6 +392,7 @@ $database->closeConnection();
             .main-content {
                 margin-left: 0 !important;
                 width: 100% !important;
+                padding-top: 80px;
             }
             
             .sidebar-overlay.active {
@@ -1716,21 +1722,49 @@ $database->closeConnection();
         document.addEventListener('DOMContentLoaded', function() {
             verificarHTTPS();
             
-            // Menu Hamburguer Functionality
+            // Menu Hamburguer Functionality - VERSÃO CORRIGIDA
+            initializeHamburgerMenu();
+            
+            // O sistema integrado corrigido já inicializa automaticamente
+            console.log('Painel carregado com sistema de exercícios corrigido');
+            
+            // Inicializar indicadores de scroll após carregar blocos
+            setTimeout(initScrollIndicators, 1000);
+        });
+        
+        // Função para inicializar menu hambúrguer
+        function initializeHamburgerMenu() {
             const menuToggle = document.getElementById('menuToggle');
             const sidebar = document.getElementById('sidebar');
             const sidebarOverlay = document.getElementById('sidebarOverlay');
             
+            console.log('Inicializando menu hambúrguer:', {
+                menuToggle: !!menuToggle,
+                sidebar: !!sidebar,
+                sidebarOverlay: !!sidebarOverlay
+            });
+            
             if (menuToggle && sidebar) {
-                menuToggle.addEventListener('click', function() {
+                // Remover listeners existentes
+                menuToggle.replaceWith(menuToggle.cloneNode(true));
+                const newMenuToggle = document.getElementById('menuToggle');
+                
+                newMenuToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Menu toggle clicado');
+                    
                     sidebar.classList.toggle('active');
                     if (sidebarOverlay) {
                         sidebarOverlay.classList.toggle('active');
                     }
+                    
+                    console.log('Sidebar ativo:', sidebar.classList.contains('active'));
                 });
                 
                 if (sidebarOverlay) {
                     sidebarOverlay.addEventListener('click', function() {
+                        console.log('Overlay clicado - fechando menu');
                         sidebar.classList.remove('active');
                         sidebarOverlay.classList.remove('active');
                     });
@@ -1741,6 +1775,7 @@ $database->closeConnection();
                 sidebarLinks.forEach(link => {
                     link.addEventListener('click', function() {
                         if (window.innerWidth <= 992) {
+                            console.log('Link clicado - fechando menu mobile');
                             sidebar.classList.remove('active');
                             if (sidebarOverlay) {
                                 sidebarOverlay.classList.remove('active');
@@ -1748,14 +1783,25 @@ $database->closeConnection();
                         }
                     });
                 });
+                
+                // Fechar menu com ESC
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && sidebar.classList.contains('active')) {
+                        sidebar.classList.remove('active');
+                        if (sidebarOverlay) {
+                            sidebarOverlay.classList.remove('active');
+                        }
+                    }
+                });
+                
+                console.log('Menu hambúrguer inicializado com sucesso');
+            } else {
+                console.error('Elementos do menu não encontrados:', {
+                    menuToggle: !!menuToggle,
+                    sidebar: !!sidebar
+                });
             }
-            
-            // O sistema integrado corrigido já inicializa automaticamente
-            console.log('Painel carregado com sistema de exercícios corrigido');
-            
-            // Inicializar indicadores de scroll após carregar blocos
-            setTimeout(initScrollIndicators, 1000);
-        });
+        }
         
         // Função para inicializar indicadores de scroll
         function initScrollIndicators() {
@@ -4341,41 +4387,7 @@ $database->closeConnection();
         });
     }
     
-    document.addEventListener('DOMContentLoaded', function() {
-        // Menu Hamburguer Functionality
-        const menuToggle = document.getElementById('menuToggle');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarOverlay = document.getElementById('sidebarOverlay');
-        
-        if (menuToggle && sidebar) {
-            menuToggle.addEventListener('click', function() {
-                sidebar.classList.toggle('active');
-                if (sidebarOverlay) {
-                    sidebarOverlay.classList.toggle('active');
-                }
-            });
-            
-            if (sidebarOverlay) {
-                sidebarOverlay.addEventListener('click', function() {
-                    sidebar.classList.remove('active');
-                    sidebarOverlay.classList.remove('active');
-                });
-            }
-            
-            // Fechar menu ao clicar em um link (mobile)
-            const sidebarLinks = sidebar.querySelectorAll('.list-group-item');
-            sidebarLinks.forEach(link => {
-                link.addEventListener('click', function() {
-                    if (window.innerWidth <= 992) {
-                        sidebar.classList.remove('active');
-                        if (sidebarOverlay) {
-                            sidebarOverlay.classList.remove('active');
-                        }
-                    }
-                });
-            });
-        }
-    });
+    // Função duplicada removida - já está sendo tratada acima
     </script>
 </body>
 </html>
