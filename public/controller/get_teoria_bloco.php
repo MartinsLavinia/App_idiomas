@@ -50,11 +50,11 @@ try {
     if ($bloco = $result->fetch_assoc()) {
         $idioma_bloco = $bloco['idioma'] ?? $idioma;
         
-        // Buscar teoria correspondente à ordem do bloco, nível e idioma
+        // Buscar teoria correspondente à ordem do bloco, nível, idioma e caminho
         if ($idioma_bloco) {
-            $sql_teoria = "SELECT id, titulo, conteudo FROM teorias WHERE nivel = ? AND ordem = ? AND idioma = ?";
+            $sql_teoria = "SELECT id, titulo, conteudo FROM teorias WHERE nivel = ? AND ordem = ? AND idioma = ? AND (caminho_id = ? OR caminho_id IS NULL) ORDER BY caminho_id DESC LIMIT 1";
             $stmt_teoria = $conn->prepare($sql_teoria);
-            $stmt_teoria->bind_param("sis", $bloco['nivel'], $bloco['ordem'], $idioma_bloco);
+            $stmt_teoria->bind_param("sisi", $bloco['nivel'], $bloco['ordem'], $idioma_bloco, $bloco['caminho_id']);
         } else {
             $sql_teoria = "SELECT id, titulo, conteudo FROM teorias WHERE nivel = ? AND ordem = ?";
             $stmt_teoria = $conn->prepare($sql_teoria);

@@ -28,7 +28,17 @@ $stmt_foto->close();
 
 $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
 
-$sql_teorias = "SELECT id, titulo, nivel, ordem, data_criacao FROM teorias ORDER BY nivel, ordem";
+// Buscar idiomas disponíveis
+$idiomas_disponiveis = [];
+$sql_idiomas = "SELECT nome FROM idiomas ORDER BY nome";
+$result_idiomas = $conn->query($sql_idiomas);
+if ($result_idiomas) {
+    while ($row = $result_idiomas->fetch_assoc()) {
+        $idiomas_disponiveis[] = $row['nome'];
+    }
+}
+
+$sql_teorias = "SELECT id, titulo, nivel, idioma, ordem, data_criacao FROM teorias ORDER BY idioma, nivel, ordem";
 $stmt_teorias = $conn->prepare($sql_teorias);
 $stmt_teorias->execute();
 $teorias = $stmt_teorias->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -930,6 +940,12 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="page-header flex-column flex-sm-row">
                 <h2 class="mb-2 mb-sm-0"><i class="fas fa-book-open"></i> Gerenciar Teorias</h2>
                 <div class="action-buttons">
+                    <select class="form-select me-2" id="filtroIdioma" style="width: auto; display: inline-block;">
+                        <option value="">Todos os idiomas</option>
+                        <?php foreach ($idiomas_disponiveis as $idioma): ?>
+                            <option value="<?php echo htmlspecialchars($idioma); ?>"><?php echo htmlspecialchars($idioma); ?></option>
+                        <?php endforeach; ?>
+                    </select>
                     <a href="adicionar_teoria.php" class="btn btn-warning">
                         <i class="fas fa-plus-circle"></i> Adicionar Nova Teoria
                     </a>
@@ -946,6 +962,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <th>ID</th>
                                 <th>Título</th>
                                 <th>Nível</th>
+                                <th>Idioma</th>
                                 <th>Ordem</th>
                                 <th>Data de Criação</th>
                                 <th>Ações</th>
@@ -954,11 +971,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         <tbody>
                             <?php if (!empty($teorias)): ?>
                                 <?php foreach ($teorias as $teoria): ?>
-                                    <tr>
+                                    <tr data-idioma="<?php echo htmlspecialchars($teoria['idioma'] ?? ''); ?>">
                                         <td><?php echo htmlspecialchars($teoria['id']); ?></td>
                                         <td class="col-titulo" title="<?php echo htmlspecialchars($teoria['titulo']); ?>"><?php echo htmlspecialchars($teoria['titulo']); ?></td>
                                         <td>
                                             <span class="badge bg-primary"><?php echo htmlspecialchars($teoria['nivel']); ?></span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success"><?php echo htmlspecialchars($teoria['idioma'] ?? 'N/A'); ?></span>
                                         </td>
                                         <td><?php echo htmlspecialchars($teoria['ordem']); ?></td>
                                         <td class="col-data"><?php echo htmlspecialchars(date('d/m/Y H:i', strtotime($teoria['data_criacao']))); ?></td>
@@ -979,7 +999,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="6" class="text-center py-4">
+                                    <td colspan="7" class="text-center py-4">
                                         <div class="empty-state">
                                             <i class="fas fa-book-open text-muted mb-3"></i>
                                             <p class="text-muted mb-0">Nenhuma teoria encontrada.</p>
@@ -1020,6 +1040,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const deleteButtons = document.querySelectorAll('.delete-btn');
             const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
             const itemNome = document.getElementById('itemNome');
+            const filtroIdioma = document.getElementById('filtroIdioma');
 
             deleteButtons.forEach(button => {
                 button.addEventListener('click', function() {
@@ -1029,6 +1050,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     confirmDeleteBtn.href = `eliminar_teoria.php?id=${id}`;
                 });
             });
+
+            // Filtro por idioma
+            if (filtroIdioma) {
+                filtroIdioma.addEventListener('change', function() {
+                    const idiomaFiltro = this.value;
+                    const linhas = document.querySelectorAll('tbody tr[data-idioma]');
+                    
+                    linhas.forEach(linha => {
+                        const idioma = linha.getAttribute('data-idioma');
+                        if (idiomaFiltro === '' || idioma === idiomaFiltro) {
+                            linha.style.display = '';
+                        } else {
+                            linha.style.display = 'none';
+                        }
+                    });
+                });
+            }
         });
     </script>
 

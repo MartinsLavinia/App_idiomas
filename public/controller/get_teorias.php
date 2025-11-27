@@ -9,6 +9,7 @@ if (!isset($_SESSION['id_usuario'])) {
 }
 
 $nivel = $_GET['nivel'] ?? 'A1';
+$caminho_id = $_GET['caminho_id'] ?? null;
 $idioma = $_SESSION['idioma_atual'] ?? null;
 
 // Se não há idioma na sessão, tentar obter do progresso do usuário
@@ -32,8 +33,12 @@ try {
     $database = new Database();
     $conn = $database->conn;
     
-    // Filtrar teorias por nível e idioma
-    if ($idioma) {
+    // Filtrar teorias por nível, idioma e caminho
+    if ($idioma && $caminho_id) {
+        $sql = "SELECT id, titulo, nivel, ordem, resumo FROM teorias WHERE nivel = ? AND idioma = ? AND (caminho_id = ? OR caminho_id IS NULL) ORDER BY ordem ASC";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("ssi", $nivel, $idioma, $caminho_id);
+    } elseif ($idioma) {
         $sql = "SELECT id, titulo, nivel, ordem, resumo FROM teorias WHERE nivel = ? AND idioma = ? ORDER BY ordem ASC";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ss", $nivel, $idioma);

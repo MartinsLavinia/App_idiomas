@@ -32,25 +32,36 @@ $stmt_foto->close();
 
 $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_perfil'] : null;
 
+// Buscar idiomas disponíveis
+$idiomas_disponiveis = [];
+$sql_idiomas = "SELECT nome FROM idiomas ORDER BY nome";
+$result_idiomas = $conn->query($sql_idiomas);
+if ($result_idiomas) {
+    while ($row = $result_idiomas->fetch_assoc()) {
+        $idiomas_disponiveis[] = $row['nome'];
+    }
+}
+
 // LÓGICA DE PROCESSAMENTO DO FORMULÁRIO (se o método for POST)
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $titulo = $_POST['titulo'];
     $nivel = $_POST['nivel'];
+    $idioma = $_POST['idioma'];
     $ordem = $_POST['ordem'];
     $conteudo = $_POST['conteudo'];
     $resumo = $_POST['resumo'] ?? '';
     $palavras_chave = $_POST['palavras_chave'] ?? '';
 
     // Validação simples
-    if (empty($titulo) || empty($nivel) || empty($ordem) || empty($conteudo)) {
+    if (empty($titulo) || empty($nivel) || empty($idioma) || empty($ordem) || empty($conteudo)) {
         $mensagem = '<div class="alert alert-danger">Por favor, preencha todos os campos obrigatórios.</div>';
     } else {
         // Atualiza a teoria na tabela
-        $sql_update = "UPDATE teorias SET titulo = ?, nivel = ?, ordem = ?, conteudo = ?, resumo = ?, palavras_chave = ? WHERE id = ?";
+        $sql_update = "UPDATE teorias SET titulo = ?, nivel = ?, idioma = ?, ordem = ?, conteudo = ?, resumo = ?, palavras_chave = ? WHERE id = ?";
         $stmt_update = $conn->prepare($sql_update);
         
         if ($stmt_update) {
-            $stmt_update->bind_param("ssisssi", $titulo, $nivel, $ordem, $conteudo, $resumo, $palavras_chave, $teoria_id);
+            $stmt_update->bind_param("ssissssi", $titulo, $nivel, $idioma, $ordem, $conteudo, $resumo, $palavras_chave, $teoria_id);
             
             if ($stmt_update->execute()) {
                 $mensagem = '<div class="alert alert-success" id="mensagemSucesso">Teoria atualizada com sucesso!</div>';
@@ -65,7 +76,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 // Busca os dados da teoria para edição
-$sql_teoria = "SELECT titulo, nivel, ordem, conteudo, resumo, palavras_chave FROM teorias WHERE id = ?";
+$sql_teoria = "SELECT titulo, nivel, idioma, ordem, conteudo, resumo, palavras_chave FROM teorias WHERE id = ?";
 $stmt_teoria = $conn->prepare($sql_teoria);
 $stmt_teoria->bind_param("i", $teoria_id);
 $stmt_teoria->execute();
@@ -603,9 +614,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                placeholder="Digite o título da teoria" required>
                     </div>
 
-                    <!-- Campos em linha para Nível e Ordem -->
+                    <!-- Campos em linha para Nível, Idioma e Ordem -->
                     <div class="row mb-4">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label for="nivel" class="form-label required-field">Nível</label>
                             <select class="form-select" id="nivel" name="nivel" required>
                                 <option value="">Selecione o nível</option>
@@ -617,7 +628,18 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <option value="C2" <?php echo ($teoria['nivel'] == 'C2') ? 'selected' : ''; ?>>C2 - Proficiente</option>
                             </select>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
+                            <label for="idioma" class="form-label required-field">Idioma</label>
+                            <select class="form-select" id="idioma" name="idioma" required>
+                                <option value="">Selecione o idioma</option>
+                                <?php foreach ($idiomas_disponiveis as $idioma_opcao): ?>
+                                    <option value="<?php echo htmlspecialchars($idioma_opcao); ?>" <?php echo (isset($teoria['idioma']) && $teoria['idioma'] == $idioma_opcao) ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($idioma_opcao); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
                             <label for="ordem" class="form-label required-field">Ordem de Exibição</label>
                             <input type="number" class="form-control" id="ordem" name="ordem" 
                                    value="<?php echo htmlspecialchars($teoria['ordem']); ?>" 

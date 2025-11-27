@@ -44,16 +44,30 @@ try {
 function handleGetTeorias($conn) {
     $nivel = isset($_GET['nivel']) ? $_GET['nivel'] : null;
     $busca = isset($_GET['busca']) ? $_GET['busca'] : null;
+    $idioma = isset($_GET['idioma']) ? $_GET['idioma'] : null;
+    $caminho_id = isset($_GET['caminho_id']) ? $_GET['caminho_id'] : null;
 
     // Construir consulta SQL
-    $sql = "SELECT id, titulo, nivel, ordem, resumo, palavras_chave, data_criacao FROM teorias WHERE 1=1";
+    $sql = "SELECT t.id, t.titulo, t.nivel, t.idioma, t.caminho_id, t.ordem, t.resumo, t.palavras_chave, t.data_criacao, c.nome as caminho_nome FROM teorias t LEFT JOIN caminhos_aprendizagem c ON t.caminho_id = c.id WHERE 1=1";
     $params = [];
     $types = "";
 
     if ($nivel) {
-        $sql .= " AND nivel = ?";
+        $sql .= " AND t.nivel = ?";
         $params[] = $nivel;
         $types .= "s";
+    }
+
+    if ($idioma) {
+        $sql .= " AND t.idioma = ?";
+        $params[] = $idioma;
+        $types .= "s";
+    }
+
+    if ($caminho_id) {
+        $sql .= " AND t.caminho_id = ?";
+        $params[] = $caminho_id;
+        $types .= "i";
     }
 
     if ($busca) {
@@ -65,7 +79,7 @@ function handleGetTeorias($conn) {
         $types .= "sss";
     }
 
-    $sql .= " ORDER BY nivel, ordem";
+    $sql .= " ORDER BY t.idioma, c.nome, t.nivel, t.ordem";
 
     $stmt = $conn->prepare($sql);
     

@@ -10,17 +10,42 @@ if (!isset($_SESSION['id_admin'])) {
 
 $mensagem = '';
 
+// Buscar idiomas e caminhos disponíveis
+$idiomas_disponiveis = [];
+$caminhos_disponiveis = [];
+$database_dados = new Database();
+$conn_dados = $database_dados->conn;
+
+$sql_idiomas = "SELECT nome FROM idiomas ORDER BY nome";
+$result_idiomas = $conn_dados->query($sql_idiomas);
+if ($result_idiomas) {
+    while ($row = $result_idiomas->fetch_assoc()) {
+        $idiomas_disponiveis[] = $row['nome'];
+    }
+}
+
+$sql_caminhos = "SELECT id, nome, idioma FROM caminhos_aprendizagem ORDER BY idioma, nome";
+$result_caminhos = $conn_dados->query($sql_caminhos);
+if ($result_caminhos) {
+    while ($row = $result_caminhos->fetch_assoc()) {
+        $caminhos_disponiveis[] = $row;
+    }
+}
+$database_dados->closeConnection();
+
 // LÓGICA DE PROCESSAMENTO DO FORMULÁRIO (se o método for POST)
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $titulo = $_POST['titulo'];
     $nivel = $_POST['nivel'];
+    $idioma = $_POST['idioma'];
+    $caminho_id = $_POST['caminho_id'] ?? null;
     $ordem = $_POST['ordem'];
     $conteudo = $_POST['conteudo'];
     $resumo = $_POST['resumo'] ?? '';
     $palavras_chave = $_POST['palavras_chave'] ?? '';
 
     // Validação simples
-    if (empty($titulo) || empty($nivel) || empty($ordem) || empty($conteudo)) {
+    if (empty($titulo) || empty($nivel) || empty($idioma) || empty($ordem) || empty($conteudo)) {
         $mensagem = '<div class="alert alert-danger">Por favor, preencha todos os campos obrigatórios.</div>';
     } else {
         $database = new Database();
@@ -30,16 +55,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $conn->set_charset("utf8mb4");
         
         // Insere a nova teoria na tabela
-        $sql_insert = "INSERT INTO teorias (titulo, nivel, ordem, conteudo, resumo, palavras_chave, data_criacao) VALUES (?, ?, ?, ?, ?, ?, NOW())";
+        $sql_insert = "INSERT INTO teorias (titulo, nivel, idioma, caminho_id, ordem, conteudo, resumo, palavras_chave, data_criacao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
         $stmt_insert = $conn->prepare($sql_insert);
         
         if ($stmt_insert) {
-            $stmt_insert->bind_param("ssisss", $titulo, $nivel, $ordem, $conteudo, $resumo, $palavras_chave);
+            $stmt_insert->bind_param("ssisissss", $titulo, $nivel, $idioma, $caminho_id, $ordem, $conteudo, $resumo, $palavras_chave);
             
             if ($stmt_insert->execute()) {
                 $mensagem = '<div class="alert alert-success">Teoria adicionada com sucesso!</div>';
                 // Limpar campos após sucesso
-                $titulo = $nivel = $ordem = $conteudo = $resumo = $palavras_chave = '';
+                $titulo = $nivel = $idioma = $caminho_id = $ordem = $conteudo = $resumo = $palavras_chave = '';
             } else {
                 $mensagem = '<div class="alert alert-danger">Erro ao adicionar teoria: ' . $stmt_insert->error . '</div>';
             }
@@ -1026,7 +1051,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                             <div class="row">
                                 <!-- Campo Nível -->
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-3 mb-3">
                                     <label for="nivel" class="form-label required-field">Nível</label>
                                     <select class="form-select" id="nivel" name="nivel" required>
                                         <option value="">Selecione o nível</option>
@@ -1039,8 +1064,35 @@ document.addEventListener('DOMContentLoaded', function() {
                                     </select>
                                 </div>
 
+                                <!-- Campo Idioma -->
+                                <div class="col-md-3 mb-3">
+                                    <label for="idioma" class="form-label required-field">Idioma</label>
+                                    <select class="form-select" id="idioma" name="idioma" required onchange="filtrarCaminhos()">
+                                        <option value="">Selecione o idioma</option>
+                                        <?php foreach ($idiomas_disponiveis as $idioma_opcao): ?>
+                                            <option value="<?php echo htmlspecialchars($idioma_opcao); ?>" <?php echo (isset($idioma) && $idioma == $idioma_opcao) ? 'selected' : ''; ?>>
+                                                <?php echo htmlspecialchars($idioma_opcao); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+
+                                <!-- Campo Caminho -->
+                                <div class="col-md-3 mb-3">
+                                    <label for="caminho_id" class="form-label">Caminho (Opcional)</label>
+                                    <select class="form-select" id="caminho_id" name="caminho_id">
+                                        <option value="">Selecione o caminho</option>
+                                        <?php foreach ($caminhos_disponiveis as $caminho): ?>
+                                            <option value="<?php echo $caminho['id']; ?>" data-idioma="<?php echo htmlspecialchars($caminho['idioma']); ?>" <?php echo (isset($caminho_id) && $caminho_id == $caminho['id']) ? 'selected' : ''; ?>>
+                                                <?php echo htmlspecialchars($caminho['nome']); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <div class="form-text">Teoria aparecerá apenas neste caminho</div>
+                                </div>
+
                                 <!-- Campo Ordem -->
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-3 mb-3">
                                     <label for="ordem" class="form-label required-field">Ordem de Exibição</label>
                                     <input type="number" class="form-control" id="ordem" name="ordem" value="<?php echo htmlspecialchars($ordem ?? ''); ?>" min="1" placeholder="1" required>
                                     <div class="form-text">Ordem em que a teoria aparecerá na lista</div>
@@ -1510,9 +1562,28 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
+        // Filtrar caminhos por idioma
+        function filtrarCaminhos() {
+            const idiomaSelecionado = document.getElementById('idioma').value;
+            const selectCaminho = document.getElementById('caminho_id');
+            const opcoesCaminho = selectCaminho.querySelectorAll('option[data-idioma]');
+            
+            // Resetar seleção
+            selectCaminho.value = '';
+            
+            opcoesCaminho.forEach(opcao => {
+                if (!idiomaSelecionado || opcao.getAttribute('data-idioma') === idiomaSelecionado) {
+                    opcao.style.display = 'block';
+                } else {
+                    opcao.style.display = 'none';
+                }
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             adicionarBotaoPreview();
             document.querySelector('form').addEventListener('submit', validarFormulario);
+            filtrarCaminhos(); // Filtrar na inicialização
         });
     </script>
 </body>
