@@ -160,7 +160,7 @@ $conteudo_niveis = [
             };
             
             window.confirmarNivelFinal = function(nivel) {
-                window.location.href = `painel.php?idioma=<?php echo htmlspecialchars($idioma_quiz); ?>&nivel_escolhido=${nivel}`;
+                window.location.href = `public/views/painel.php?idioma=<?php echo htmlspecialchars($idioma_quiz); ?>&nivel_escolhido=${nivel}`;
             };
         });
     </script>

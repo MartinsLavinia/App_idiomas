@@ -89,7 +89,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $_SESSION['id_usuario'] = $id_usuario;
                     // Salva o nome do usuário na sessão para personalização no painel
                     $_SESSION['nome_usuario'] = $nome; 
-                    header("Location: quiz.php?idioma=$idioma");
+                    header("Location: ../../quiz.php?idioma=$idioma");
                     exit(); 
                 } else {
                     $erro_cadastro = "Erro ao registrar o progresso: " . $stmt_progresso->error;
