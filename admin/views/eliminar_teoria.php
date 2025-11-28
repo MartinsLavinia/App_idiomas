@@ -2,51 +2,32 @@
 session_start();
 include_once __DIR__ . '/../../conexao.php';
 
-// Verificação de segurança: Garante que apenas administradores logados possam acessar
 if (!isset($_SESSION['id_admin'])) {
     header("Location: login_admin.php");
     exit();
 }
 
-// Verifica se o ID da teoria foi passado via URL
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header("Location: gerenciar_teorias.php");
+    header("Location: gerenciar_teorias.php?status=erro_exclusao");
     exit();
 }
 
-$teoria_id = $_GET['id'];
-
+$teoria_id = (int)$_GET['id'];
 $database = new Database();
 $conn = $database->conn;
 
-// Verifica se a teoria existe antes de tentar excluir
-$sql_verificar = "SELECT id FROM teorias WHERE id = ?";
-$stmt_verificar = $conn->prepare($sql_verificar);
-$stmt_verificar->bind_param("i", $teoria_id);
-$stmt_verificar->execute();
-$resultado = $stmt_verificar->get_result();
-$stmt_verificar->close();
+$sql_delete = "DELETE FROM teorias WHERE id = ?";
+$stmt_delete = $conn->prepare($sql_delete);
+$stmt_delete->bind_param("i", $teoria_id);
 
-if ($resultado->num_rows == 0) {
-    // Teoria não encontrada
-    header("Location: gerenciar_teorias.php");
-    exit();
-}
-
-// Exclui a teoria
-$sql_excluir = "DELETE FROM teorias WHERE id = ?";
-$stmt_excluir = $conn->prepare($sql_excluir);
-$stmt_excluir->bind_param("i", $teoria_id);
-
-if ($stmt_excluir->execute()) {
-    // Sucesso na exclusão
+if ($stmt_delete->execute() && $stmt_delete->affected_rows > 0) {
+    $stmt_delete->close();
+    $database->closeConnection();
     header("Location: gerenciar_teorias.php?status=sucesso_exclusao");
 } else {
-    // Erro na exclusão
+    $stmt_delete->close();
+    $database->closeConnection();
     header("Location: gerenciar_teorias.php?status=erro_exclusao");
 }
-
-$stmt_excluir->close();
-$database->closeConnection();
 exit();
 ?>

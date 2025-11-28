@@ -48,7 +48,12 @@ function handleGetTeorias($conn) {
     $caminho_id = isset($_GET['caminho_id']) ? $_GET['caminho_id'] : null;
 
     // Construir consulta SQL
-    $sql = "SELECT t.id, t.titulo, t.nivel, t.idioma, t.caminho_id, t.ordem, t.resumo, t.palavras_chave, t.data_criacao, c.nome as caminho_nome FROM teorias t LEFT JOIN caminhos_aprendizagem c ON t.caminho_id = c.id WHERE 1=1";
+    $sql = "SELECT t.id, t.titulo, t.nivel, t.idioma_id, t.caminho_id, t.ordem, t.resumo, t.palavras_chave, t.data_criacao, 
+                   i.nome as idioma_nome, c.nome as caminho_nome 
+            FROM teorias t 
+            LEFT JOIN idiomas i ON t.idioma_id = i.id 
+            LEFT JOIN caminhos_aprendizagem c ON t.caminho_id = c.id 
+            WHERE 1=1";
     $params = [];
     $types = "";
 
@@ -59,7 +64,7 @@ function handleGetTeorias($conn) {
     }
 
     if ($idioma) {
-        $sql .= " AND t.idioma = ?";
+        $sql .= " AND i.nome = ?";
         $params[] = $idioma;
         $types .= "s";
     }
@@ -79,7 +84,7 @@ function handleGetTeorias($conn) {
         $types .= "sss";
     }
 
-    $sql .= " ORDER BY t.idioma, c.nome, t.nivel, t.ordem";
+    $sql .= " ORDER BY i.nome, c.nome, t.nivel, t.ordem";
 
     $stmt = $conn->prepare($sql);
     

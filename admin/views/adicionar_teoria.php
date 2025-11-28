@@ -16,15 +16,15 @@ $caminhos_disponiveis = [];
 $database_dados = new Database();
 $conn_dados = $database_dados->conn;
 
-$sql_idiomas = "SELECT nome FROM idiomas ORDER BY nome";
+$sql_idiomas = "SELECT * FROM idiomas ORDER BY id";
 $result_idiomas = $conn_dados->query($sql_idiomas);
 if ($result_idiomas) {
     while ($row = $result_idiomas->fetch_assoc()) {
-        $idiomas_disponiveis[] = $row['nome'];
+        $idiomas_disponiveis[] = $row;
     }
 }
 
-$sql_caminhos = "SELECT id, nome, idioma FROM caminhos_aprendizagem ORDER BY idioma, nome";
+$sql_caminhos = "SELECT * FROM caminhos_aprendizagem ORDER BY id";
 $result_caminhos = $conn_dados->query($sql_caminhos);
 if ($result_caminhos) {
     while ($row = $result_caminhos->fetch_assoc()) {
@@ -37,7 +37,7 @@ $database_dados->closeConnection();
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $titulo = $_POST['titulo'];
     $nivel = $_POST['nivel'];
-    $idioma = $_POST['idioma'];
+    $idioma_id = $_POST['idioma_id'];
     $caminho_id = $_POST['caminho_id'] ?? null;
     $ordem = $_POST['ordem'];
     $conteudo = $_POST['conteudo'];
@@ -45,7 +45,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $palavras_chave = $_POST['palavras_chave'] ?? '';
 
     // Validação simples
-    if (empty($titulo) || empty($nivel) || empty($idioma) || empty($ordem) || empty($conteudo)) {
+    if (empty($titulo) || empty($nivel) || empty($idioma_id) || empty($ordem) || empty($conteudo)) {
         $mensagem = '<div class="alert alert-danger">Por favor, preencha todos os campos obrigatórios.</div>';
     } else {
         $database = new Database();
@@ -55,16 +55,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $conn->set_charset("utf8mb4");
         
         // Insere a nova teoria na tabela
-        $sql_insert = "INSERT INTO teorias (titulo, nivel, idioma, caminho_id, ordem, conteudo, resumo, palavras_chave, data_criacao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+        $sql_insert = "INSERT INTO teorias (titulo, nivel, idioma_id, caminho_id, ordem, conteudo, resumo, palavras_chave, data_criacao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
         $stmt_insert = $conn->prepare($sql_insert);
         
         if ($stmt_insert) {
-            $stmt_insert->bind_param("ssisissss", $titulo, $nivel, $idioma, $caminho_id, $ordem, $conteudo, $resumo, $palavras_chave);
+            $stmt_insert->bind_param("ssiissss", $titulo, $nivel, $idioma_id, $caminho_id, $ordem, $conteudo, $resumo, $palavras_chave);
             
             if ($stmt_insert->execute()) {
                 $mensagem = '<div class="alert alert-success">Teoria adicionada com sucesso!</div>';
                 // Limpar campos após sucesso
-                $titulo = $nivel = $idioma = $caminho_id = $ordem = $conteudo = $resumo = $palavras_chave = '';
+                $titulo = $nivel = $idioma_id = $caminho_id = $ordem = $conteudo = $resumo = $palavras_chave = '';
             } else {
                 $mensagem = '<div class="alert alert-danger">Erro ao adicionar teoria: ' . $stmt_insert->error . '</div>';
             }
@@ -1066,12 +1066,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
                                 <!-- Campo Idioma -->
                                 <div class="col-md-3 mb-3">
-                                    <label for="idioma" class="form-label required-field">Idioma</label>
-                                    <select class="form-select" id="idioma" name="idioma" required onchange="filtrarCaminhos()">
+                                    <label for="idioma_id" class="form-label required-field">Idioma</label>
+                                    <select class="form-select" id="idioma_id" name="idioma_id" required onchange="filtrarCaminhos()">
                                         <option value="">Selecione o idioma</option>
                                         <?php foreach ($idiomas_disponiveis as $idioma_opcao): ?>
-                                            <option value="<?php echo htmlspecialchars($idioma_opcao); ?>" <?php echo (isset($idioma) && $idioma == $idioma_opcao) ? 'selected' : ''; ?>>
-                                                <?php echo htmlspecialchars($idioma_opcao); ?>
+                                            <?php 
+                                            // Tentar diferentes nomes de colunas possíveis
+                                            $nome_idioma = '';
+                                            if (isset($idioma_opcao['nome'])) {
+                                                $nome_idioma = $idioma_opcao['nome'];
+                                            } elseif (isset($idioma_opcao['idioma'])) {
+                                                $nome_idioma = $idioma_opcao['idioma'];
+                                            } elseif (isset($idioma_opcao['language'])) {
+                                                $nome_idioma = $idioma_opcao['language'];
+                                            } else {
+                                                // Se não encontrar, usar a segunda coluna (assumindo que a primeira é ID)
+                                                $valores = array_values($idioma_opcao);
+                                                $nome_idioma = isset($valores[1]) ? $valores[1] : 'Idioma ' . $idioma_opcao['id'];
+                                            }
+                                            ?>
+                                            <option value="<?php echo htmlspecialchars($idioma_opcao['id']); ?>" data-nome="<?php echo htmlspecialchars($nome_idioma); ?>" <?php echo (isset($idioma_id) && $idioma_id == $idioma_opcao['id']) ? 'selected' : ''; ?>>
+                                                <?php echo htmlspecialchars($nome_idioma); ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
@@ -1083,8 +1098,28 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <select class="form-select" id="caminho_id" name="caminho_id">
                                         <option value="">Selecione o caminho</option>
                                         <?php foreach ($caminhos_disponiveis as $caminho): ?>
-                                            <option value="<?php echo $caminho['id']; ?>" data-idioma="<?php echo htmlspecialchars($caminho['idioma']); ?>" <?php echo (isset($caminho_id) && $caminho_id == $caminho['id']) ? 'selected' : ''; ?>>
-                                                <?php echo htmlspecialchars($caminho['nome']); ?>
+                                            <?php 
+                                            // Descobrir qual coluna usar para o idioma do caminho
+                                            $idioma_caminho = $caminho['idioma'] ?? $caminho['language'] ?? '';
+                                            
+                                            // Descobrir qual coluna usar para o nome do caminho - CORRIGIDO
+                                            $nome_caminho = '';
+                                            if (isset($caminho['nome_caminho'])) {
+                                                $nome_caminho = $caminho['nome_caminho'];
+                                            } elseif (isset($caminho['nome'])) {
+                                                $nome_caminho = $caminho['nome'];
+                                            } elseif (isset($caminho['titulo'])) {
+                                                $nome_caminho = $caminho['titulo'];
+                                            } elseif (isset($caminho['name'])) {
+                                                $nome_caminho = $caminho['name'];
+                                            } else {
+                                                // Se não encontrar, usar array_values como fallback
+                                                $valores = array_values($caminho);
+                                                $nome_caminho = isset($valores[2]) ? $valores[2] : (isset($valores[1]) ? $valores[1] : 'Caminho ' . $caminho['id']);
+                                            }
+                                            ?>
+                                            <option value="<?php echo $caminho['id']; ?>" data-idioma="<?php echo htmlspecialchars($idioma_caminho); ?>" <?php echo (isset($caminho_id) && $caminho_id == $caminho['id']) ? 'selected' : ''; ?>>
+                                                <?php echo htmlspecialchars($nome_caminho); ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
@@ -1564,7 +1599,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Filtrar caminhos por idioma
         function filtrarCaminhos() {
-            const idiomaSelecionado = document.getElementById('idioma').value;
+            const idiomaSelect = document.getElementById('idioma_id');
+            const idiomaSelecionado = idiomaSelect.options[idiomaSelect.selectedIndex]?.getAttribute('data-nome');
             const selectCaminho = document.getElementById('caminho_id');
             const opcoesCaminho = selectCaminho.querySelectorAll('option[data-idioma]');
             

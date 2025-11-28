@@ -45,8 +45,8 @@ if ($result_idiomas && $result_idiomas->num_rows > 0) {
     }
 }
 
-// Buscar todos os idiomas que o usuário já estudou
-$sql_idiomas_usuario = "SELECT idioma, nivel, data_inicio, ultima_atividade FROM progresso_usuario WHERE id_usuario = ? ORDER BY ultima_atividade DESC";
+// Buscar todos os idiomas que o usuário já estudou (sem duplicatas)
+$sql_idiomas_usuario = "SELECT DISTINCT idioma, nivel, data_inicio, ultima_atividade FROM progresso_usuario WHERE id_usuario = ? GROUP BY idioma ORDER BY ultima_atividade DESC";
 $stmt_idiomas_usuario = $conn->prepare($sql_idiomas_usuario);
 $stmt_idiomas_usuario->bind_param("i", $id_usuario);
 $stmt_idiomas_usuario->execute();
@@ -1333,6 +1333,10 @@ $database->closeConnection();
             cursor: pointer;
             margin-bottom: 10px;
         }
+        
+        .teorias-preview {
+            min-height: 120px;
+        }
 
         .flashcard-inner {
             position: relative;
@@ -1776,7 +1780,7 @@ $database->closeConnection();
                         <?php if ($tem_outros_idiomas): ?>
                             <li><h6 class="dropdown-header">Meus Outros Idiomas</h6></li>
                             <?php foreach ($idiomas_usuario as $idioma_user): ?>
-                                <?php if ($idioma_user['idioma'] !== $idioma_escolhido): ?>
+                                <?php if ($idioma_user['idioma'] !== $idioma_escolhido && !empty($idioma_user['idioma'])): ?>
                                     <li>
                                         <button type="button" class="dropdown-item" onclick="trocarIdioma('<?php echo htmlspecialchars($idioma_user['idioma']); ?>')">
                                             <i class="fas fa-exchange-alt me-2"></i><?php echo htmlspecialchars($idiomas_display[$idioma_user['idioma']] ?? $idioma_user['idioma']); ?> (<?php echo htmlspecialchars($idioma_user['nivel']); ?>)
@@ -1929,21 +1933,31 @@ $database->closeConnection();
 
                     <!-- Seção Teorias -->
                     <div class="card mb-4">
-                        <div class="card-body">
+                        <div class="card-header">
                             <div class="row align-items-center">
                                 <div class="col-md-8">
                                     <h5 class="card-title mb-2">
                                         <i class="fas fa-book-open me-2" style="color:#ffd700;"></i>
-                                        Teorias e Conceitos
+                                        Teorias e Conceitos - <?php echo htmlspecialchars($idiomas_display[$idioma_escolhido] ?? $idioma_escolhido); ?>
                                     </h5>
-                                    <p class="card-text mb-0" style="color: #fff;">
-                                        Acesse o conteúdo teórico do seu nível atual
+                                    <p class="card-text mb-0">
+                                        Estude a teoria antes de começar os exercícios do nível <?php echo htmlspecialchars($nivel_usuario); ?>
                                     </p>
                                 </div>
                                 <div class="col-md-4 text-end">
-                                    <button class="btn btn-primary w-100 w-md-auto" onclick="abrirTeorias()">
-                                        <i class="fas fa-book me-2"></i>Ver Teorias
+                                    <button class="btn btn-warning w-100 w-md-auto" onclick="abrirTeorias()">
+                                        <i class="fas fa-book me-2"></i>Estudar Teoria
                                     </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="previewTeorias" class="teorias-preview">
+                                <div class="text-center">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Carregando...</span>
+                                    </div>
+                                    <p class="mt-2 text-muted">Carregando teorias disponíveis...</p>
                                 </div>
                             </div>
                         </div>
@@ -2281,7 +2295,7 @@ $database->closeConnection();
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                    <button type="button" class="btn btn-primary" id="btnIniciarExercicios" style="display: none;" onclick="iniciarExerciciosAposTeoria()">
+                    <button type="button" class="btn btn-primary" id="btnIniciarExercicios" style="display: none;">
                         <i class="fas fa-play me-2"></i>Iniciar Exercícios
                     </button>
                 </div>
@@ -2362,6 +2376,22 @@ $database->closeConnection();
         if (typeof carregarPalavras === 'function') {
             carregarPalavras();
         }
+        
+        // Carregar preview das teorias
+        carregarPreviewTeorias();
+        
+        // Inicializar progresso da unidade apenas se houver progresso salvo
+        setTimeout(() => {
+            const unidadeId = 1;
+            const blocosFinalizados = parseInt(localStorage.getItem('blocosFinalizados_' + unidadeId) || '0');
+            const exerciciosEspeciaisFeitos = parseInt(localStorage.getItem('especiaisFeitos_' + unidadeId) || '0');
+            
+            // Só atualizar se houver progresso real
+            if (blocosFinalizados > 0 || exerciciosEspeciaisFeitos > 0) {
+                const progressoInicial = calcularProgressoUnidade(unidadeId);
+                atualizarBarraProgressoUnidade(progressoInicial);
+            }
+        }, 1000);
 
         console.log('Painel inicializado com sucesso');
     });
@@ -2462,16 +2492,15 @@ $database->closeConnection();
             blocoDisponivel = blocosNormais.length;
         }
         
+        // Sistema simples: primeiro bloco sempre disponível, outros desbloqueiam sequencialmente
+        let blocosFinalizados = parseInt(localStorage.getItem('blocosFinalizados_' + unidadeId) || '0');
+        
         // Exibir blocos normais
         blocosNormais.forEach((bloco, index) => {
-            const progresso = bloco.progresso?.progresso_percentual || 0;
-            const concluido = bloco.progresso?.concluido || false;
-            const atividadesConcluidas = bloco.progresso?.atividades_concluidas || 0;
-            const totalAtividades = bloco.progresso?.total_atividades || bloco.total_atividades || 0;
-            
-            const disponivel = index <= blocoDisponivel;
+            const concluido = index < blocosFinalizados;
+            const disponivel = index <= blocosFinalizados;
             const bloqueado = !disponivel;
-            const isNovo = index === blocoDisponivel && !concluido;
+            const progresso = concluido ? 100 : (index === blocosFinalizados ? 50 : 0);
             
             const cardClass = bloqueado ? 'bloco-card-bloqueado' : 
                               concluido ? 'bloco-card-concluido' : 'bloco-card-disponivel';
@@ -2482,12 +2511,10 @@ $database->closeConnection();
                               concluido ? 'badge-concluido' : 'badge-disponivel';
             
             const badgeText = bloqueado ? 'Bloqueado' : 
-                             concluido ? 'Concluído' : 'Disponível';
+                             concluido ? 'Finalizado' : 'Disponível';
             
             const blocoHTML = `
-                <div class="bloco-card ${cardClass}" ${clickHandler}>
-                    ${isNovo ? '<div class="novo-indicator" title="Novo conteúdo!"><i class="fas fa-star"></i></div>' : ''}
-                    
+                <div class="bloco-card ${cardClass}" ${clickHandler} data-bloco-index="${index}">
                     <div class="bloco-header">
                         <div class="bloco-icon-container">
                             <div class="bloco-icon">
@@ -2509,7 +2536,7 @@ $database->closeConnection();
                         <div class="bloco-meta">
                             <span class="bloco-stats">
                                 <i class="fas fa-tasks"></i>
-                                ${atividadesConcluidas}/${totalAtividades} atividades
+                                Bloco ${index + 1}
                             </span>
                         </div>
                         ${!bloqueado ? `
@@ -2530,16 +2557,16 @@ $database->closeConnection();
             container.insertAdjacentHTML('beforeend', blocoHTML);
         });
         
-        // Exibir blocos especiais
-        if (blocosEspeciais.length > 0) {
+        // Exibir blocos especiais (liberados quando todos os normais são concluídos)
+        if (blocosEspeciais.length > 0 && blocosFinalizados >= blocosNormais.length) {
             const especiaisHeader = document.createElement('div');
             especiaisHeader.className = 'blocos-especiais-header';
             especiaisHeader.innerHTML = `
                 <h4 class="especiais-titulo">
                     <i class="fas fa-star me-2" style="color: var(--amarelo-detalhe);"></i>
-                    Conteúdos Especiais
+                    Exercícios Especiais Liberados!
                 </h4>
-                <p class="especiais-descricao">Atividades extras para reforçar seu aprendizado</p>
+                <p class="especiais-descricao">Parabéns! Você desbloqueou conteúdo especial</p>
             `;
             container.appendChild(especiaisHeader);
             
@@ -2685,8 +2712,17 @@ $database->closeConnection();
         blocoAtual = blocoId;
         blocoParaIniciar = { id: blocoId, titulo: tituloBloco };
         
-        // Primeiro verificar se há teoria para este bloco
-        verificarTeoriaDoBloco(blocoId, tituloBloco);
+        // Verificar se é o primeiro bloco - mostrar teorias primeiro
+        const blocosFinalizados = parseInt(localStorage.getItem('blocosFinalizados_1') || '0');
+        
+        if (blocosFinalizados === 0) {
+            // É o primeiro bloco, mostrar teoria obrigatória
+            abrirTeorias();
+            return;
+        }
+        
+        // Para outros blocos, ir direto para exercícios
+        iniciarExerciciosAposTeoria();
     };
     
     // Função para recarregar blocos após completar um exercício
@@ -2698,15 +2734,22 @@ $database->closeConnection();
     
     // Função para verificar se há teoria para o bloco
     function verificarTeoriaDoBloco(blocoId, tituloBloco) {
-        // CORREÇÃO: URL corrigida
+        // Sempre mostrar teoria antes do primeiro bloco
+        const blocosFinalizados = parseInt(localStorage.getItem('blocosFinalizados_1') || '0');
+        
+        if (blocosFinalizados === 0) {
+            // É o primeiro bloco, mostrar teoria obrigatória
+            abrirTeorias();
+            return;
+        }
+        
+        // Para outros blocos, verificar se há teoria específica
         fetch(`../../admin/controller/get_teoria_bloco.php?bloco_id=${blocoId}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success && data.teoria) {
-                    // Há teoria, mostrar primeiro
                     mostrarTeoriaDoBloco(data.teoria, tituloBloco);
                 } else {
-                    // Não há teoria, ir direto para exercícios
                     iniciarExerciciosAposTeoria();
                 }
             })
@@ -2723,6 +2766,10 @@ $database->closeConnection();
         `;
         document.getElementById('conteudoTeoria').innerHTML = formatarConteudoTeoria(teoria.conteudo);
         document.getElementById('btnIniciarExercicios').style.display = 'block';
+        document.getElementById('btnIniciarExercicios').onclick = function() {
+            modalTeoriaConteudo.hide();
+            iniciarExerciciosAposTeoria();
+        };
         modalTeoriaConteudo.show();
     }
     
@@ -3433,8 +3480,99 @@ $database->closeConnection();
             console.error('Erro na requisição de progresso:', error);
         });
     }
+    
+    // Função para finalizar bloco e verificar se deve liberar exercícios especiais
+    function finalizarBlocoEVerificarEspeciais() {
+        if (!blocoAtual) return;
+        
+        // Marcar bloco como finalizado no localStorage
+        const unidadeId = unidadeAtual || 1;
+        const blocosFinalizados = parseInt(localStorage.getItem('blocosFinalizados_' + unidadeId) || '0');
+        localStorage.setItem('blocosFinalizados_' + unidadeId, (blocosFinalizados + 1).toString());
+        
+        // Calcular e atualizar progresso da unidade
+        const novoProgresso = calcularProgressoUnidade(unidadeId);
+        atualizarBarraProgressoUnidade(novoProgresso);
+        
+        const formData = new FormData();
+        formData.append('action', 'finalizar_bloco');
+        formData.append('bloco_id', blocoAtual);
+        formData.append('usuario_id', <?php echo $id_usuario; ?>);
+        
+        fetch('../../admin/controller/progresso_controller.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Bloco finalizado:', data);
+                
+                // Verificar se liberou exercício especial
+                if (data.exercicio_especial_liberado) {
+                    mostrarToast('🌟 Exercício especial liberado!', 'success');
+                }
+                
+                // Verificar se liberou próximo bloco
+                if (data.proximo_bloco_liberado) {
+                    mostrarToast('🔓 Próximo bloco liberado!', 'success');
+                }
+                
+                // Verificar se unidade foi concluída
+                if (data.unidade_concluida) {
+                    mostrarToast('🎉 Unidade concluída! Parabéns!', 'success');
+                }
+            } else {
+                console.error('Erro ao finalizar bloco:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Erro na requisição:', error);
+        });
+    }
+    
+    // Função para finalizar exercício especial
+    function finalizarExercicioEspecial() {
+        const unidadeId = unidadeAtual || 1;
+        const especiaisFeitos = parseInt(localStorage.getItem('especiaisFeitos_' + unidadeId) || '0');
+        localStorage.setItem('especiaisFeitos_' + unidadeId, (especiaisFeitos + 1).toString());
+        
+        // Calcular e atualizar progresso da unidade
+        const novoProgresso = calcularProgressoUnidade(unidadeId);
+        atualizarBarraProgressoUnidade(novoProgresso);
+        
+        mostrarToast('🌟 Exercício especial concluído!', 'success');
+    }
+    
+    // Função para atualizar barra de progresso da unidade
+    function atualizarBarraProgressoUnidade(progressoPercentual) {
+        const progressoBar = document.querySelector('.progresso-fill');
+        const progressoTexto = document.querySelector('.progresso-porcentagem');
+        
+        if (progressoBar) {
+            progressoBar.style.width = progressoPercentual + '%';
+        }
+        
+        if (progressoTexto) {
+            progressoTexto.textContent = progressoPercentual + '%';
+        }
+    }
+    
+    // Função para calcular progresso da unidade
+    function calcularProgressoUnidade(unidadeId) {
+        const blocosFinalizados = parseInt(localStorage.getItem('blocosFinalizados_' + unidadeId) || '0');
+        const exerciciosEspeciaisFeitos = parseInt(localStorage.getItem('especiaisFeitos_' + unidadeId) || '0');
+        
+        // Assumir 3 blocos normais + 1 especial por unidade (ajustar conforme necessário)
+        const totalBlocosNormais = 3;
+        const totalBlocosEspeciais = 1;
+        const totalBlocos = totalBlocosNormais + totalBlocosEspeciais;
+        
+        const progressoAtual = ((blocosFinalizados + exerciciosEspeciaisFeitos) / totalBlocos) * 100;
+        return Math.min(100, Math.round(progressoAtual));
+    }
 
-    // Função para avançar para o próximo exercício - VERSÃO CORRIGIDA
+    // Função para avançar para o próximo exercício - VERSÃO CORRIGIDA COM PROGRESSO
     window.proximoExercicio = function() {
         exercicioIndex++;
         
@@ -3443,6 +3581,13 @@ $database->closeConnection();
         } else {
             // TODOS OS EXERCÍCIOS FORAM CONCLUÍDOS
             console.log('Todos os exercícios do bloco concluídos');
+            
+            // Verificar se é exercício especial ou normal
+            if (exercicioAtual && exercicioAtual.tipo === 'especial') {
+                finalizarExercicioEspecial();
+            } else {
+                finalizarBlocoEVerificarEspeciais();
+            }
             
             mostrarMensagemSucessoBloco();
             
@@ -3874,6 +4019,106 @@ $database->closeConnection();
         .catch(error => console.error('Erro ao atualizar progresso:', error));
     };
 
+    // Função para carregar preview das teorias
+    function carregarPreviewTeorias() {
+        const container = document.getElementById('previewTeorias');
+        if (!container) return;
+        
+        fetch(`controller/get_teorias.php?nivel=<?php echo htmlspecialchars($nivel_usuario ?? 'A1'); ?>&idioma=<?php echo htmlspecialchars($idioma_escolhido ?? 'ingles'); ?>`)
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Teorias carregadas:', data);
+                if (data.success && data.teorias && data.teorias.length > 0) {
+                    exibirPreviewTeorias(data.teorias);
+                } else {
+                    container.innerHTML = `
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Nenhuma teoria encontrada para <?php echo htmlspecialchars($idiomas_display[$idioma_escolhido] ?? $idioma_escolhido); ?> - Nível <?php echo htmlspecialchars($nivel_usuario); ?>.
+                            <br><small class="text-muted mt-2">${data.message || 'As teorias aparecerão aqui quando estiverem disponíveis.'}</small>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar teorias:', error);
+                container.innerHTML = `
+                    <div class="alert alert-warning text-center">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Erro ao carregar teorias: ${error.message}
+                    </div>
+                `;
+            });
+    }
+    
+    // Função para exibir preview das teorias
+    function exibirPreviewTeorias(teorias) {
+        const container = document.getElementById('previewTeorias');
+        
+        if (!teorias || teorias.length === 0) {
+            container.innerHTML = `
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Nenhuma teoria disponível no momento.
+                </div>
+            `;
+            return;
+        }
+        
+        let html = '<div class="row">';
+        teorias.slice(0, 3).forEach((teoria, index) => { // Mostrar apenas as 3 primeiras
+            html += `
+                <div class="col-md-4 mb-3">
+                    <div class="teoria-preview-card" onclick="abrirTeoriaConteudo(${teoria.id}, '${teoria.titulo.replace(/'/g, "\\'")}')"
+                         style="cursor: pointer; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; background: white; transition: all 0.3s ease;">
+                        <div class="teoria-preview-header" style="margin-bottom: 10px;">
+                            <div class="teoria-preview-numero" style="display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro)); color: white; border-radius: 50%; font-weight: 700; font-size: 0.9rem; margin-bottom: 10px;">${index + 1}</div>
+                        </div>
+                        <h6 class="teoria-preview-titulo" style="color: var(--roxo-principal); font-weight: 600; margin-bottom: 8px; font-size: 0.95rem; line-height: 1.3;">${teoria.titulo}</h6>
+                        <p class="teoria-preview-resumo" style="color: #6c757d; font-size: 0.85rem; line-height: 1.4; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${teoria.resumo || 'Clique para ver o conteúdo completo'}</p>
+                        <div class="teoria-preview-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                            <small class="text-muted">Nível <?php echo htmlspecialchars($nivel_usuario); ?></small>
+                            <i class="fas fa-arrow-right" style="color: var(--roxo-principal); font-size: 0.8rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        if (teorias.length > 3) {
+            html += `
+                <div class="col-12 text-center mt-2">
+                    <button class="btn btn-outline-primary" onclick="abrirTeorias()">
+                        <i class="fas fa-plus me-2"></i>Ver todas as ${teorias.length} teorias
+                    </button>
+                </div>
+            `;
+        }
+        
+        html += '</div>';
+        container.innerHTML = html;
+        
+        // Adicionar efeito hover
+        container.querySelectorAll('.teoria-preview-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.boxShadow = '0 4px 12px rgba(106, 13, 173, 0.15)';
+                this.style.borderColor = 'var(--roxo-principal)';
+            });
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = 'none';
+                this.style.borderColor = '#dee2e6';
+            });
+        });
+    }
+    
     // Função para abrir modal de teorias
     window.abrirTeorias = function() {
         const container = document.getElementById('listaTeorias');
@@ -3888,17 +4133,19 @@ $database->closeConnection();
         
         modalTeorias.show();
         
-        // Carregar teorias do nível atual
-        fetch(`../controller/get_teorias.php?nivel=<?php echo htmlspecialchars($nivel_usuario ?? 'A1'); ?>`)
+        // Carregar teorias do nível e idioma atual
+        fetch(`controller/get_teorias.php?nivel=<?php echo htmlspecialchars($nivel_usuario ?? 'A1'); ?>&idioma=<?php echo htmlspecialchars($idioma_escolhido ?? 'ingles'); ?>`)
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
+                console.log('Dados das teorias:', data);
+                if (data.success && data.teorias && data.teorias.length > 0) {
                     exibirTeorias(data.teorias);
                 } else {
                     container.innerHTML = `
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle me-2"></i>
-                            Nenhuma teoria encontrada para seu nível atual.
+                            Nenhuma teoria encontrada para <?php echo htmlspecialchars($idiomas_display[$idioma_escolhido] ?? $idioma_escolhido); ?> - Nível <?php echo htmlspecialchars($nivel_usuario); ?>.
+                            <br><small class="text-muted mt-2">Debug: ${JSON.stringify(data.debug || {})}</small>
                         </div>
                     `;
                 }
@@ -3975,15 +4222,19 @@ $database->closeConnection();
         `;
         document.getElementById('btnIniciarExercicios').style.display = 'none';
         
-        modalTeorias.hide();
+        if (modalTeorias) modalTeorias.hide();
         modalTeoriaConteudo.show();
         
         // Carregar conteúdo da teoria
-        fetch(`../controller/get_teoria_conteudo.php?id=${teoriaId}`)
+        fetch(`controller/get_teoria_conteudo.php?id=${teoriaId}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     document.getElementById('conteudoTeoria').innerHTML = formatarConteudoTeoria(data.teoria.conteudo);
+                    // Mostrar botão para iniciar exercícios se vier do primeiro bloco
+                    if (blocoParaIniciar) {
+                        document.getElementById('btnIniciarExercicios').style.display = 'block';
+                    }
                 } else {
                     document.getElementById('conteudoTeoria').innerHTML = `
                         <div class="alert alert-danger">

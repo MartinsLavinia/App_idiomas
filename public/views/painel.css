@@ -9,6 +9,7 @@
     --cinza-texto: #2c3e50;
     --cinza-claro: #f8f9fa;
     --cinza-borda: #e9ecef;
+    --cinza-borda-hover: #adb5bd;
     --verde-sucesso: #28a745;
     --azul-info: #17a2b8;
     --sombra-suave: 0 4px 20px rgba(106, 13, 173, 0.1);
@@ -16,7 +17,12 @@
     --sombra-forte: 0 12px 40px rgba(106, 13, 173, 0.2);
     --border-radius: 16px;
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --espacamento-lateral: 20px; /* Nova variável para margem lateral */
+    --espacamento-lateral: 20px;
+    --bg-color: #2c3e50;
+    --text-color: #ecf0f1;
+    --hover-bg: #34495e;
+    --accent-color: #3498db;
+    --sidebar-width: 280px;
 }
 
 /* Reset e estilos base */
@@ -613,13 +619,7 @@ html {
 
 
 
-:root {
-    --bg-color: #2c3e50; /* Cinza escuro */
-    --text-color: #ecf0f1; /* Branco/Cinza claro */
-    --hover-bg: #34495e; /* Cinza um pouco mais claro */
-    --accent-color: #3498db; /* Azul vibrante */
-    --sidebar-width: 280px;
-}
+
 
 #myHeader {
     height: 100vh;

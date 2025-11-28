@@ -9,8 +9,12 @@ if (!isset($_SESSION['id_admin'])) {
 
 $mensagem = '';
 
-if (isset($_GET['status']) && $_GET['status'] == 'sucesso_exclusao') {
-    $mensagem = '<div class="alert alert-success">Teoria excluída com sucesso!</div>';
+if (isset($_GET['status'])) {
+    if ($_GET['status'] == 'sucesso_exclusao') {
+        $mensagem = '<div class="alert alert-success">Teoria excluída com sucesso!</div>';
+    } elseif ($_GET['status'] == 'erro_exclusao') {
+        $mensagem = '<div class="alert alert-danger">Erro ao excluir teoria!</div>';
+    }
 }
 
 $database = new Database();
@@ -30,15 +34,15 @@ $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_
 
 // Buscar idiomas disponíveis
 $idiomas_disponiveis = [];
-$sql_idiomas = "SELECT nome FROM idiomas ORDER BY nome";
+$sql_idiomas = "SELECT * FROM idiomas ORDER BY id";
 $result_idiomas = $conn->query($sql_idiomas);
 if ($result_idiomas) {
     while ($row = $result_idiomas->fetch_assoc()) {
-        $idiomas_disponiveis[] = $row['nome'];
+        $idiomas_disponiveis[] = $row;
     }
 }
 
-$sql_teorias = "SELECT id, titulo, nivel, idioma, ordem, data_criacao FROM teorias ORDER BY idioma, nivel, ordem";
+$sql_teorias = "SELECT * FROM teorias ORDER BY nivel, ordem";
 $stmt_teorias = $conn->prepare($sql_teorias);
 $stmt_teorias->execute();
 $teorias = $stmt_teorias->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -477,48 +481,73 @@ $database->closeConnection();
     }
 
 
-    /* Botão Editar - versão minimalista */
+    /* Botão Editar - versão corrigida */
     .btn-primary {
-        background: transparent;
-        color: var(--roxo-principal);
-        border: 2px solid #6a0dad;
+        background: transparent !important;
+        color: var(--roxo-principal) !important;
+        border: 2px solid #6a0dad !important;
         font-weight: 600;
-        padding: 8px 12px;
+        padding: 6px 12px;
         border-radius: 6px;
-        position: relative;
-        transition: background 0.12s ease, color 0.12s ease, transform 0.12s ease;
+        transition: all 0.2s ease;
+        text-decoration: none !important;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
+        pointer-events: auto !important;
+        z-index: 10;
+        white-space: nowrap;
     }
 
     .btn-primary:hover {
-        background: rgba(106, 13, 173, 0.06);
-        color: var(--roxo-principal);
-        border: 2px solid #6a0dad;
+        background: rgba(106, 13, 173, 0.1) !important;
+        color: var(--roxo-principal) !important;
+        border: 2px solid #6a0dad !important;
         transform: translateY(-1px);
+        text-decoration: none !important;
+        box-shadow: 0 2px 8px rgba(106, 13, 173, 0.2);
     }
 
-    /* Botão Eliminar - Efeito de pulsação vermelha */
+    .btn-primary:focus,
+    .btn-primary:active {
+        color: var(--roxo-principal) !important;
+        text-decoration: none !important;
+        outline: 2px solid var(--roxo-principal);
+        outline-offset: 2px;
+        box-shadow: 0 0 0 0.2rem rgba(106, 13, 173, 0.25);
+    }
+
+    /* Botão Eliminar - versão corrigida */
     .btn-danger {
-        /* refinado: aviso sem ser agressivo, formato pill */
-        background: rgba(220, 53, 69, 0.06);
-        color: #8a1820; /* tom menos saturado */
-        /* borda fina e cor firme */
-        border: 2px solid #c82333;
-        box-sizing: border-box;
-        font-weight: 700;
+        background: rgba(220, 53, 69, 0.1) !important;
+        color: #dc3545 !important;
+        border: 2px solid #dc3545 !important;
+        font-weight: 600;
         padding: 6px 12px;
-        border-radius: 999px;
-        transition: transform 0.14s ease, box-shadow 0.14s ease, background 0.12s ease;
-        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.04);
+        border-radius: 6px;
+        transition: all 0.2s ease;
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: 5px;
+        cursor: pointer;
+        white-space: nowrap;
     }
 
     .btn-danger:hover {
-        background: rgba(220, 53, 69, 0.12);
-        color: #7a151b;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(220, 53, 69, 0.08);
+        background: rgba(220, 53, 69, 0.2) !important;
+        color: #dc3545 !important;
+        border: 2px solid #dc3545 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+    }
+
+    .btn-danger:focus,
+    .btn-danger:active {
+        color: #dc3545 !important;
+        outline: 2px solid #dc3545;
+        outline-offset: 2px;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
     }
 
     .table {
@@ -558,6 +587,30 @@ $database->closeConnection();
 
     .table-hover tbody tr:hover {
         background-color: rgba(106, 13, 173, 0.1);
+    }
+    
+    /* Garantir que os botões sejam clicáveis */
+    .table tbody td {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .table tbody td .btn-group {
+        position: relative;
+        z-index: 10;
+    }
+    
+    .table tbody td .btn {
+        position: relative;
+        z-index: 11;
+        pointer-events: auto !important;
+        cursor: pointer !important;
+    }
+    
+    /* Evitar conflitos de hover na linha */
+    .table tbody tr:hover .btn {
+        pointer-events: auto !important;
+        cursor: pointer !important;
     }
 
     .alert {
@@ -619,9 +672,21 @@ $database->closeConnection();
     }
 
     .btn-group-sm .btn {
-        padding: 0.25rem 0.5rem;
+        padding: 0.375rem 0.75rem !important;
         font-size: 0.875rem;
-        border-radius: 0.3rem;
+        border-radius: 0.375rem;
+        min-width: auto;
+        white-space: nowrap;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 5px;
+    }
+
+    .btn-group .btn {
+        margin-right: 0;
+        border-radius: 0.375rem !important;
     }
 
     /* Otimização da visualização da tabela */
@@ -669,8 +734,14 @@ $database->closeConnection();
         }
 
         .btn-group-sm .btn {
-            padding: 0.2rem 0.4rem;
+            padding: 0.25rem 0.5rem !important;
             font-size: 0.8rem;
+            min-width: 70px;
+        }
+
+        .btn-group {
+            flex-direction: column;
+            gap: 3px;
         }
 
         .teorias-table {
@@ -684,8 +755,9 @@ $database->closeConnection();
         }
         
         .btn-sm {
-            padding: 0.25rem 0.5rem;
+            padding: 0.25rem 0.5rem !important;
             font-size: 0.75rem;
+            min-width: 65px;
         }
         
         .sidebar .list-group-item {
@@ -756,6 +828,10 @@ $database->closeConnection();
 }
 
 /* Modal de Confirmação de Exclusão */
+#confirmDeleteModal {
+    z-index: 1055;
+}
+
 #confirmDeleteModal .modal-content {
     border: none;
     border-radius: 10px;
@@ -940,12 +1016,6 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="page-header flex-column flex-sm-row">
                 <h2 class="mb-2 mb-sm-0"><i class="fas fa-book-open"></i> Gerenciar Teorias</h2>
                 <div class="action-buttons">
-                    <select class="form-select me-2" id="filtroIdioma" style="width: auto; display: inline-block;">
-                        <option value="">Todos os idiomas</option>
-                        <?php foreach ($idiomas_disponiveis as $idioma): ?>
-                            <option value="<?php echo htmlspecialchars($idioma); ?>"><?php echo htmlspecialchars($idioma); ?></option>
-                        <?php endforeach; ?>
-                    </select>
                     <a href="adicionar_teoria.php" class="btn btn-warning">
                         <i class="fas fa-plus-circle"></i> Adicionar Nova Teoria
                     </a>
@@ -962,7 +1032,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <th>ID</th>
                                 <th>Título</th>
                                 <th>Nível</th>
-                                <th>Idioma</th>
                                 <th>Ordem</th>
                                 <th>Data de Criação</th>
                                 <th>Ações</th>
@@ -971,26 +1040,43 @@ document.addEventListener('DOMContentLoaded', function() {
                         <tbody>
                             <?php if (!empty($teorias)): ?>
                                 <?php foreach ($teorias as $teoria): ?>
-                                    <tr data-idioma="<?php echo htmlspecialchars($teoria['idioma'] ?? ''); ?>">
+                                    <?php 
+                                    // Usar a mesma lógica para o filtro
+                                    $nome_idioma_filtro = 'N/A';
+                                    if (!empty($teoria['nome'])) {
+                                        $nome_idioma_filtro = $teoria['nome'];
+                                    } elseif (!empty($teoria['idioma'])) {
+                                        $nome_idioma_filtro = $teoria['idioma'];
+                                    } elseif (!empty($teoria['language'])) {
+                                        $nome_idioma_filtro = $teoria['language'];
+                                    }
+                                    ?>
+                                    <tr>
                                         <td><?php echo htmlspecialchars($teoria['id']); ?></td>
                                         <td class="col-titulo" title="<?php echo htmlspecialchars($teoria['titulo']); ?>"><?php echo htmlspecialchars($teoria['titulo']); ?></td>
                                         <td>
                                             <span class="badge bg-primary"><?php echo htmlspecialchars($teoria['nivel']); ?></span>
                                         </td>
-                                        <td>
-                                            <span class="badge bg-success"><?php echo htmlspecialchars($teoria['idioma'] ?? 'N/A'); ?></span>
-                                        </td>
                                         <td><?php echo htmlspecialchars($teoria['ordem']); ?></td>
                                         <td class="col-data"><?php echo htmlspecialchars(date('d/m/Y H:i', strtotime($teoria['data_criacao']))); ?></td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <a href="editar_teoria.php?id=<?php echo htmlspecialchars($teoria['id']); ?>" class="btn btn-primary">
+                                        <td class="text-center">
+                                            <div class="btn-group btn-group-sm d-flex justify-content-center" role="group" style="gap: 5px;">
+                                                <a href="editar_teoria.php?id=<?php echo htmlspecialchars($teoria['id']); ?>" 
+                                                   class="btn btn-primary btn-sm" 
+                                                   style="text-decoration: none !important; pointer-events: auto !important;"
+                                                   title="Editar teoria"
+                                                   onclick="console.log('Clique no editar - ID: <?php echo $teoria['id']; ?>');">
                                                     <i class="fas fa-edit"></i> Editar
                                                 </a>
-                                                <button type="button" class="btn btn-danger delete-btn" 
-                                                        data-bs-toggle="modal" data-bs-target="#confirmDeleteModal"
+                                                <button type="button" 
+                                                        class="btn btn-danger btn-sm delete-btn" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#confirmDeleteModal"
                                                         data-id="<?php echo htmlspecialchars($teoria['id']); ?>"
-                                                        data-nome="<?php echo htmlspecialchars($teoria['titulo']); ?>">
+                                                        data-nome="<?php echo htmlspecialchars($teoria['titulo']); ?>"
+                                                        title="Excluir teoria"
+                                                        onclick="console.log('Clique no excluir - ID: <?php echo $teoria['id']; ?>');"
+                                                        style="pointer-events: auto !important;">
                                                     <i class="fas fa-trash"></i> Excluir
                                                 </button>
                                             </div>
@@ -999,7 +1085,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="7" class="text-center py-4">
+                                    <td colspan="6" class="text-center py-4">
                                         <div class="empty-state">
                                             <i class="fas fa-book-open text-muted mb-3"></i>
                                             <p class="text-muted mb-0">Nenhuma teoria encontrada.</p>
@@ -1040,34 +1126,73 @@ document.addEventListener('DOMContentLoaded', function() {
             const deleteButtons = document.querySelectorAll('.delete-btn');
             const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
             const itemNome = document.getElementById('itemNome');
-            const filtroIdioma = document.getElementById('filtroIdioma');
-
-            deleteButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const id = this.getAttribute('data-id');
-                    const nome = this.getAttribute('data-nome');
-                    itemNome.textContent = `"${nome}"`;
-                    confirmDeleteBtn.href = `eliminar_teoria.php?id=${id}`;
-                });
-            });
-
-            // Filtro por idioma
-            if (filtroIdioma) {
-                filtroIdioma.addEventListener('change', function() {
-                    const idiomaFiltro = this.value;
-                    const linhas = document.querySelectorAll('tbody tr[data-idioma]');
-                    
-                    linhas.forEach(linha => {
-                        const idioma = linha.getAttribute('data-idioma');
-                        if (idiomaFiltro === '' || idioma === idiomaFiltro) {
-                            linha.style.display = '';
-                        } else {
-                            linha.style.display = 'none';
+            // Configurar botões de exclusão
+            function setupDeleteButtons() {
+                const buttons = document.querySelectorAll('.delete-btn');
+                buttons.forEach(button => {
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        const id = this.getAttribute('data-id');
+                        const nome = this.getAttribute('data-nome');
+                        
+                        console.log('Botão excluir clicado - ID:', id, 'Nome:', nome);
+                        
+                        if (itemNome && confirmDeleteBtn) {
+                            itemNome.textContent = `"${nome}"`;
+                            confirmDeleteBtn.href = `eliminar_teoria.php?id=${id}`;
+                            
+                            // Forçar abertura do modal
+                            const modal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+                            modal.show();
                         }
                     });
                 });
             }
+            
+            // Configurar inicialmente
+            setupDeleteButtons();
+            
+            // Garantir que o modal funcione
+            const confirmModal = document.getElementById('confirmDeleteModal');
+            if (confirmModal) {
+                confirmModal.addEventListener('show.bs.modal', function(e) {
+                    console.log('Modal de confirmação sendo exibido');
+                });
+                
+                confirmModal.addEventListener('hidden.bs.modal', function(e) {
+                    console.log('Modal de confirmação foi fechado');
+                });
+            }
+            
+            // Adicionar evento de clique no botão de confirmação
+            if (confirmDeleteBtn) {
+                confirmDeleteBtn.addEventListener('click', function(e) {
+                    console.log('Redirecionando para:', this.href);
+                    // O link já está configurado, deixar o comportamento padrão
+                });
+            }
+            
+            // Auto-hide mensagens após 5 segundos
+            const alertMessages = document.querySelectorAll('.alert');
+            alertMessages.forEach(alert => {
+                setTimeout(() => {
+                    alert.style.transition = 'opacity 0.5s ease';
+                    alert.style.opacity = '0';
+                    setTimeout(() => alert.remove(), 500);
+                }, 5000);
+            });
         });
+        
+        // Função para testar botões (pode ser chamada no console)
+        function testarBotoes() {
+            console.log('=== TESTE DOS BOTÕES ===');
+            console.log('Botões de edição:', document.querySelectorAll('a.btn-primary'));
+            console.log('Botões de exclusão:', document.querySelectorAll('.delete-btn'));
+            console.log('Modal de confirmação:', document.getElementById('confirmDeleteModal'));
+            console.log('Botão de confirmação:', document.getElementById('confirmDeleteBtn'));
+        }
     </script>
 
     <div vw class="enabled">
@@ -1480,6 +1605,10 @@ document.addEventListener('DOMContentLoaded', function() {
         .pause-animations * {
             animation-play-state: paused !important;
             transition: none !important;
+        }
+        
+        .pause-animations a {
+            pointer-events: auto !important;
         }
 
         @import url('https://fonts.googleapis.com/css2?family=Open+Dyslexic&display=swap');

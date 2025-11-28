@@ -1,6 +1,8 @@
 <?php
 include_once __DIR__ . '/../models/AdminManager.php'; 
 
+$erro_login = '';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nome_usuario = $_POST['nome_usuario'];
     $senha = $_POST['senha'];
@@ -12,7 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         header("Location: gerenciar_caminho.php");
         exit();
     } else {
-        echo "Nome de usuário ou senha incorretos.";
+        $erro_login = 'Nome de usuário ou senha incorretos.';
     }
 
     $database->closeConnection();
@@ -279,6 +281,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .links-container a:hover {
             color: #fde047;
         }
+
+        .error-message {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            color: #dc3545;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
     </style>
 </head>
 <body>
@@ -301,6 +316,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <img src="../../imagens/logo-idiomas.png" alt="Logo" style="width: 150px; display: block; margin: 0 auto 20px auto;">
         <h2>Área do Administrador</h2>
         <p>Faça login na sua conta administrativa</p>
+
+        <?php if (!empty($erro_login)): ?>
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i> <?php echo htmlspecialchars($erro_login); ?>
+            </div>
+        <?php endif; ?>
 
         <form action="login_admin.php" method="POST" id="formLogin">
             <div class="form-grid">

@@ -38,10 +38,39 @@ $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_
 
 // Função para adicionar exercício especial na tabela exercicios_especiais
 function adicionarExercicioEspecial($conn, $caminhoId, $pergunta, $conteudo) {
-    $sql = "INSERT INTO exercicios_especiais (titulo, conteudo, url_media, pergunta) VALUES (?, ?, '', ?)";
+    // Criar um bloco dummy se necessário
+    $sql_check = "SELECT id FROM blocos_atividades LIMIT 1";
+    $stmt_check = $conn->prepare($sql_check);
+    $stmt_check->execute();
+    $bloco_existente = $stmt_check->get_result()->fetch_assoc();
+    $stmt_check->close();
+    
+    if (!$bloco_existente) {
+        // Buscar uma unidade para criar o bloco
+        $sql_unidade = "SELECT id FROM unidades LIMIT 1";
+        $stmt_unidade = $conn->prepare($sql_unidade);
+        $stmt_unidade->execute();
+        $unidade = $stmt_unidade->get_result()->fetch_assoc();
+        $stmt_unidade->close();
+        
+        if ($unidade) {
+            $sql_bloco = "INSERT INTO blocos_atividades (id_unidade) VALUES (?)";
+            $stmt_bloco = $conn->prepare($sql_bloco);
+            $stmt_bloco->bind_param("i", $unidade['id']);
+            $stmt_bloco->execute();
+            $id_bloco = $conn->insert_id;
+            $stmt_bloco->close();
+        } else {
+            return false;
+        }
+    } else {
+        $id_bloco = $bloco_existente['id'];
+    }
+    
+    $sql = "INSERT INTO exercicios_especiais (id_bloco, titulo, conteudo, pergunta) VALUES (?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     if ($stmt) {
-        $stmt->bind_param("sss", $pergunta, $conteudo, $pergunta);
+        $stmt->bind_param("isss", $id_bloco, $pergunta, $conteudo, $pergunta);
         if ($stmt->execute()) {
             $exercicio_id = $conn->insert_id;
             $stmt->close();
@@ -67,12 +96,15 @@ if (!$caminho) {
     exit();
 }
 
+
+
 // Variáveis para pré-preencher o formulário
 $post_pergunta = $_POST["pergunta"] ?? '';
 $post_link_video = $_POST["link_video"] ?? '';
 $post_letra_musica = $_POST["letra_musica"] ?? '';
 $post_letra = $_POST["letra"] ?? '';
 $post_tipo_exercicio = $_POST["tipo_exercicio"] ?? 'observar';
+
 
 // Processar exclusão de exercício especial
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['excluir_exercicio'])) {
@@ -133,6 +165,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['editar_exercicio'])) 
     $letra_musica = $_POST["letra_musica"] ?? null;
     $letra = $_POST["letra"] ?? null;
     $tipo_exercicio = $_POST["tipo_exercicio"] ?? 'observar';
+
     
     // Dados específicos por tipo
     $alternativas = [];
@@ -164,7 +197,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['editar_exercicio'])) 
         
         $exercicio_id = adicionarExercicioEspecial($conn, $caminho_id, $pergunta, $conteudo);
         if ($exercicio_id) {
-            $_SESSION['mensagem_sucesso'] = 'Exercício especial adicionado com sucesso! Ele aparecerá como um bloco independente no caminho de aprendizagem.';
+            $_SESSION['mensagem_sucesso'] = 'Exercício especial adicionado com sucesso!';
             header("Location: exercicios_especiais.php?caminho_id=" . $caminho_id);
             exit();
         } else {
@@ -856,6 +889,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             <textarea class="form-control" id="pergunta" name="pergunta" required><?php echo htmlspecialchars($post_pergunta); ?></textarea>
                         </div>
 
+
+
                         <!-- Campos para Tipo Especial -->
                         <div class="subtipo-campos">
                             <h5>Configuração - Exercício Especial (Vídeo/Áudio)</h5>
@@ -949,7 +984,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <table class="table table-striped">
                                 <thead>
                                     <tr>
-                                        <th>Ordem</th>
+                                        <th>ID</th>
                                         <th>Título</th>
                                         <th>Tipo</th>
                                         <th>Ações</th>
@@ -964,9 +999,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                             </td>
                                         </tr>
                                     <?php else: ?>
-                                        <?php foreach ($exercicios_especiais as $index => $exercicio): ?>
+                                        <?php foreach ($exercicios_especiais as $exercicio): ?>
                                             <tr>
-                                                <td><?php echo $index + 1; ?></td>
+                                                <td><?php echo $exercicio['id']; ?></td>
                                                 <td><?php echo htmlspecialchars($exercicio['titulo']); ?></td>
                                                 <td>
                                                     <span class="badge bg-primary">

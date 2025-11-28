@@ -34,11 +34,21 @@ $foto_admin = !empty($admin_foto['foto_perfil']) ? '../../' . $admin_foto['foto_
 
 // Buscar idiomas disponíveis
 $idiomas_disponiveis = [];
-$sql_idiomas = "SELECT nome FROM idiomas ORDER BY nome";
+$sql_idiomas = "SELECT * FROM idiomas ORDER BY id";
 $result_idiomas = $conn->query($sql_idiomas);
 if ($result_idiomas) {
     while ($row = $result_idiomas->fetch_assoc()) {
-        $idiomas_disponiveis[] = $row['nome'];
+        $idiomas_disponiveis[] = $row;
+    }
+}
+
+// Buscar caminhos disponíveis
+$caminhos_disponiveis = [];
+$sql_caminhos = "SELECT * FROM caminhos_aprendizagem ORDER BY id";
+$result_caminhos = $conn->query($sql_caminhos);
+if ($result_caminhos) {
+    while ($row = $result_caminhos->fetch_assoc()) {
+        $caminhos_disponiveis[] = $row;
     }
 }
 
@@ -46,22 +56,23 @@ if ($result_idiomas) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $titulo = $_POST['titulo'];
     $nivel = $_POST['nivel'];
-    $idioma = $_POST['idioma'];
+    $idioma_id = $_POST['idioma_id'];
+    $caminho_id = $_POST['caminho_id'] ?? null;
     $ordem = $_POST['ordem'];
     $conteudo = $_POST['conteudo'];
     $resumo = $_POST['resumo'] ?? '';
     $palavras_chave = $_POST['palavras_chave'] ?? '';
 
     // Validação simples
-    if (empty($titulo) || empty($nivel) || empty($idioma) || empty($ordem) || empty($conteudo)) {
+    if (empty($titulo) || empty($nivel) || empty($idioma_id) || empty($ordem) || empty($conteudo)) {
         $mensagem = '<div class="alert alert-danger">Por favor, preencha todos os campos obrigatórios.</div>';
     } else {
         // Atualiza a teoria na tabela
-        $sql_update = "UPDATE teorias SET titulo = ?, nivel = ?, idioma = ?, ordem = ?, conteudo = ?, resumo = ?, palavras_chave = ? WHERE id = ?";
+        $sql_update = "UPDATE teorias SET titulo = ?, nivel = ?, idioma_id = ?, caminho_id = ?, ordem = ?, conteudo = ?, resumo = ?, palavras_chave = ? WHERE id = ?";
         $stmt_update = $conn->prepare($sql_update);
         
         if ($stmt_update) {
-            $stmt_update->bind_param("ssissssi", $titulo, $nivel, $idioma, $ordem, $conteudo, $resumo, $palavras_chave, $teoria_id);
+            $stmt_update->bind_param("ssiiiissi", $titulo, $nivel, $idioma_id, $caminho_id, $ordem, $conteudo, $resumo, $palavras_chave, $teoria_id);
             
             if ($stmt_update->execute()) {
                 $mensagem = '<div class="alert alert-success" id="mensagemSucesso">Teoria atualizada com sucesso!</div>';
@@ -76,7 +87,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 // Busca os dados da teoria para edição
-$sql_teoria = "SELECT titulo, nivel, idioma, ordem, conteudo, resumo, palavras_chave FROM teorias WHERE id = ?";
+$sql_teoria = "SELECT titulo, nivel, idioma_id, caminho_id, ordem, conteudo, resumo, palavras_chave FROM teorias WHERE id = ?";
 $stmt_teoria = $conn->prepare($sql_teoria);
 $stmt_teoria->bind_param("i", $teoria_id);
 $stmt_teoria->execute();
@@ -104,376 +115,8 @@ if (!$teoria) {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="../../imagens/mini-esquilo.png">
 
-    <style>
-    <?php include __DIR__ . '/gerenciamento.css'; ?>
-    
-    /* Estilos específicos para a página de edição */
-    .form-container {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 15px;
-        padding: 30px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(106, 13, 173, 0.1);
-        transition: all 0.3s ease;
-        animation: slideInUp 0.5s ease-out;
-    }
-
-    .form-container:hover {
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    }
-
-    .form-label {
-        font-weight: 500;
-        color: var(--roxo-principal);
-        margin-bottom: 8px;
-    }
-
-    .form-control, .form-select {
-        border: 1px solid var(--cinza-medio);
-        border-radius: 10px;
-        padding: 10px 15px;
-        transition: all 0.3s ease;
-        background-color: var(--branco);
-    }
-
-    .form-control:focus, .form-select:focus {
-        border-color: var(--roxo-principal);
-        box-shadow: 0 0 0 0.2rem rgba(106, 13, 173, 0.15);
-        transform: translateY(-2px);
-    }
-
-    .form-text {
-        color: var(--cinza-escuro);
-        font-size: 0.875rem;
-        margin-top: 5px;
-    }
-
-    /* Header da página */
-    .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 30px;
-        padding-bottom: 15px;
-        border-bottom: 2px solid rgba(106, 13, 173, 0.1);
-        animation: slideInDown 0.5s ease-out;
-    }
-
-    .page-header-icon {
-        /* deixar o ícone no mesmo lugar, mas sem cor de fundo e sem borda/sombra */
-        background: transparent;
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 15px;
-        box-shadow: none;
-        border: none;
-    }
-
-    .page-header-icon i {
-        /* ícone em preto para contraste e legibilidade */
-        color: var(--preto-texto) !important;
-        font-size: 1.5rem;
-    }
-
-    .page-header h1 {
-        display: flex;
-        align-items: center;
-        margin-bottom: 0;
-        color: var(--preto-texto);
-        font-weight: 700;
-        font-size: 1.8rem;
-    }
-
-    /* Botões específicos */
-    .btn-primary {
-        background: linear-gradient(135deg, var(--roxo-principal), var(--roxo-escuro));
-        border: none;
-        color: var(--branco);
-        font-weight: 600;
-        padding: 12px 30px;
-        border-radius: 10px;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(106, 13, 173, 0.3);
-    }
-
-    .btn-primary:hover {
-        background: linear-gradient(135deg, var(--roxo-escuro), var(--roxo-principal));
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(106, 13, 173, 0.4);
-        color: var(--branco);
-    }
-
-    .btn-secondary {
-        background: var(--cinza-escuro);
-        border: none;
-        color: var(--branco);
-        font-weight: 600;
-        padding: 12px 30px;
-        border-radius: 10px;
-        transition: all 0.3s ease;
-    }
-
-    .btn-secondary:hover {
-        background: #5a6268;
-        transform: translateY(-2px);
-        color: var(--branco);
-    }
-
-    /* Área do editor TinyMCE */
-    .tox-tinymce {
-        border-radius: 10px !important;
-        border: 1px solid var(--cinza-medio) !important;
-        transition: all 0.3s ease;
-    }
-
-    .tox-tinymce:focus-within {
-        border-color: var(--roxo-principal) !important;
-        box-shadow: 0 0 0 0.2rem rgba(106, 13, 173, 0.15) !important;
-    }
-
-    /* Grupo de botões de ação */
-    .action-buttons {
-        display: flex;
-        gap: 15px;
-        justify-content: flex-start;
-        align-items: center;
-        margin-top: 30px;
-        padding-top: 20px;
-        border-top: 1px solid rgba(0, 0, 0, 0.1);
-    }
-
-    /* Campos obrigatórios */
-    .required-field::after {
-        content: " *";
-        color: #dc3545;
-    }
-
-    /* Ajustes para campos específicos */
-    #resumo {
-        resize: vertical;
-        min-height: 100px;
-    }
-
-    #palavras_chave {
-        background-color: var(--cinza-claro);
-    }
-
-    /* Responsividade específica */
-    @media (max-width: 768px) {
-        .form-container {
-            padding: 20px;
-            margin: 10px;
-        }
-        
-        .page-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 15px;
-        }
-        
-        .page-header h1 {
-            font-size: 1.5rem;
-        }
-        
-        .action-buttons {
-            flex-direction: column;
-            width: 100%;
-        }
-        
-        .action-buttons .btn {
-            width: 100%;
-            justify-content: center;
-        }
-        
-        .form-control, .form-select {
-            padding: 12px 15px;
-        }
-    }
-
-    @media (max-width: 576px) {
-        .form-container {
-            padding: 15px;
-            margin: 5px;
-        }
-        
-        .page-header-icon {
-            width: 40px;
-            height: 40px;
-        }
-        
-        .page-header-icon i {
-            font-size: 1.2rem;
-        }
-        
-        .page-header h1 {
-            font-size: 1.3rem;
-        }
-    }
-
-    /* Estados de loading */
-    .btn-loading {
-        position: relative;
-        color: transparent !important;
-    }
-
-    .btn-loading::after {
-        content: '';
-        position: absolute;
-        width: 20px;
-        height: 20px;
-        top: 50%;
-        left: 50%;
-        margin-left: -10px;
-        margin-top: -10px;
-        border: 2px solid transparent;
-        border-top-color: currentColor;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-
-    .btn-back {
-            /* Fundo translúcido suave com tom roxo e texto roxo visível */
-            background: rgba(106, 13, 173, 0.06);
-            border: 2px solid rgba(106, 13, 173, 0.15);
-            color: var(--roxo-principal);
-            padding: 0.6rem 1.5rem;
-            border-radius: 25px;
-            transition: all 0.25s ease;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            backdrop-filter: blur(6px); /* deixa aspecto translúcido mais agradável sobre imagens */
-        }
-
-        .btn-back:hover {
-            background: rgba(106, 13, 173, 0.12);
-            color: var(--roxo-escuro);
-            border-color: rgba(106, 13, 173, 0.25);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(106, 13, 173, 0.12);
-        }
-
-        .btn-secondary {
-            background: rgba(33, 37, 41, 0.08);
-            border: 1.5px solid var(--preto-texto);
-            color: var(--preto-texto);
-            padding: 0.75rem 2rem;
-            border-radius: 6px;
-            font-weight: 600;
-            transition: background 0.2s, color 0.2s, border 0.2s, transform 0.2s;
-            box-shadow: none;
-        }
-
-        .btn-secondary:hover, .btn-secondary:focus {
-            background: rgba(33, 37, 41, 0.18);
-            color: var(--preto-texto);
-            transform: translateY(-2px) scale(1.03);
-            outline: none;
-        }
-
-        .btn-secondary:active {
-            background: rgba(33, 37, 41, 0.28);
-            color: var(--preto-texto);
-            border-color: var(--roxo-escuro);
-            transform: scale(0.98);
-        }
-
-        /* Estilos para Tópicos */
-        .topico-item {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            position: relative;
-        }
-
-        .topico-header {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .topico-numero {
-            background: var(--roxo-principal);
-            color: white;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 0.9rem;
-        }
-
-        .btn-remover-topico {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 25px;
-            height: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8rem;
-            cursor: pointer;
-        }
-
-        .tabela-container {
-            background: #fff;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 1rem;
-            margin: 1rem 0;
-        }
-
-        .tabela-editor {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .tabela-editor th, .tabela-editor td {
-            border: 1px solid #dee2e6;
-            padding: 8px;
-            text-align: left;
-        }
-
-        .tabela-editor th {
-            background: #e9ecef;
-            font-weight: 600;
-        }
-
-        .tabela-editor input {
-            border: none;
-            width: 100%;
-            padding: 4px;
-            background: transparent;
-        }
-
-        .tabela-controls {
-            margin-top: 0.5rem;
-            display: flex;
-            gap: 0.5rem;
-        }
-
-    </style>
+    <link rel="stylesheet" href="gerenciamento.css">
+    <link rel="stylesheet" href="editar_teoria.css">
 </head>
 <body>
 
@@ -629,16 +272,64 @@ document.addEventListener('DOMContentLoaded', function() {
                             </select>
                         </div>
                         <div class="col-md-4">
-                            <label for="idioma" class="form-label required-field">Idioma</label>
-                            <select class="form-select" id="idioma" name="idioma" required>
+                            <label for="idioma_id" class="form-label required-field">Idioma</label>
+                            <select class="form-select" id="idioma_id" name="idioma_id" required>
                                 <option value="">Selecione o idioma</option>
                                 <?php foreach ($idiomas_disponiveis as $idioma_opcao): ?>
-                                    <option value="<?php echo htmlspecialchars($idioma_opcao); ?>" <?php echo (isset($teoria['idioma']) && $teoria['idioma'] == $idioma_opcao) ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($idioma_opcao); ?>
+                                    <?php 
+                                    // Tentar diferentes nomes de colunas possíveis
+                                    $nome_idioma = '';
+                                    if (isset($idioma_opcao['nome'])) {
+                                        $nome_idioma = $idioma_opcao['nome'];
+                                    } elseif (isset($idioma_opcao['idioma'])) {
+                                        $nome_idioma = $idioma_opcao['idioma'];
+                                    } elseif (isset($idioma_opcao['language'])) {
+                                        $nome_idioma = $idioma_opcao['language'];
+                                    } else {
+                                        // Se não encontrar, usar a segunda coluna (assumindo que a primeira é ID)
+                                        $valores = array_values($idioma_opcao);
+                                        $nome_idioma = isset($valores[1]) ? $valores[1] : 'Idioma ' . $idioma_opcao['id'];
+                                    }
+                                    ?>
+                                    <option value="<?php echo htmlspecialchars($idioma_opcao['id']); ?>" <?php echo (isset($teoria['idioma_id']) && $teoria['idioma_id'] == $idioma_opcao['id']) ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($nome_idioma); ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
+                        <div class="col-md-4">
+                            <label for="caminho_id" class="form-label">Caminho (Opcional)</label>
+                            <select class="form-select" id="caminho_id" name="caminho_id">
+                                <option value="">Selecione o caminho</option>
+                                <?php foreach ($caminhos_disponiveis as $caminho): ?>
+                                    <?php 
+                                    // Descobrir qual coluna usar para o nome do caminho - CORRIGIDO
+                                    $nome_caminho = '';
+                                    if (isset($caminho['nome_caminho'])) {
+                                        $nome_caminho = $caminho['nome_caminho'];
+                                    } elseif (isset($caminho['nome'])) {
+                                        $nome_caminho = $caminho['nome'];
+                                    } elseif (isset($caminho['titulo'])) {
+                                        $nome_caminho = $caminho['titulo'];
+                                    } elseif (isset($caminho['name'])) {
+                                        $nome_caminho = $caminho['name'];
+                                    } else {
+                                        // Se não encontrar, usar array_values como fallback
+                                        $valores = array_values($caminho);
+                                        $nome_caminho = isset($valores[2]) ? $valores[2] : (isset($valores[1]) ? $valores[1] : 'Caminho ' . $caminho['id']);
+                                    }
+                                    ?>
+                                    <option value="<?php echo htmlspecialchars($caminho['id']); ?>" <?php echo (isset($teoria['caminho_id']) && $teoria['caminho_id'] == $caminho['id']) ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($nome_caminho); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <div class="form-text">Teoria aparecerá apenas neste caminho</div>
+                        </div>
+                    </div>
+
+                    <!-- Campo Ordem em linha separada -->
+                    <div class="row mb-4">
                         <div class="col-md-4">
                             <label for="ordem" class="form-label required-field">Ordem de Exibição</label>
                             <input type="number" class="form-control" id="ordem" name="ordem" 
@@ -1198,17 +889,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const form = document.querySelector('form');
             form.addEventListener('submit', validarFormulario);
             
-            // Auto-hide success message after 5 seconds
-            const mensagemSucesso = document.getElementById('mensagemSucesso');
-            if (mensagemSucesso) {
+            // Auto-hide todas as mensagens após 5 segundos
+            const alertMessages = document.querySelectorAll('.alert');
+            alertMessages.forEach(alert => {
                 setTimeout(() => {
-                    mensagemSucesso.style.transition = 'opacity 0.5s ease';
-                    mensagemSucesso.style.opacity = '0';
-                    setTimeout(() => {
-                        mensagemSucesso.remove();
-                    }, 500);
+                    alert.style.transition = 'opacity 0.5s ease';
+                    alert.style.opacity = '0';
+                    setTimeout(() => alert.remove(), 500);
                 }, 5000);
-            }
+            });
         });
     </script>
 </body>
