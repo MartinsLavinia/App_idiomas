@@ -586,6 +586,159 @@ h4::before {
     border-radius: 2px;
 }
 
+/* ===== EXERCÍCIOS ESPECIAIS ===== */
+.blocos-especiais-header {
+    width: 100%;
+    text-align: center;
+    margin: 2rem 0 1.5rem 0;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border-radius: 12px;
+    border: 2px solid var(--amarelo-botao);
+    position: relative;
+    overflow: hidden;
+}
+
+.blocos-especiais-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+.especiais-titulo {
+    color: #856404;
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.especiais-descricao {
+    color: #856404;
+    font-size: 1rem;
+    margin: 0;
+    opacity: 0.9;
+}
+
+/* Estilo especial para blocos de exercícios especiais */
+.bloco-card.border-warning {
+    border-color: var(--amarelo-botao) !important;
+    background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.bloco-card.border-warning::before {
+    content: '⭐';
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 2rem;
+    animation: pulse-star 2s infinite;
+    z-index: 1;
+}
+
+@keyframes pulse-star {
+    0%, 100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.2) rotate(180deg);
+        opacity: 1;
+    }
+}
+
+.bloco-card.border-warning:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 12px 32px rgba(255, 215, 0, 0.3);
+    border-color: #f39c12 !important;
+}
+
+.bloco-card.border-warning .bloco-titulo {
+    color: #856404;
+    font-weight: 700;
+}
+
+.bloco-card.border-warning .bloco-subtitulo {
+    color: #b8860b;
+    font-weight: 600;
+}
+
+.bloco-card.border-warning .bloco-descricao {
+    color: #856404;
+}
+
+/* Badge especial para exercícios especiais */
+.bloco-badge[style*="background: linear-gradient(135deg, var(--amarelo-detalhe), #f59e0b)"] {
+    background: linear-gradient(135deg, var(--amarelo-botao), #f39c12) !important;
+    color: #856404 !important;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+    animation: glow-badge 2s infinite alternate;
+}
+
+@keyframes glow-badge {
+    0% {
+        box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+    }
+    100% {
+        box-shadow: 0 4px 16px rgba(255, 215, 0, 0.6);
+    }
+}
+
+/* Ícone especial para exercícios especiais */
+.bloco-card.border-warning .bloco-icon {
+    background: linear-gradient(135deg, var(--amarelo-botao), #f39c12) !important;
+    color: #856404 !important;
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4) !important;
+    position: relative;
+}
+
+.bloco-card.border-warning .bloco-icon::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, var(--amarelo-botao), #f39c12, var(--amarelo-botao));
+    border-radius: inherit;
+    z-index: -1;
+    animation: rotate-border 3s linear infinite;
+}
+
+@keyframes rotate-border {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Efeito hover especial para exercícios especiais */
+.bloco-card.border-warning:hover .bloco-icon {
+    transform: scale(1.1) rotate(10deg);
+}
+
+/* Separador visual entre blocos normais e especiais */
+.blocos-container .bloco-card.border-warning:first-of-type {
+    margin-top: 2rem;
+}
+
 /* ===== MELHORIAS FINAIS ===== */
 .text-muted {
     color: #6c757d !important;

@@ -94,7 +94,7 @@ try {
     $stmt->close();
     
     // Adicionar exercícios especiais como blocos - SEMPRE
-    $sql_especiais = "SELECT id, titulo, descricao, url_media, transcricao, pergunta, tipo_exercicio, opcoes_resposta, resposta_correta, conteudo FROM exercicios_especiais ORDER BY id";
+    $sql_especiais = "SELECT id, titulo, descricao, url_media, transcricao, pergunta, tipo_exercicio, opcoes_resposta, resposta_correta, conteudo FROM exercicios_especiais WHERE id_bloco IS NOT NULL ORDER BY id";
     $stmt_especiais = $conn->prepare($sql_especiais);
     $stmt_especiais->execute();
     $result_especiais = $stmt_especiais->get_result();
