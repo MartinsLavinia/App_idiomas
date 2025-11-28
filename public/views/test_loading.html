@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Carregamento</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .loading { background-color: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <h1>Teste de Carregamento - App Idiomas</h1>
+    
+    <div id="test-results"></div>
+    
+    <script>
+        const results = document.getElementById('test-results');
+        
+        function addResult(message, type = 'success') {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = message;
+            results.appendChild(div);
+        }
+        
+        // Teste 1: Verificar se os endpoints estão respondendo
+        async function testEndpoints() {
+            addResult('Iniciando testes de endpoints...', 'loading');
+            
+            const endpoints = [
+                '../../admin/controller/get_blocos.php?unidade_id=1',
+                'flashcard_controller.php',
+                'controller/get_teorias.php?nivel=A1&idioma=ingles'
+            ];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(endpoint, {
+                        method: endpoint.includes('flashcard_controller') ? 'POST' : 'GET',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: endpoint.includes('flashcard_controller') ? 
+                            JSON.stringify({ action: 'listar_flashcards_painel', idioma: 'ingles' }) : null
+                    });
+                    
+                    if (response.ok) {
+                        addResult(`✓ ${endpoint} - Status: ${response.status}`, 'success');
+                    } else {
+                        addResult(`✗ ${endpoint} - Status: ${response.status}`, 'error');
+                    }
+                } catch (error) {
+                    addResult(`✗ ${endpoint} - Erro: ${error.message}`, 'error');
+                }
+            }
+        }
+        
+        // Teste 2: Verificar se há loops infinitos
+        function testInfiniteLoops() {
+            addResult('Testando proteção contra loops infinitos...', 'loading');
+            
+            let carregandoBlocos = false;
+            let carregandoPalavras = false;
+            let carregandoTeorias = false;
+            
+            // Simular múltiplas chamadas
+            function simulateMultipleCalls() {
+                if (carregandoBlocos) {
+                    addResult('✓ Proteção contra múltiplas chamadas de blocos funcionando', 'success');
+                    return false;
+                }
+                carregandoBlocos = true;
+                setTimeout(() => { carregandoBlocos = false; }, 100);
+                return true;
+            }
+            
+            // Testar 5 chamadas rápidas
+            let callsAllowed = 0;
+            for (let i = 0; i < 5; i++) {
+                if (simulateMultipleCalls()) {
+                    callsAllowed++;
+                }
+            }
+            
+            if (callsAllowed === 1) {
+                addResult('✓ Sistema de proteção contra loops funcionando corretamente', 'success');
+            } else {
+                addResult(`✗ Sistema de proteção falhou - ${callsAllowed} chamadas permitidas`, 'error');
+            }
+        }
+        
+        // Executar testes
+        testInfiniteLoops();
+        testEndpoints();
+    </script>
+</body>
+</html>

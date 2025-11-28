@@ -2349,6 +2349,9 @@ $database->closeConnection();
     let exerciciosEspeciais = [];
     let exerciciosEspeciaisAdicionados = false;
     let caminhoAtual = 1; // Default path ID
+    let carregandoBlocos = false; // Flag para evitar múltiplas chamadas
+    let carregandoPalavras = false; // Flag para evitar múltiplas chamadas
+    let carregandoTeorias = false; // Flag para evitar múltiplas chamadas
 
     // ==================== INICIALIZAÇÃO ====================
     document.addEventListener('DOMContentLoaded', function() {
@@ -2375,16 +2378,23 @@ $database->closeConnection();
             });
         });
 
+        // Carregar conteúdo apenas se não estiver na seleção de idioma
+        <?php if (!$mostrar_selecao_idioma): ?>
         // Carregar blocos de todas as unidades
         carregarBlocosTodasUnidades();
 
         // Carrega palavras do usuário ao inicializar
-        if (typeof carregarPalavras === 'function') {
-            carregarPalavras();
-        }
+        setTimeout(() => {
+            if (typeof carregarPalavras === 'function') {
+                carregarPalavras();
+            }
+        }, 500);
         
         // Carregar preview das teorias
-        carregarPreviewTeorias();
+        setTimeout(() => {
+            carregarPreviewTeorias();
+        }, 1000);
+        <?php endif; ?>
         
         // Inicializar progresso da unidade apenas se houver progresso salvo
         setTimeout(() => {
@@ -2415,8 +2425,19 @@ $database->closeConnection();
     
     // Carregar blocos de uma unidade específica
     function carregarBlocosUnidade(unidadeId) {
+        if (carregandoBlocos) {
+            console.log('Já carregando blocos, ignorando nova chamada');
+            return;
+        }
+        
         const container = document.getElementById(`blocos-unidade-${unidadeId}`);
         
+        if (!container) {
+            console.log('Container de blocos não encontrado para unidade:', unidadeId);
+            return;
+        }
+        
+        carregandoBlocos = true;
         console.log('=== CARREGAR BLOCOS UNIDADE ===');
         console.log('Unidade ID:', unidadeId);
         console.log('Container:', container);
@@ -2447,17 +2468,21 @@ $database->closeConnection();
                         </div>
                     `;
                 }
+                carregandoBlocos = false;
             })
             .catch(error => {
                 console.error('Erro ao carregar blocos:', error);
-                container.innerHTML = `
-                    <div class="col-12">
-                        <div class="alert alert-danger" role="alert">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            Erro ao carregar blocos desta unidade.
+                carregandoBlocos = false;
+                if (container) {
+                    container.innerHTML = `
+                        <div class="col-12">
+                            <div class="alert alert-danger" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Erro ao carregar blocos desta unidade: ${error.message}
+                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                }
             });
     }
     
@@ -2577,39 +2602,37 @@ $database->closeConnection();
                 const blocoAnteriorFinalizado = blocosFinalizados > index;
                 
                 if (blocoAnteriorFinalizado) {
-            
-            // Exibir cada exercício especial
-            blocosEspeciais.forEach(bloco => {
-                const blocoHTML = `
-                    <div class="bloco-card bloco-card-disponivel border-warning" 
-                         onclick="abrirExercicioEspecial('${bloco.id}', '${bloco.nome_bloco.replace(/'/g, "\\'")}')">
-                        <div class="bloco-header">
-                            <div class="bloco-icon-container">
-                                <div class="bloco-icon" style="background: linear-gradient(135deg, var(--amarelo-detalhe), #f59e0b);">
-                                    <i class="fas fa-star"></i>
+                    // Exibir exercício especial desbloqueado
+                    const blocoHTML = `
+                        <div class="bloco-card bloco-card-disponivel border-warning" 
+                             onclick="abrirExercicioEspecial('${bloco.id}', '${bloco.nome_bloco.replace(/'/g, "\\'")}')">
+                            <div class="bloco-header">
+                                <div class="bloco-icon-container">
+                                    <div class="bloco-icon" style="background: linear-gradient(135deg, var(--amarelo-detalhe), #f59e0b);">
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="bloco-titulo">${bloco.nome_bloco}</h4>
+                                        <p class="bloco-subtitulo">Conteúdo especial</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h4 class="bloco-titulo">${bloco.nome_bloco}</h4>
-                                    <p class="bloco-subtitulo">Conteúdo especial</p>
+                                <span class="bloco-badge" style="background: linear-gradient(135deg, var(--amarelo-detalhe), #f59e0b);">Especial</span>
+                            </div>
+                            
+                            <div class="bloco-body">
+                                <p class="bloco-descricao">${bloco.descricao || 'Atividade especial para praticar de forma divertida.'}</p>
+                            </div>
+                            
+                            <div class="bloco-footer">
+                                <div class="bloco-meta">
+                                    <span class="bloco-stats">
+                                        <i class="fas fa-gamepad"></i>
+                                        Exercício interativo
+                                    </span>
                                 </div>
                             </div>
-                            <span class="bloco-badge" style="background: linear-gradient(135deg, var(--amarelo-detalhe), #f59e0b);">Especial</span>
                         </div>
-                        
-                        <div class="bloco-body">
-                            <p class="bloco-descricao">${bloco.descricao || 'Atividade especial para praticar de forma divertida.'}</p>
-                        </div>
-                        
-                        <div class="bloco-footer">
-                            <div class="bloco-meta">
-                                <span class="bloco-stats">
-                                    <i class="fas fa-gamepad"></i>
-                                    Exercício interativo
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                    `;
                     container.insertAdjacentHTML('beforeend', blocoHTML);
                 } else {
                     // Exercício especial bloqueado
@@ -3813,8 +3836,21 @@ $database->closeConnection();
        
     // Função para carregar palavras do usuário
     window.carregarPalavras = function() {
-        const status = document.getElementById('filtroPalavrasStatus').value;
+        if (carregandoPalavras) {
+            console.log('Já carregando palavras, ignorando nova chamada');
+            return;
+        }
+        
+        const statusElement = document.getElementById('filtroPalavrasStatus');
         const container = document.getElementById('listaPalavras');
+        
+        if (!statusElement || !container) {
+            console.log('Elementos de palavras não encontrados');
+            return;
+        }
+        
+        carregandoPalavras = true;
+        const status = statusElement.value;
         
         console.log('=== CARREGAR PALAVRAS INICIADO ===');
         console.log('Status:', status);
@@ -3853,6 +3889,7 @@ $database->closeConnection();
         })
         .then(data => {
             console.log('Dados recebidos:', data);
+            carregandoPalavras = false;
             if (data.success) {
                 palavrasCarregadas = data.flashcards;
                 exibirPalavras(data.flashcards);
@@ -3864,6 +3901,7 @@ $database->closeConnection();
         .catch(error => {
             console.error('Erro na requisição:', error);
             console.error('Detalhes do erro:', error.message);
+            carregandoPalavras = false;
             exibirErroPalavras('Erro de conexão. Tente novamente. Detalhes: ' + error.message);
         });
     };
@@ -4078,12 +4116,35 @@ $database->closeConnection();
 
     // Função para carregar preview das teorias
     function carregarPreviewTeorias() {
-        const container = document.getElementById('previewTeorias');
-        if (!container) return;
+        if (carregandoTeorias) {
+            console.log('Já carregando teorias, ignorando nova chamada');
+            return;
+        }
         
-        fetch(`controller/get_teorias.php?nivel=<?php echo htmlspecialchars($nivel_usuario ?? 'A1'); ?>&idioma=<?php echo htmlspecialchars($idioma_escolhido ?? 'ingles'); ?>`)
+        const container = document.getElementById('previewTeorias');
+        if (!container) {
+            console.log('Container previewTeorias não encontrado');
+            return;
+        }
+        
+        carregandoTeorias = true;
+        
+        const nivel = '<?php echo htmlspecialchars($nivel_usuario ?? 'A1'); ?>';
+        const idioma = '<?php echo htmlspecialchars($idioma_escolhido ?? 'ingles'); ?>';
+        
+        if (!nivel || !idioma || idioma === 'ingles') {
+            container.innerHTML = `
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Selecione um idioma para ver as teorias disponíveis.
+                </div>
+            `;
+            return;
+        }
+        
+        fetch(`controller/get_teorias.php?nivel=${nivel}&idioma=${idioma}`)
             .then(response => {
-                console.log('Response status:', response.status);
+                console.log('Response status teorias:', response.status);
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}`);
                 }
@@ -4091,6 +4152,7 @@ $database->closeConnection();
             })
             .then(data => {
                 console.log('Teorias carregadas:', data);
+                carregandoTeorias = false;
                 if (data.success && data.teorias && data.teorias.length > 0) {
                     exibirPreviewTeorias(data.teorias);
                 } else {
@@ -4105,6 +4167,7 @@ $database->closeConnection();
             })
             .catch(error => {
                 console.error('Erro ao carregar teorias:', error);
+                carregandoTeorias = false;
                 container.innerHTML = `
                     <div class="alert alert-warning text-center">
                         <i class="fas fa-exclamation-triangle me-2"></i>
