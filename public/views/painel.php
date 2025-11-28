@@ -3436,11 +3436,11 @@ $database->closeConnection();
         }
 
         const tipoExercicio = exercicioAtual.tipoExercicioDeterminado || 'multipla_escolha';
-        let apiUrl = '/App_idiomas/api/processar_exercicio.php';
+        let apiUrl = '../../api/processar_exercicio.php';
         
         // Usar API específica para listening
         if (tipoExercicio === 'listening' || tipoExercicio === 'audicao') {
-            apiUrl = '/App_idiomas/api/exercicios/listening.php';
+            apiUrl = '.../../api/exercicios/listening.php';
         }
         
         // Para exercícios especiais, simular resposta correta
