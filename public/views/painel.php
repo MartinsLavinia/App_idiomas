@@ -153,26 +153,14 @@ if (isset($_GET["idioma"]) && isset($_GET["nivel_escolhido"])) {
     }
 }
 
-// Busca unidades do usuário
+// Busca apenas a primeira unidade se o usuário tem progresso
 if (!$mostrar_selecao_idioma) {
-    $sql_unidades = "SELECT * FROM unidades WHERE idioma = ? AND nivel = ? ORDER BY numero_unidade ASC";
+    $sql_unidades = "SELECT * FROM unidades WHERE idioma = ? AND nivel = ? ORDER BY numero_unidade ASC LIMIT 1";
     $stmt_unidades = $conn->prepare($sql_unidades);
     $stmt_unidades->bind_param("ss", $idioma_escolhido, $nivel_usuario);
     $stmt_unidades->execute();
     $unidades = $stmt_unidades->get_result()->fetch_all(MYSQLI_ASSOC);
     $stmt_unidades->close();
-    
-    // Se não encontrar unidades, criar uma padrão
-    if (empty($unidades)) {
-        $unidades = [[
-            'id' => 1,
-            'numero_unidade' => 1,
-            'nome_unidade' => 'Unidade Básica',
-            'descricao' => 'Exercícios básicos de ' . $idioma_escolhido,
-            'idioma' => $idioma_escolhido,
-            'nivel' => $nivel_usuario
-        ]];
-    }
 }
 
 // Feche a conexão usando o método da classe
@@ -1867,19 +1855,21 @@ $database->closeConnection();
                     <!-- Painel normal para usuários com progresso -->
                     <div class="card mb-4">
                         <div class="card-header text-center">
-                            <?php 
-                            $unidade = $unidades[0] ?? null;
-                            $idioma_valido = ($idioma_escolhido && preg_match('/^[a-zA-Z]+$/', $idioma_escolhido)) ? $idioma_escolhido : 'Idioma';
-                            $nivel_valido = ($nivel_usuario && preg_match('/^[A-C][12]$/', $nivel_usuario)) ? $nivel_usuario : 'A1';
-                            ?>
-                            <?php if ($unidade): ?>
+                            <?php if (count($unidades) > 0): ?>
+                                <?php $unidade = $unidades[0]; ?>
                                 <h2>Unidade <?php echo htmlspecialchars($unidade["numero_unidade"]); ?>: <?php echo htmlspecialchars($unidade["nome_unidade"]); ?></h2>
                                 <p style="color: #fff;" class="mb-1"><?php echo htmlspecialchars($unidade["descricao"]); ?></p>
+                                <p class="fs-5">Caminho: <?php 
+                                    $idioma_valido = ($idioma_escolhido && preg_match('/^[a-zA-Z]+$/', $idioma_escolhido)) ? $idioma_escolhido : 'Idioma';
+                                    echo htmlspecialchars($idiomas_display[$idioma_valido] ?? $idioma_valido); 
+                                ?> - <span class="badge bg-success"><?php echo htmlspecialchars(($nivel_usuario && preg_match('/^[A-C][12]$/', $nivel_usuario)) ? $nivel_usuario : 'A1'); ?></span></p>
                             <?php else: ?>
-                                <h2>Seu Caminho de Aprendizado</h2>
-                                <p style="color: #fff;" class="mb-1">Exercícios e atividades para seu aprendizado</p>
+                                <h2>Seu Caminho de Aprendizado em <?php 
+                                    $idioma_valido = ($idioma_escolhido && preg_match('/^[a-zA-Z]+$/', $idioma_escolhido)) ? $idioma_escolhido : 'Idioma';
+                                    echo htmlspecialchars($idiomas_display[$idioma_valido] ?? $idioma_valido); 
+                                ?></h2>
+                                <p class="fs-4">Seu nível atual é: <span class="badge bg-success"><?php echo htmlspecialchars(($nivel_usuario && preg_match('/^[A-C][12]$/', $nivel_usuario)) ? $nivel_usuario : 'A1'); ?></span></p>
                             <?php endif; ?>
-                            <p class="fs-5">Idioma: <?php echo htmlspecialchars($idiomas_display[$idioma_valido] ?? $idioma_valido); ?> - <span class="badge bg-success"><?php echo htmlspecialchars($nivel_valido); ?></span></p>
                         </div>
                         <div class="card-body">
                             <?php if (count($unidades) > 0): ?>
@@ -2485,12 +2475,6 @@ $database->closeConnection();
         const blocosNormais = blocos.filter(b => b.tipo !== 'especial');
         const blocosEspeciais = blocos.filter(b => b.tipo === 'especial');
         
-        console.log('=== SEPARAÇÃO DE BLOCOS ===');
-        console.log('Total de blocos recebidos:', blocos.length);
-        console.log('Blocos normais:', blocosNormais.length);
-        console.log('Blocos especiais:', blocosEspeciais.length);
-        console.log('Blocos especiais encontrados:', blocosEspeciais.map(b => ({ id: b.id, nome: b.nome_bloco, tipo: b.tipo })));
-        
         // Determinar estado dos blocos
         let blocoDisponivel = 0;
         let todosConcluidos = true;
@@ -2573,15 +2557,19 @@ $database->closeConnection();
             container.insertAdjacentHTML('beforeend', blocoHTML);
         });
         
-        // Exibir blocos especiais - LIBERAR APÓS BLOCO ESPECÍFICO
-        if (blocosEspeciais.length > 0) {
-            blocosEspeciais.forEach((bloco, index) => {
-                // Verificar se o bloco anterior foi finalizado
-                const blocoAnteriorFinalizado = blocosFinalizados > index;
-                
-                if (blocoAnteriorFinalizado) {
+        // Exibir blocos especiais (liberados quando todos os normais são concluídos)
+        if (blocosEspeciais.length > 0 && blocosFinalizados >= blocosNormais.length) {
+            const especiaisHeader = document.createElement('div');
+            especiaisHeader.className = 'blocos-especiais-header';
+            especiaisHeader.innerHTML = `
+                <h4 class="especiais-titulo">
+                    <i class="fas fa-star me-2" style="color: var(--amarelo-detalhe);"></i>
+                    Exercícios Especiais Liberados!
+                </h4>
+                <p class="especiais-descricao">Parabéns! Você desbloqueou conteúdo especial</p>
+            `;
+            container.appendChild(especiaisHeader);
             
-            // Exibir cada exercício especial
             blocosEspeciais.forEach(bloco => {
                 const blocoHTML = `
                     <div class="bloco-card bloco-card-disponivel border-warning" 
@@ -2613,31 +2601,7 @@ $database->closeConnection();
                         </div>
                     </div>
                 `;
-                    container.insertAdjacentHTML('beforeend', blocoHTML);
-                } else {
-                    // Exercício especial bloqueado
-                    const blocoHTML = `
-                        <div class="bloco-card bloco-card-bloqueado">
-                            <div class="bloco-header">
-                                <div class="bloco-icon-container">
-                                    <div class="bloco-icon">
-                                        <i class="fas fa-lock"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="bloco-titulo">${bloco.nome_bloco}</h4>
-                                        <p class="bloco-subtitulo">Exercício especial bloqueado</p>
-                                    </div>
-                                </div>
-                                <span class="bloco-badge badge-bloqueado">Bloqueado</span>
-                            </div>
-                            
-                            <div class="bloco-body">
-                                <p class="bloco-descricao">Complete o bloco anterior para desbloquear este exercício especial.</p>
-                            </div>
-                        </div>
-                    `;
-                    container.insertAdjacentHTML('beforeend', blocoHTML);
-                }
+                container.insertAdjacentHTML('beforeend', blocoHTML);
             });
         }
     }
@@ -4291,42 +4255,20 @@ $database->closeConnection();
             });
     };
 
-    // Função para abrir exercício especial - VERSÃO MELHORADA
+    // Função para abrir exercício especial
     window.abrirExercicioEspecial = function(exercicioId, titulo) {
-        console.log('=== ABRINDO EXERCÍCIO ESPECIAL ===');
-        console.log('ID:', exercicioId);
-        console.log('Título:', titulo);
+        console.log('Abrindo exercício especial:', exercicioId, titulo);
         
         // Extrair o ID numérico
         const idNumerico = exercicioId.replace('especial_', '');
-        console.log('ID numérico extraído:', idNumerico);
         
-        document.getElementById("tituloExercicios").textContent = `🌟 Exercício Especial: ${titulo}`;
-        
-        // Mostrar loading no modal
-        document.getElementById("conteudoExercicio").innerHTML = `
-            <div class="text-center py-4">
-                <div class="spinner-border text-warning" role="status">
-                    <span class="visually-hidden">Carregando...</span>
-                </div>
-                <p class="mt-2 text-muted">Carregando exercício especial...</p>
-            </div>
-        `;
-        
-        modalExercicios.show();
+        document.getElementById("tituloExercicios").textContent = `Exercício Especial: ${titulo}`;
         
         fetch(`../../admin/controller/get_exercicios_especiais.php`)
-            .then(response => {
-                console.log('Resposta recebida:', response.status);
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
-                console.log('Dados dos exercícios especiais:', data);
-                
-                if (data.success && data.exercicios) {
+                if (data.success) {
                     const exercicio = data.exercicios.find(e => e.id == idNumerico);
-                    console.log('Exercício encontrado:', exercicio);
-                    
                     if (exercicio) {
                         const exercicioFormatado = {
                             id: exercicioId,
@@ -4336,38 +4278,18 @@ $database->closeConnection();
                             categoria: 'especial'
                         };
                         
-                        console.log('Exercício formatado:', exercicioFormatado);
-                        
                         exerciciosLista = [exercicioFormatado];
                         exercicioIndex = 0;
                         carregarExercicio(0);
-                    } else {
-                        console.error('Exercício não encontrado com ID:', idNumerico);
-                        document.getElementById("conteudoExercicio").innerHTML = `
-                            <div class="alert alert-danger">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                Exercício especial não encontrado.
-                            </div>
-                        `;
+                        modalExercicios.show();
                     }
                 } else {
-                    console.error('Erro na resposta:', data.message);
-                    document.getElementById("conteudoExercicio").innerHTML = `
-                        <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            Erro ao carregar exercício especial: ${data.message || 'Erro desconhecido'}
-                        </div>
-                    `;
+                    alert('Erro ao carregar exercício especial');
                 }
             })
             .catch(error => {
-                console.error('Erro na requisição:', error);
-                document.getElementById("conteudoExercicio").innerHTML = `
-                    <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        Erro de conexão ao carregar exercício especial.
-                    </div>
-                `;
+                console.error('Erro:', error);
+                alert('Erro ao carregar exercício especial');
             });
     };
 
