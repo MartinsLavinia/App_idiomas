@@ -1954,11 +1954,7 @@ $database->closeConnection();
                                         Estude a teoria antes de começar os exercícios do nível <?php echo htmlspecialchars($nivel_usuario); ?>
                                     </p>
                                 </div>
-                                <div class="col-md-4 text-end">
-                                    <button class="btn btn-warning w-100 w-md-auto" onclick="abrirTeorias()">
-                                        <i class="fas fa-book me-2"></i>Estudar Teoria
-                                    </button>
-                                </div>
+
                             </div>
                         </div>
                         <div class="card-body">
@@ -2521,7 +2517,8 @@ $database->closeConnection();
             const cardClass = bloqueado ? 'bloco-card-bloqueado' : 
                               concluido ? 'bloco-card-concluido' : 'bloco-card-disponivel';
             
-            const clickHandler = bloqueado ? '' : `onclick="abrirExercicios(${bloco.id}, '${bloco.nome_bloco.replace(/'/g, "\\'")}')"`;
+            // CORREÇÃO: Sempre usar abrirExercicios, nunca abrirTeorias
+            const clickHandler = bloqueado ? '' : `onclick="abrirExerciciosDirecto(${bloco.id}, '${bloco.nome_bloco.replace(/'/g, "\\'")}')"`;
             
             const badgeClass = bloqueado ? 'badge-bloqueado' : 
                               concluido ? 'badge-concluido' : 'badge-disponivel';
@@ -2748,17 +2745,48 @@ $database->closeConnection();
         blocoAtual = blocoId;
         blocoParaIniciar = { id: blocoId, titulo: tituloBloco };
         
-        // Verificar se é o primeiro bloco - mostrar teorias primeiro
-        const blocosFinalizados = parseInt(localStorage.getItem('blocosFinalizados_1') || '0');
-        
-        if (blocosFinalizados === 0) {
-            // É o primeiro bloco, mostrar teoria obrigatória
-            abrirTeorias();
-            return;
-        }
-        
-        // Para outros blocos, ir direto para exercícios
+        // CORREÇÃO: Ir direto para exercícios, não para teorias
         iniciarExerciciosAposTeoria();
+    };
+    
+    // Função NOVA para ir direto aos exercícios sem desvios
+    window.abrirExerciciosDirecto = function(blocoId, tituloBloco) {
+        console.log('=== ABRINDO EXERCÍCIOS DIRETO ===');
+        console.log('Bloco ID:', blocoId);
+        console.log('Título:', tituloBloco);
+        
+        blocoAtual = blocoId;
+        blocoParaIniciar = { id: blocoId, titulo: tituloBloco };
+        
+        // Ir DIRETO para exercícios, sem verificar teorias
+        document.getElementById("tituloExercicios").textContent = `Exercícios: ${tituloBloco}`;
+        
+        fetch(`../../admin/controller/get_exercicio.php?bloco_id=${blocoId}`)
+            .then(response => {
+                console.log('Status da resposta:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(text => {
+                console.log('Resposta recebida:', text.substring(0, 300));
+                const data = JSON.parse(text);
+                console.log('Dados parseados:', data);
+                
+                if (data.success && data.exercicios && data.exercicios.length > 0) {
+                    exerciciosLista = data.exercicios;
+                    exercicioIndex = 0;
+                    carregarExercicio(exercicioIndex);
+                    modalExercicios.show();
+                } else {
+                    alert('Nenhum exercício encontrado para este bloco. Verifique se há exercícios cadastrados.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar exercícios:', error);
+                alert('Erro ao carregar exercícios: ' + error.message);
+            });
     };
     
     // Função para recarregar blocos após completar um exercício
@@ -2768,31 +2796,10 @@ $database->closeConnection();
         }, 1000);
     };
     
-    // Função para verificar se há teoria para o bloco
+    // Função para verificar se há teoria para o bloco (OPCIONAL)
     function verificarTeoriaDoBloco(blocoId, tituloBloco) {
-        // Sempre mostrar teoria antes do primeiro bloco
-        const blocosFinalizados = parseInt(localStorage.getItem('blocosFinalizados_1') || '0');
-        
-        if (blocosFinalizados === 0) {
-            // É o primeiro bloco, mostrar teoria obrigatória
-            abrirTeorias();
-            return;
-        }
-        
-        // Para outros blocos, verificar se há teoria específica
-        fetch(`../../admin/controller/get_teoria_bloco.php?bloco_id=${blocoId}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.teoria) {
-                    mostrarTeoriaDoBloco(data.teoria, tituloBloco);
-                } else {
-                    iniciarExerciciosAposTeoria();
-                }
-            })
-            .catch(error => {
-                console.log('Nenhuma teoria encontrada, iniciando exercícios:', error);
-                iniciarExerciciosAposTeoria();
-            });
+        // CORREÇÃO: Ir direto para exercícios, teoria é opcional
+        iniciarExerciciosAposTeoria();
     }
     
     // Função para mostrar teoria do bloco
@@ -2887,33 +2894,47 @@ $database->closeConnection();
         
         document.getElementById("tituloExercicios").textContent = `Exercícios: ${tituloBloco}`;
    
-        // CORREÇÃO: URL corrigida
+        // CORREÇÃO: URL corrigida para buscar exercícios
+        console.log('Buscando exercícios para bloco:', blocoId);
         fetch(`../../admin/controller/get_exercicio.php?bloco_id=${blocoId}`)
             .then(response => {
+                console.log('Status da resposta:', response.status, response.ok);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                return response.json();
+                return response.text();
             })
-            .then(data => {
-                console.log('Exercícios recebidos:', data);
-                if (data.success) {
-                    if (data.exercicios && data.exercicios.length > 0) {
-                        exerciciosLista = data.exercicios;
-                        exercicioIndex = 0;
-                        carregarExercicio(exercicioIndex);
-                        modalBlocos.hide();
-                        modalExercicios.show();
+            .then(text => {
+                console.log('Resposta recebida (primeiros 200 chars):', text.substring(0, 200));
+                try {
+                    const data = JSON.parse(text);
+                    console.log('Dados parseados:', data);
+                    
+                    if (data.success) {
+                        if (data.exercicios && data.exercicios.length > 0) {
+                            console.log('Exercícios encontrados:', data.exercicios.length);
+                            exerciciosLista = data.exercicios;
+                            exercicioIndex = 0;
+                            carregarExercicio(exercicioIndex);
+                            modalBlocos.hide();
+                            modalExercicios.show();
+                        } else {
+                            console.log('Nenhum exercício encontrado. Dados:', data);
+                            alert("Nenhum exercício encontrado para este bloco. Verifique se há exercícios cadastrados.");
+                        }
                     } else {
-                        alert("Nenhum exercício encontrado para este bloco.");
+                        console.log('Erro na resposta:', data);
+                        alert("Erro ao carregar exercícios: " + (data.message || 'Erro desconhecido'));
                     }
-                } else {
-                    alert("Erro ao carregar exercícios: " + (data.message || 'Erro desconhecido'));
+                } catch (e) {
+                    console.error('Erro ao parsear JSON:', e);
+                    console.error('Texto completo da resposta:', text);
+                    alert('Erro: Resposta inválida do servidor');
                 }
             })
             .catch(error => {
                 console.error("Erro ao carregar exercícios:", error);
-                alert("Erro de rede ao carregar exercícios. Verifique o console.");
+                alert("Erro de rede ao carregar exercícios: " + error.message);
             });
     };
 
